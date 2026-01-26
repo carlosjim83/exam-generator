@@ -1,0 +1,187 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
+}
+
+// ============================================================================
+// User Management
+// ============================================================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String? // Nullable for OAuth-only users
+  firstName String   @map("first_name")
+  lastName  String   @map("last_name")
+  role      UserRole @default(TEACHER)
+  provider  AuthProvider @default(LOCAL)
+  
+  // OAuth fields
+  providerId String? @map("provider_id") // ID from OAuth provider
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  // Relations
+  documents Document[]
+  exams     Exam[]
+  
+  @@map("users")
+}
+
+enum UserRole {
+  TEACHER
+  STUDENT
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  GITHUB
+  MICROSOFT
+}
+
+// ============================================================================
+// Document Management
+// ============================================================================
+
+model Document {
+  id          String         @id @default(uuid())
+  title       String
+  filename    String
+  fileSize    Int            @map("file_size") // bytes
+  mimeType    String         @map("mime_type") // application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document
+  status      DocumentStatus @default(PENDING)
+  
+  // Azure Blob Storage reference
+  blobUrl     String         @map("blob_url")
+  
+  // Processing metadata
+  pageCount   Int?           @map("page_count")
+  wordCount   Int?           @map("word_count")
+  
+  // Error tracking
+  errorMessage String?       @map("error_message")
+  
+  // Timestamps
+  uploadedAt  DateTime       @default(now()) @map("uploaded_at")
+  processedAt DateTime?      @map("processed_at")
+  
+  // Relations
+  userId      String         @map("user_id")
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks      DocumentChunk[]
+  
+  @@map("documents")
+  @@index([userId])
+  @@index([status])
+}
+
+enum DocumentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ============================================================================
+// Document Chunks (for RAG)
+// ============================================================================
+
+model DocumentChunk {
+  id         String                   @id @default(uuid())
+  content    String                   @db.Text // Chunk text content
+  chunkIndex Int                      @map("chunk_index") // Order in document
+  
+  // Vector embedding (pgvector)
+  embedding  Unsupported("vector(768)") // Google Gemini embedding dimension
+  
+  // Metadata
+  pageNumber Int?                     @map("page_number")
+  wordCount  Int                      @map("word_count")
+  
+  // Relations
+  documentId String                   @map("document_id")
+  document   Document                 @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  @@map("document_chunks")
+  @@index([documentId])
+}
+
+// ============================================================================
+// Exam Management
+// ============================================================================
+
+model Exam {
+  id          String     @id @default(uuid())
+  title       String
+  description String?    @db.Text
+  
+  // Generation metadata
+  generatedFrom String[] @default([]) @map("generated_from") // Document IDs used
+  promptUsed    String?  @db.Text    @map("prompt_used")
+  
+  // Timestamps
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt      @map("updated_at")
+  
+  // Relations
+  userId      String     @map("user_id")
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  
+  @@map("exams")
+  @@index([userId])
+}
+
+// ============================================================================
+// Questions (for Exams)
+// ============================================================================
+
+model Question {
+  id             String             @id @default(uuid())
+  type           QuestionType
+  difficulty     QuestionDifficulty
+  questionText   String             @db.Text @map("question_text")
+  
+  // Options (for multiple choice)
+  options        String[]           @default([])
+  correctAnswer  String             @db.Text @map("correct_answer")
+  
+  // Metadata
+  explanation    String?            @db.Text
+  points         Int                @default(1)
+  orderIndex     Int                @map("order_index")
+  
+  // Source tracking
+  sourceChunkIds String[]          @default([]) @map("source_chunk_ids")
+  
+  // Relations
+  examId         String             @map("exam_id")
+  exam           Exam               @relation(fields: [examId], references: [id], onDelete: Cascade)
+  
+  @@map("questions")
+  @@index([examId])
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}

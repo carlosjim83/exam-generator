@@ -20,6 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vitest configuration with 80% coverage thresholds
 - Path aliases for imports (`@/` for src, shared types)
 - Backend README with comprehensive documentation
+- Prisma ORM with PostgreSQL + pgvector support
+- Database schema with User, Document, DocumentChunk, Exam, Question models
+- Initial database migration (vector embeddings, enums, indexes, foreign keys)
+- Prisma client singleton instance with graceful shutdown
+- Prisma scripts (generate, migrate, studio, seed)
 
 ---
 
