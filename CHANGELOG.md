@@ -8,17 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Monorepo structure with pnpm workspaces and Turborepo
-- Shared TypeScript types package (`@exam-generator/shared`)
-- Docker Compose setup for PostgreSQL with pgvector extension
-- Comprehensive documentation (ADRs, specs, architecture diagrams)
-- Environment variables template (`.env.example`)
-- Code formatting with Prettier
-- Project README with quick start guide
-
-### Infrastructure
-- PostgreSQL 16 with pgvector 0.8.1 running on port 5433
-- Turborepo pipeline for dev, build, test, lint tasks
+- Fastify server with TypeScript and hot reload (tsx watch)
+- CORS configuration for frontend communication
+- Health check endpoint (`GET /health`)
+- Environment variables configuration with validation
+- Production build support (TypeScript compilation)
+- Graceful shutdown handling (SIGINT/SIGTERM)
+- Pino logger with pretty printing for development
 
 ---
 
