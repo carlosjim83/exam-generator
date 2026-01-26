@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive database seed script with sample data (3 users, 4 documents, 5 chunks, 3 exams, 6 questions)
 - AuthService with bcrypt password hashing (10 salt rounds)
 - TDD tests for AuthService (14 tests, 100% coverage)
+- TokenService with JWT generation and validation (access + refresh tokens)
+- TDD tests for TokenService (21 tests, 100% coverage)
 
 ---
 
