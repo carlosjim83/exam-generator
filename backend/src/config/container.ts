@@ -19,6 +19,7 @@ import {
   BcryptPasswordHasher,
   JWTTokenService,
   AzureBlobStorageService,
+  LocalFileStorageService,
   TextExtractorService,
   DocumentProcessorService
 } from '../infrastructure/index.js';
@@ -89,8 +90,18 @@ export class Container {
     this._passwordHasher = new BcryptPasswordHasher();
     this._tokenService = new JWTTokenService();
 
-    // Storage and Text Extraction Services
-    this._storageService = new AzureBlobStorageService();
+    // Storage Service - Auto-select based on configuration
+    // Use Azure if configured, otherwise fallback to local filesystem
+    const azureStorageService = new AzureBlobStorageService();
+    if (azureStorageService.isConfigured()) {
+      console.log('📦 Using Azure Blob Storage for file storage');
+      this._storageService = azureStorageService;
+    } else {
+      console.log('📁 Using Local File Storage for file storage (./uploads)');
+      this._storageService = new LocalFileStorageService('./uploads');
+    }
+
+    // Text Extraction and Document Processing Services
     this._textExtractor = new TextExtractorService();
     this._documentProcessor = new DocumentProcessorService(this._textExtractor);
 

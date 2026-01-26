@@ -8,6 +8,7 @@ export { PrismaDocumentRepository } from './repositories/PrismaDocumentRepositor
 
 // Infrastructure Layer - Storage Services
 export { AzureBlobStorageService } from './storage/AzureBlobStorageService.js';
+export { LocalFileStorageService } from './storage/LocalFileStorageService.js';
 
 // Infrastructure Layer - Text Extraction
 export { TextExtractorService } from './text-extraction/TextExtractorService.js';
