@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial database migration (vector embeddings, enums, indexes, foreign keys)
 - Prisma client singleton instance with graceful shutdown
 - Prisma scripts (generate, migrate, studio, seed)
+- Comprehensive database seed script with sample data (3 users, 4 documents, 5 chunks, 3 exams, 6 questions)
 
 ---
 
