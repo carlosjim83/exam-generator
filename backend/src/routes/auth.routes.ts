@@ -7,34 +7,86 @@ const authService = new AuthService();
 const tokenService = new TokenService();
 
 // Request/Response Schemas
-const RegisterRequestSchema = Type.Object({
-  email: Type.String({ format: 'email' }),
-  password: Type.String({ minLength: 8 }),
-  firstName: Type.String({ minLength: 1 }),
-  lastName: Type.String({ minLength: 1 }),
-  role: Type.Union([Type.Literal('TEACHER'), Type.Literal('STUDENT')]),
-});
+const RegisterRequestSchema = Type.Object(
+  {
+    email: Type.String({ 
+      format: 'email',
+      description: 'User email address (must be unique)',
+      examples: ['teacher@example.com'],
+    }),
+    password: Type.String({ 
+      minLength: 8,
+      description: 'Password (minimum 8 characters)',
+      examples: ['SecurePass123!'],
+    }),
+    firstName: Type.String({ 
+      minLength: 1,
+      description: 'User first name',
+      examples: ['John'],
+    }),
+    lastName: Type.String({ 
+      minLength: 1,
+      description: 'User last name',
+      examples: ['Doe'],
+    }),
+    role: Type.Union([Type.Literal('TEACHER'), Type.Literal('STUDENT')], {
+      description: 'User role (TEACHER or STUDENT)',
+      examples: ['TEACHER'],
+    }),
+  },
+  {
+    description: 'User registration request',
+  }
+);
 
-const AuthResponseSchema = Type.Object({
-  user: Type.Object({
-    id: Type.String(),
-    email: Type.String(),
-    firstName: Type.String(),
-    lastName: Type.String(),
-    role: Type.String(),
-    provider: Type.String(),
-    createdAt: Type.String(),
-    updatedAt: Type.String(),
-  }),
-  accessToken: Type.String(),
-  refreshToken: Type.String(),
-});
+const LoginRequestSchema = Type.Object(
+  {
+    email: Type.String({ 
+      format: 'email',
+      description: 'User email address',
+      examples: ['teacher@example.com'],
+    }),
+    password: Type.String({ 
+      minLength: 1,
+      description: 'User password',
+      examples: ['password123'],
+    }),
+  },
+  {
+    description: 'User login request',
+  }
+);
 
-const ErrorResponseSchema = Type.Object({
-  statusCode: Type.Number(),
-  error: Type.String(),
-  message: Type.String(),
-});
+const AuthResponseSchema = Type.Object(
+  {
+    user: Type.Object({
+      id: Type.String({ description: 'User UUID' }),
+      email: Type.String({ description: 'User email' }),
+      firstName: Type.String({ description: 'User first name' }),
+      lastName: Type.String({ description: 'User last name' }),
+      role: Type.String({ description: 'User role (TEACHER or STUDENT)' }),
+      provider: Type.String({ description: 'Authentication provider (LOCAL, GOOGLE, etc.)' }),
+      createdAt: Type.String({ description: 'User creation timestamp (ISO 8601)' }),
+      updatedAt: Type.String({ description: 'User last update timestamp (ISO 8601)' }),
+    }),
+    accessToken: Type.String({ description: 'JWT access token (15 minutes TTL)' }),
+    refreshToken: Type.String({ description: 'JWT refresh token (7 days TTL)' }),
+  },
+  {
+    description: 'Successful authentication response',
+  }
+);
+
+const ErrorResponseSchema = Type.Object(
+  {
+    statusCode: Type.Number({ description: 'HTTP status code' }),
+    error: Type.String({ description: 'Error name' }),
+    message: Type.String({ description: 'Error message' }),
+  },
+  {
+    description: 'Error response',
+  }
+);
 
 export async function authRoutes(fastify: FastifyInstance) {
   // POST /auth/register - Register new user
@@ -49,7 +101,8 @@ export async function authRoutes(fastify: FastifyInstance) {
           409: ErrorResponseSchema,
         },
         tags: ['auth'],
-        description: 'Register a new user with local authentication',
+        summary: 'Register new user',
+        description: 'Create a new user account with local authentication (email/password). Returns user data and JWT tokens upon successful registration.',
       },
     },
     async (request, reply) => {
@@ -119,16 +172,14 @@ export async function authRoutes(fastify: FastifyInstance) {
     '/auth/login',
     {
       schema: {
-        body: Type.Object({
-          email: Type.String({ format: 'email' }),
-          password: Type.String({ minLength: 1 }),
-        }),
+        body: LoginRequestSchema,
         response: {
           200: AuthResponseSchema,
           401: ErrorResponseSchema,
         },
         tags: ['auth'],
-        description: 'Login with email and password (local authentication)',
+        summary: 'Login with credentials',
+        description: 'Authenticate with email and password. Returns user data and JWT tokens upon successful login.',
       },
     },
     async (request, reply) => {

@@ -1,5 +1,7 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import swagger from '@fastify/swagger';
+import swaggerUi from '@fastify/swagger-ui';
 import { env, validateEnv } from './config/env.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
@@ -27,6 +29,83 @@ await fastify.register(cors, {
   origin: env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+});
+
+// Register Swagger for API documentation
+await fastify.register(swagger, {
+  openapi: {
+    openapi: '3.1.0',
+    info: {
+      title: 'Exam Generator API',
+      description: 'AI-powered exam generation platform with RAG (Retrieval-Augmented Generation). Upload documents, generate exams, and manage student assessments.',
+      version: '0.1.0',
+      contact: {
+        name: 'Exam Generator Team',
+        email: 'support@exam-generator.dev',
+      },
+      license: {
+        name: 'MIT',
+        url: 'https://opensource.org/licenses/MIT',
+      },
+    },
+    servers: [
+      {
+        url: `http://${env.HOST}:${env.PORT}`,
+        description: 'Development server',
+      },
+      {
+        url: 'https://api.exam-generator.dev',
+        description: 'Production server',
+      },
+    ],
+    tags: [
+      {
+        name: 'auth',
+        description: 'Authentication endpoints (register, login, refresh, logout)',
+      },
+      {
+        name: 'protected',
+        description: 'Protected endpoints (require authentication)',
+      },
+      {
+        name: 'documents',
+        description: 'Document upload and management (coming soon)',
+      },
+      {
+        name: 'exams',
+        description: 'Exam generation and management (coming soon)',
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description: 'Enter your JWT access token (obtained from /auth/login or /auth/register)',
+        },
+      },
+    },
+  },
+});
+
+// Register Swagger UI
+await fastify.register(swaggerUi, {
+  routePrefix: '/docs',
+  uiConfig: {
+    docExpansion: 'list',
+    deepLinking: true,
+    displayRequestDuration: true,
+    filter: true,
+    showExtensions: true,
+    showCommonExtensions: true,
+    syntaxHighlight: {
+      activate: true,
+      theme: 'monokai',
+    },
+  },
+  staticCSP: true,
+  transformStaticCSP: (header) => header,
 });
 
 // Register routes
@@ -76,6 +155,7 @@ const start = async () => {
 ║  Environment: ${env.NODE_ENV.padEnd(34)}║
 ║  Server: http://${env.HOST}:${env.PORT}${' '.repeat(23)}║
 ║  Health: http://${env.HOST}:${env.PORT}/health${' '.repeat(17)}║
+║  Docs:   http://${env.HOST}:${env.PORT}/docs${' '.repeat(19)}║
 ╚══════════════════════════════════════════════════╝
     `);
   } catch (error) {
