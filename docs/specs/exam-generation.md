@@ -14,21 +14,23 @@ This document specifies how teachers generate exams from uploaded documents usin
 ## Exam Generation Flow
 
 ```
-1. Teacher selects document + specifies parameters (topic, question count)
+1. Teacher opens exam generator and selects one or multiple documents
    ↓
-2. Backend generates query embedding from topic
+2. Teacher specifies parameters: topic, question count, difficulty, question type
    ↓
-3. Vector similarity search retrieves relevant chunks
+3. Backend generates query embedding from topic
    ↓
-4. Build prompt with retrieved chunks as context
+4. Vector similarity search retrieves relevant chunks from selected documents
    ↓
-5. Gemini API generates structured exam (JSON)
+5. Build prompt with retrieved chunks as context
    ↓
-6. Parse and validate JSON response
+6. Gemini API generates structured exam (JSON)
    ↓
-7. Store exam + questions in database
+7. Parse and validate JSON response
    ↓
-8. Return exam to frontend
+8. Store exam + questions in database
+   ↓
+9. Return exam to frontend for review/editing
 ```
 
 ---
@@ -40,7 +42,7 @@ This document specifies how teachers generate exams from uploaded documents usin
 **Request**:
 ```json
 {
-  "documentId": "uuid-1234",
+  "documentIds": ["uuid-1234", "uuid-5678"], // Can select multiple documents
   "topic": "Cell division and mitosis",
   "questionCount": 10,
   "difficulty": "mixed", // "easy", "medium", "hard", "mixed"
@@ -49,7 +51,7 @@ This document specifies how teachers generate exams from uploaded documents usin
 ```
 
 **Validation**:
-- `documentId`: Must exist and belong to user
+- `documentIds`: Array of document UUIDs, all must exist and belong to user, min 1, max 10 documents
 - `topic`: Required, min 3 chars, max 200 chars
 - `questionCount`: Min 1, max 50 (default: 10)
 - `difficulty`: One of `["easy", "medium", "hard", "mixed"]` (default: "mixed")
@@ -62,7 +64,7 @@ This document specifies how teachers generate exams from uploaded documents usin
     "id": "exam-uuid-1234",
     "title": "Cell division and mitosis - Exam",
     "topic": "Cell division and mitosis",
-    "documentId": "uuid-1234",
+    "documentIds": ["uuid-1234", "uuid-5678"],
     "questionCount": 10,
     "createdAt": "2026-01-26T14:00:00Z",
     "questions": [
@@ -101,9 +103,9 @@ This document specifies how teachers generate exams from uploaded documents usin
 ```
 
 **Errors**:
-- `400`: Invalid parameters
-- `403`: User does not own document
-- `404`: Document not found or not ready (`status !== 'READY'`)
+- `400`: Invalid parameters (empty documentIds, invalid question count, etc.)
+- `403`: User does not own one or more documents
+- `404`: One or more documents not found or not ready (`status !== 'READY'`)
 - `429`: Rate limit exceeded (Gemini API)
 - `500`: Generation failed (Gemini API error)
 
@@ -115,21 +117,22 @@ This document specifies how teachers generate exams from uploaded documents usin
 
 ```typescript
 async function generateExam(request: GenerateExamRequest) {
-  // Verify document exists and belongs to user
-  const document = await prisma.document.findUnique({
-    where: { id: request.documentId }
+  // Verify all documents exist and belong to user
+  const documents = await prisma.document.findMany({
+    where: { 
+      id: { in: request.documentIds },
+      userId: request.user.id 
+    }
   });
   
-  if (!document) {
-    throw new Error('Document not found', 404);
+  if (documents.length !== request.documentIds.length) {
+    throw new Error('One or more documents not found or forbidden', 404);
   }
   
-  if (document.userId !== request.user.id) {
-    throw new Error('Forbidden', 403);
-  }
-  
-  if (document.status !== 'READY') {
-    throw new Error('Document is still processing or failed', 400);
+  // Check all documents are ready
+  const notReady = documents.filter(d => d.status !== 'READY');
+  if (notReady.length > 0) {
+    throw new Error(`Documents still processing: ${notReady.map(d => d.title).join(', ')}`, 400);
   }
 }
 ```
@@ -164,22 +167,25 @@ interface RelevantChunk {
   id: string;
   content: string;
   similarity: number;
+  documentTitle: string; // For source attribution
 }
 
 async function retrieveRelevantChunks(
-  documentId: string,
+  documentIds: string[],
   queryEmbedding: number[],
-  topK: number = 5
+  topK: number = 10 // Higher for multi-document search
 ): Promise<RelevantChunk[]> {
   const results = await prisma.$queryRaw<RelevantChunk[]>`
     SELECT 
-      id,
-      content,
-      1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
-    FROM "Chunk"
-    WHERE "documentId" = ${documentId}
-      AND embedding IS NOT NULL
-    ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector
+      c.id,
+      c.content,
+      d.title as "documentTitle",
+      1 - (c.embedding <=> ${JSON.stringify(queryEmbedding)}::vector) as similarity
+    FROM "Chunk" c
+    INNER JOIN "Document" d ON c."documentId" = d.id
+    WHERE c."documentId" = ANY(${documentIds})
+      AND c.embedding IS NOT NULL
+    ORDER BY c.embedding <=> ${JSON.stringify(queryEmbedding)}::vector
     LIMIT ${topK}
   `;
   
@@ -190,6 +196,8 @@ async function retrieveRelevantChunks(
 
 **Explanation**:
 - `<=>`: pgvector cosine distance operator
+- `= ANY(array)`: Search across multiple documents
+- `JOIN Document`: Include source document title for context
 - `1 - distance`: Convert distance to similarity (1.0 = identical, 0.0 = unrelated)
 - `ORDER BY ... LIMIT`: Get top-K most similar chunks
 - `similarity > 0.7`: Only use relevant chunks (optional threshold)
