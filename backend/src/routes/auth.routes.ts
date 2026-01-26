@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
 import { AuthService } from '../services/auth.service.js';
 import { TokenService } from '../services/token.service.js';
+import { prisma } from '../config/prisma.js';
 
 const authService = new AuthService();
 const tokenService = new TokenService();
@@ -74,6 +75,19 @@ const AuthResponseSchema = Type.Object(
   },
   {
     description: 'Successful authentication response',
+  }
+);
+
+const RefreshRequestSchema = Type.Object(
+  {
+    refreshToken: Type.String({ 
+      minLength: 1,
+      description: 'JWT refresh token (7 days TTL)',
+      examples: ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'],
+    }),
+  },
+  {
+    description: 'Token refresh request',
   }
 );
 
@@ -228,6 +242,88 @@ export async function authRoutes(fastify: FastifyInstance) {
           statusCode: 400,
           error: 'Bad Request',
           message: error.message || 'Login failed',
+        });
+      }
+    }
+  );
+
+  // POST /auth/refresh - Refresh access token
+  fastify.post(
+    '/auth/refresh',
+    {
+      schema: {
+        body: RefreshRequestSchema,
+        response: {
+          200: AuthResponseSchema,
+          400: ErrorResponseSchema,
+          401: ErrorResponseSchema,
+        },
+        tags: ['auth'],
+        summary: 'Refresh access token',
+        description: 'Use refresh token to obtain a new access token and refresh token pair. The old refresh token becomes invalid after use.',
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { refreshToken } = request.body as {
+          refreshToken: string;
+        };
+
+        // Verify refresh token
+        const decoded = tokenService.verifyRefreshToken(refreshToken);
+
+        // Find user by ID from token
+        const user = await prisma.user.findUnique({
+          where: { id: decoded.userId },
+        });
+
+        if (!user) {
+          return reply.status(401).send({
+            statusCode: 401,
+            error: 'Unauthorized',
+            message: 'User not found',
+          });
+        }
+
+        // Generate new token pair
+        const tokens = tokenService.generateTokenPair({
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+        });
+
+        // Return user + new tokens
+        return reply.status(200).send({
+          user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            role: user.role,
+            provider: user.provider,
+            createdAt: user.createdAt.toISOString(),
+            updatedAt: user.updatedAt.toISOString(),
+          },
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+        });
+      } catch (error: any) {
+        fastify.log.error(error);
+        
+        // Handle JWT errors specifically
+        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+          return reply.status(401).send({
+            statusCode: 401,
+            error: 'Unauthorized',
+            message: error.message || 'Invalid or expired refresh token',
+          });
+        }
+
+        // Handle other errors
+        return reply.status(401).send({
+          statusCode: 401,
+          error: 'Unauthorized',
+          message: error.message || 'Token refresh failed',
         });
       }
     }
