@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { AuthService } from './auth.service';
-import { prisma } from '@/config/prisma';
+import { prisma } from '../config/prisma.js';
 import type { RegisterRequest } from '@exam-generator/shared';
 
 // Mock Prisma
-vi.mock('@/config/prisma', () => ({
+vi.mock('../config/prisma.js', () => ({
   prisma: {
     user: {
       findUnique: vi.fn(),

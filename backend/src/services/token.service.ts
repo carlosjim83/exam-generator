@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { env } from '@/config/env';
+import { env } from '../config/env.js';
 
 export interface TokenPayload {
   userId: string;
@@ -67,31 +67,26 @@ export class TokenService {
   /**
    * Verify and decode an access token
    * @param token - JWT access token
-   * @returns Decoded token payload or null if invalid
+   * @returns Decoded token payload
+   * @throws Error if token is invalid, expired, or malformed
    */
-  verifyAccessToken(token: string): DecodedToken | null {
-    try {
-      const decoded = jwt.verify(token, env.JWT_SECRET) as DecodedToken;
-      return decoded;
-    } catch (error) {
-      // Token is invalid, expired, or malformed
-      return null;
-    }
+  verifyAccessToken(token: string): DecodedToken {
+    const decoded = jwt.verify(token, env.JWT_SECRET) as DecodedToken;
+    return decoded;
   }
 
   /**
    * Verify and decode a refresh token
    * @param token - JWT refresh token
-   * @returns Decoded refresh token payload or null if invalid
+   * @returns Decoded token payload
+   * @throws Error if token is invalid, expired, or malformed
    */
-  verifyRefreshToken(token: string): DecodedRefreshToken | null {
-    try {
-      const decoded = jwt.verify(token, env.JWT_REFRESH_SECRET) as DecodedRefreshToken;
-      return decoded;
-    } catch (error) {
-      // Token is invalid, expired, or malformed
-      return null;
-    }
+  verifyRefreshToken(token: string): DecodedRefreshToken {
+    const decoded = jwt.verify(
+      token,
+      env.JWT_REFRESH_SECRET
+    ) as DecodedRefreshToken;
+    return decoded;
   }
 
   /**

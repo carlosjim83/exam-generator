@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { TokenService } from './token.service';
 import jwt from 'jsonwebtoken';
+import { env } from '../config/env.js';
 
 // We'll test with real JWT, not mocked, for better integration testing
 describe('TokenService', () => {
@@ -121,20 +122,18 @@ describe('TokenService', () => {
       const decoded = tokenService.verifyAccessToken(token);
 
       expect(decoded).toBeTruthy();
-      expect(decoded?.userId).toBe(payload.userId);
-      expect(decoded?.email).toBe(payload.email);
-      expect(decoded?.role).toBe(payload.role);
+      expect(decoded.userId).toBe(payload.userId);
+      expect(decoded.email).toBe(payload.email);
+      expect(decoded.role).toBe(payload.role);
     });
 
-    it('should return null for invalid token', () => {
+    it('should throw error for invalid token', () => {
       const invalidToken = 'invalid.jwt.token';
       
-      const decoded = tokenService.verifyAccessToken(invalidToken);
-      
-      expect(decoded).toBeNull();
+      expect(() => tokenService.verifyAccessToken(invalidToken)).toThrow();
     });
 
-    it('should return null for expired token', () => {
+    it('should throw error for expired token', () => {
       // Create token that expires immediately
       const payload = {
         userId: 'user-123',
@@ -142,15 +141,13 @@ describe('TokenService', () => {
         role: 'TEACHER',
       };
 
-      const expiredToken = jwt.sign(payload, testSecret, { expiresIn: '0s' });
+      const expiredToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '0s' });
       
       // Wait a tiny bit to ensure expiration
-      const decoded = tokenService.verifyAccessToken(expiredToken);
-      
-      expect(decoded).toBeNull();
+      expect(() => tokenService.verifyAccessToken(expiredToken)).toThrow('jwt expired');
     });
 
-    it('should return null for token signed with wrong secret', () => {
+    it('should throw error for token signed with wrong secret', () => {
       const payload = {
         userId: 'user-123',
         email: 'test@example.com',
@@ -159,9 +156,7 @@ describe('TokenService', () => {
 
       const wrongSecretToken = jwt.sign(payload, 'wrong-secret', { expiresIn: '15m' });
       
-      const decoded = tokenService.verifyAccessToken(wrongSecretToken);
-      
-      expect(decoded).toBeNull();
+      expect(() => tokenService.verifyAccessToken(wrongSecretToken)).toThrow('invalid signature');
     });
   });
 
@@ -175,27 +170,23 @@ describe('TokenService', () => {
       const decoded = tokenService.verifyRefreshToken(token);
 
       expect(decoded).toBeTruthy();
-      expect(decoded?.userId).toBe(payload.userId);
+      expect(decoded.userId).toBe(payload.userId);
     });
 
-    it('should return null for invalid refresh token', () => {
+    it('should throw error for invalid refresh token', () => {
       const invalidToken = 'invalid.refresh.token';
       
-      const decoded = tokenService.verifyRefreshToken(invalidToken);
-      
-      expect(decoded).toBeNull();
+      expect(() => tokenService.verifyRefreshToken(invalidToken)).toThrow();
     });
 
-    it('should return null for refresh token signed with wrong secret', () => {
+    it('should throw error for refresh token signed with wrong secret', () => {
       const payload = {
         userId: 'user-789',
       };
 
       const wrongSecretToken = jwt.sign(payload, 'wrong-refresh-secret', { expiresIn: '7d' });
       
-      const decoded = tokenService.verifyRefreshToken(wrongSecretToken);
-      
-      expect(decoded).toBeNull();
+      expect(() => tokenService.verifyRefreshToken(wrongSecretToken)).toThrow('invalid signature');
     });
   });
 

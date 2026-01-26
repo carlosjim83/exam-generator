@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt';
-import { prisma } from '@/config/prisma';
+import { prisma } from '../config/prisma.js';
 import type { RegisterRequest, User } from '@exam-generator/shared';
 import { AuthProvider, UserRole } from '@prisma/client';
 

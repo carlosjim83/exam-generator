@@ -1,6 +1,8 @@
 import { PrismaClient, UserRole, AuthProvider, DocumentStatus, QuestionType, QuestionDifficulty } from '@prisma/client';
+import { AuthService } from '../src/services/auth.service.js';
 
 const prisma = new PrismaClient();
+const authService = new AuthService();
 
 async function main() {
   console.log('🌱 Starting database seed...\n');
@@ -23,10 +25,13 @@ async function main() {
   // ============================================================================
   console.log('👤 Creating users...');
   
+  // Hash password using AuthService (ensures consistency with app logic)
+  const hashedPassword = await authService.hashPassword('password123');
+  
   const teacherLocal = await prisma.user.create({
     data: {
       email: 'teacher@example.com',
-      password: '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', // "password123" hashed
+      password: hashedPassword,
       firstName: 'John',
       lastName: 'Teacher',
       role: UserRole.TEACHER,
@@ -49,7 +54,7 @@ async function main() {
   const studentLocal = await prisma.user.create({
     data: {
       email: 'student@example.com',
-      password: '$2b$10$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW', // "password123" hashed
+      password: hashedPassword,
       firstName: 'Jane',
       lastName: 'Student',
       role: UserRole.STUDENT,
