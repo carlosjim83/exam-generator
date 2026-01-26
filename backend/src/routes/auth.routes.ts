@@ -107,6 +107,12 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/auth/register',
     {
+      config: {
+        rateLimit: {
+          max: 3, // Only 3 registrations per timeWindow
+          timeWindow: '1 hour', // Per hour
+        },
+      },
       schema: {
         body: RegisterRequestSchema,
         response: {
@@ -185,6 +191,12 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/auth/login',
     {
+      config: {
+        rateLimit: {
+          max: 5, // Only 5 login attempts per timeWindow (anti-brute force)
+          timeWindow: '1 minute',
+        },
+      },
       schema: {
         body: LoginRequestSchema,
         response: {
@@ -251,6 +263,12 @@ export async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/auth/refresh',
     {
+      config: {
+        rateLimit: {
+          max: 10, // 10 refresh requests per minute (normal usage)
+          timeWindow: '1 minute',
+        },
+      },
       schema: {
         body: RefreshRequestSchema,
         response: {

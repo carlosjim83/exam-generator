@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import rateLimit from '@fastify/rate-limit';
 import { env, validateEnv } from './config/env.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
@@ -29,6 +30,42 @@ await fastify.register(cors, {
   origin: env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+});
+
+// Register rate limiting plugin (global defaults)
+await fastify.register(rateLimit, {
+  global: true, // Enable rate limiting globally
+  max: 100, // 100 requests per timeWindow (default for all routes)
+  timeWindow: '1 minute', // Time window for rate limiting
+  cache: 10000, // Cache size (number of unique IPs to track)
+  allowList: [], // Whitelist IPs (empty in production)
+  redis: undefined, // Use in-memory store (for development)
+  nameSpace: 'exam-generator:', // Redis key prefix (if using Redis)
+  continueExceeding: true, // Continue counting even after limit exceeded
+  skipOnError: true, // Skip rate limiting if Redis/cache fails (fail open)
+  ban: undefined, // Ban IPs after X violations (optional)
+  keyGenerator: (request) => {
+    // Use IP address as key
+    return request.ip;
+  },
+  errorResponseBuilder: (request, context) => {
+    return {
+      statusCode: 429,
+      error: 'Too Many Requests',
+      message: `Rate limit exceeded. Try again in ${Math.ceil(context.ttl / 1000)} seconds.`,
+      retryAfter: context.ttl, // Time until rate limit resets (in ms)
+    };
+  },
+  addHeadersOnExceeding: {
+    'x-ratelimit-limit': true,
+    'x-ratelimit-remaining': true,
+    'x-ratelimit-reset': true,
+  },
+  addHeaders: {
+    'x-ratelimit-limit': true,
+    'x-ratelimit-remaining': true,
+    'x-ratelimit-reset': true,
+  },
 });
 
 // Register Swagger for API documentation
