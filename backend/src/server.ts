@@ -3,9 +3,11 @@ import cors from '@fastify/cors';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import rateLimit from '@fastify/rate-limit';
+import multipart from '@fastify/multipart';
 import { env, validateEnv } from './config/env.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { oauthRoutes } from './routes/oauth.routes.js';
+import { documentRoutes } from './routes/document.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
 
 // Validate environment variables on startup
@@ -31,6 +33,14 @@ await fastify.register(cors, {
   origin: env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+});
+
+// Register multipart/form-data plugin (for file uploads)
+await fastify.register(multipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max file size
+    files: 1, // Max 1 file per request
+  },
 });
 
 // Register rate limiting plugin (global defaults)
@@ -149,6 +159,7 @@ await fastify.register(swaggerUi, {
 // Register routes
 await fastify.register(authRoutes);
 await fastify.register(oauthRoutes);
+await fastify.register(documentRoutes);
 await fastify.register(protectedRoutes);
 
 // Health check endpoint
