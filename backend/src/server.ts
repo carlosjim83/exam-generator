@@ -2,6 +2,7 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { env, validateEnv } from './config/env.js';
 import { authRoutes } from './routes/auth.routes.js';
+import { protectedRoutes } from './routes/protected.routes.js';
 
 // Validate environment variables on startup
 try {
@@ -30,6 +31,7 @@ await fastify.register(cors, {
 
 // Register routes
 await fastify.register(authRoutes);
+await fastify.register(protectedRoutes);
 
 // Health check endpoint
 fastify.get('/health', async () => {
