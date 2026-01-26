@@ -1,0 +1,26 @@
+{
+  "name": "exam-generator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered exam generator using RAG (Retrieval-Augmented Generation)",
+  "author": "Student from AI-powered development course",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "clean": "turbo clean && rm -rf node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^1.12.4",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  }
+}
