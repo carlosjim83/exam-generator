@@ -129,8 +129,12 @@ pnpm test
 
 ## 📚 Documentation
 
-- **ADRs**: See `docs/adr/` for all architectural decisions
+- **ADRs**: See `docs/adr/` for all architectural decisions (7 ADRs documented)
 - **Specs**: See `docs/specs/` for functional requirements
+  - `auth-flow.md` - Authentication and authorization
+  - `document-upload.md` - Document processing pipeline
+  - `exam-generation.md` - RAG-based exam generation (supports multiple documents)
+  - `ui-ux-flows.md` - Complete UI/UX specifications with wireframes
 - **Architecture**: See `docs/architecture.md` for system diagrams
 
 ---
