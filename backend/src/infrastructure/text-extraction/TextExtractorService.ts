@@ -1,6 +1,9 @@
-import pdfParse from 'pdf-parse';
+import * as pdfParseModule from 'pdf-parse';
 import mammoth from 'mammoth';
 import { ITextExtractor } from '../../domain/services/ITextExtractor.js';
+
+// pdf-parse uses CommonJS exports, handle both CJS and ESM
+const pdfParse = (pdfParseModule as any).default || pdfParseModule;
 
 /**
  * TextExtractorService
