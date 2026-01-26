@@ -5,6 +5,7 @@ import swaggerUi from '@fastify/swagger-ui';
 import rateLimit from '@fastify/rate-limit';
 import { env, validateEnv } from './config/env.js';
 import { authRoutes } from './routes/auth.routes.js';
+import { oauthRoutes } from './routes/oauth.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
 
 // Validate environment variables on startup
@@ -147,6 +148,7 @@ await fastify.register(swaggerUi, {
 
 // Register routes
 await fastify.register(authRoutes);
+await fastify.register(oauthRoutes);
 await fastify.register(protectedRoutes);
 
 // Health check endpoint
