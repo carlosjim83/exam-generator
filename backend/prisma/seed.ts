@@ -1,8 +1,9 @@
 import { PrismaClient, UserRole, AuthProvider, DocumentStatus, QuestionType, QuestionDifficulty } from '@prisma/client';
-import { AuthService } from '../src/services/auth.service.js';
+import { BcryptPasswordHasher } from '../src/infrastructure/security/BcryptPasswordHasher.js';
+import { Password } from '../src/domain/value-objects/Password.js';
 
 const prisma = new PrismaClient();
-const authService = new AuthService();
+const passwordHasher = new BcryptPasswordHasher();
 
 async function main() {
   console.log('🌱 Starting database seed...\n');
@@ -25,8 +26,9 @@ async function main() {
   // ============================================================================
   console.log('👤 Creating users...');
   
-  // Hash password using AuthService (ensures consistency with app logic)
-  const hashedPassword = await authService.hashPassword('password123');
+  // Hash password using BcryptPasswordHasher (ensures consistency with app logic)
+  const password = Password.create('password123');
+  const hashedPassword = await passwordHasher.hash(password);
   
   const teacherLocal = await prisma.user.create({
     data: {
