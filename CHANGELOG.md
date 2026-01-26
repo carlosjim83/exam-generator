@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Production build support (TypeScript compilation)
 - Graceful shutdown handling (SIGINT/SIGTERM)
 - Pino logger with pretty printing for development
+- Vitest testing framework with v8 coverage provider
+- Test scripts (test, test:ui, test:coverage, test:watch)
+- Vitest configuration with 80% coverage thresholds
+- Path aliases for imports (`@/` for src, shared types)
+- Backend README with comprehensive documentation
 
 ---
 
