@@ -2,10 +2,11 @@ import { FastifyInstance } from 'fastify';
 import oauthPlugin from '@fastify/oauth2';
 import { env } from '../config/env.js';
 import { prisma } from '../config/prisma.js';
-import { TokenService } from '../services/token.service.js';
+import { container } from '../config/container.js';
+import { UserId } from '../domain/value-objects/UserId.js';
+import { Email } from '../domain/value-objects/Email.js';
+import { UserRole } from '../domain/entities/User.js';
 import { AuthProvider } from '@prisma/client';
-
-const tokenService = new TokenService();
 
 export async function oauthRoutes(fastify: FastifyInstance) {
   // Register Google OAuth2 plugin
@@ -105,12 +106,14 @@ export async function oauthRoutes(fastify: FastifyInstance) {
         fastify.log.info(`Created new Google user: ${user.email}`);
       }
 
-      // Generate JWT tokens
-      const tokens = tokenService.generateTokenPair({
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-      });
+      // Generate JWT tokens using container
+      const userId = UserId.create(user.id);
+      const email = Email.create(user.email);
+      const tokens = container.tokenService.generateTokenPair(
+        userId,
+        email,
+        user.role as UserRole
+      );
 
       // In production, you'd want to:
       // 1. Redirect to frontend with tokens in URL params or cookies

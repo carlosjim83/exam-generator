@@ -1,8 +1,6 @@
 import { FastifyInstance } from 'fastify';
-import { DocumentService } from '../services/document.service.js';
+import { container } from '../config/container.js';
 import { authenticateUser } from '../middleware/auth.middleware.js';
-
-const documentService = new DocumentService();
 
 export async function documentRoutes(fastify: FastifyInstance) {
   // POST /documents/upload - Upload a document (PDF or DOCX)
@@ -73,65 +71,54 @@ export async function documentRoutes(fastify: FastifyInstance) {
         // Convert file stream to buffer
         const buffer = await data.toBuffer();
 
-        // Validate file
-        const validation = documentService.validateFile({
+        // Get title from fields (or use filename)
+        const fields = data.fields;
+        const title = (fields.title as any)?.value || undefined;
+
+        // Execute UploadDocumentUseCase
+        const result = await container.uploadDocumentUseCase.execute({
+          userId: (request as any).user.userId,
+          title,
           filename: data.filename,
           mimetype: data.mimetype,
-          size: buffer.length,
+          buffer,
         });
 
-        if (!validation.valid) {
+        return reply.status(201).send({
+          document: {
+            id: result.document.id,
+            title: result.document.title,
+            filename: result.document.filename,
+            fileSize: result.document.fileSize,
+            mimeType: result.document.mimeType,
+            status: result.document.status,
+            uploadedAt: result.document.uploadedAt.toISOString(),
+          },
+          message: result.message,
+        });
+      } catch (error: any) {
+        fastify.log.error('Document upload error:', error);
+
+        // Handle validation errors
+        if (error.message.includes('Invalid file') || 
+            error.message.includes('File too large') ||
+            error.message.includes('File is empty')) {
           return reply.status(400).send({
             statusCode: 400,
             error: 'Bad Request',
-            message: validation.error || 'Invalid file',
+            message: error.message,
           });
         }
 
-        // Get title from fields (or use filename)
-        const fields = data.fields;
-        const title = (fields.title as any)?.value || data.filename.replace(/\.[^/.]+$/, '');
-
-        // Upload to Azure Blob Storage
-        let blobUrl: string;
-        try {
-          blobUrl = await documentService.uploadToBlob(data.filename, buffer);
-        } catch (error: any) {
-          fastify.log.error('Azure upload error:', error);
+        // Handle storage errors
+        if (error.message.includes('storage') || 
+            error.message.includes('Azure')) {
           return reply.status(500).send({
             statusCode: 500,
             error: 'Internal Server Error',
             message: 'Failed to upload file to storage',
           });
         }
-
-        // Create document record in database
-        const document = await documentService.createDocument({
-          userId: request.user!.userId,
-          title,
-          filename: data.filename,
-          fileSize: buffer.length,
-          mimeType: data.mimetype,
-          blobUrl,
-        });
-
-        // TODO: Trigger async processing (text extraction, chunking, embeddings)
-        // For now, just return the document record
-
-        return reply.status(201).send({
-          document: {
-            id: document.id,
-            title: document.title,
-            filename: document.filename,
-            fileSize: document.fileSize,
-            mimeType: document.mimeType,
-            status: document.status,
-            uploadedAt: document.uploadedAt.toISOString(),
-          },
-          message: 'Document uploaded successfully. Processing will start shortly.',
-        });
-      } catch (error: any) {
-        fastify.log.error('Document upload error:', error);
 
         return reply.status(500).send({
           statusCode: 500,
@@ -177,18 +164,31 @@ export async function documentRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const documents = await documentService.getDocumentsByUserId(request.user!.userId);
+      try {
+        // Execute ListDocumentsUseCase
+        const result = await container.listDocumentsUseCase.execute({
+          userId: (request as any).user.userId,
+        });
 
-      return reply.status(200).send({
-        documents: documents.map((doc) => ({
-          id: doc.id,
-          title: doc.title,
-          filename: doc.filename,
-          fileSize: doc.fileSize,
-          status: doc.status,
-          uploadedAt: doc.uploadedAt.toISOString(),
-        })),
-      });
+        return reply.status(200).send({
+          documents: result.documents.map((doc) => ({
+            id: doc.id,
+            title: doc.title,
+            filename: doc.filename,
+            fileSize: doc.fileSize,
+            status: doc.status,
+            uploadedAt: doc.uploadedAt.toISOString(),
+          })),
+        });
+      } catch (error: any) {
+        fastify.log.error('List documents error:', error);
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to list documents',
+        });
+      }
     }
   );
 
@@ -244,41 +244,184 @@ export async function documentRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { id } = request.params as { id: string };
+      try {
+        const { id } = request.params as { id: string };
 
-      const document = await documentService.getDocumentById(id);
+        // Execute GetDocumentUseCase
+        const result = await container.getDocumentUseCase.execute({
+          documentId: id,
+          userId: (request as any).user.userId,
+        });
 
-      if (!document) {
-        return reply.status(404).send({
-          statusCode: 404,
-          error: 'Not Found',
-          message: 'Document not found',
+        return reply.status(200).send({
+          document: {
+            id: result.document.id,
+            title: result.document.title,
+            filename: result.document.filename,
+            fileSize: result.document.fileSize,
+            mimeType: result.document.mimeType,
+            status: result.document.status,
+            pageCount: result.document.pageCount,
+            wordCount: result.document.wordCount,
+            uploadedAt: result.document.uploadedAt.toISOString(),
+            processedAt: result.document.processedAt?.toISOString() || null,
+          },
+        });
+      } catch (error: any) {
+        fastify.log.error('Get document error:', error);
+
+        // Handle not found
+        if (error.message === 'Document not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Document not found',
+          });
+        }
+
+        // Handle access denied
+        if (error.message === 'Access denied') {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: 'Access denied',
+          });
+        }
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to get document',
         });
       }
+    }
+  );
 
-      // Check if document belongs to user
-      if (document.userId !== request.user!.userId) {
-        return reply.status(403).send({
-          statusCode: 403,
-          error: 'Forbidden',
-          message: 'Access denied',
-        });
-      }
-
-      return reply.status(200).send({
-        document: {
-          id: document.id,
-          title: document.title,
-          filename: document.filename,
-          fileSize: document.fileSize,
-          mimeType: document.mimeType,
-          status: document.status,
-          pageCount: document.pageCount,
-          wordCount: document.wordCount,
-          uploadedAt: document.uploadedAt.toISOString(),
-          processedAt: document.processedAt?.toISOString() || null,
+  // POST /documents/:id/process - Process a document (extract text, calculate metadata)
+  fastify.post(
+    '/documents/:id/process',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Process a document',
+        description: 'Extract text from document and calculate metadata (word count, page count). Updates status to COMPLETED or FAILED.',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Document UUID' },
+          },
+          required: ['id'],
         },
-      });
+        response: {
+          200: {
+            description: 'Document processed successfully',
+            type: 'object',
+            properties: {
+              document: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  title: { type: 'string' },
+                  status: { type: 'string' },
+                  pageCount: { type: 'number', nullable: true },
+                  wordCount: { type: 'number', nullable: true },
+                  processedAt: { type: 'string', nullable: true },
+                },
+              },
+              processingTimeMs: { type: 'number' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Document not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Access denied',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Processing failed',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+
+        // Execute ProcessDocumentUseCase
+        const result = await container.processDocumentUseCase.execute({
+          documentId: id,
+          userId: (request as any).user.userId,
+        });
+
+        return reply.status(200).send({
+          document: {
+            id: result.document.id,
+            title: result.document.title,
+            status: result.document.status,
+            pageCount: result.document.pageCount,
+            wordCount: result.document.wordCount,
+            processedAt: result.document.processedAt?.toISOString() || null,
+          },
+          processingTimeMs: result.processingTimeMs,
+          message: 'Document processed successfully',
+        });
+      } catch (error: any) {
+        fastify.log.error('Process document error:', error);
+
+        // Handle not found
+        if (error.message === 'Document not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Document not found',
+          });
+        }
+
+        // Handle access denied
+        if (error.message.includes('Unauthorized')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: 'Access denied: Document does not belong to user',
+          });
+        }
+
+        // Handle processing errors
+        if (error.message.includes('processing failed')) {
+          return reply.status(500).send({
+            statusCode: 500,
+            error: 'Internal Server Error',
+            message: error.message,
+          });
+        }
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to process document',
+        });
+      }
     }
   );
 }

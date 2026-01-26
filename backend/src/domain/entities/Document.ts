@@ -1,0 +1,172 @@
+import { DocumentId } from '../value-objects/DocumentId.js';
+import { UserId } from '../value-objects/UserId.js';
+
+/**
+ * DocumentStatus Enum
+ * Represents the processing status of a document
+ */
+export enum DocumentStatus {
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
+  FAILED = 'FAILED',
+}
+
+/**
+ * DocumentProps
+ * Properties for Document entity
+ */
+export interface DocumentProps {
+  id: DocumentId;
+  userId: UserId;
+  title: string;
+  filename: string;
+  fileSize: number;
+  mimeType: string;
+  blobUrl: string;
+  status: DocumentStatus;
+  pageCount: number | null;
+  wordCount: number | null;
+  errorMessage: string | null;
+  uploadedAt: Date;
+  processedAt: Date | null;
+}
+
+/**
+ * Document Entity
+ * Represents an uploaded document in the system
+ */
+export class Document {
+  private constructor(private props: DocumentProps) {}
+
+  static create(props: DocumentProps): Document {
+    // Validation rules
+    if (!props.title || props.title.trim().length === 0) {
+      throw new Error('Document title is required');
+    }
+
+    if (!props.filename || props.filename.trim().length === 0) {
+      throw new Error('Document filename is required');
+    }
+
+    if (props.fileSize <= 0) {
+      throw new Error('Document file size must be greater than zero');
+    }
+
+    if (!props.blobUrl || props.blobUrl.trim().length === 0) {
+      throw new Error('Document blob URL is required');
+    }
+
+    // Validate mime type
+    const allowedMimeTypes = [
+      'application/pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ];
+    if (!allowedMimeTypes.includes(props.mimeType)) {
+      throw new Error('Invalid document mime type. Only PDF and DOCX are allowed');
+    }
+
+    return new Document(props);
+  }
+
+  // Getters
+  get id(): DocumentId {
+    return this.props.id;
+  }
+
+  get userId(): UserId {
+    return this.props.userId;
+  }
+
+  get title(): string {
+    return this.props.title;
+  }
+
+  get filename(): string {
+    return this.props.filename;
+  }
+
+  get fileSize(): number {
+    return this.props.fileSize;
+  }
+
+  get mimeType(): string {
+    return this.props.mimeType;
+  }
+
+  get blobUrl(): string {
+    return this.props.blobUrl;
+  }
+
+  get status(): DocumentStatus {
+    return this.props.status;
+  }
+
+  get pageCount(): number | null {
+    return this.props.pageCount;
+  }
+
+  get wordCount(): number | null {
+    return this.props.wordCount;
+  }
+
+  get errorMessage(): string | null {
+    return this.props.errorMessage;
+  }
+
+  get uploadedAt(): Date {
+    return this.props.uploadedAt;
+  }
+
+  get processedAt(): Date | null {
+    return this.props.processedAt;
+  }
+
+  // Business logic methods
+  isPending(): boolean {
+    return this.props.status === DocumentStatus.PENDING;
+  }
+
+  isProcessing(): boolean {
+    return this.props.status === DocumentStatus.PROCESSING;
+  }
+
+  isCompleted(): boolean {
+    return this.props.status === DocumentStatus.COMPLETED;
+  }
+
+  isFailed(): boolean {
+    return this.props.status === DocumentStatus.FAILED;
+  }
+
+  isPDF(): boolean {
+    return this.props.mimeType === 'application/pdf';
+  }
+
+  isDOCX(): boolean {
+    return this.props.mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  }
+
+  belongsToUser(userId: UserId): boolean {
+    return this.props.userId.equals(userId);
+  }
+
+  // Convert to plain object (for serialization)
+  toObject() {
+    return {
+      id: this.props.id.value,
+      userId: this.props.userId.value,
+      title: this.props.title,
+      filename: this.props.filename,
+      fileSize: this.props.fileSize,
+      mimeType: this.props.mimeType,
+      blobUrl: this.props.blobUrl,
+      status: this.props.status,
+      pageCount: this.props.pageCount,
+      wordCount: this.props.wordCount,
+      errorMessage: this.props.errorMessage,
+      uploadedAt: this.props.uploadedAt,
+      processedAt: this.props.processedAt,
+    };
+  }
+}

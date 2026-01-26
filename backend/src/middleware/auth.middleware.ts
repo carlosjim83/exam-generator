@@ -1,7 +1,5 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
-import { TokenService } from '../services/token.service.js';
-
-const tokenService = new TokenService();
+import { container } from '../config/container.js';
 
 /**
  * Middleware to authenticate users via JWT
@@ -35,8 +33,8 @@ export async function authenticateUser(
     // Extract token
     const token = authHeader.substring(7); // Remove "Bearer " prefix
 
-    // Verify token
-    const payload = tokenService.verifyAccessToken(token);
+    // Verify token using container's token service
+    const payload = container.tokenService.verifyAccessToken(token);
 
     // Attach user info to request
     (request as any).user = payload;

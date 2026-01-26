@@ -1,0 +1,50 @@
+import { User, UserRole, AuthProvider } from '../entities/User.js';
+import { UserId } from '../value-objects/UserId.js';
+import { Email } from '../value-objects/Email.js';
+
+export interface CreateUserDTO {
+  email: Email;
+  passwordHash: string | null;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  provider: AuthProvider;
+  providerId?: string | null;
+}
+
+/**
+ * IUserRepository Interface (Port)
+ * Defines operations for User persistence
+ * Implementation is in infrastructure layer
+ */
+export interface IUserRepository {
+  /**
+   * Find a user by ID
+   */
+  findById(id: UserId): Promise<User | null>;
+
+  /**
+   * Find a user by email
+   */
+  findByEmail(email: Email): Promise<User | null>;
+
+  /**
+   * Create a new user
+   */
+  create(data: CreateUserDTO): Promise<User>;
+
+  /**
+   * Update an existing user
+   */
+  update(user: User): Promise<User>;
+
+  /**
+   * Delete a user
+   */
+  delete(id: UserId): Promise<void>;
+
+  /**
+   * Check if an email already exists
+   */
+  existsByEmail(email: Email): Promise<boolean>;
+}

@@ -1,11 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
-import { AuthService } from '../services/auth.service.js';
-import { TokenService } from '../services/token.service.js';
-import { prisma } from '../config/prisma.js';
-
-const authService = new AuthService();
-const tokenService = new TokenService();
+import { container } from '../config/container.js';
 
 // Request/Response Schemas
 const RegisterRequestSchema = Type.Object(
@@ -135,8 +130,8 @@ export async function authRoutes(fastify: FastifyInstance) {
           role: 'TEACHER' | 'STUDENT';
         };
 
-        // Register user
-        const user = await authService.register({
+        // Execute RegisterUserUseCase
+        const result = await container.registerUserUseCase.execute({
           email,
           password,
           firstName,
@@ -144,27 +139,20 @@ export async function authRoutes(fastify: FastifyInstance) {
           role,
         });
 
-        // Generate tokens
-        const tokens = tokenService.generateTokenPair({
-          userId: user.id,
-          email: user.email,
-          role: user.role,
-        });
-
         // Return user + tokens
         return reply.status(201).send({
           user: {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-            provider: user.provider,
-            createdAt: user.createdAt.toISOString(),
-            updatedAt: user.updatedAt.toISOString(),
+            id: result.user.id,
+            email: result.user.email,
+            firstName: result.user.firstName,
+            lastName: result.user.lastName,
+            role: result.user.role,
+            provider: result.user.provider,
+            createdAt: result.user.createdAt.toISOString(),
+            updatedAt: result.user.updatedAt.toISOString(),
           },
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: result.tokens.accessToken,
+          refreshToken: result.tokens.refreshToken,
         });
       } catch (error: any) {
         // Handle email already exists
@@ -215,40 +203,37 @@ export async function authRoutes(fastify: FastifyInstance) {
           password: string;
         };
 
-        // Validate credentials
-        const user = await authService.validateCredentials(email, password);
-
-        if (!user) {
-          return reply.status(401).send({
-            statusCode: 401,
-            error: 'Unauthorized',
-            message: 'Invalid email or password',
-          });
-        }
-
-        // Generate tokens
-        const tokens = tokenService.generateTokenPair({
-          userId: user.id,
-          email: user.email,
-          role: user.role,
+        // Execute LoginUserUseCase
+        const result = await container.loginUserUseCase.execute({
+          email,
+          password,
         });
 
         // Return user + tokens
         return reply.status(200).send({
           user: {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-            provider: user.provider,
-            createdAt: user.createdAt.toISOString(),
-            updatedAt: user.updatedAt.toISOString(),
+            id: result.user.id,
+            email: result.user.email,
+            firstName: result.user.firstName,
+            lastName: result.user.lastName,
+            role: result.user.role,
+            provider: result.user.provider,
+            createdAt: result.user.createdAt.toISOString(),
+            updatedAt: result.user.updatedAt.toISOString(),
           },
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: result.tokens.accessToken,
+          refreshToken: result.tokens.refreshToken,
         });
       } catch (error: any) {
+        // Handle invalid credentials
+        if (error.message === 'Invalid credentials' || error.message.includes('OAuth authentication')) {
+          return reply.status(401).send({
+            statusCode: 401,
+            error: 'Unauthorized',
+            message: error.message.includes('OAuth') ? error.message : 'Invalid email or password',
+          });
+        }
+
         fastify.log.error(error);
         return reply.status(400).send({
           statusCode: 400,
@@ -287,12 +272,15 @@ export async function authRoutes(fastify: FastifyInstance) {
           refreshToken: string;
         };
 
-        // Verify refresh token
-        const decoded = tokenService.verifyRefreshToken(refreshToken);
+        // Execute RefreshTokenUseCase
+        const result = await container.refreshTokenUseCase.execute({
+          refreshToken,
+        });
 
-        // Find user by ID from token
-        const user = await prisma.user.findUnique({
-          where: { id: decoded.userId },
+        // Get user from repository to return full user data
+        const userId = container.tokenService.verifyRefreshToken(refreshToken).userId;
+        const user = await container.prisma.user.findUnique({
+          where: { id: userId },
         });
 
         if (!user) {
@@ -302,13 +290,6 @@ export async function authRoutes(fastify: FastifyInstance) {
             message: 'User not found',
           });
         }
-
-        // Generate new token pair
-        const tokens = tokenService.generateTokenPair({
-          userId: user.id,
-          email: user.email,
-          role: user.role,
-        });
 
         // Return user + new tokens
         return reply.status(200).send({
@@ -322,14 +303,14 @@ export async function authRoutes(fastify: FastifyInstance) {
             createdAt: user.createdAt.toISOString(),
             updatedAt: user.updatedAt.toISOString(),
           },
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
+          accessToken: result.tokens.accessToken,
+          refreshToken: result.tokens.refreshToken,
         });
       } catch (error: any) {
         fastify.log.error(error);
         
         // Handle JWT errors specifically
-        if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        if (error.message.includes('token') || error.message.includes('Token')) {
           return reply.status(401).send({
             statusCode: 401,
             error: 'Unauthorized',

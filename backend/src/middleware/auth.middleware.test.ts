@@ -1,17 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { authenticateUser, requireRoles } from './auth.middleware.js';
-import { TokenService } from '../services/token.service.js';
 import { env } from '../config/env.js';
 import jwt from 'jsonwebtoken';
 
 describe('Auth Middleware', () => {
   let app: FastifyInstance;
-  let tokenService: TokenService;
+
+  // Helper to generate tokens
+  const generateAccessToken = (payload: { userId: string; email: string; role: string }) => {
+    return jwt.sign(payload, env.JWT_SECRET, { expiresIn: '15m' });
+  };
 
   beforeEach(async () => {
     app = Fastify();
-    tokenService = new TokenService();
 
     // Register a test route that uses the middleware
     app.get(
@@ -46,7 +48,7 @@ describe('Auth Middleware', () => {
   describe('authenticateUser', () => {
     it('should attach user to request when token is valid', async () => {
       // Arrange
-      const token = tokenService.generateAccessToken({
+      const token = generateAccessToken({
         userId: 'user-123',
         email: 'test@example.com',
         role: 'TEACHER',
@@ -90,7 +92,7 @@ describe('Auth Middleware', () => {
 
     it('should return 401 when token format is invalid (no Bearer prefix)', async () => {
       // Arrange
-      const token = tokenService.generateAccessToken({
+      const token = generateAccessToken({
         userId: 'user-123',
         email: 'test@example.com',
         role: 'TEACHER',
@@ -138,7 +140,7 @@ describe('Auth Middleware', () => {
       expect(response.statusCode).toBe(401);
       const body = JSON.parse(response.body);
       expect(body.error).toBe('Unauthorized');
-      expect(body.message).toContain('jwt expired');
+      expect(body.message).toContain('expired');
     });
 
     it('should return 401 when token signature is invalid', async () => {
@@ -182,7 +184,7 @@ describe('Auth Middleware', () => {
   describe('requireRoles', () => {
     it('should allow access when user has required role (TEACHER)', async () => {
       // Arrange
-      const token = tokenService.generateAccessToken({
+      const token = generateAccessToken({
         userId: 'user-123',
         email: 'teacher@example.com',
         role: 'TEACHER',
@@ -205,7 +207,7 @@ describe('Auth Middleware', () => {
 
     it('should return 403 when user lacks required role (STUDENT trying TEACHER route)', async () => {
       // Arrange
-      const token = tokenService.generateAccessToken({
+      const token = generateAccessToken({
         userId: 'user-456',
         email: 'student@example.com',
         role: 'STUDENT',
@@ -229,7 +231,7 @@ describe('Auth Middleware', () => {
 
     it('should allow access when user has one of multiple allowed roles (TEACHER)', async () => {
       // Arrange
-      const token = tokenService.generateAccessToken({
+      const token = generateAccessToken({
         userId: 'user-123',
         email: 'teacher@example.com',
         role: 'TEACHER',
@@ -252,7 +254,7 @@ describe('Auth Middleware', () => {
 
     it('should allow access when user has one of multiple allowed roles (STUDENT)', async () => {
       // Arrange
-      const token = tokenService.generateAccessToken({
+      const token = generateAccessToken({
         userId: 'user-456',
         email: 'student@example.com',
         role: 'STUDENT',
