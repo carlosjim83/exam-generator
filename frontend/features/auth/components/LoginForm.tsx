@@ -73,7 +73,10 @@ export function LoginForm() {
                   type="email"
                   placeholder="professor@university.edu"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError(''); // Clear error when typing
+                  }}
                   required
                   disabled={isLoading}
                 />
@@ -89,7 +92,10 @@ export function LoginForm() {
                   type="password"
                   placeholder="Enter your password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError(''); // Clear error when typing
+                  }}
                   required
                   disabled={isLoading}
                 />

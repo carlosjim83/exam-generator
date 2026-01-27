@@ -1,10 +1,10 @@
 'use client';
 
-import Link from "next/link";
-import { Search, Bell, Sparkles, LogOut, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useAuth } from "@/features/auth/context/AuthContext";
+import Link from 'next/link';
+import { Search, Bell, Sparkles, LogOut, User } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/features/auth/context/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 export function TopNavigation() {
   const { user, logout } = useAuth();
@@ -38,11 +38,7 @@ export function TopNavigation() {
         <div className="flex-1 max-w-md mr-8">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search resources..."
-              className="pl-9 bg-muted/50"
-            />
+            <Input type="search" placeholder="Search resources..." className="pl-9 bg-muted/50" />
           </div>
         </div>
 
@@ -80,7 +76,7 @@ export function TopNavigation() {
             <Bell className="h-5 w-5" />
             <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-destructive" />
           </Button>
-          
+
           {/* User Dropdown Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -93,7 +89,9 @@ export function TopNavigation() {
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">{user ? `${user.firstName} ${user.lastName}` : 'User'}</p>
+                  <p className="text-sm font-medium">
+                    {user ? `${user.firstName} ${user.lastName}` : 'User'}
+                  </p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
               </DropdownMenuLabel>
@@ -105,7 +103,11 @@ export function TopNavigation() {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout} className="cursor-pointer text-destructive">
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer text-destructive"
+                data-testid="logout-button"
+              >
                 <LogOut className="mr-2 h-4 w-4" />
                 Sign out
               </DropdownMenuItem>

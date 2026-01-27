@@ -56,6 +56,7 @@ export const setupMockBackend = async (page: Page) => {
       const user = {
         id: userId,
         email,
+        password, // Store password for login validation in mock
         firstName,
         lastName,
         role: role || 'TEACHER',
@@ -81,11 +82,23 @@ export const setupMockBackend = async (page: Page) => {
     // POST /auth/login
     if (method === 'POST' && url.pathname === '/auth/login') {
       const body = request.postDataJSON();
-      const { email } = body;
+      const { email, password } = body;
 
       const user = users.get(email);
 
       if (!user) {
+        return route.fulfill({
+          status: 401,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            statusCode: 401,
+            message: 'Invalid credentials',
+          }),
+        });
+      }
+
+      // Validate password (in mock, we store the password during registration)
+      if (user.password && user.password !== password) {
         return route.fulfill({
           status: 401,
           contentType: 'application/json',
@@ -153,13 +166,21 @@ export const setupMockBackend = async (page: Page) => {
       users.set(userId, user);
       const tokenPair = generateTokens(userId);
 
-      // Redirect to callback
-      const callbackUrl = `http://localhost:3000/auth/callback?access_token=${tokenPair.accessToken}&refresh_token=${tokenPair.refreshToken}`;
+      // Redirect to callback with all user data (camelCase to match callback page expectations)
+      const callbackUrl = new URL('http://localhost:3000/auth/callback');
+      callbackUrl.searchParams.set('accessToken', tokenPair.accessToken);
+      callbackUrl.searchParams.set('refreshToken', tokenPair.refreshToken);
+      callbackUrl.searchParams.set('userId', user.id);
+      callbackUrl.searchParams.set('email', user.email);
+      callbackUrl.searchParams.set('firstName', user.firstName);
+      callbackUrl.searchParams.set('lastName', user.lastName);
+      callbackUrl.searchParams.set('role', user.role);
+      callbackUrl.searchParams.set('provider', user.provider);
 
       return route.fulfill({
         status: 302,
         headers: {
-          Location: callbackUrl,
+          Location: callbackUrl.toString(),
         },
       });
     }

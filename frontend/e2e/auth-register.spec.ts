@@ -104,8 +104,18 @@ test.describe('Authentication - Register Flow', () => {
     const currentUrl = page.url();
 
     if (currentUrl.includes('/dashboard')) {
-      // First registration succeeded, now logout and try again
-      // For now, just navigate to register again
+      // First registration succeeded, logout before trying again
+      // Open user menu dropdown
+      const userMenuButton = page
+        .getByRole('button')
+        .filter({ has: page.locator('div.rounded-full.bg-gradient-to-br') });
+      await userMenuButton.click();
+
+      // Click logout
+      await page.getByTestId('logout-button').click();
+      await page.waitForURL('/login');
+
+      // Now go to register page
       await page.goto('/register');
     }
 

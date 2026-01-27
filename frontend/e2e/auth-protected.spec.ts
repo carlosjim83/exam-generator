@@ -98,10 +98,14 @@ test.describe('Protected Routes & Logout', () => {
       await page.getByRole('button', { name: 'Create Account' }).click();
       await page.waitForURL('/dashboard');
 
-      // Find and click logout button
-      // This assumes there's a logout button in the dashboard
-      // Adjust the selector based on your actual UI
-      const logoutButton = page.getByRole('button', { name: /logout|sign out/i });
+      // Find and click user menu to open dropdown
+      const userMenuButton = page
+        .getByRole('button')
+        .filter({ has: page.locator('div.rounded-full.bg-gradient-to-br') });
+      await userMenuButton.click();
+
+      // Click logout in dropdown
+      const logoutButton = page.getByTestId('logout-button');
       await logoutButton.click();
 
       // Should redirect to login page
@@ -129,8 +133,13 @@ test.describe('Protected Routes & Logout', () => {
       await page.getByRole('button', { name: 'Create Account' }).click();
       await page.waitForURL('/dashboard');
 
-      // Logout
-      const logoutButton = page.getByRole('button', { name: /logout|sign out/i });
+      // Logout - open user menu dropdown first
+      const userMenuButton = page
+        .getByRole('button')
+        .filter({ has: page.locator('div.rounded-full.bg-gradient-to-br') });
+      await userMenuButton.click();
+
+      const logoutButton = page.getByTestId('logout-button');
       await logoutButton.click();
       await expect(page).toHaveURL('/login');
 
@@ -158,8 +167,13 @@ test.describe('Protected Routes & Logout', () => {
       // Verify user is authenticated
       await expect(page.getByText(/Clear/i)).toBeVisible();
 
-      // Logout
-      await page.getByRole('button', { name: /logout|sign out/i }).click();
+      // Logout - open user menu dropdown first
+      const userMenuButton = page
+        .getByRole('button')
+        .filter({ has: page.locator('div.rounded-full.bg-gradient-to-br') });
+      await userMenuButton.click();
+
+      await page.getByTestId('logout-button').click();
       await expect(page).toHaveURL('/login');
 
       // Go to login page
@@ -233,13 +247,17 @@ test.describe('Protected Routes & Logout', () => {
       await page.getByRole('button', { name: 'Create Account' }).click();
       await page.waitForURL('/dashboard');
 
-      // Open new tab
+      // Open new tab and setup mock backend for it
       const newTab = await context.newPage();
+      await setupMockBackend(newTab);
       await newTab.goto('/dashboard');
 
-      // Should be authenticated in new tab
+      // Should be authenticated in new tab (localStorage is shared)
+      // The new tab should stay on dashboard, not redirect to login
       await expect(newTab).toHaveURL('/dashboard');
-      await expect(newTab.getByText(/NewTab/i)).toBeVisible();
+
+      // Verify dashboard content is visible (not login page)
+      await expect(newTab.getByText(/ExamGen SaaS/i)).toBeVisible();
 
       await newTab.close();
     });

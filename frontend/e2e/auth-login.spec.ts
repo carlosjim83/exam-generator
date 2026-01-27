@@ -39,7 +39,7 @@ test.describe('Authentication - Login Flow', () => {
   test('should login successfully with correct credentials', async ({ page }) => {
     await page.getByLabel('Email').fill(testUser.email);
     await page.getByLabel('Password').fill(testUser.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     // Should redirect to dashboard
     await expect(page).toHaveURL('/dashboard');
@@ -49,7 +49,7 @@ test.describe('Authentication - Login Flow', () => {
   test('should show error with incorrect password', async ({ page }) => {
     await page.getByLabel('Email').fill(testUser.email);
     await page.getByLabel('Password').fill('WrongPassword123!');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     // Should show error message
     await expect(page.getByText(/invalid credentials|incorrect password/i)).toBeVisible();
@@ -61,7 +61,7 @@ test.describe('Authentication - Login Flow', () => {
   test('should show error with non-existent email', async ({ page }) => {
     await page.getByLabel('Email').fill('nonexistent@example.com');
     await page.getByLabel('Password').fill('Password123!');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     // Should show error message
     await expect(page.getByText(/invalid credentials|user not found/i)).toBeVisible();
@@ -71,13 +71,13 @@ test.describe('Authentication - Login Flow', () => {
   });
 
   test('should navigate to register page when clicking "Sign up"', async ({ page }) => {
-    await page.getByRole('link', { name: /sign up|create account/i }).click();
+    await page.getByRole('link', { name: 'Create one' }).click();
     await expect(page).toHaveURL('/register');
   });
 
   test('should require email and password fields', async ({ page }) => {
     // Try to submit without filling form
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     // HTML5 validation should prevent submission
     const emailInput = page.getByLabel('Email');
@@ -91,7 +91,7 @@ test.describe('Authentication - Login Flow', () => {
     await page.getByLabel('Email').fill(testUser.email);
     await page.getByLabel('Password').fill(testUser.password);
 
-    const submitButton = page.getByRole('button', { name: /sign in/i });
+    const submitButton = page.getByRole('button', { name: 'Sign in', exact: true });
     await submitButton.click();
 
     // Should redirect successfully
@@ -102,7 +102,7 @@ test.describe('Authentication - Login Flow', () => {
     // Login
     await page.getByLabel('Email').fill(testUser.email);
     await page.getByLabel('Password').fill(testUser.password);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.waitForURL('/dashboard');
 
     // Reload page
@@ -117,7 +117,7 @@ test.describe('Authentication - Login Flow', () => {
     // First, trigger an error
     await page.getByLabel('Email').fill('wrong@example.com');
     await page.getByLabel('Password').fill('wrongpassword');
-    await page.getByRole('button', { name: /sign in/i }).click();
+    await page.getByRole('button', { name: 'Sign in', exact: true }).click();
 
     // Wait for error to appear
     await expect(page.getByText(/invalid credentials/i)).toBeVisible();
