@@ -45,7 +45,7 @@ export async function oauthRoutes(fastify: FastifyInstance) {
         throw new Error('Failed to fetch user info from Google');
       }
 
-      const googleUser = await userInfoResponse.json() as {
+      const googleUser = (await userInfoResponse.json()) as {
         id: string;
         email: string;
         verified_email: boolean;
@@ -109,31 +109,25 @@ export async function oauthRoutes(fastify: FastifyInstance) {
       // Generate JWT tokens using container
       const userId = UserId.create(user.id);
       const email = Email.create(user.email);
-      const tokens = container.tokenService.generateTokenPair(
-        userId,
-        email,
-        user.role as UserRole
-      );
+      const tokens = container.tokenService.generateTokenPair(userId, email, user.role as UserRole);
 
-      // In production, you'd want to:
-      // 1. Redirect to frontend with tokens in URL params or cookies
-      // 2. Or use a state parameter to maintain session
-      // For now, return JSON for testing
-      return reply.status(200).send({
-        user: {
-          id: user.id,
+      // Redirect to frontend with tokens in URL params
+      // Frontend will extract tokens and store them
+      const frontendUrl = env.FRONTEND_URL || 'http://localhost:3000';
+      const redirectUrl =
+        `${frontendUrl}/auth/callback?` +
+        new URLSearchParams({
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          userId: user.id,
           email: user.email,
           firstName: user.firstName,
           lastName: user.lastName,
           role: user.role,
           provider: user.provider,
-          createdAt: user.createdAt.toISOString(),
-          updatedAt: user.updatedAt.toISOString(),
-        },
-        accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
-        message: 'Google OAuth authentication successful',
-      });
+        }).toString();
+
+      return reply.redirect(redirectUrl);
     } catch (error: any) {
       fastify.log.error('Google OAuth error:', error);
 

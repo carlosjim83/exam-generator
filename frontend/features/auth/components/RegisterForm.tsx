@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
 import { Sparkles, AlertCircle, GraduationCap, BookOpen } from 'lucide-react';
+import { OAuthButtons } from './OAuthButtons';
 
 export function RegisterForm() {
   const { register } = useAuth();
@@ -276,6 +277,9 @@ export function RegisterForm() {
               >
                 {isLoading ? 'Creating account...' : 'Create account'}
               </Button>
+
+              {/* OAuth Buttons */}
+              <OAuthButtons mode="register" disabled={isLoading} />
 
               {/* Login Link */}
               <p className="text-center text-sm text-muted-foreground">

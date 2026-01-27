@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
 import { Sparkles, AlertCircle } from 'lucide-react';
+import { OAuthButtons } from './OAuthButtons';
 
 export function LoginForm() {
   const { login } = useAuth();
@@ -48,9 +49,7 @@ export function LoginForm() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>
-              Sign in to your account to continue
-            </CardDescription>
+            <CardDescription>Sign in to your account to continue</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -59,9 +58,7 @@ export function LoginForm() {
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
                   <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-destructive">
-                      {error}
-                    </p>
+                    <p className="text-sm font-medium text-destructive">{error}</p>
                   </div>
                 </div>
               )}
@@ -99,22 +96,17 @@ export function LoginForm() {
               </div>
 
               {/* Submit Button */}
-              <Button
-                type="submit"
-                className="w-full"
-                size="lg"
-                disabled={isLoading}
-              >
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
+
+              {/* OAuth Buttons */}
+              <OAuthButtons mode="login" disabled={isLoading} />
 
               {/* Register Link */}
               <p className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{' '}
-                <Link
-                  href="/register"
-                  className="font-medium text-primary hover:underline"
-                >
+                <Link href="/register" className="font-medium text-primary hover:underline">
                   Create one
                 </Link>
               </p>

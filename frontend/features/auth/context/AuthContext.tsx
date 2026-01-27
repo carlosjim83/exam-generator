@@ -7,8 +7,15 @@ import { apiClient, TokenManager } from '../services/api.service';
 
 interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, firstName: string, lastName: string, role?: 'TEACHER' | 'STUDENT') => Promise<void>;
+  register: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+    role?: 'TEACHER' | 'STUDENT'
+  ) => Promise<void>;
   logout: () => void;
+  setUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -25,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const initAuth = async () => {
       const accessToken = TokenManager.getAccessToken();
-      
+
       if (!accessToken) {
         setAuthState({
           user: null,
@@ -68,33 +75,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    try {
-      const response = await apiClient.login(email, password);
-      setAuthState({
-        user: response.user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      router.push('/dashboard');
-    } catch (error) {
-      throw error;
-    }
-  }, [router]);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const response = await apiClient.login(email, password);
+        setAuthState({
+          user: response.user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        router.push('/dashboard');
+      } catch (error) {
+        throw error;
+      }
+    },
+    [router]
+  );
 
-  const register = useCallback(async (email: string, password: string, firstName: string, lastName: string, role: 'TEACHER' | 'STUDENT' = 'TEACHER') => {
-    try {
-      const response = await apiClient.register(email, password, firstName, lastName, role);
-      setAuthState({
-        user: response.user,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-      router.push('/dashboard');
-    } catch (error) {
-      throw error;
-    }
-  }, [router]);
+  const register = useCallback(
+    async (
+      email: string,
+      password: string,
+      firstName: string,
+      lastName: string,
+      role: 'TEACHER' | 'STUDENT' = 'TEACHER'
+    ) => {
+      try {
+        const response = await apiClient.register(email, password, firstName, lastName, role);
+        setAuthState({
+          user: response.user,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+        router.push('/dashboard');
+      } catch (error) {
+        throw error;
+      }
+    },
+    [router]
+  );
 
   const logout = useCallback(() => {
     apiClient.logout();
@@ -106,6 +125,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push('/login');
   }, [router]);
 
+  const setUser = useCallback((user: User) => {
+    setAuthState({
+      user,
+      isAuthenticated: true,
+      isLoading: false,
+    });
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -113,6 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
+        setUser,
       }}
     >
       {children}
