@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { setupMockBackend, resetMockDatabase } from './mocks/backend';
 
 test.describe('Authentication - Login Flow', () => {
   // Create a test user before running login tests
@@ -12,6 +13,7 @@ test.describe('Authentication - Login Flow', () => {
   test.beforeAll(async ({ browser }) => {
     // Register test user
     const page = await browser.newPage();
+    await setupMockBackend(page);
     await page.goto('/register');
     await page.getByLabel('First Name').fill(testUser.firstName);
     await page.getByLabel('Last Name').fill(testUser.lastName);
@@ -24,7 +26,14 @@ test.describe('Authentication - Login Flow', () => {
   });
 
   test.beforeEach(async ({ page }) => {
+    // Setup mock backend
+    await setupMockBackend(page);
     await page.goto('/login');
+  });
+
+  test.afterEach(() => {
+    // Note: We don't reset database here because we need the test user
+    // Only reset after all tests complete
   });
 
   test('should login successfully with correct credentials', async ({ page }) => {

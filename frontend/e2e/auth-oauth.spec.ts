@@ -1,9 +1,17 @@
 import { test, expect } from '@playwright/test';
+import { setupMockBackend, resetMockDatabase } from './mocks/backend';
 
 test.describe('Authentication - OAuth Flow (Mock)', () => {
   test.beforeEach(async ({ page }) => {
+    // Setup mock backend
+    await setupMockBackend(page);
+
     // Verify mock OAuth is enabled
     await page.goto('/login');
+  });
+
+  test.afterEach(() => {
+    resetMockDatabase();
   });
 
   test('should register via OAuth mock with TEACHER role', async ({ page }) => {

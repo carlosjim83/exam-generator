@@ -1,9 +1,18 @@
 import { test, expect } from '@playwright/test';
+import { setupMockBackend, resetMockDatabase } from './mocks/backend';
 
 test.describe('Authentication - Register Flow', () => {
   test.beforeEach(async ({ page }) => {
+    // Setup mock backend (no real backend needed!)
+    await setupMockBackend(page);
+
     // Navigate to register page
     await page.goto('/register');
+  });
+
+  test.afterEach(() => {
+    // Reset mock database between tests
+    resetMockDatabase();
   });
 
   test('should register a new teacher account successfully', async ({ page }) => {

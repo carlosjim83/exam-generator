@@ -1,6 +1,16 @@
 import { test, expect } from '@playwright/test';
+import { setupMockBackend, resetMockDatabase } from './mocks/backend';
 
 test.describe('Protected Routes & Logout', () => {
+  test.beforeEach(async ({ page }) => {
+    // Setup mock backend
+    await setupMockBackend(page);
+  });
+
+  test.afterEach(() => {
+    resetMockDatabase();
+  });
+
   test.describe('Protected Routes', () => {
     test('should redirect to login when accessing dashboard without authentication', async ({
       page,
