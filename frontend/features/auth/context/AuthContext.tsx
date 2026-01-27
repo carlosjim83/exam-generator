@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Try to get user profile from backend
       try {
-        const user = await apiClient.get<User>('/profile');
+        const user = await apiClient.get<User>('/api/profile');
         setAuthState({
           user,
           isAuthenticated: true,
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Token might be expired, try refresh
         try {
           await apiClient.refreshAccessToken();
-          const user = await apiClient.get<User>('/profile');
+          const user = await apiClient.get<User>('/api/profile');
           setAuthState({
             user,
             isAuthenticated: true,

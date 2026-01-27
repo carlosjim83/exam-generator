@@ -100,9 +100,6 @@ export function LoginForm() {
                 {isLoading ? 'Signing in...' : 'Sign in'}
               </Button>
 
-              {/* OAuth Buttons */}
-              <OAuthButtons mode="login" disabled={isLoading} />
-
               {/* Register Link */}
               <p className="text-center text-sm text-muted-foreground">
                 Don&apos;t have an account?{' '}
@@ -111,6 +108,11 @@ export function LoginForm() {
                 </Link>
               </p>
             </form>
+
+            {/* OAuth Buttons - Outside form to prevent form submission */}
+            <div className="mt-4">
+              <OAuthButtons mode="login" disabled={isLoading} />
+            </div>
           </CardContent>
         </Card>
 

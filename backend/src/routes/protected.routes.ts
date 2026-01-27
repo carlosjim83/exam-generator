@@ -1,15 +1,19 @@
 import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
 import { authenticateUser, requireRoles } from '../middleware/auth.middleware.js';
+import { container } from '../config/container.js';
+import { UserId } from '../domain/value-objects/UserId.js';
 
 // Response schemas
 const ProfileResponseSchema = Type.Object({
-  message: Type.String(),
-  user: Type.Object({
-    userId: Type.String(),
-    email: Type.String(),
-    role: Type.String(),
-  }),
+  id: Type.String(),
+  email: Type.String(),
+  firstName: Type.String(),
+  lastName: Type.String(),
+  role: Type.String(),
+  provider: Type.String(),
+  createdAt: Type.String(),
+  updatedAt: Type.String(),
 });
 
 const DashboardResponseSchema = Type.Object({
@@ -35,23 +39,42 @@ export async function protectedRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['protected'],
         summary: 'Get user profile',
-        description: 'Returns the authenticated user\'s profile information. Requires valid JWT token.',
+        description:
+          "Returns the authenticated user's complete profile information. Requires valid JWT token.",
         security: [{ bearerAuth: [] }],
         response: {
           200: ProfileResponseSchema,
           401: ErrorResponseSchema,
+          404: ErrorResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      const user = (request as any).user;
+      const jwtUser = (request as any).user;
+
+      // Load complete user data from database
+      const userRepository = container.userRepository;
+      const userId = UserId.create(jwtUser.userId);
+      const user = await userRepository.findById(userId);
+
+      if (!user) {
+        return reply.status(404).send({
+          statusCode: 404,
+          error: 'Not Found',
+          message: 'User not found',
+        });
+      }
+
+      // Return complete user profile
       return reply.send({
-        message: 'Access granted',
-        user: {
-          userId: user.userId,
-          email: user.email,
-          role: user.role,
-        },
+        id: user.id.value,
+        email: user.email.value,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        provider: user.provider,
+        createdAt: user.createdAt.toISOString(),
+        updatedAt: user.updatedAt.toISOString(),
       });
     }
   );

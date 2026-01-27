@@ -278,9 +278,6 @@ export function RegisterForm() {
                 {isLoading ? 'Creating account...' : 'Create account'}
               </Button>
 
-              {/* OAuth Buttons */}
-              <OAuthButtons mode="register" disabled={isLoading} />
-
               {/* Login Link */}
               <p className="text-center text-sm text-muted-foreground">
                 Already have an account?{' '}
@@ -292,6 +289,11 @@ export function RegisterForm() {
                 </Link>
               </p>
             </form>
+
+            {/* OAuth Buttons - Outside form to prevent form submission */}
+            <div className="mt-4">
+              <OAuthButtons mode="register" role={role} disabled={isLoading} />
+            </div>
           </CardContent>
         </Card>
 

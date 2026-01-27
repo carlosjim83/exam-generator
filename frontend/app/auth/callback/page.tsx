@@ -16,6 +16,9 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     const handleCallback = () => {
       try {
+        console.log('[OAuth Callback] Starting...');
+        console.log('[OAuth Callback] SearchParams:', searchParams.toString());
+
         // Extract tokens and user data from URL params
         const accessToken = searchParams.get('accessToken');
         const refreshToken = searchParams.get('refreshToken');
@@ -25,6 +28,17 @@ export default function AuthCallbackPage() {
         const lastName = searchParams.get('lastName');
         const role = searchParams.get('role') as 'TEACHER' | 'STUDENT';
         const provider = searchParams.get('provider');
+
+        console.log('[OAuth Callback] Extracted data:', {
+          hasAccessToken: !!accessToken,
+          hasRefreshToken: !!refreshToken,
+          userId,
+          email,
+          firstName,
+          lastName,
+          role,
+          provider,
+        });
 
         // Validate required params
         if (
@@ -39,10 +53,12 @@ export default function AuthCallbackPage() {
           throw new Error('Missing required authentication parameters');
         }
 
-        // Store tokens in localStorage
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        console.log('[OAuth Callback] Storing tokens...');
+        // Store tokens in localStorage (using correct keys)
+        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('refresh_token', refreshToken);
 
+        console.log('[OAuth Callback] Updating auth context...');
         // Update auth context
         setUser({
           id: userId,
@@ -55,6 +71,7 @@ export default function AuthCallbackPage() {
           updatedAt: new Date().toISOString(),
         });
 
+        console.log('[OAuth Callback] Success! Redirecting to dashboard...');
         setStatus('success');
         setMessage(`Welcome, ${firstName}!`);
 
@@ -63,7 +80,7 @@ export default function AuthCallbackPage() {
           router.push('/dashboard');
         }, 1500);
       } catch (error: any) {
-        console.error('OAuth callback error:', error);
+        console.error('[OAuth Callback] Error:', error);
         setStatus('error');
         setMessage(error.message || 'Authentication failed. Please try again.');
 
