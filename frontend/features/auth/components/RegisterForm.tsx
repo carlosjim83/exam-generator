@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
-import { Sparkles, AlertCircle } from 'lucide-react';
+import { Sparkles, AlertCircle, GraduationCap, BookOpen } from 'lucide-react';
 
 export function RegisterForm() {
   const { register } = useAuth();
@@ -56,23 +56,48 @@ export function RegisterForm() {
     }
   };
 
+  // Dynamic color scheme based on role
+  const colors = {
+    TEACHER: {
+      bg: 'from-blue-50 to-indigo-100',
+      accent: 'bg-blue-600 hover:bg-blue-700',
+      accentLight: 'bg-blue-100',
+      accentText: 'text-blue-600',
+      focusRing: 'focus-visible:ring-blue-500',
+      icon: GraduationCap,
+    },
+    STUDENT: {
+      bg: 'from-emerald-50 to-teal-100',
+      accent: 'bg-emerald-600 hover:bg-emerald-700',
+      accentLight: 'bg-emerald-100',
+      accentText: 'text-emerald-600',
+      focusRing: 'focus-visible:ring-emerald-500',
+      icon: BookOpen,
+    },
+  };
+
+  const currentTheme = colors[role];
+  const Icon = currentTheme.icon;
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 py-12">
+    <div
+      className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${currentTheme.bg} px-4 py-12 transition-colors duration-500`}
+    >
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-primary">
-            <Sparkles className="w-7 h-7 text-primary-foreground" />
+          <div
+            className={`flex items-center justify-center w-12 h-12 rounded-lg ${currentTheme.accent} transition-colors duration-300`}
+          >
+            <Sparkles className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-3xl font-bold">ExamGen SaaS</h1>
         </div>
 
-        <Card>
+        <Card className="shadow-xl">
           <CardHeader>
             <CardTitle className="text-2xl">Create your account</CardTitle>
-            <CardDescription>
-              Get started with AI-powered exam generation
-            </CardDescription>
+            <CardDescription>Get started with AI-powered exam generation</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -81,12 +106,67 @@ export function RegisterForm() {
                 <div className="flex items-start gap-3 p-4 rounded-lg bg-destructive/10 border border-destructive/20">
                   <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-destructive">
-                      {error}
-                    </p>
+                    <p className="text-sm font-medium text-destructive">{error}</p>
                   </div>
                 </div>
               )}
+
+              {/* Role Toggle Selector */}
+              <div className="space-y-3">
+                <label className="text-sm font-medium">I am a...</label>
+                <div className="relative flex items-center bg-muted/50 rounded-lg p-1.5">
+                  {/* Sliding Indicator */}
+                  <div
+                    className={`absolute h-[calc(100%-12px)] w-[calc(50%-6px)] ${currentTheme.accent} rounded-md shadow-md transition-all duration-300 ease-out`}
+                    style={{
+                      transform:
+                        role === 'TEACHER' ? 'translateX(0)' : 'translateX(calc(100% + 12px))',
+                    }}
+                  />
+
+                  {/* Teacher Button */}
+                  <button
+                    type="button"
+                    onClick={() => setRole('TEACHER')}
+                    disabled={isLoading}
+                    className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md font-medium text-sm transition-colors duration-200 ${
+                      role === 'TEACHER'
+                        ? 'text-white'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    <span>Teacher</span>
+                  </button>
+
+                  {/* Student Button */}
+                  <button
+                    type="button"
+                    onClick={() => setRole('STUDENT')}
+                    disabled={isLoading}
+                    className={`relative z-10 flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md font-medium text-sm transition-colors duration-200 ${
+                      role === 'STUDENT'
+                        ? 'text-white'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>Student</span>
+                  </button>
+                </div>
+
+                {/* Role Badge Indicator */}
+                <div className="flex items-center justify-center gap-2">
+                  <div
+                    className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${currentTheme.accentLight} transition-colors duration-300`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${currentTheme.accentText}`} />
+                    <span className={`text-xs font-medium ${currentTheme.accentText}`}>
+                      Signing up as {role === 'TEACHER' ? 'Teacher' : 'Student'}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
               {/* First Name Input */}
               <div className="space-y-2">
@@ -101,6 +181,7 @@ export function RegisterForm() {
                   onChange={(e) => setFirstName(e.target.value)}
                   required
                   disabled={isLoading}
+                  className={currentTheme.focusRing}
                 />
                 {validationErrors.firstName && (
                   <p className="text-xs text-destructive">{validationErrors.firstName[0]}</p>
@@ -120,27 +201,11 @@ export function RegisterForm() {
                   onChange={(e) => setLastName(e.target.value)}
                   required
                   disabled={isLoading}
+                  className={currentTheme.focusRing}
                 />
                 {validationErrors.lastName && (
                   <p className="text-xs text-destructive">{validationErrors.lastName[0]}</p>
                 )}
-              </div>
-
-              {/* Role Select */}
-              <div className="space-y-2">
-                <label htmlFor="role" className="text-sm font-medium">
-                  I am a...
-                </label>
-                <select
-                  id="role"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as 'TEACHER' | 'STUDENT')}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  disabled={isLoading}
-                >
-                  <option value="TEACHER">Teacher / Professor</option>
-                  <option value="STUDENT">Student</option>
-                </select>
               </div>
 
               {/* Email Input */}
@@ -151,11 +216,14 @@ export function RegisterForm() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="professor@university.edu"
+                  placeholder={
+                    role === 'TEACHER' ? 'professor@university.edu' : 'student@university.edu'
+                  }
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={isLoading}
+                  className={currentTheme.focusRing}
                 />
                 {validationErrors.email && (
                   <p className="text-xs text-destructive">{validationErrors.email[0]}</p>
@@ -175,6 +243,7 @@ export function RegisterForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  className={currentTheme.focusRing}
                 />
                 {validationErrors.password && (
                   <p className="text-xs text-destructive">{validationErrors.password[0]}</p>
@@ -194,13 +263,14 @@ export function RegisterForm() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   disabled={isLoading}
+                  className={currentTheme.focusRing}
                 />
               </div>
 
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full"
+                className={`w-full ${currentTheme.accent} transition-colors duration-300`}
                 size="lg"
                 disabled={isLoading}
               >
@@ -212,7 +282,7 @@ export function RegisterForm() {
                 Already have an account?{' '}
                 <Link
                   href="/login"
-                  className="font-medium text-primary hover:underline"
+                  className={`font-medium ${currentTheme.accentText} hover:underline transition-colors duration-200`}
                 >
                   Sign in
                 </Link>
