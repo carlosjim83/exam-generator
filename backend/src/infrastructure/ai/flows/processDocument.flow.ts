@@ -1,30 +1,31 @@
 import { z } from 'genkit';
-import { ai, chunkingConfig, EMBEDDING_MODEL } from '../genkit.config.js';
-import { googleAI } from '@genkit-ai/google-genai';
+import { ai, chunkingConfig } from '../genkit.config.js';
 import { chunk } from 'llm-chunk';
 import { readFile } from 'fs/promises';
 import { indexChunks, ChunkWithEmbedding } from '../indexers/pgvector.indexer.js';
 import { TextExtractorService } from '../../text-extraction/TextExtractorService.js';
+import { AzureOpenAIEmbeddingService } from '../AzureOpenAIEmbeddingService.js';
 
 /**
- * Process Document Flow with Genkit
+ * Process Document Flow with Genkit + Azure OpenAI
  *
  * This flow handles the complete RAG pipeline for a document:
  * 1. Extract text from PDF (using TextExtractorService)
  * 2. Chunk the text into semantic pieces
- * 3. Generate embeddings for each chunk using Gemini
+ * 3. Generate embeddings for each chunk using Azure OpenAI
  * 4. Store chunks + embeddings in pgvector database
  *
  * Architecture:
  * - Uses Genkit's ai.run() for observability
  * - Uses TextExtractorService for text extraction
  * - Uses llm-chunk for intelligent chunking
- * - Uses Gemini embedding model (768 dimensions)
+ * - Uses Azure OpenAI embedding model (1536 dimensions)
  * - Stores in PostgreSQL with pgvector
  */
 
-// Instantiate text extractor service
+// Instantiate services
 const textExtractor = new TextExtractorService();
+const embeddingService = new AzureOpenAIEmbeddingService();
 
 /**
  * Extract text from a PDF file
@@ -98,31 +99,24 @@ export const processDocumentFlow = ai.defineFlow(
         throw new Error('No chunks were created from the text');
       }
 
-      // Step 3: Generate embeddings for each chunk
-      const chunksWithEmbeddings: ChunkWithEmbedding[] = [];
+      // Step 3: Generate embeddings for all chunks (batch processing)
+      const chunkTexts = chunks.map((c) => c);
 
-      for (let i = 0; i < chunks.length; i++) {
-        const chunkText = chunks[i];
+      const embeddings = await ai.run('generate-embeddings', async () => {
+        return await embeddingService.generateEmbeddings(chunkTexts);
+      });
 
-        // Generate embedding using Gemini
-        const embeddingResult = await ai.embed({
-          embedder: googleAI.embedder(EMBEDDING_MODEL),
-          content: chunkText,
-        });
+      // Step 4: Combine chunks with their embeddings
+      const chunksWithEmbeddings: ChunkWithEmbedding[] = chunks.map((chunkText, i) => ({
+        documentId,
+        chunkIndex: i,
+        content: chunkText,
+        embedding: embeddings[i],
+        wordCount: calculateWordCount(chunkText),
+        pageNumber: undefined, // Could be extracted from PDF metadata if needed
+      }));
 
-        const embedding = embeddingResult[0].embedding;
-
-        chunksWithEmbeddings.push({
-          documentId,
-          chunkIndex: i,
-          content: chunkText,
-          embedding,
-          wordCount: calculateWordCount(chunkText),
-          pageNumber: undefined, // Could be extracted from PDF metadata if needed
-        });
-      }
-
-      // Step 4: Index chunks into pgvector database
+      // Step 5: Index chunks into pgvector database
       await ai.run('index-chunks', async () => {
         await indexChunks(chunksWithEmbeddings);
       });

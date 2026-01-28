@@ -25,8 +25,12 @@ export const env = {
   AZURE_STORAGE_CONNECTION_STRING: process.env.AZURE_STORAGE_CONNECTION_STRING || '',
   AZURE_STORAGE_CONTAINER_NAME: process.env.AZURE_STORAGE_CONTAINER_NAME || 'documents',
 
-  // Gemini API
-  GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
+  // Azure OpenAI
+  AZURE_OPENAI_API_KEY: process.env.AZURE_OPENAI_API_KEY || '',
+  AZURE_OPENAI_ENDPOINT: process.env.AZURE_OPENAI_ENDPOINT || '',
+  AZURE_OPENAI_DEPLOYMENT_NAME:
+    process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'text-embedding-ada-002',
+  AZURE_OPENAI_API_VERSION: process.env.AZURE_OPENAI_API_VERSION || '2024-02-01',
 
   // OAuth - Google
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',

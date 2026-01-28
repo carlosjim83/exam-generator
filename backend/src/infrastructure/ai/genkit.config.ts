@@ -1,30 +1,22 @@
 import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
-import { env } from '../../config/env.js';
 
 /**
  * Genkit AI Configuration
  *
- * Centralized configuration for Genkit with Google AI integration.
+ * Centralized configuration for Genkit AI.
  * This instance is used across the application for:
- * - Text extraction and processing
- * - Embedding generation
- * - RAG (Retrieval-Augmented Generation)
- * - Exam generation
+ * - Observability and tracing
+ * - RAG (Retrieval-Augmented Generation) flows
+ * - Exam generation (future)
  *
  * Architecture Decision:
- * - Using Google AI plugin for Gemini models
- * - Custom pgvector integration (not using genkitx-cloud-sql-pg because we're not on GCP)
- * - Embeddings: gemini-embedding-001 (3072 dimensions - updated model)
- * - Text generation: gemini-2.0-flash-exp
+ * - Embeddings: Azure OpenAI text-embedding-ada-002 (1536 dimensions)
+ * - Text generation: To be determined (Azure OpenAI or other)
+ * - Vector storage: Custom pgvector integration
  */
 
 export const ai = genkit({
-  plugins: [
-    googleAI({
-      apiKey: env.GEMINI_API_KEY,
-    }),
-  ],
+  plugins: [],
 });
 
 /**
@@ -34,7 +26,7 @@ export const ai = genkit({
  * Strategy:
  * - Sentence-based splitting for better semantic coherence
  * - Overlap to preserve context between chunks
- * - Size optimized for Gemini embedding model (max 2048 tokens)
+ * - Size optimized for Azure OpenAI embedding model (max 8191 tokens)
  */
 export const chunkingConfig = {
   minLength: 500, // Minimum characters per chunk
@@ -45,12 +37,7 @@ export const chunkingConfig = {
 } as const;
 
 /**
- * Embedding Configuration
+ * Embedding Configuration (Azure OpenAI)
  */
-export const EMBEDDING_MODEL = 'gemini-embedding-001';
-export const EMBEDDING_DIMENSION = 3072; // Updated from 768 - model changed
-
-/**
- * Generation Configuration
- */
-export const GENERATION_MODEL = 'gemini-2.0-flash-exp';
+export const EMBEDDING_MODEL = 'text-embedding-ada-002';
+export const EMBEDDING_DIMENSION = 1536; // Azure OpenAI text-embedding-ada-002
