@@ -15,7 +15,7 @@ import { env } from '../../config/env.js';
  * Architecture Decision:
  * - Using Google AI plugin for Gemini models
  * - Custom pgvector integration (not using genkitx-cloud-sql-pg because we're not on GCP)
- * - Embeddings: gemini-embedding-001 (768 dimensions)
+ * - Embeddings: gemini-embedding-001 (3072 dimensions - updated model)
  * - Text generation: gemini-2.0-flash-exp
  */
 
@@ -48,7 +48,7 @@ export const chunkingConfig = {
  * Embedding Configuration
  */
 export const EMBEDDING_MODEL = 'gemini-embedding-001';
-export const EMBEDDING_DIMENSION = 768;
+export const EMBEDDING_DIMENSION = 3072; // Updated from 768 - model changed
 
 /**
  * Generation Configuration

@@ -105,7 +105,7 @@ model DocumentChunk {
   chunkIndex Int                      @map("chunk_index") // Order in document
   
   // Vector embedding (pgvector)
-  embedding  Unsupported("vector(768)") // Google Gemini embedding dimension
+  embedding  Unsupported("vector(3072)") // Google Gemini embedding dimension (updated model)
   
   // Metadata
   pageNumber Int?                     @map("page_number")

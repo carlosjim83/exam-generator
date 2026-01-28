@@ -4,36 +4,34 @@ import { googleAI } from '@genkit-ai/google-genai';
 import { chunk } from 'llm-chunk';
 import { readFile } from 'fs/promises';
 import { indexChunks, ChunkWithEmbedding } from '../indexers/pgvector.indexer.js';
-import { createRequire } from 'module';
-
-// Import CommonJS module (pdf-parse)
-const require = createRequire(import.meta.url);
-const pdfParse = require('pdf-parse');
+import { TextExtractorService } from '../../text-extraction/TextExtractorService.js';
 
 /**
  * Process Document Flow with Genkit
  *
  * This flow handles the complete RAG pipeline for a document:
- * 1. Extract text from PDF
+ * 1. Extract text from PDF (using TextExtractorService)
  * 2. Chunk the text into semantic pieces
  * 3. Generate embeddings for each chunk using Gemini
  * 4. Store chunks + embeddings in pgvector database
  *
  * Architecture:
  * - Uses Genkit's ai.run() for observability
- * - Uses pdf-parse for text extraction
+ * - Uses TextExtractorService for text extraction
  * - Uses llm-chunk for intelligent chunking
  * - Uses Gemini embedding model (768 dimensions)
  * - Stores in PostgreSQL with pgvector
  */
+
+// Instantiate text extractor service
+const textExtractor = new TextExtractorService();
 
 /**
  * Extract text from a PDF file
  */
 async function extractTextFromPdf(filePath: string): Promise<string> {
   const dataBuffer = await readFile(filePath);
-  const data = await pdfParse(dataBuffer);
-  return data.text;
+  return await textExtractor.extractFromPDF(dataBuffer);
 }
 
 /**

@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { container } from '../config/container.js';
 import { authenticateUser } from '../middleware/auth.middleware.js';
+import { queueDocumentProcessing } from '../infrastructure/queue/DocumentQueue.js';
 
 export async function documentRoutes(fastify: FastifyInstance) {
   // POST /documents/upload - Upload a document (PDF or DOCX)
@@ -93,6 +94,20 @@ export async function documentRoutes(fastify: FastifyInstance) {
           mimetype: data.mimetype,
           buffer,
         });
+
+        // 🔥 Add document to processing queue
+        // The worker will fetch the document from DB and get all necessary data
+        try {
+          const userId = (request as any).user.userId;
+          await queueDocumentProcessing({
+            documentId: result.document.id,
+            userId,
+          });
+          fastify.log.info(`Document queued for processing: ${result.document.id}`);
+        } catch (queueError) {
+          // Don't fail the request if queuing fails, just log it
+          fastify.log.error({ error: queueError }, 'Failed to queue document for processing');
+        }
 
         return reply.status(201).send({
           document: {
