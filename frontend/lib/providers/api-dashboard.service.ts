@@ -8,6 +8,18 @@
 import type { IDashboardService } from '../services/dashboard.service';
 import type { Document, Exam, DashboardStats } from '../types/dashboard.types';
 
+/**
+ * Token Manager (same as auth service)
+ */
+class TokenManager {
+  private static ACCESS_TOKEN_KEY = 'access_token';
+
+  static getAccessToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+  }
+}
+
 export class ApiDashboardService implements IDashboardService {
   private readonly baseUrl: string;
 
@@ -17,15 +29,26 @@ export class ApiDashboardService implements IDashboardService {
 
   /**
    * Make authenticated API request
+   * Returns null if no token (graceful degradation)
    */
-  private async fetchWithAuth<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  private async fetchWithAuth<T>(endpoint: string, options?: RequestInit): Promise<T | null> {
+    // Get access token from localStorage
+    const accessToken = TokenManager.getAccessToken();
+
+    if (!accessToken) {
+      // Don't throw error - let callers handle gracefully
+      console.warn('[ApiDashboardService] No access token found, skipping API call to', endpoint);
+      return null;
+    }
+
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
         ...options?.headers,
       },
-      credentials: 'include', // Include cookies (JWT)
+      credentials: 'include', // Include cookies for refresh token
     });
 
     if (!response.ok) {
@@ -36,7 +59,29 @@ export class ApiDashboardService implements IDashboardService {
     return response.json();
   }
 
+  /**
+   * Check if user is authenticated
+   */
+  private isAuthenticated(): boolean {
+    return TokenManager.getAccessToken() !== null;
+  }
+
   async getStats(): Promise<DashboardStats> {
+    // If not authenticated, return empty stats
+    if (!this.isAuthenticated()) {
+      console.warn('[ApiDashboardService] User not authenticated, returning empty stats');
+      return {
+        totalDocuments: 0,
+        totalExams: 0,
+        documentsChange: '0%',
+        examsChange: '0%',
+        lastActivity: {
+          timestamp: new Date(),
+          description: 'Please log in to view your activity',
+        },
+      };
+    }
+
     try {
       // Try to call the real endpoint (when implemented: GET /api/dashboard/stats)
       const response = await this.fetchWithAuth<{
@@ -49,6 +94,11 @@ export class ApiDashboardService implements IDashboardService {
           description: string;
         };
       }>('/api/dashboard/stats');
+
+      // If no response (user not authenticated), fall through to catch
+      if (!response) {
+        throw new Error('No response from API');
+      }
 
       return {
         totalDocuments: response.totalDocuments,
@@ -70,6 +120,11 @@ export class ApiDashboardService implements IDashboardService {
         const fallback = await this.fetchWithAuth<{
           data: { totalDocuments: number; totalExams: number };
         }>('/api/teacher/dashboard');
+
+        // If no fallback response, return empty stats
+        if (!fallback) {
+          throw new Error('No fallback response');
+        }
 
         return {
           totalDocuments: fallback.data.totalDocuments,
@@ -100,9 +155,20 @@ export class ApiDashboardService implements IDashboardService {
   }
 
   async getRecentDocuments(limit: number = 5): Promise<Document[]> {
+    // If not authenticated, return empty array
+    if (!this.isAuthenticated()) {
+      console.warn('[ApiDashboardService] User not authenticated, returning empty documents');
+      return [];
+    }
+
     try {
       // Call the existing /api/documents endpoint
       const response = await this.fetchWithAuth<{ documents: any[] }>('/documents');
+
+      // If no response, return empty array
+      if (!response) {
+        return [];
+      }
 
       // Transform backend response to frontend Document type
       const documents = response.documents.map((doc: any) => ({
@@ -130,9 +196,20 @@ export class ApiDashboardService implements IDashboardService {
   }
 
   async getRecentExams(limit: number = 5): Promise<Exam[]> {
+    // If not authenticated, return empty array
+    if (!this.isAuthenticated()) {
+      console.warn('[ApiDashboardService] User not authenticated, returning empty exams');
+      return [];
+    }
+
     try {
       // Try to call /api/exams endpoint (when implemented)
       const response = await this.fetchWithAuth<{ exams: any[] }>('/api/exams');
+
+      // If no response, return empty array
+      if (!response) {
+        return [];
+      }
 
       const exams = response.exams.map((exam: any) => ({
         id: exam.id,
