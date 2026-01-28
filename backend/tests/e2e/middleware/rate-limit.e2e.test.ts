@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import rateLimit from '@fastify/rate-limit';
-import { authRoutes } from './auth.routes.js';
-import { prisma } from '../config/prisma.js';
+import { authRoutes } from '@routes/auth.routes.js';
+import { prisma } from '@config/prisma.js';
 
 describe('Rate Limiting', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
     app = Fastify({ logger: false });
-    
+
     // Register rate limit plugin (same config as server.ts but with lower limits for faster testing)
     await app.register(rateLimit, {
       global: true,
@@ -103,7 +103,7 @@ describe('Rate Limiting', () => {
   describe('POST /auth/register - Rate Limiting', () => {
     it('should include rate limit headers in response', async () => {
       const uniqueEmail = `rate-limit-test-${Date.now()}@example.com`;
-      
+
       const response = await app.inject({
         method: 'POST',
         url: '/auth/register',
@@ -144,7 +144,7 @@ describe('Rate Limiting', () => {
 
       // Check that rate limit is configured (header should be present)
       expect(response.headers['x-ratelimit-limit']).toBeDefined();
-      
+
       // Note: Actual limit value is '3' but we can't easily test the 1-hour window
       // in a fast unit test. The important thing is that rate limiting is active.
     });
@@ -163,7 +163,7 @@ describe('Rate Limiting', () => {
       // Should have rate limit headers (even on 401 error)
       expect(response.headers['x-ratelimit-limit']).toBeDefined();
       expect(response.headers['x-ratelimit-remaining']).toBeDefined();
-      
+
       // Should return 401 (invalid token) not 429 (rate limited) on first request
       expect(response.statusCode).toBe(401);
     });

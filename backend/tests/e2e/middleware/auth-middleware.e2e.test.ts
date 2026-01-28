@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import Fastify, { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { authenticateUser, requireRoles } from './auth.middleware.js';
-import { env } from '../config/env.js';
+import { authenticateUser, requireRoles } from '@middleware/auth.middleware.js';
+import { env } from '@config/env.js';
 import jwt from 'jsonwebtoken';
 
 describe('Auth Middleware', () => {
@@ -121,7 +121,7 @@ describe('Auth Middleware', () => {
         email: 'test@example.com',
         role: 'TEACHER',
       };
-      
+
       const expiredToken = jwt.sign(payload, env.JWT_SECRET, { expiresIn: '0s' });
 
       // Wait to ensure expiration
@@ -145,7 +145,8 @@ describe('Auth Middleware', () => {
 
     it('should return 401 when token signature is invalid', async () => {
       // Arrange: Manually create an invalid token
-      const invalidToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyLTEyMyIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsInJvbGUiOiJURUFDSEVSIiwiaWF0IjoxNjAwMDAwMDAwfQ.INVALID_SIGNATURE';
+      const invalidToken =
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyLTEyMyIsImVtYWlsIjoidGVzdEBleGFtcGxlLmNvbSIsInJvbGUiOiJURUFDSEVSIiwiaWF0IjoxNjAwMDAwMDAwfQ.INVALID_SIGNATURE';
 
       // Act
       const response = await app.inject({

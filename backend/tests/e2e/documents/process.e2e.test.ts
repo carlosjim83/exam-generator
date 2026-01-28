@@ -14,9 +14,9 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import Fastify, { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
-import { authRoutes } from './auth.routes.js';
-import { documentRoutes } from './document.routes.js';
-import { env } from '../config/env.js';
+import { authRoutes } from '@routes/auth.routes.js';
+import { documentRoutes } from '@routes/document.routes.js';
+import { env } from '@config/env.js';
 
 const prisma = new PrismaClient();
 

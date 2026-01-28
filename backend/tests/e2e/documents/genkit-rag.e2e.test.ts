@@ -12,9 +12,9 @@
 
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
-import { createTestServer } from '../config/test-server.js';
-import { container } from '../config/container.js';
-import { prisma } from '../config/prisma.js';
+import { createTestServer } from '@tests/helpers/test-server.js';
+import { container } from '@config/container.js';
+import { prisma } from '@config/prisma.js';
 import fs from 'fs/promises';
 import path from 'path';
 

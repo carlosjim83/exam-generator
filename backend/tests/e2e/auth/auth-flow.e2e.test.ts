@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { FastifyInstance } from 'fastify';
-import { env } from '../config/env.js';
+import { env } from '@config/env.js';
 import jwt from 'jsonwebtoken';
-import { createTestServer } from '../config/test-server.js'; // Import our new test server helper
+import { createTestServer } from '@tests/helpers/test-server.js';
 
 /**
  * Helper function to generate unique email addresses for tests

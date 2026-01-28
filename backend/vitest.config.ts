@@ -17,6 +17,7 @@ export default defineConfig({
       exclude: [
         'node_modules/',
         'dist/',
+        'tests/',
         '**/*.d.ts',
         '**/*.config.*',
         '**/*.test.ts',
@@ -32,8 +33,8 @@ export default defineConfig({
       },
     },
 
-    // Test match patterns
-    include: ['src/**/*.{test,spec}.ts'],
+    // Test match patterns - now looking in tests/ directory
+    include: ['tests/**/*.{test,spec}.ts'],
     exclude: ['node_modules/', 'dist/'],
 
     // Timeouts
@@ -52,6 +53,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      '@domain': path.resolve(__dirname, './src/domain'),
+      '@application': path.resolve(__dirname, './src/application'),
+      '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
+      '@config': path.resolve(__dirname, './src/config'),
+      '@routes': path.resolve(__dirname, './src/routes'),
+      '@middleware': path.resolve(__dirname, './src/middleware'),
+      '@tests': path.resolve(__dirname, './tests'),
       '@exam-generator/shared': path.resolve(__dirname, '../packages/shared/src'),
     },
   },

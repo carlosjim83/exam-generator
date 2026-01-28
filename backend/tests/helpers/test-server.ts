@@ -1,10 +1,10 @@
 import Fastify, { FastifyInstance } from 'fastify';
 import multipart from '@fastify/multipart';
-import { Container } from './container'; // Removed 'container' export, just need the class
-import { authRoutes } from '../routes/auth.routes';
-import { documentRoutes } from '../routes/document.routes';
-import { protectedRoutes } from '../routes/protected.routes';
-import { oauthRoutes } from '../routes/oauth.routes';
+import { Container } from '@config/container.js';
+import { authRoutes } from '@routes/auth.routes.js';
+import { documentRoutes } from '@routes/document.routes.js';
+import { protectedRoutes } from '@routes/protected.routes.js';
+import { oauthRoutes } from '@routes/oauth.routes.js';
 
 /**
  * Creates and configures a Fastify test server instance.

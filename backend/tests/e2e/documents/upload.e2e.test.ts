@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import FormData from 'form-data';
-import { createTestServer } from '../config/test-server';
-import { container } from '../config/container';
-import { IStorageService } from '../domain/services/IStorageService';
+import { createTestServer } from '@tests/helpers/test-server.js';
+import { container } from '@config/container.js';
+import { IStorageService } from '@domain/services/IStorageService.js';
 
 describe('Document Upload Route', () => {
   let server: FastifyInstance;

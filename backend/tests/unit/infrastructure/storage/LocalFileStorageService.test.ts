@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { LocalFileStorageService } from './LocalFileStorageService.js';
+import { LocalFileStorageService } from '@infrastructure/storage/LocalFileStorageService.js';
 
 describe('LocalFileStorageService', () => {
   const testStorageDir = './test-uploads';
@@ -97,7 +97,10 @@ describe('LocalFileStorageService', () => {
 
       // Verify file exists on disk
       const filePath = url.replace('file://', '');
-      const fileExists = await fs.access(filePath).then(() => true).catch(() => false);
+      const fileExists = await fs
+        .access(filePath)
+        .then(() => true)
+        .catch(() => false);
       expect(fileExists).toBe(true);
 
       // Verify file content
@@ -111,7 +114,7 @@ describe('LocalFileStorageService', () => {
 
       const url1 = await storageService.upload(filename, buffer);
       // Small delay to ensure different timestamp
-      await new Promise(resolve => setTimeout(resolve, 10));
+      await new Promise((resolve) => setTimeout(resolve, 10));
       const url2 = await storageService.upload(filename, buffer);
 
       // URLs should be different (different timestamps)
@@ -129,7 +132,10 @@ describe('LocalFileStorageService', () => {
       expect(url).toMatch(/^file:\/\//);
 
       // Verify directory was created
-      const dirExists = await fs.access(testStorageDir).then(() => true).catch(() => false);
+      const dirExists = await fs
+        .access(testStorageDir)
+        .then(() => true)
+        .catch(() => false);
       expect(dirExists).toBe(true);
     });
   });
@@ -148,17 +154,15 @@ describe('LocalFileStorageService', () => {
     });
 
     it('should throw error for invalid URL format', async () => {
-      await expect(
-        storageService.download('http://invalid-url.com/file.pdf')
-      ).rejects.toThrow('Invalid file URL');
+      await expect(storageService.download('http://invalid-url.com/file.pdf')).rejects.toThrow(
+        'Invalid file URL'
+      );
     });
 
     it('should throw error for non-existent file', async () => {
       const nonExistentUrl = `file://${path.resolve(testStorageDir, 'non-existent.pdf')}`;
 
-      await expect(
-        storageService.download(nonExistentUrl)
-      ).rejects.toThrow();
+      await expect(storageService.download(nonExistentUrl)).rejects.toThrow();
     });
   });
 
@@ -170,14 +174,20 @@ describe('LocalFileStorageService', () => {
 
       // Verify file exists
       const filePath = url.replace('file://', '');
-      let fileExists = await fs.access(filePath).then(() => true).catch(() => false);
+      let fileExists = await fs
+        .access(filePath)
+        .then(() => true)
+        .catch(() => false);
       expect(fileExists).toBe(true);
 
       // Delete the file
       await storageService.delete(url);
 
       // Verify file is deleted
-      fileExists = await fs.access(filePath).then(() => true).catch(() => false);
+      fileExists = await fs
+        .access(filePath)
+        .then(() => true)
+        .catch(() => false);
       expect(fileExists).toBe(false);
     });
 
@@ -185,15 +195,13 @@ describe('LocalFileStorageService', () => {
       const nonExistentUrl = `file://${path.resolve(testStorageDir, 'non-existent.pdf')}`;
 
       // Should not throw (idempotent delete)
-      await expect(
-        storageService.delete(nonExistentUrl)
-      ).resolves.toBeUndefined();
+      await expect(storageService.delete(nonExistentUrl)).resolves.toBeUndefined();
     });
 
     it('should throw error for invalid URL format', async () => {
-      await expect(
-        storageService.delete('http://invalid-url.com/file.pdf')
-      ).rejects.toThrow('Invalid file URL');
+      await expect(storageService.delete('http://invalid-url.com/file.pdf')).rejects.toThrow(
+        'Invalid file URL'
+      );
     });
   });
 
