@@ -5,10 +5,11 @@ export default defineConfig({
   test: {
     // Test environment
     environment: 'node',
-    
+
     // Global setup and teardown
     globals: true,
-    
+    setupFiles: ['./src/config/vitest-global-setup.ts'],
+
     // Coverage configuration
     coverage: {
       provider: 'v8',
@@ -30,24 +31,24 @@ export default defineConfig({
         statements: 80,
       },
     },
-    
+
     // Test match patterns
     include: ['src/**/*.{test,spec}.ts'],
     exclude: ['node_modules/', 'dist/'],
-    
+
     // Timeouts
-    testTimeout: 10000,
-    hookTimeout: 10000,
-    
+    testTimeout: 30000,
+    hookTimeout: 30000,
+
     // Reporter
     reporters: ['verbose'],
-    
+
     // Mocking
     mockReset: true,
     restoreMocks: true,
     clearMocks: true,
   },
-  
+
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

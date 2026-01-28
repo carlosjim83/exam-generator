@@ -11,7 +11,8 @@ export async function documentRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['documents'],
         summary: 'Upload a document (PDF or DOCX)',
-        description: 'Upload a PDF or DOCX file for exam generation. The file will be processed asynchronously.',
+        description:
+          'Upload a PDF or DOCX file for exam generation. The file will be processed asynchronously.',
         security: [{ bearerAuth: [] }],
         consumes: ['multipart/form-data'],
         response: {
@@ -100,9 +101,11 @@ export async function documentRoutes(fastify: FastifyInstance) {
         fastify.log.error('Document upload error:', error);
 
         // Handle validation errors
-        if (error.message.includes('Invalid file') || 
-            error.message.includes('File too large') ||
-            error.message.includes('File is empty')) {
+        if (
+          error.message.includes('Invalid file') ||
+          error.message.includes('File too large') ||
+          error.message.includes('File is empty')
+        ) {
           return reply.status(400).send({
             statusCode: 400,
             error: 'Bad Request',
@@ -111,8 +114,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         }
 
         // Handle storage errors
-        if (error.message.includes('storage') || 
-            error.message.includes('Azure')) {
+        if (error.message.includes('storage') || error.message.includes('Azure')) {
           return reply.status(500).send({
             statusCode: 500,
             error: 'Internal Server Error',
@@ -297,15 +299,16 @@ export async function documentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /documents/:id/process - Process a document (extract text, calculate metadata)
+  // POST /documents/:id/process - Process a document with Genkit (extract text, embeddings, RAG)
   fastify.post(
     '/documents/:id/process',
     {
       preHandler: authenticateUser,
       schema: {
         tags: ['documents'],
-        summary: 'Process a document',
-        description: 'Extract text from document and calculate metadata (word count, page count). Updates status to COMPLETED or FAILED.',
+        summary: 'Process a document with AI embeddings',
+        description:
+          'Extract text from document, generate embeddings with Genkit, and store chunks in vector database. Updates status to COMPLETED or FAILED.',
         security: [{ bearerAuth: [] }],
         params: {
           type: 'object',
@@ -368,7 +371,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
       try {
         const { id } = request.params as { id: string };
 
-        // Execute ProcessDocumentUseCase
+        // Execute ProcessDocumentUseCase (RAG + embeddings)
         const result = await container.processDocumentUseCase.execute({
           documentId: id,
           userId: (request as any).user.userId,
@@ -384,10 +387,19 @@ export async function documentRoutes(fastify: FastifyInstance) {
             processedAt: result.document.processedAt?.toISOString() || null,
           },
           processingTimeMs: result.processingTimeMs,
-          message: 'Document processed successfully',
+          message: 'Document processed successfully with AI embeddings',
         });
       } catch (error: any) {
         fastify.log.error('Process document error:', error);
+
+        // Handle invalid UUID format
+        if (error.message.includes('must be a valid UUID')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: 'Invalid document ID format',
+          });
+        }
 
         // Handle not found
         if (error.message === 'Document not found') {

@@ -1,49 +1,32 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import Fastify, { FastifyInstance } from 'fastify';
-import { authRoutes } from './auth.routes.js';
-import { protectedRoutes } from './protected.routes.js';
-import { prisma } from '../config/prisma.js';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { FastifyInstance } from 'fastify';
 import { env } from '../config/env.js';
 import jwt from 'jsonwebtoken';
+import { createTestServer } from '../config/test-server.js'; // Import our new test server helper
+
+/**
+ * Helper function to generate unique email addresses for tests
+ * This prevents email conflicts when tests run sequentially without database cleanup
+ */
+function uniqueEmail(prefix: string = 'test'): string {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
+}
 
 describe('Auth Integration Tests', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    // Create Fastify instance with minimal config (no logging for tests)
-    app = Fastify({ logger: false });
-
-    // Register routes
-    await app.register(authRoutes);
-    await app.register(protectedRoutes);
-
-    await app.ready();
+    app = await createTestServer();
   });
 
   afterAll(async () => {
     await app.close();
-    await prisma.$disconnect();
-  });
-
-  beforeEach(async () => {
-    // Clean test users before each test to avoid conflicts
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          in: [
-            'integration-test@example.com',
-            'student-test@example.com',
-            'duplicate-test@example.com',
-          ],
-        },
-      },
-    });
   });
 
   describe('Happy Path: Full Authentication Flow', () => {
     it('should complete full flow: register → login → access protected route', async () => {
       const testUser = {
-        email: 'integration-test@example.com',
+        email: uniqueEmail('integration-test'),
         password: 'SecurePass123!',
         firstName: 'Integration',
         lastName: 'Test',
@@ -95,7 +78,7 @@ describe('Auth Integration Tests', () => {
 
       expect(protectedResponse1.statusCode).toBe(200);
       const protectedBody1 = JSON.parse(protectedResponse1.body);
-      expect(protectedBody1.user.email).toBe(testUser.email);
+      expect(protectedBody1.email).toBe(testUser.email);
 
       // STEP 4: Access protected route with login token
       const protectedResponse2 = await app.inject({
@@ -108,12 +91,12 @@ describe('Auth Integration Tests', () => {
 
       expect(protectedResponse2.statusCode).toBe(200);
       const protectedBody2 = JSON.parse(protectedResponse2.body);
-      expect(protectedBody2.user.email).toBe(testUser.email);
+      expect(protectedBody2.email).toBe(testUser.email);
     });
 
     it('should access teacher-only route after teacher registration', async () => {
       const teacherUser = {
-        email: 'integration-test@example.com',
+        email: uniqueEmail('integration-test'),
         password: 'TeacherPass123!',
         firstName: 'Teacher',
         lastName: 'Integration',
@@ -149,7 +132,7 @@ describe('Auth Integration Tests', () => {
   describe('Error Cases: Authentication Failures', () => {
     it('should reject login with wrong password', async () => {
       const testUser = {
-        email: 'integration-test@example.com',
+        email: uniqueEmail('integration-test'),
         password: 'CorrectPassword123!',
         firstName: 'Test',
         lastName: 'User',
@@ -296,7 +279,7 @@ describe('Auth Integration Tests', () => {
   describe('Role-Based Access Control', () => {
     it('should allow TEACHER to access teacher-only routes', async () => {
       const teacherUser = {
-        email: 'integration-test@example.com',
+        email: uniqueEmail('integration-test'),
         password: 'TeacherPass123!',
         firstName: 'Teacher',
         lastName: 'Test',
@@ -326,7 +309,7 @@ describe('Auth Integration Tests', () => {
 
     it('should reject STUDENT access to teacher-only routes', async () => {
       const studentUser = {
-        email: 'student-test@example.com',
+        email: uniqueEmail('student-test'),
         password: 'StudentPass123!',
         firstName: 'Student',
         lastName: 'Test',
@@ -360,7 +343,7 @@ describe('Auth Integration Tests', () => {
 
     it('should allow both TEACHER and STUDENT to access general protected routes', async () => {
       const teacherUser = {
-        email: 'integration-test@example.com',
+        email: uniqueEmail('integration-test'),
         password: 'TeacherPass123!',
         firstName: 'Teacher',
         lastName: 'Test',
@@ -368,7 +351,7 @@ describe('Auth Integration Tests', () => {
       };
 
       const studentUser = {
-        email: 'student-test@example.com',
+        email: uniqueEmail('student-test'),
         password: 'StudentPass123!',
         firstName: 'Student',
         lastName: 'Test',
@@ -410,8 +393,8 @@ describe('Auth Integration Tests', () => {
       const teacherBody = JSON.parse(teacherProfile.body);
       const studentBody = JSON.parse(studentProfile.body);
 
-      expect(teacherBody.user.role).toBe('TEACHER');
-      expect(studentBody.user.role).toBe('STUDENT');
+      expect(teacherBody.role).toBe('TEACHER');
+      expect(studentBody.role).toBe('STUDENT');
     });
   });
 

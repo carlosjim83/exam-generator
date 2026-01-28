@@ -1,16 +1,22 @@
 import { UserId } from '../../../domain/value-objects/UserId.js';
 import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
 import { IStorageService } from '../../../domain/services/IStorageService.js';
+import { eventBus } from '../../../infrastructure/events/EventBus.js';
+import type { DocumentUploadedEvent } from '../../../domain/events/DocumentEvents.js';
 
 /**
  * UploadDocumentUseCase
  * Application use case for document upload
- * 
+ *
  * Responsibilities:
  * - Validate file (type, size)
  * - Upload to cloud storage
  * - Create document record
+ * - Emit DocumentUploadedEvent for background processing
  * - Return document metadata
+ *
+ * Note: Processing (text extraction, embeddings) happens asynchronously
+ * via event handler, not in this use case.
  */
 
 export interface UploadDocumentInput {
@@ -59,10 +65,7 @@ export class UploadDocumentUseCase {
     }
 
     // 2. Upload to cloud storage
-    const blobUrl = await this.storageService.upload(
-      input.filename,
-      input.buffer
-    );
+    const blobUrl = await this.storageService.upload(input.filename, input.buffer);
 
     // 3. Create UserId value object
     const userId = UserId.create(input.userId);
@@ -80,7 +83,22 @@ export class UploadDocumentUseCase {
       blobUrl,
     });
 
-    // 6. Return DTO
+    // 6. Emit event for background processing
+    const event: DocumentUploadedEvent = {
+      eventName: 'document.uploaded',
+      occurredAt: new Date(),
+      aggregateId: document.id.value,
+      payload: {
+        documentId: document.id.value,
+        userId: userId.value,
+        filename: input.filename,
+        mimeType: input.mimetype,
+        blobUrl,
+      },
+    };
+    eventBus.publish(event);
+
+    // 7. Return DTO
     return {
       document: {
         id: document.id.value,

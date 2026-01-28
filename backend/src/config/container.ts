@@ -1,11 +1,11 @@
 /**
  * Dependency Injection Container
- * 
+ *
  * Wires up all dependencies for Hexagonal Architecture:
  * - Infrastructure implementations (repositories, services)
  * - Application use cases
  * - Domain services
- * 
+ *
  * This is the ONLY place where we manually instantiate classes.
  * Everything else receives dependencies via constructor injection.
  */
@@ -13,7 +13,7 @@
 import { PrismaClient } from '@prisma/client';
 
 // Infrastructure
-import { 
+import {
   PrismaUserRepository,
   PrismaDocumentRepository,
   BcryptPasswordHasher,
@@ -21,7 +21,6 @@ import {
   AzureBlobStorageService,
   LocalFileStorageService,
   TextExtractorService,
-  DocumentProcessorService
 } from '../infrastructure/index.js';
 
 // Application Use Cases
@@ -32,7 +31,7 @@ import {
   UploadDocumentUseCase,
   GetDocumentUseCase,
   ListDocumentsUseCase,
-  ProcessDocumentUseCase
+  ProcessDocumentUseCase,
 } from '../application/use-cases/index.js';
 
 // Domain Interfaces (for type safety)
@@ -42,7 +41,6 @@ import type { IPasswordHasher } from '../domain/services/IPasswordHasher.js';
 import type { ITokenService } from '../domain/services/ITokenService.js';
 import type { IStorageService } from '../domain/services/IStorageService.js';
 import type { ITextExtractor } from '../domain/services/ITextExtractor.js';
-import type { IDocumentProcessor } from '../domain/services/IDocumentProcessor.js';
 
 /**
  * Container class - Singleton pattern
@@ -59,7 +57,6 @@ export class Container {
   private readonly _tokenService: ITokenService;
   private readonly _storageService: IStorageService;
   private readonly _textExtractor: ITextExtractor;
-  private readonly _documentProcessor: IDocumentProcessor;
 
   // Application Layer - Auth Use Cases
   private readonly _registerUserUseCase: RegisterUserUseCase;
@@ -101,9 +98,8 @@ export class Container {
       this._storageService = new LocalFileStorageService('./uploads');
     }
 
-    // Text Extraction and Document Processing Services
+    // Text Extraction Service
     this._textExtractor = new TextExtractorService();
-    this._documentProcessor = new DocumentProcessorService(this._textExtractor);
 
     // ========================================
     // APPLICATION LAYER - USE CASES
@@ -122,10 +118,7 @@ export class Container {
       this._tokenService
     );
 
-    this._refreshTokenUseCase = new RefreshTokenUseCase(
-      this._userRepository,
-      this._tokenService
-    );
+    this._refreshTokenUseCase = new RefreshTokenUseCase(this._userRepository, this._tokenService);
 
     // Document Use Cases
     this._uploadDocumentUseCase = new UploadDocumentUseCase(
@@ -133,17 +126,12 @@ export class Container {
       this._storageService
     );
 
-    this._getDocumentUseCase = new GetDocumentUseCase(
-      this._documentRepository
-    );
+    this._getDocumentUseCase = new GetDocumentUseCase(this._documentRepository);
 
-    this._listDocumentsUseCase = new ListDocumentsUseCase(
-      this._documentRepository
-    );
+    this._listDocumentsUseCase = new ListDocumentsUseCase(this._documentRepository);
 
     this._processDocumentUseCase = new ProcessDocumentUseCase(
       this._documentRepository,
-      this._documentProcessor,
       this._storageService
     );
   }
@@ -199,10 +187,6 @@ export class Container {
 
   public get textExtractor(): ITextExtractor {
     return this._textExtractor;
-  }
-
-  public get documentProcessor(): IDocumentProcessor {
-    return this._documentProcessor;
   }
 
   // ========================================

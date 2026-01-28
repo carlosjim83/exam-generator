@@ -1,7 +1,7 @@
 /**
  * Document Processing Integration Tests
  * Tests for POST /documents/:id/process endpoint
- * 
+ *
  * Covers:
  * - Full document processing flow (upload → process)
  * - Text extraction from PDF/DOCX
@@ -56,7 +56,7 @@ describe('Document Processing Integration Tests', () => {
 
     const data = JSON.parse(registerResponse.body);
     accessToken = data.accessToken; // Changed from data.tokens.accessToken
-    
+
     // Decode JWT to get userId (without verification for testing)
     const decoded = jwt.decode(accessToken) as any;
     userId = decoded.userId;
@@ -80,7 +80,7 @@ describe('Document Processing Integration Tests', () => {
       // NOTE: Since we're testing without real Azure Blob Storage,
       // we'll create a document directly in the database with a fake blobUrl
       // The actual processing would fail in production without real Azure setup
-      
+
       const document = await prisma.document.create({
         data: {
           userId,
@@ -116,8 +116,8 @@ describe('Document Processing Integration Tests', () => {
     });
 
     it('should return 404 for non-existent document', async () => {
-      // Use a valid UUID that doesn't exist in database
-      const fakeId = '12345678-1234-1234-1234-123456789012';
+      // Use a valid UUIDv4 that doesn't exist in database
+      const fakeId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
 
       const response = await app.inject({
         method: 'POST',
@@ -127,14 +127,13 @@ describe('Document Processing Integration Tests', () => {
         },
       });
 
-      // When document doesn't exist, updateStatus throws and causes 500
-      expect(response.statusCode).toBe(500);
+      // With Genkit use case, returns 404 when document not found
+      expect(response.statusCode).toBe(404);
       const body = JSON.parse(response.body);
-      // The error could be from Prisma (not found) or from processing
-      expect(body.message).toBeTruthy();
+      expect(body.message).toBe('Document not found');
     });
 
-    it('should return 403 when trying to process another user\'s document', async () => {
+    it("should return 403 when trying to process another user's document", async () => {
       // Create another user
       const otherUserResponse = await app.inject({
         method: 'POST',
@@ -149,9 +148,7 @@ describe('Document Processing Integration Tests', () => {
       });
 
       const otherUserData = JSON.parse(otherUserResponse.body);
-      const otherUserDecoded = jwt.decode(
-        otherUserData.accessToken
-      ) as any;
+      const otherUserDecoded = jwt.decode(otherUserData.accessToken) as any;
       const otherUserId = otherUserDecoded.userId;
 
       // Create document owned by other user
@@ -247,8 +244,9 @@ describe('Document Processing Integration Tests', () => {
         },
       });
 
-      expect(response.statusCode).toBe(500);
-      expect(JSON.parse(response.body).message).toContain('DocumentId must be a valid UUID');
+      // Invalid UUID format now returns 400 (Bad Request)
+      expect(response.statusCode).toBe(400);
+      expect(JSON.parse(response.body).message).toBe('Invalid document ID format');
     });
   });
 

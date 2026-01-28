@@ -9,6 +9,7 @@ import { authRoutes } from './routes/auth.routes.js';
 import { oauthRoutes } from './routes/oauth.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
+import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 
 // Validate environment variables on startup
 try {
@@ -18,13 +19,17 @@ try {
   process.exit(1);
 }
 
+// Bootstrap event handlers for background processing
+bootstrapEventHandlers();
+
 // Create Fastify instance with logging
 const fastify = Fastify({
   logger: {
     level: env.NODE_ENV === 'development' ? 'info' : 'warn',
-    transport: env.NODE_ENV === 'development' 
-      ? { target: 'pino-pretty', options: { colorize: true } }
-      : undefined,
+    transport:
+      env.NODE_ENV === 'development'
+        ? { target: 'pino-pretty', options: { colorize: true } }
+        : undefined,
   },
 });
 
@@ -85,7 +90,8 @@ await fastify.register(swagger, {
     openapi: '3.1.0',
     info: {
       title: 'Exam Generator API',
-      description: 'AI-powered exam generation platform with RAG (Retrieval-Augmented Generation). Upload documents, generate exams, and manage student assessments.',
+      description:
+        'AI-powered exam generation platform with RAG (Retrieval-Augmented Generation). Upload documents, generate exams, and manage student assessments.',
       version: '0.1.0',
       contact: {
         name: 'Exam Generator Team',
@@ -194,11 +200,11 @@ signals.forEach((signal) => {
 // Start server
 const start = async () => {
   try {
-    await fastify.listen({ 
-      port: env.PORT, 
-      host: env.HOST 
+    await fastify.listen({
+      port: env.PORT,
+      host: env.HOST,
     });
-    
+
     fastify.log.info(`
 ╔══════════════════════════════════════════════════╗
 ║  🚀 Exam Generator API Server                    ║
