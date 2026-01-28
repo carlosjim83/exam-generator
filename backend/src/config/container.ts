@@ -32,6 +32,7 @@ import {
   GetDocumentUseCase,
   ListDocumentsUseCase,
   ProcessDocumentUseCase,
+  GetDashboardStatsUseCase,
 } from '../application/use-cases/index.js';
 
 // Domain Interfaces (for type safety)
@@ -68,6 +69,9 @@ export class Container {
   private readonly _getDocumentUseCase: GetDocumentUseCase;
   private readonly _listDocumentsUseCase: ListDocumentsUseCase;
   private readonly _processDocumentUseCase: ProcessDocumentUseCase;
+
+  // Application Layer - Dashboard Use Cases
+  private readonly _getDashboardStatsUseCase: GetDashboardStatsUseCase;
 
   private constructor() {
     // ========================================
@@ -134,6 +138,9 @@ export class Container {
       this._documentRepository,
       this._storageService
     );
+
+    // Dashboard Use Cases
+    this._getDashboardStatsUseCase = new GetDashboardStatsUseCase(this._documentRepository);
   }
 
   /**
@@ -221,6 +228,12 @@ export class Container {
 
   public get processDocumentUseCase(): ProcessDocumentUseCase {
     return this._processDocumentUseCase;
+  }
+
+  // Dashboard Use Cases
+
+  public get getDashboardStatsUseCase(): GetDashboardStatsUseCase {
+    return this._getDashboardStatsUseCase;
   }
 
   /**

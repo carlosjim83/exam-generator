@@ -76,6 +76,7 @@ model Document {
   // Timestamps
   uploadedAt  DateTime       @default(now()) @map("uploaded_at")
   processedAt DateTime?      @map("processed_at")
+  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at")
   
   // Relations
   userId      String         @map("user_id")

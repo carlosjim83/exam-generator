@@ -15,7 +15,22 @@ export { ListDocumentsUseCase } from './documents/ListDocumentsUseCase.js';
 export { ProcessDocumentUseCase } from './documents/ProcessDocumentUseCase.js';
 
 // Export input/output types for document use cases
-export type { UploadDocumentInput, UploadDocumentOutput } from './documents/UploadDocumentUseCase.js';
+export type {
+  UploadDocumentInput,
+  UploadDocumentOutput,
+} from './documents/UploadDocumentUseCase.js';
 export type { GetDocumentInput, GetDocumentOutput } from './documents/GetDocumentUseCase.js';
 export type { ListDocumentsInput, ListDocumentsOutput } from './documents/ListDocumentsUseCase.js';
-export type { ProcessDocumentInput, ProcessDocumentOutput } from './documents/ProcessDocumentUseCase.js';
+export type {
+  ProcessDocumentInput,
+  ProcessDocumentOutput,
+} from './documents/ProcessDocumentUseCase.js';
+
+// Application Layer - Dashboard Use Cases
+export { GetDashboardStatsUseCase } from './dashboard/GetDashboardStatsUseCase.js';
+
+// Export input/output types for dashboard use cases
+export type {
+  GetDashboardStatsInput,
+  GetDashboardStatsOutput,
+} from './dashboard/GetDashboardStatsUseCase.js';

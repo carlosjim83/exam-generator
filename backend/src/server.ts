@@ -9,6 +9,7 @@ import { authRoutes } from './routes/auth.routes.js';
 import { oauthRoutes } from './routes/oauth.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
+import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 
 // Validate environment variables on startup
@@ -166,6 +167,7 @@ await fastify.register(swaggerUi, {
 await fastify.register(authRoutes);
 await fastify.register(oauthRoutes);
 await fastify.register(documentRoutes);
+await fastify.register(dashboardRoutes);
 await fastify.register(protectedRoutes);
 
 // Health check endpoint
