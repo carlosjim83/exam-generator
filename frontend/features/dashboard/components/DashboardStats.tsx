@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, ClipboardCheck, Zap, TrendingUp } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
-import { useDashboardStats } from '@/lib/hooks/useDashboard';
+import { useDashboardContext } from '../context/DashboardContext';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatCardProps {
@@ -57,7 +57,7 @@ function StatCardSkeleton() {
 }
 
 export function DashboardStats() {
-  const { stats, loading, error } = useDashboardStats();
+  const { stats, statsLoading: loading, statsError: error } = useDashboardContext();
 
   if (loading) {
     return (

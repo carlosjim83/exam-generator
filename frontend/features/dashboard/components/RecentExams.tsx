@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ClipboardCheck } from 'lucide-react';
-import { useDashboardExams } from '@/lib/hooks/useDashboard';
+import { useDashboardContext } from '../context/DashboardContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Exam } from '@/lib/types/dashboard.types';
 
@@ -75,7 +75,7 @@ function ExamCardSkeleton() {
 }
 
 export function RecentExams() {
-  const { exams, loading, error } = useDashboardExams(2);
+  const { exams, examsLoading: loading, examsError: error } = useDashboardContext();
 
   return (
     <div>

@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Share2, MoreVertical } from 'lucide-react';
-import { useDashboardDocuments } from '@/lib/hooks/useDashboard';
+import { useDashboardContext } from '../context/DashboardContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Document } from '@/lib/types/dashboard.types';
 
@@ -74,7 +74,7 @@ function DocumentItemSkeleton() {
 }
 
 export function RecentDocuments() {
-  const { documents, loading, error } = useDashboardDocuments(2);
+  const { documents, documentsLoading: loading, documentsError: error } = useDashboardContext();
 
   return (
     <div>

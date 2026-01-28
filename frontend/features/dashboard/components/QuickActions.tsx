@@ -1,40 +1,53 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Upload, Wand2, FolderOpen, Users, Lightbulb } from "lucide-react";
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Upload, Wand2, FolderOpen, Users, Lightbulb } from 'lucide-react';
+import { UploadDocumentDialog } from '@/features/documents/components/UploadDocumentDialog';
+import { useDashboardContext } from '@/features/dashboard/context/DashboardContext';
 
 export function QuickActions() {
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const { refreshAll } = useDashboardContext();
+
+  const handleUploadSuccess = async () => {
+    // Refresh all dashboard data after successful upload
+    await refreshAll();
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
 
       {/* Primary Actions */}
       <div className="space-y-3">
-        <Button className="w-full justify-start gap-3 h-12" size="lg">
+        <Button
+          className="w-full justify-start gap-3 h-12"
+          size="lg"
+          onClick={() => setUploadDialogOpen(true)}
+        >
           <Upload className="h-5 w-5" />
           Upload Document
         </Button>
 
-        <Button 
-          variant="secondary" 
-          className="w-full justify-start gap-3 h-12"
-          size="lg"
-        >
+        <UploadDocumentDialog
+          open={uploadDialogOpen}
+          onOpenChange={setUploadDialogOpen}
+          onUploadSuccess={handleUploadSuccess}
+        />
+
+        <Button variant="secondary" className="w-full justify-start gap-3 h-12" size="lg">
           <Wand2 className="h-5 w-5" />
           Generate Exam
         </Button>
 
-        <Button 
-          variant="outline" 
-          className="w-full justify-start gap-3 h-11"
-        >
+        <Button variant="outline" className="w-full justify-start gap-3 h-11">
           <FolderOpen className="h-4 w-4" />
           Browse Library
         </Button>
 
-        <Button 
-          variant="outline" 
-          className="w-full justify-start gap-3 h-11"
-        >
+        <Button variant="outline" className="w-full justify-start gap-3 h-11">
           <Users className="h-4 w-4" />
           Manage Student Groups
         </Button>
@@ -51,15 +64,15 @@ export function QuickActions() {
               <h3 className="font-bold text-sm mb-1">PRO TIP</h3>
             </div>
           </div>
-          
+
           <p className="text-sm leading-relaxed mb-4 text-blue-50">
-            You can now import question banks directly from Google Classroom 
-            using the new integration tool.
+            You can now import question banks directly from Google Classroom using the new
+            integration tool.
           </p>
 
-          <Button 
-            variant="secondary" 
-            size="sm" 
+          <Button
+            variant="secondary"
+            size="sm"
             className="bg-white text-blue-600 hover:bg-white/90"
           >
             Learn more
