@@ -16,7 +16,8 @@ import { PrismaClient } from '@prisma/client';
 import jwt from 'jsonwebtoken';
 import { authRoutes } from '@routes/auth.routes.js';
 import { documentRoutes } from '@routes/document.routes.js';
-import { env } from '@config/env.js';
+// env imported but not used - keeping for future use
+// import { env } from '@config/env.js';
 
 const prisma = new PrismaClient();
 

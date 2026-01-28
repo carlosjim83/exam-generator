@@ -19,7 +19,7 @@ describe('Auth Middleware', () => {
     app.get(
       '/protected',
       { preHandler: authenticateUser },
-      async (request: FastifyRequest, reply: FastifyReply) => {
+      async (request: FastifyRequest, _reply: FastifyReply) => {
         return { message: 'Success', user: (request as any).user };
       }
     );
@@ -28,7 +28,7 @@ describe('Auth Middleware', () => {
     app.get(
       '/teacher-only',
       { preHandler: [authenticateUser, requireRoles(['TEACHER'])] },
-      async (request: FastifyRequest, reply: FastifyReply) => {
+      async (_request: FastifyRequest, _reply: FastifyReply) => {
         return { message: 'Teacher area' };
       }
     );
@@ -37,7 +37,7 @@ describe('Auth Middleware', () => {
     app.get(
       '/teacher-or-student',
       { preHandler: [authenticateUser, requireRoles(['TEACHER', 'STUDENT'])] },
-      async (request: FastifyRequest, reply: FastifyReply) => {
+      async (_request: FastifyRequest, _reply: FastifyReply) => {
         return { message: 'Accessible by both' };
       }
     );

@@ -7,7 +7,8 @@ import { ITokenService } from '@domain/services/ITokenService.js';
 import { User, UserRole, AuthProvider } from '@domain/entities/User.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { Email } from '@domain/value-objects/Email.js';
-import { Password } from '@domain/value-objects/Password.js';
+// Password imported but not used - keeping for potential future use
+// import { Password } from '@domain/value-objects/Password.js';
 
 describe('LoginUserUseCase', () => {
   let loginUserUseCase: LoginUserUseCase;

@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getDashboardService } from '../providers/dashboard-provider';
 import type { Document, Exam, DashboardStats } from '../types/dashboard.types';
 
@@ -40,7 +40,7 @@ export function useDashboardStats(): UseDashboardStatsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -52,11 +52,11 @@ export function useDashboardStats(): UseDashboardStatsResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [fetchStats]);
 
   return { stats, loading, error, refetch: fetchStats };
 }
@@ -69,7 +69,7 @@ export function useDashboardDocuments(limit: number = 5): UseDashboardDocumentsR
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -81,11 +81,11 @@ export function useDashboardDocuments(limit: number = 5): UseDashboardDocumentsR
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit]);
 
   useEffect(() => {
     fetchDocuments();
-  }, [limit]);
+  }, [fetchDocuments]);
 
   return { documents, loading, error, refetch: fetchDocuments };
 }
@@ -98,7 +98,7 @@ export function useDashboardExams(limit: number = 5): UseDashboardExamsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchExams = async () => {
+  const fetchExams = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -110,11 +110,11 @@ export function useDashboardExams(limit: number = 5): UseDashboardExamsResult {
     } finally {
       setLoading(false);
     }
-  };
+  }, [limit]);
 
   useEffect(() => {
     fetchExams();
-  }, [limit]);
+  }, [fetchExams]);
 
   return { exams, loading, error, refetch: fetchExams };
 }

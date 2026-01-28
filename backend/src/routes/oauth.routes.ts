@@ -36,7 +36,9 @@ export async function oauthRoutes(fastify: FastifyInstance) {
   fastify.get('/auth/google/callback', async (request, reply) => {
     try {
       // Exchange authorization code for access token
-      const { token } = await fastify.googleOAuth.getAccessTokenFromAuthorizationCodeFlow(request);
+      const { token } = await (fastify as any).googleOAuth.getAccessTokenFromAuthorizationCodeFlow(
+        request
+      );
 
       // Extract role from OAuth state
       let role: 'TEACHER' | 'STUDENT' = 'TEACHER'; // Default
@@ -49,7 +51,7 @@ export async function oauthRoutes(fastify: FastifyInstance) {
           }
         }
       } catch (error) {
-        fastify.log.warn('Failed to parse OAuth state, using default role TEACHER', error);
+        fastify.log.warn({ error }, 'Failed to parse OAuth state, using default role TEACHER');
       }
 
       fastify.log.info(`OAuth flow initiated with role: ${role}`);
@@ -75,7 +77,7 @@ export async function oauthRoutes(fastify: FastifyInstance) {
         picture: string;
       };
 
-      fastify.log.info('Google user info:', googleUser);
+      fastify.log.info({ user: googleUser }, 'Google user info');
 
       // Check if email is verified
       if (!googleUser.verified_email) {

@@ -5,22 +5,22 @@ import { container } from '../config/container.js';
 // Request/Response Schemas
 const RegisterRequestSchema = Type.Object(
   {
-    email: Type.String({ 
+    email: Type.String({
       format: 'email',
       description: 'User email address (must be unique)',
       examples: ['teacher@example.com'],
     }),
-    password: Type.String({ 
+    password: Type.String({
       minLength: 8,
       description: 'Password (minimum 8 characters)',
       examples: ['SecurePass123!'],
     }),
-    firstName: Type.String({ 
+    firstName: Type.String({
       minLength: 1,
       description: 'User first name',
       examples: ['John'],
     }),
-    lastName: Type.String({ 
+    lastName: Type.String({
       minLength: 1,
       description: 'User last name',
       examples: ['Doe'],
@@ -37,12 +37,12 @@ const RegisterRequestSchema = Type.Object(
 
 const LoginRequestSchema = Type.Object(
   {
-    email: Type.String({ 
+    email: Type.String({
       format: 'email',
       description: 'User email address',
       examples: ['teacher@example.com'],
     }),
-    password: Type.String({ 
+    password: Type.String({
       minLength: 1,
       description: 'User password',
       examples: ['password123'],
@@ -75,7 +75,7 @@ const AuthResponseSchema = Type.Object(
 
 const RefreshRequestSchema = Type.Object(
   {
-    refreshToken: Type.String({ 
+    refreshToken: Type.String({
       minLength: 1,
       description: 'JWT refresh token (7 days TTL)',
       examples: ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'],
@@ -117,7 +117,8 @@ export async function authRoutes(fastify: FastifyInstance) {
         },
         tags: ['auth'],
         summary: 'Register new user',
-        description: 'Create a new user account with local authentication (email/password). Returns user data and JWT tokens upon successful registration.',
+        description:
+          'Create a new user account with local authentication (email/password). Returns user data and JWT tokens upon successful registration.',
       },
     },
     async (request, reply) => {
@@ -190,10 +191,12 @@ export async function authRoutes(fastify: FastifyInstance) {
         response: {
           200: AuthResponseSchema,
           401: ErrorResponseSchema,
+          500: ErrorResponseSchema,
         },
         tags: ['auth'],
         summary: 'Login with credentials',
-        description: 'Authenticate with email and password. Returns user data and JWT tokens upon successful login.',
+        description:
+          'Authenticate with email and password. Returns user data and JWT tokens upon successful login.',
       },
     },
     async (request, reply) => {
@@ -226,7 +229,10 @@ export async function authRoutes(fastify: FastifyInstance) {
         });
       } catch (error: any) {
         // Handle invalid credentials
-        if (error.message === 'Invalid credentials' || error.message.includes('OAuth authentication')) {
+        if (
+          error.message === 'Invalid credentials' ||
+          error.message.includes('OAuth authentication')
+        ) {
           return reply.status(401).send({
             statusCode: 401,
             error: 'Unauthorized',
@@ -235,9 +241,9 @@ export async function authRoutes(fastify: FastifyInstance) {
         }
 
         fastify.log.error(error);
-        return reply.status(400).send({
-          statusCode: 400,
-          error: 'Bad Request',
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
           message: error.message || 'Login failed',
         });
       }
@@ -263,7 +269,8 @@ export async function authRoutes(fastify: FastifyInstance) {
         },
         tags: ['auth'],
         summary: 'Refresh access token',
-        description: 'Use refresh token to obtain a new access token and refresh token pair. The old refresh token becomes invalid after use.',
+        description:
+          'Use refresh token to obtain a new access token and refresh token pair. The old refresh token becomes invalid after use.',
       },
     },
     async (request, reply) => {
@@ -308,7 +315,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         });
       } catch (error: any) {
         fastify.log.error(error);
-        
+
         // Handle JWT errors specifically
         if (error.message.includes('token') || error.message.includes('Token')) {
           return reply.status(401).send({

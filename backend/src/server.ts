@@ -64,7 +64,7 @@ await fastify.register(rateLimit, {
     // Use IP address as key
     return request.ip;
   },
-  errorResponseBuilder: (request, context) => {
+  errorResponseBuilder: (_request, context) => {
     return {
       statusCode: 429,
       error: 'Too Many Requests',

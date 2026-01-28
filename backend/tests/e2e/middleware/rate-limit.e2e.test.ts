@@ -22,7 +22,7 @@ describe('Rate Limiting', () => {
       continueExceeding: true,
       skipOnError: true,
       keyGenerator: (request) => request.ip,
-      errorResponseBuilder: (request, context) => {
+      errorResponseBuilder: (_request, context) => {
         return {
           statusCode: 429,
           error: 'Too Many Requests',

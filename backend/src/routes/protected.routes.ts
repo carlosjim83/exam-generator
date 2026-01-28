@@ -96,7 +96,7 @@ export async function protectedRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (request, reply) => {
+    async (_request, reply) => {
       return reply.send({
         message: 'Welcome to teacher dashboard',
         data: {

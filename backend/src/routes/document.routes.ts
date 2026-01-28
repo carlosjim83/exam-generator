@@ -53,6 +53,15 @@ export async function documentRoutes(fastify: FastifyInstance) {
               message: { type: 'string' },
             },
           },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
         },
       },
     },
@@ -162,6 +171,15 @@ export async function documentRoutes(fastify: FastifyInstance) {
               },
             },
           },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
         },
       },
     },
@@ -235,6 +253,24 @@ export async function documentRoutes(fastify: FastifyInstance) {
           },
           404: {
             description: 'Document not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Access denied',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
             type: 'object',
             properties: {
               statusCode: { type: 'number' },
@@ -339,6 +375,15 @@ export async function documentRoutes(fastify: FastifyInstance) {
           },
           404: {
             description: 'Document not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          400: {
+            description: 'Bad request (invalid ID format)',
             type: 'object',
             properties: {
               statusCode: { type: 'number' },
