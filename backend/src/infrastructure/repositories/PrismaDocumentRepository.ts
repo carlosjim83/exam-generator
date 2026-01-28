@@ -1,9 +1,9 @@
 import { PrismaClient } from '@prisma/client';
-import { 
-  IDocumentRepository, 
-  CreateDocumentDTO, 
+import {
+  IDocumentRepository,
+  CreateDocumentDTO,
   UpdateDocumentStatusDTO,
-  UpdateDocumentMetadataDTO
+  UpdateDocumentMetadataDTO,
 } from '../../domain/repositories/IDocumentRepository.js';
 import { Document, DocumentStatus } from '../../domain/entities/Document.js';
 import { DocumentId } from '../../domain/value-objects/DocumentId.js';
@@ -55,10 +55,7 @@ export class PrismaDocumentRepository implements IDocumentRepository {
     return this.toDomain(document);
   }
 
-  async updateStatus(
-    id: DocumentId,
-    data: UpdateDocumentStatusDTO
-  ): Promise<Document> {
+  async updateStatus(id: DocumentId, data: UpdateDocumentStatusDTO): Promise<Document> {
     const document = await this.prisma.document.update({
       where: { id: id.value },
       data: {
@@ -67,8 +64,7 @@ export class PrismaDocumentRepository implements IDocumentRepository {
         wordCount: data.wordCount,
         errorMessage: data.errorMessage,
         processedAt:
-          data.status === DocumentStatus.COMPLETED ||
-          data.status === DocumentStatus.FAILED
+          data.status === DocumentStatus.COMPLETED || data.status === DocumentStatus.FAILED
             ? new Date()
             : undefined,
       },
@@ -77,10 +73,7 @@ export class PrismaDocumentRepository implements IDocumentRepository {
     return this.toDomain(document);
   }
 
-  async updateMetadata(
-    id: DocumentId,
-    data: UpdateDocumentMetadataDTO
-  ): Promise<Document> {
+  async updateMetadata(id: DocumentId, data: UpdateDocumentMetadataDTO): Promise<Document> {
     const document = await this.prisma.document.update({
       where: { id: id.value },
       data: {
@@ -125,6 +118,26 @@ export class PrismaDocumentRepository implements IDocumentRepository {
       errorMessage: prismaDocument.errorMessage,
       uploadedAt: prismaDocument.uploadedAt,
       processedAt: prismaDocument.processedAt,
+      updatedAt: prismaDocument.updatedAt,
     });
+  }
+
+  async countByUserId(userId: UserId): Promise<number> {
+    return this.prisma.document.count({
+      where: { userId: userId.value },
+    });
+  }
+
+  async findMostRecentByUserId(userId: UserId): Promise<Document | null> {
+    const prismaDocument = await this.prisma.document.findFirst({
+      where: { userId: userId.value },
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    if (!prismaDocument) {
+      return null;
+    }
+
+    return this.toDomain(prismaDocument);
   }
 }

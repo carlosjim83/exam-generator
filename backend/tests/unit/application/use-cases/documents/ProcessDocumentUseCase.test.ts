@@ -36,6 +36,8 @@ describe('ProcessDocumentUseCase', () => {
       updateMetadata: vi.fn(),
       delete: vi.fn(),
       exists: vi.fn(),
+      countByUserId: vi.fn(),
+      findMostRecentByUserId: vi.fn(),
     };
 
     // Mock storage service

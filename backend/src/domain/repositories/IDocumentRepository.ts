@@ -77,4 +77,14 @@ export interface IDocumentRepository {
    * Check if a document exists
    */
   exists(id: DocumentId): Promise<boolean>;
+
+  /**
+   * Count total documents for a user
+   */
+  countByUserId(userId: UserId): Promise<number>;
+
+  /**
+   * Find the most recently updated document for a user
+   */
+  findMostRecentByUserId(userId: UserId): Promise<Document | null>;
 }

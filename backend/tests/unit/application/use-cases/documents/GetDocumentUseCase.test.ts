@@ -20,7 +20,9 @@ describe('GetDocumentUseCase', () => {
       updateMetadata: vi.fn(),
       delete: vi.fn(),
       exists: vi.fn(),
-    };
+      countByUserId: vi.fn(),
+      findMostRecentByUserId: vi.fn(),
+    } as any;
 
     // Instantiate use case with mock
     getDocumentUseCase = new GetDocumentUseCase(mockDocumentRepository);

@@ -30,6 +30,7 @@ export interface DocumentProps {
   errorMessage: string | null;
   uploadedAt: Date;
   processedAt: Date | null;
+  updatedAt?: Date; // Optional, defaults to uploadedAt if not provided
 }
 
 /**
@@ -37,7 +38,12 @@ export interface DocumentProps {
  * Represents an uploaded document in the system
  */
 export class Document {
-  private constructor(private props: DocumentProps) {}
+  private constructor(private props: DocumentProps) {
+    // Default updatedAt to uploadedAt if not provided
+    if (!this.props.updatedAt) {
+      this.props.updatedAt = this.props.uploadedAt;
+    }
+  }
 
   static create(props: DocumentProps): Document {
     // Validation rules
@@ -122,6 +128,10 @@ export class Document {
     return this.props.processedAt;
   }
 
+  get updatedAt(): Date {
+    return this.props.updatedAt || this.props.uploadedAt;
+  }
+
   // Business logic methods
   isPending(): boolean {
     return this.props.status === DocumentStatus.PENDING;
@@ -144,7 +154,10 @@ export class Document {
   }
 
   isDOCX(): boolean {
-    return this.props.mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    return (
+      this.props.mimeType ===
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    );
   }
 
   belongsToUser(userId: UserId): boolean {
@@ -167,6 +180,7 @@ export class Document {
       errorMessage: this.props.errorMessage,
       uploadedAt: this.props.uploadedAt,
       processedAt: this.props.processedAt,
+      updatedAt: this.props.updatedAt,
     };
   }
 }

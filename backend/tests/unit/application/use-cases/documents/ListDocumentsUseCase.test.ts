@@ -20,6 +20,8 @@ describe('ListDocumentsUseCase', () => {
       updateMetadata: vi.fn(),
       delete: vi.fn(),
       exists: vi.fn(),
+      countByUserId: vi.fn(),
+      findMostRecentByUserId: vi.fn(),
     };
 
     // Instantiate use case with mock
