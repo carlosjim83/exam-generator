@@ -39,3 +39,7 @@ prisma/dev.db-journal
 
 # Local file uploads (development)
 uploads/
+
+# Test artifacts
+test-uploads/
+temp/
