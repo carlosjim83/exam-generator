@@ -1,11 +1,10 @@
 /**
  * API Dashboard Service
  *
- * Real implementation that makes HTTP requests to the backend API.
- * Falls back to fixtures for endpoints that don't exist yet.
+ * Makes HTTP requests to the backend API for dashboard data.
+ * Returns empty data when user is not authenticated.
  */
 
-import type { IDashboardService } from '../services/dashboard.service';
 import type { Document, Exam, DashboardStats } from '../types/dashboard.types';
 
 /**
@@ -20,7 +19,7 @@ class TokenManager {
   }
 }
 
-export class ApiDashboardService implements IDashboardService {
+export class ApiDashboardService {
   private readonly baseUrl: string;
 
   constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') {

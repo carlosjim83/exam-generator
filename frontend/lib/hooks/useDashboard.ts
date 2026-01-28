@@ -2,14 +2,17 @@
  * useDashboard Hook
  *
  * React hook for accessing dashboard data with automatic loading/error states.
- * Uses the configured dashboard service (API or fixtures).
+ * Makes direct API calls to backend.
  */
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getDashboardService } from '../providers/dashboard-provider';
+import { ApiDashboardService } from '../providers/api-dashboard.service';
 import type { Document, Exam, DashboardStats } from '../types/dashboard.types';
+
+// Singleton instance
+const dashboardService = new ApiDashboardService();
 
 interface UseDashboardStatsResult {
   stats: DashboardStats | null;
@@ -44,8 +47,7 @@ export function useDashboardStats(): UseDashboardStatsResult {
     try {
       setLoading(true);
       setError(null);
-      const service = getDashboardService();
-      const data = await service.getStats();
+      const data = await dashboardService.getStats();
       setStats(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch stats'));
@@ -73,8 +75,7 @@ export function useDashboardDocuments(limit: number = 5): UseDashboardDocumentsR
     try {
       setLoading(true);
       setError(null);
-      const service = getDashboardService();
-      const data = await service.getRecentDocuments(limit);
+      const data = await dashboardService.getRecentDocuments(limit);
       setDocuments(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch documents'));
@@ -102,8 +103,7 @@ export function useDashboardExams(limit: number = 5): UseDashboardExamsResult {
     try {
       setLoading(true);
       setError(null);
-      const service = getDashboardService();
-      const data = await service.getRecentExams(limit);
+      const data = await dashboardService.getRecentExams(limit);
       setExams(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch exams'));
