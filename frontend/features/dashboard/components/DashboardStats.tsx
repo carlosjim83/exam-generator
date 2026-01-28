@@ -1,6 +1,10 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { FileText, ClipboardCheck, Zap, TrendingUp } from "lucide-react";
-import { LucideIcon } from "lucide-react";
+'use client';
+
+import { Card, CardContent } from '@/components/ui/card';
+import { FileText, ClipboardCheck, Zap, TrendingUp } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
+import { useDashboardStats } from '@/lib/hooks/useDashboard';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface StatCardProps {
   title: string;
@@ -17,12 +21,8 @@ function StatCard({ title, value, change, icon: Icon, iconColor, iconBgColor }: 
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-muted-foreground mb-2">
-              {title}
-            </p>
-            <h3 className="text-3xl font-bold tracking-tight mb-2">
-              {value}
-            </h3>
+            <p className="text-sm font-medium text-muted-foreground mb-2">{title}</p>
+            <h3 className="text-3xl font-bold tracking-tight mb-2">{value}</h3>
             {change && (
               <div className="flex items-center gap-1 text-sm text-green-600">
                 <TrendingUp className="h-3 w-3" />
@@ -39,21 +39,66 @@ function StatCard({ title, value, change, icon: Icon, iconColor, iconBgColor }: 
   );
 }
 
+function StatCardSkeleton() {
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-8 w-20" />
+            <Skeleton className="h-4 w-28" />
+          </div>
+          <Skeleton className="h-11 w-11 rounded-lg" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function DashboardStats() {
+  const { stats, loading, error } = useDashboardStats();
+
+  if (loading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+      </div>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-sm text-destructive">Failed to load stats</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const minutesAgo = Math.floor(
+    (Date.now() - stats.lastActivity.timestamp.getTime()) / (1000 * 60)
+  );
+
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <StatCard
         title="TOTAL DOCUMENTS"
-        value={128}
-        change="+12% this month"
+        value={stats.totalDocuments}
+        change={stats.documentsChange}
         icon={FileText}
         iconColor="text-blue-600"
         iconBgColor="bg-blue-100"
       />
       <StatCard
         title="TOTAL EXAMS"
-        value={42}
-        change="+5% from last term"
+        value={stats.totalExams}
+        change={stats.examsChange}
         icon={ClipboardCheck}
         iconColor="text-blue-600"
         iconBgColor="bg-blue-100"
@@ -63,15 +108,15 @@ export function DashboardStats() {
           <CardContent className="p-6">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground mb-2">
-                  RECENT ACTIVITY
-                </p>
-                <h3 className="text-3xl font-bold tracking-tight mb-2">
-                  Active Now
-                </h3>
+                <p className="text-sm font-medium text-muted-foreground mb-2">RECENT ACTIVITY</p>
+                <h3 className="text-3xl font-bold tracking-tight mb-2">Active Now</h3>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span>Last edit 4 mins ago</span>
+                  <span>
+                    {minutesAgo === 0
+                      ? 'Just now'
+                      : `${minutesAgo} min${minutesAgo > 1 ? 's' : ''} ago`}
+                  </span>
                 </div>
               </div>
               <div className="p-3 rounded-lg bg-blue-100">

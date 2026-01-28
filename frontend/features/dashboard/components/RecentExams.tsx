@@ -1,62 +1,41 @@
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+'use client';
 
-interface Exam {
-  id: string;
-  title: string;
-  status: "ready" | "draft";
-  statusLabel: string;
-  questionsCount: number;
-  gradeLevel: string;
-}
-
-const mockExams: Exam[] = [
-  {
-    id: "1",
-    title: "Midterm Exam: Modern History",
-    status: "ready",
-    statusLabel: "Graded",
-    questionsCount: 25,
-    gradeLevel: "10th Grade",
-  },
-  {
-    id: "2",
-    title: "Physics Final: Thermodynamics",
-    status: "draft",
-    statusLabel: "Unpublished",
-    questionsCount: 40,
-    gradeLevel: "12th Grade",
-  },
-];
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { ClipboardCheck } from 'lucide-react';
+import { useDashboardExams } from '@/lib/hooks/useDashboard';
+import { Skeleton } from '@/components/ui/skeleton';
+import type { Exam } from '@/lib/types/dashboard.types';
 
 function ExamCard({ exam }: { exam: Exam }) {
-  const isReady = exam.status === "ready";
-  
+  const isDraft = exam.status === 'draft';
+  const isPublished = exam.status === 'published';
+
   return (
     <Card>
       <CardContent className="p-6">
         <div className="flex items-start justify-between mb-4">
-          <Badge 
-            variant={isReady ? "success" : "warning"}
+          <Badge
+            variant={isPublished ? 'default' : 'secondary'}
             className="uppercase text-xs font-bold"
           >
             {exam.status}
           </Badge>
           <span className="text-xs text-muted-foreground italic">
-            {exam.statusLabel}
+            {isDraft ? 'Unpublished' : 'Ready'}
           </span>
         </div>
 
         <h3 className="font-semibold text-lg mb-3">{exam.title}</h3>
-        
+
         <p className="text-sm text-muted-foreground">
           {exam.questionsCount} Questions • {exam.gradeLevel}
         </p>
       </CardContent>
 
       <CardFooter className="p-6 pt-0 flex gap-2">
-        {isReady ? (
+        {isPublished ? (
           <>
             <Button className="flex-1">Preview</Button>
             <Button variant="outline" className="flex-1">
@@ -76,7 +55,28 @@ function ExamCard({ exam }: { exam: Exam }) {
   );
 }
 
+function ExamCardSkeleton() {
+  return (
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex items-start justify-between mb-4">
+          <Skeleton className="h-5 w-16" />
+          <Skeleton className="h-4 w-20" />
+        </div>
+        <Skeleton className="h-6 w-full mb-3" />
+        <Skeleton className="h-4 w-32" />
+      </CardContent>
+      <CardFooter className="p-6 pt-0 flex gap-2">
+        <Skeleton className="h-10 flex-1" />
+        <Skeleton className="h-10 flex-1" />
+      </CardFooter>
+    </Card>
+  );
+}
+
 export function RecentExams() {
+  const { exams, loading, error } = useDashboardExams(2);
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -85,11 +85,37 @@ export function RecentExams() {
           View all
         </Button>
       </div>
-      
+
       <div className="grid gap-4 md:grid-cols-2">
-        {mockExams.map((exam) => (
-          <ExamCard key={exam.id} exam={exam} />
-        ))}
+        {loading && (
+          <>
+            <ExamCardSkeleton />
+            <ExamCardSkeleton />
+          </>
+        )}
+
+        {error && (
+          <Card className="col-span-2">
+            <CardContent className="p-6">
+              <p className="text-sm text-destructive">Failed to load exams</p>
+              <p className="text-xs text-muted-foreground mt-1">{error.message}</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && !error && exams.length === 0 && (
+          <Card className="col-span-2">
+            <CardContent className="p-6 text-center">
+              <ClipboardCheck className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">No exams yet</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Create your first exam from uploaded documents
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && !error && exams.map((exam) => <ExamCard key={exam.id} exam={exam} />)}
       </div>
     </div>
   );
