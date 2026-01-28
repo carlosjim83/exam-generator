@@ -5,7 +5,7 @@
  * Covers:
  * - PDF text extraction with pdf-parse
  * - Text chunking with llm-chunk
- * - Embedding generation with Gemini
+ * - Embedding generation with Azure OpenAI
  * - Chunks stored in pgvector database
  * - Status transitions (PENDING → PROCESSING → COMPLETED)
  */
@@ -105,8 +105,8 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
 
     // TODO: This will need actual mocking of Genkit's embed function
     // For now, we'll skip this test if GEMINI_API_KEY is not set
-    if (process.env.GEMINI_API_KEY === 'placeholder') {
-      console.log('⚠️  Skipping Genkit test - GEMINI_API_KEY not configured');
+    if (process.env.AZURE_OPENAI_API_KEY === 'placeholder') {
+      console.log('⚠️  Skipping Genkit test - AZURE_OPENAI_API_KEY not configured');
       return;
     }
 

@@ -496,4 +496,122 @@ export async function documentRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  // POST /documents/:id/reprocess - Reprocess a failed or completed document
+  fastify.post(
+    '/documents/:id/reprocess',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Reprocess a document',
+        description:
+          'Triggers re-processing for a document that previously failed or was completed. Its status will be set to PENDING and chunks will be removed for re-embedding.',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Document UUID' },
+          },
+          required: ['id'],
+        },
+        response: {
+          200: {
+            description: 'Document re-processing initiated successfully',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              status: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          400: {
+            description: 'Bad Request (e.g., invalid document ID or status)',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Access denied',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Document not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal Server Error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+
+        const result = await container.reprocessDocumentUseCase.execute({
+          documentId: id,
+          userId: (request as any).user.userId,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error: any) {
+        fastify.log.error('Reprocess document error:', error);
+
+        if (error.message.includes('Document not found')) {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('Unauthorized')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('cannot be reprocessed')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('valid UUID')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: 'Invalid document ID format',
+          });
+        }
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to reprocess document',
+        });
+      }
+    }
+  );
 }

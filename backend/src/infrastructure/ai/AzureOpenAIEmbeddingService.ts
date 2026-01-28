@@ -2,7 +2,7 @@
  * Azure OpenAI Embedding Service
  *
  * Generates embeddings using Azure OpenAI Service (text-embedding-ada-002 model).
- * This service provides 720 RPM (7x more than Gemini free tier) and uses
+ * This service provides 720 RPM (compared to other services) and uses
  * university Azure credits.
  */
 

@@ -13,6 +13,8 @@ export { LocalFileStorageService } from './storage/LocalFileStorageService.js';
 // Infrastructure Layer - Text Extraction
 export { TextExtractorService } from './text-extraction/TextExtractorService.js';
 
+// Infrastructure Layer - Message Broker
+export { BullMQMessageBroker } from './message-broker/BullMQMessageBroker.js';
+
 // Infrastructure Layer - Document Processing
 export { DocumentProcessorService } from './document-processing/DocumentProcessorService.js';
-

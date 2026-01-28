@@ -6,7 +6,7 @@
  *
  * Features:
  * - Processes ONE document at a time (concurrency: 1)
- * - Rate limiting: Max 1 document per 60 seconds (respects Gemini API limits)
+ * - Rate limiting: Max 1 document per 60 seconds (respects external AI service rate limits)
  * - Automatic retry on failure (3 attempts with exponential backoff)
  * - Graceful shutdown on SIGTERM/SIGINT
  */
@@ -28,7 +28,7 @@ const processDocumentUseCase = new ProcessDocumentUseCase(documentRepository, st
  * Worker instance
  *
  * Concurrency: 1 - Process one document at a time
- * Rate Limiter: 1 job per 60 seconds - Respects Gemini API free tier (100 RPM)
+ * Rate Limiter: 1 job per 60 seconds - Respects external AI service rate limits
  *
  * With this config, even a 100-chunk document should process without hitting rate limits
  * because we're spacing out document processing, not individual chunk processing.
@@ -81,7 +81,7 @@ export const documentWorker = new Worker<DocumentJobData>(
     concurrency: 1, // Process ONE document at a time
 
     // Rate limiter: Maximum 1 job per 60 seconds
-    // This ensures we don't hit Gemini API rate limits
+    // This ensures we don't hit external AI service rate limits
     limiter: {
       max: 1, // Max 1 job...
       duration: 60 * 1000, // ...per 60 seconds

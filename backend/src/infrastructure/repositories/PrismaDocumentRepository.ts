@@ -4,6 +4,7 @@ import {
   CreateDocumentDTO,
   UpdateDocumentStatusDTO,
   UpdateDocumentMetadataDTO,
+  QueryDocumentResult, // Added this import
 } from '../../domain/repositories/IDocumentRepository.js';
 import { Document, DocumentStatus } from '../../domain/entities/Document.js';
 import { DocumentId } from '../../domain/value-objects/DocumentId.js';
@@ -92,6 +93,12 @@ export class PrismaDocumentRepository implements IDocumentRepository {
     });
   }
 
+  async deleteChunksByDocumentId(documentId: DocumentId): Promise<void> {
+    await this.prisma.documentChunk.deleteMany({
+      where: { documentId: documentId.value },
+    });
+  }
+
   async exists(id: DocumentId): Promise<boolean> {
     const count = await this.prisma.document.count({
       where: { id: id.value },
@@ -120,6 +127,46 @@ export class PrismaDocumentRepository implements IDocumentRepository {
       processedAt: prismaDocument.processedAt,
       updatedAt: prismaDocument.updatedAt,
     });
+  }
+
+  async searchSimilarChunks(
+    documentId: DocumentId,
+    queryEmbedding: number[],
+    topK: number
+  ): Promise<QueryDocumentResult[]> {
+    // Convert the number array to a pgvector string format
+    const queryEmbeddingString = `[${queryEmbedding.join(',')}]`;
+
+    // Use raw SQL query for pgvector's cosine similarity search
+    // The <-> operator computes cosine distance, so we subtract from 1 to get similarity
+    const results: {
+      id: string;
+      content: string;
+      chunk_index: number;
+      similarity: number;
+      word_count: number;
+      page_number: number | null;
+    }[] = await this.prisma.$queryRaw`
+      SELECT
+        id,
+        content,
+        chunk_index,
+        (1 - (embedding <=> ${queryEmbeddingString}::vector)) as similarity,
+        word_count,
+        page_number
+      FROM document_chunks
+      WHERE document_id = ${documentId.value}
+      ORDER BY embedding <=> ${queryEmbeddingString}::vector
+      LIMIT ${topK}
+    `;
+
+    return results.map((r) => ({
+      chunkIndex: r.chunk_index,
+      content: r.content,
+      similarity: r.similarity,
+      wordCount: r.word_count,
+      pageNumber: r.page_number,
+    }));
   }
 
   async countByUserId(userId: UserId): Promise<number> {

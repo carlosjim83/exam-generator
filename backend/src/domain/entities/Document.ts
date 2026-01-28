@@ -160,8 +160,30 @@ export class Document {
     );
   }
 
-  belongsToUser(userId: UserId): boolean {
+  isOwnedBy(userId: UserId): boolean {
     return this.props.userId.equals(userId);
+  }
+
+  updateStatus(newStatus: DocumentStatus): void {
+    this.props.status = newStatus;
+    this.props.updatedAt = new Date();
+    if (newStatus === DocumentStatus.COMPLETED || newStatus === DocumentStatus.FAILED) {
+      this.props.processedAt = new Date(); // Update processedAt if relevant status
+    } else if (newStatus === DocumentStatus.PENDING) {
+      this.props.processedAt = null; // Clear processedAt if reprocessing
+    }
+  }
+
+  clearErrorMessage(): void {
+    this.props.errorMessage = null;
+    this.props.updatedAt = new Date();
+  }
+
+  clearProcessingMetadata(): void {
+    this.props.pageCount = null;
+    this.props.wordCount = null;
+    this.props.processedAt = null;
+    this.props.updatedAt = new Date();
   }
 
   // Convert to plain object (for serialization)

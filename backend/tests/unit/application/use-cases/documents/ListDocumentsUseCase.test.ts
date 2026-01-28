@@ -22,6 +22,8 @@ describe('ListDocumentsUseCase', () => {
       exists: vi.fn(),
       countByUserId: vi.fn(),
       findMostRecentByUserId: vi.fn(),
+      searchSimilarChunks: vi.fn(() => Promise.resolve([])),
+      deleteChunksByDocumentId: vi.fn(),
     };
 
     // Instantiate use case with mock

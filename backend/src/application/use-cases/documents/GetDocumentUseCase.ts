@@ -5,7 +5,7 @@ import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepos
 /**
  * GetDocumentUseCase
  * Application use case for retrieving a single document
- * 
+ *
  * Responsibilities:
  * - Find document by ID
  * - Verify ownership
@@ -54,7 +54,7 @@ export class GetDocumentUseCase {
     }
 
     // 3. Verify ownership
-    if (!document.belongsToUser(userId)) {
+    if (!document.isOwnedBy(userId)) {
       throw new Error('Access denied');
     }
 

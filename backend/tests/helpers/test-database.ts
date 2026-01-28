@@ -109,8 +109,8 @@ export async function createTestChunk(options: CreateTestChunkOptions) {
   const pageNumber = options.pageNumber ?? null;
   const wordCount = options.wordCount ?? options.content.split(/\s+/).length;
 
-  // Generate random embedding if not provided (768 dimensions for Gemini)
-  const embedding = options.embedding ?? Array.from({ length: 768 }, () => Math.random());
+  // Generate random embedding if not provided (1536 dimensions for Azure OpenAI)
+  const embedding = options.embedding ?? Array.from({ length: 1536 }, () => Math.random());
   const embeddingString = `[${embedding.join(',')}]`;
 
   // Use raw SQL because pgvector embedding is Unsupported type in Prisma

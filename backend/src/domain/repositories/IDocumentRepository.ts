@@ -21,9 +21,9 @@ export interface CreateDocumentDTO {
  */
 export interface UpdateDocumentStatusDTO {
   status: DocumentStatus;
-  pageCount?: number;
-  wordCount?: number;
-  errorMessage?: string;
+  pageCount?: number | null;
+  wordCount?: number | null;
+  errorMessage?: string | null;
 }
 
 /**
@@ -34,6 +34,14 @@ export interface UpdateDocumentMetadataDTO {
   pageCount: number;
   wordCount: number;
   processedAt?: Date;
+}
+
+export interface QueryDocumentResult {
+  chunkIndex: number;
+  content: string;
+  similarity: number; // Cosine similarity score (0-1)
+  wordCount: number;
+  pageNumber?: number | null;
 }
 
 /**
@@ -74,6 +82,11 @@ export interface IDocumentRepository {
   delete(id: DocumentId): Promise<void>;
 
   /**
+   * Delete all chunks associated with a document
+   */
+  deleteChunksByDocumentId(documentId: DocumentId): Promise<void>;
+
+  /**
    * Check if a document exists
    */
   exists(id: DocumentId): Promise<boolean>;
@@ -87,4 +100,13 @@ export interface IDocumentRepository {
    * Find the most recently updated document for a user
    */
   findMostRecentByUserId(userId: UserId): Promise<Document | null>;
+
+  /**
+   * Search for similar chunks within a document using a query embedding.
+   */
+  searchSimilarChunks(
+    documentId: DocumentId,
+    queryEmbedding: number[],
+    topK: number
+  ): Promise<QueryDocumentResult[]>;
 }

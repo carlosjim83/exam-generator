@@ -21,6 +21,7 @@ import {
   AzureBlobStorageService,
   LocalFileStorageService,
   TextExtractorService,
+  BullMQMessageBroker, // Added
 } from '../infrastructure/index.js';
 
 // Application Use Cases
@@ -32,6 +33,7 @@ import {
   GetDocumentUseCase,
   ListDocumentsUseCase,
   ProcessDocumentUseCase,
+  ReprocessDocumentUseCase, // Added
   GetDashboardStatsUseCase,
 } from '../application/use-cases/index.js';
 
@@ -42,6 +44,7 @@ import type { IPasswordHasher } from '../domain/services/IPasswordHasher.js';
 import type { ITokenService } from '../domain/services/ITokenService.js';
 import type { IStorageService } from '../domain/services/IStorageService.js';
 import type { ITextExtractor } from '../domain/services/ITextExtractor.js';
+import type { IMessageBroker } from '../application/ports/IMessageBroker.js'; // Added
 
 /**
  * Container class - Singleton pattern
@@ -58,6 +61,7 @@ export class Container {
   private readonly _tokenService: ITokenService;
   private readonly _storageService: IStorageService;
   private readonly _textExtractor: ITextExtractor;
+  private readonly _messageBroker: IMessageBroker; // Added
 
   // Application Layer - Auth Use Cases
   private readonly _registerUserUseCase: RegisterUserUseCase;
@@ -69,6 +73,7 @@ export class Container {
   private readonly _getDocumentUseCase: GetDocumentUseCase;
   private readonly _listDocumentsUseCase: ListDocumentsUseCase;
   private readonly _processDocumentUseCase: ProcessDocumentUseCase;
+  private readonly _reprocessDocumentUseCase: ReprocessDocumentUseCase; // Added
 
   // Application Layer - Dashboard Use Cases
   private readonly _getDashboardStatsUseCase: GetDashboardStatsUseCase;
@@ -104,6 +109,7 @@ export class Container {
 
     // Text Extraction Service
     this._textExtractor = new TextExtractorService();
+    this._messageBroker = new BullMQMessageBroker(); // Instantiate Message Broker
 
     // ========================================
     // APPLICATION LAYER - USE CASES
@@ -137,6 +143,11 @@ export class Container {
     this._processDocumentUseCase = new ProcessDocumentUseCase(
       this._documentRepository,
       this._storageService
+    );
+
+    this._reprocessDocumentUseCase = new ReprocessDocumentUseCase(
+      this._documentRepository,
+      this._messageBroker
     );
 
     // Dashboard Use Cases
@@ -228,6 +239,10 @@ export class Container {
 
   public get processDocumentUseCase(): ProcessDocumentUseCase {
     return this._processDocumentUseCase;
+  }
+
+  public get reprocessDocumentUseCase(): ReprocessDocumentUseCase {
+    return this._reprocessDocumentUseCase;
   }
 
   // Dashboard Use Cases

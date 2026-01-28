@@ -19,7 +19,7 @@ import { randomUUID } from 'crypto';
  * 5. Calls Genkit flow to:
  *    - Extract text from PDF
  *    - Chunk text intelligently
- *    - Generate embeddings with Gemini
+ *    - Generate embeddings with Azure OpenAI
  *    - Store chunks + embeddings in pgvector
  * 6. Updates document with metadata and COMPLETED status
  * 7. Cleans up temporary file

@@ -3,6 +3,7 @@
 > **Working like Jira tickets**: Each section is an Epic, each item is a Story/Task
 
 **Legend**:
+
 - 🟢 **DONE** - Completed and committed
 - 🟡 **IN PROGRESS** - Currently working on
 - 🔴 **TODO** - Not started yet
@@ -14,6 +15,7 @@
 ## Epic 1: Project Setup & Documentation 🟢 DONE
 
 ### Stories:
+
 - [x] **DOC-001**: Create all Architecture Decision Records (ADRs) - 7 ADRs
 - [x] **DOC-002**: Create functional specifications - 4 specs
 - [x] **DOC-003**: Create system architecture diagram
@@ -34,11 +36,13 @@
 **Target**: Version 0.2.0
 
 ### BACK-001: Fastify Server Setup 🔴 TODO
+
 **Priority**: P0 (Critical)  
 **Estimate**: 1 hour  
 **Dependencies**: None
 
 **Tasks**:
+
 - [ ] Create `backend/package.json` with dependencies
 - [ ] Setup TypeScript configuration (`tsconfig.json`)
 - [ ] Create Fastify server entrypoint (`src/server.ts`)
@@ -50,6 +54,7 @@
 - [ ] Test server starts on port 3001
 
 **Acceptance Criteria**:
+
 - ✅ Server starts without errors
 - ✅ Health endpoint returns 200 OK
 - ✅ Hot reload works (change file → server restarts)
@@ -58,11 +63,13 @@
 ---
 
 ### BACK-002: Vitest Testing Setup 🔴 TODO
+
 **Priority**: P0 (Critical)  
 **Estimate**: 30 min  
 **Dependencies**: BACK-001
 
 **Tasks**:
+
 - [ ] Install Vitest and dependencies
 - [ ] Create Vitest config (`vitest.config.ts`)
 - [ ] Setup test utilities and helpers
@@ -71,6 +78,7 @@
 - [ ] Configure coverage thresholds (80% minimum)
 
 **Acceptance Criteria**:
+
 - ✅ `pnpm test` runs successfully
 - ✅ Coverage reports generated
 - ✅ Tests run in watch mode with `pnpm test:watch`
@@ -78,11 +86,13 @@
 ---
 
 ### BACK-003: Prisma Setup & Database Schema 🔴 TODO
+
 **Priority**: P0 (Critical)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-001
 
 **Tasks**:
+
 - [ ] Install Prisma and Prisma Client
 - [ ] Initialize Prisma (`prisma init`)
 - [ ] Create database schema (`schema.prisma`):
@@ -99,6 +109,7 @@
 - [ ] Test connection with simple query
 
 **Acceptance Criteria**:
+
 - ✅ Schema matches documented architecture
 - ✅ Migration runs successfully
 - ✅ Prisma Client generates TypeScript types
@@ -107,6 +118,7 @@
 ---
 
 ### BACK-004: Authentication Service (TDD) 🔴 TODO
+
 **Priority**: P0 (Critical)  
 **Estimate**: 3 hours  
 **Dependencies**: BACK-002, BACK-003
@@ -114,12 +126,14 @@
 **TDD Approach** (Write tests FIRST):
 
 #### Test Suite 1: Password Hashing
+
 - [ ] Write test: `should hash password with bcrypt`
 - [ ] Write test: `should verify correct password`
 - [ ] Write test: `should reject incorrect password`
 - [ ] Implement: `hashPassword()` and `verifyPassword()`
 
 #### Test Suite 2: JWT Token Generation
+
 - [ ] Write test: `should generate access token with user payload`
 - [ ] Write test: `should generate refresh token`
 - [ ] Write test: `should verify valid access token`
@@ -128,6 +142,7 @@
 - [ ] Implement: `generateAccessToken()`, `generateRefreshToken()`, `verifyToken()`
 
 #### Test Suite 3: User Registration
+
 - [ ] Write test: `should register new user with valid data`
 - [ ] Write test: `should reject duplicate email`
 - [ ] Write test: `should hash password before storing`
@@ -135,6 +150,7 @@
 - [ ] Implement: `registerUser()` service method
 
 #### Test Suite 4: User Login
+
 - [ ] Write test: `should login with correct credentials`
 - [ ] Write test: `should reject invalid email`
 - [ ] Write test: `should reject incorrect password`
@@ -142,6 +158,7 @@
 - [ ] Implement: `loginUser()` service method
 
 **Acceptance Criteria**:
+
 - ✅ All tests pass (RED → GREEN → REFACTOR)
 - ✅ Test coverage ≥ 80% for auth service
 - ✅ Passwords hashed with bcrypt (12 rounds)
@@ -150,6 +167,7 @@
 ---
 
 ### BACK-005: Auth API Routes 🔴 TODO
+
 **Priority**: P0 (Critical)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-004
@@ -157,6 +175,7 @@
 **Routes to Implement**:
 
 #### POST /api/auth/register
+
 - [ ] Write integration test: successful registration
 - [ ] Write integration test: duplicate email error (409)
 - [ ] Write integration test: validation errors (400)
@@ -165,6 +184,7 @@
 - [ ] Return user + tokens
 
 #### POST /api/auth/login
+
 - [ ] Write integration test: successful login
 - [ ] Write integration test: invalid credentials (401)
 - [ ] Write integration test: missing fields (400)
@@ -173,6 +193,7 @@
 - [ ] Set httpOnly cookies for tokens
 
 #### POST /api/auth/refresh
+
 - [ ] Write integration test: successful token refresh
 - [ ] Write integration test: invalid refresh token (401)
 - [ ] Write integration test: expired refresh token (401)
@@ -181,18 +202,21 @@
 - [ ] Generate new access token
 
 #### POST /api/auth/logout
+
 - [ ] Write integration test: successful logout
 - [ ] Implement route handler
 - [ ] Blacklist refresh token (or delete from DB)
 - [ ] Clear cookies
 
 #### GET /api/auth/me
+
 - [ ] Write integration test: return current user (authenticated)
 - [ ] Write integration test: reject unauthenticated (401)
 - [ ] Implement route handler
 - [ ] Use auth middleware
 
 **Acceptance Criteria**:
+
 - ✅ All routes tested with integration tests
 - ✅ Proper HTTP status codes
 - ✅ Error handling with clear messages
@@ -201,11 +225,13 @@
 ---
 
 ### BACK-006: Authentication Middleware 🔴 TODO
+
 **Priority**: P0 (Critical)  
 **Estimate**: 1 hour  
 **Dependencies**: BACK-004
 
 **Tasks**:
+
 - [ ] Write test: `should authenticate valid JWT token`
 - [ ] Write test: `should reject missing token (401)`
 - [ ] Write test: `should reject invalid token (401)`
@@ -216,6 +242,7 @@
 - [ ] Add `request.user` type definition
 
 **Acceptance Criteria**:
+
 - ✅ Middleware tested thoroughly
 - ✅ Can be applied to protected routes
 - ✅ TypeScript types for `request.user`
@@ -223,11 +250,13 @@
 ---
 
 ### BACK-007: Rate Limiting 🔴 TODO
+
 **Priority**: P1 (High)  
 **Estimate**: 30 min  
 **Dependencies**: BACK-005
 
 **Tasks**:
+
 - [ ] Install `@fastify/rate-limit`
 - [ ] Configure rate limits:
   - Login: 5 attempts per 15min per IP
@@ -237,6 +266,7 @@
 - [ ] Test rate limiting works
 
 **Acceptance Criteria**:
+
 - ✅ Rate limits enforced
 - ✅ Returns 429 Too Many Requests when exceeded
 - ✅ Headers show remaining attempts
@@ -248,11 +278,13 @@
 **Target**: Version 0.3.0
 
 ### BACK-008: Azure Blob Storage Integration 🔴 TODO
+
 **Priority**: P1 (High)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-006
 
 **Tasks**:
+
 - [ ] Install `@azure/storage-blob`
 - [ ] Create StorageService class
 - [ ] Write test: generate upload URL (SAS token, write-only, 10min expiry)
@@ -263,6 +295,7 @@
 - [ ] Add error handling for Azure API errors
 
 **Acceptance Criteria**:
+
 - ✅ Can generate signed URLs
 - ✅ SAS tokens have correct permissions and expiry
 - ✅ All methods tested with mocks (no real Azure calls in tests)
@@ -270,6 +303,7 @@
 ---
 
 ### BACK-009: Document Upload Routes 🔴 TODO
+
 **Priority**: P1 (High)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-008
@@ -277,6 +311,7 @@
 **Routes**:
 
 #### POST /api/documents/upload-url
+
 - [ ] Write test: generate upload URL for valid file
 - [ ] Write test: reject invalid MIME type (400)
 - [ ] Write test: reject file too large (413)
@@ -287,6 +322,7 @@
 - [ ] Return upload URL + documentId
 
 #### POST /api/documents/confirm-upload
+
 - [ ] Write test: confirm upload and create document record
 - [ ] Write test: reject if file not found in Azure (404)
 - [ ] Write test: create document with status PROCESSING
@@ -296,6 +332,7 @@
 - [ ] Trigger async processing (placeholder for now)
 
 **Acceptance Criteria**:
+
 - ✅ Upload flow works end-to-end (get URL → upload → confirm)
 - ✅ Document record created with correct metadata
 - ✅ Only authenticated users can upload
@@ -303,6 +340,7 @@
 ---
 
 ### BACK-010: Document List & Details Routes 🔴 TODO
+
 **Priority**: P1 (High)  
 **Estimate**: 1 hour  
 **Dependencies**: BACK-009
@@ -310,6 +348,7 @@
 **Routes**:
 
 #### GET /api/documents
+
 - [ ] Write test: return user's documents
 - [ ] Write test: filter by status (query param)
 - [ ] Write test: pagination works
@@ -317,23 +356,27 @@
 - [ ] Implement route handler
 
 #### GET /api/documents/:id
+
 - [ ] Write test: return document details
 - [ ] Write test: include chunk count
 - [ ] Write test: reject if user doesn't own document (403)
 - [ ] Implement route handler
 
 #### GET /api/documents/:id/download
+
 - [ ] Write test: redirect to Azure download URL
 - [ ] Write test: reject if user doesn't own document (403)
 - [ ] Implement route handler
 
 #### DELETE /api/documents/:id
+
 - [ ] Write test: delete document and blob
 - [ ] Write test: cascade delete chunks
 - [ ] Write test: reject if user doesn't own document (403)
 - [ ] Implement route handler
 
 **Acceptance Criteria**:
+
 - ✅ All routes protected (require auth)
 - ✅ Authorization checks (user owns resource)
 - ✅ Pagination works correctly
@@ -341,11 +384,13 @@
 ---
 
 ### BACK-011: Document Processing (Text Extraction) 🔴 TODO
+
 **Priority**: P1 (High)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-009
 
 **Tasks**:
+
 - [ ] Install `pdf-parse` and `mammoth`
 - [ ] Create DocumentProcessingService
 - [ ] Write test: extract text from PDF
@@ -356,6 +401,7 @@
 - [ ] Update document status on success/failure
 
 **Acceptance Criteria**:
+
 - ✅ Extracts text from PDF and DOCX
 - ✅ Handles errors gracefully
 - ✅ Updates document status (PROCESSING → READY/FAILED)
@@ -363,11 +409,13 @@
 ---
 
 ### BACK-012: Text Chunking 🔴 TODO
+
 **Priority**: P1 (High)  
 **Estimate**: 1 hour  
 **Dependencies**: BACK-011
 
 **Tasks**:
+
 - [ ] Install `langchain/text_splitter`
 - [ ] Write test: split text into chunks (1000 chars, 200 overlap)
 - [ ] Write test: handle short text (< 1000 chars)
@@ -376,40 +424,23 @@
 - [ ] Store chunks in database with position
 
 **Acceptance Criteria**:
+
 - ✅ Text split into reasonable chunks
 - ✅ Chunks stored with position (order preserved)
 - ✅ Overlap configured correctly
 
 ---
 
-### BACK-013: Gemini Embedding Generation 🔴 TODO
-**Priority**: P1 (High)  
-**Estimate**: 2 hours  
-**Dependencies**: BACK-012
-
-**Tasks**:
-- [ ] Install `@google/generative-ai`
-- [ ] Create EmbeddingService
-- [ ] Write test: generate embedding for single text
-- [ ] Write test: batch generate embeddings
-- [ ] Write test: handle rate limiting (retry with backoff)
-- [ ] Write test: handle API errors
-- [ ] Implement embedding generation
-- [ ] Store embeddings in Chunk table (vector type)
-
-**Acceptance Criteria**:
-- ✅ Generates 768-dimensional embeddings
-- ✅ Handles rate limiting gracefully
-- ✅ Stores embeddings in pgvector format
-
 ---
 
 ### BACK-014: Complete Document Processing Pipeline ⚪ BLOCKED
+
 **Priority**: P1 (High)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-011, BACK-012, BACK-013
 
 **Tasks**:
+
 - [ ] Integrate all processing steps:
   1. Download from Azure
   2. Extract text
@@ -423,6 +454,7 @@
 - [ ] (Optional) Add BullMQ for async processing
 
 **Acceptance Criteria**:
+
 - ✅ Full pipeline runs end-to-end
 - ✅ Document status updates correctly
 - ✅ Errors logged and document marked as FAILED
@@ -434,11 +466,13 @@
 **Target**: Version 0.4.0
 
 ### BACK-015: Vector Similarity Search ⚪ BLOCKED
+
 **Priority**: P0 (Critical)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-013
 
 **Tasks**:
+
 - [ ] Create VectorSearchService
 - [ ] Write test: find similar chunks (cosine similarity)
 - [ ] Write test: search across multiple documents
@@ -448,6 +482,7 @@
 - [ ] Add HNSW index for performance
 
 **Acceptance Criteria**:
+
 - ✅ Returns relevant chunks for query embedding
 - ✅ Results sorted by similarity (highest first)
 - ✅ Performance < 100ms for 5K chunks
@@ -455,11 +490,13 @@
 ---
 
 ### BACK-016: Exam Generation Service ⚪ BLOCKED
+
 **Priority**: P0 (Critical)  
 **Estimate**: 3 hours  
 **Dependencies**: BACK-015
 
 **Tasks**:
+
 - [ ] Create ExamGenerationService
 - [ ] Write test: generate query embedding from topic
 - [ ] Write test: retrieve relevant chunks
@@ -471,6 +508,7 @@
 - [ ] Add retry logic for API failures
 
 **Acceptance Criteria**:
+
 - ✅ Generates exam from multiple documents
 - ✅ Returns structured JSON (questions with options)
 - ✅ Validates generated exam format
@@ -479,6 +517,7 @@
 ---
 
 ### BACK-017: Exam API Routes ⚪ BLOCKED
+
 **Priority**: P0 (Critical)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-016
@@ -486,6 +525,7 @@
 **Routes**:
 
 #### POST /api/exams/generate
+
 - [ ] Write test: generate exam from multiple documents
 - [ ] Write test: validate documentIds belong to user
 - [ ] Write test: validate all documents are READY
@@ -493,28 +533,33 @@
 - [ ] Implement route handler
 
 #### GET /api/exams
+
 - [ ] Write test: list user's exams
 - [ ] Write test: pagination
 - [ ] Write test: filter by documentId
 - [ ] Implement route handler
 
 #### GET /api/exams/:id
+
 - [ ] Write test: return exam with all questions
 - [ ] Write test: reject if user doesn't own exam (403)
 - [ ] Implement route handler
 
 #### PATCH /api/exams/:id
+
 - [ ] Write test: update exam title
 - [ ] Write test: update questions
 - [ ] Write test: reject if user doesn't own exam (403)
 - [ ] Implement route handler
 
 #### DELETE /api/exams/:id
+
 - [ ] Write test: delete exam and questions
 - [ ] Write test: reject if user doesn't own exam (403)
 - [ ] Implement route handler
 
 **Acceptance Criteria**:
+
 - ✅ All routes protected and authorized
 - ✅ Exam generation works end-to-end
 - ✅ Can edit generated exams
@@ -526,11 +571,13 @@
 **Target**: Version 0.5.0
 
 ### BACK-018: Passport.js Setup ⚪ BLOCKED
+
 **Priority**: P2 (Medium)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-006
 
 **Tasks**:
+
 - [ ] Install `@fastify/passport` and OAuth strategies
 - [ ] Configure Passport.js plugin
 - [ ] Setup session serialization/deserialization
@@ -539,11 +586,13 @@
 ---
 
 ### BACK-019: Google OAuth ⚪ BLOCKED
+
 **Priority**: P2 (Medium)  
 **Estimate**: 2 hours  
 **Dependencies**: BACK-018
 
 **Tasks**:
+
 - [ ] Install `passport-google-oauth20`
 - [ ] Configure Google strategy
 - [ ] Implement routes: `/api/auth/google`, `/api/auth/google/callback`
@@ -554,6 +603,7 @@
 ---
 
 ### BACK-020: GitHub OAuth ⚪ BLOCKED
+
 **Priority**: P2 (Medium)  
 **Estimate**: 1 hour  
 **Dependencies**: BACK-018
@@ -563,6 +613,7 @@
 ---
 
 ### BACK-021: Microsoft OAuth ⚪ BLOCKED
+
 **Priority**: P2 (Medium)  
 **Estimate**: 1 hour  
 **Dependencies**: BACK-018
@@ -576,15 +627,22 @@
 **Target**: Version 0.6.0
 
 ### FRONT-001: Next.js Setup 🔴 TODO
+
 ### FRONT-002: Tailwind + shadcn/ui Setup 🔴 TODO
+
 ### FRONT-003: Authentication UI (Login, Register) 🔴 TODO
+
 ### FRONT-004: Dashboard UI 🔴 TODO
+
 ### FRONT-005: Document Library UI 🔴 TODO
+
 ### FRONT-006: Document Upload UI 🔴 TODO
+
 ### FRONT-007: Exam Generator Wizard UI 🔴 TODO
+
 ### FRONT-008: Exam Review UI 🔴 TODO
 
-*(Full frontend breakdown coming soon)*
+_(Full frontend breakdown coming soon)_
 
 ---
 
@@ -593,7 +651,9 @@
 **Target**: Version 0.7.0
 
 ### TEST-001: E2E Tests (Playwright) ⚪ BLOCKED
+
 ### TEST-002: Load Testing ⚪ BLOCKED
+
 ### TEST-003: Security Audit ⚪ BLOCKED
 
 ---
@@ -603,8 +663,11 @@
 **Target**: Version 1.0.0
 
 ### DEPLOY-001: Azure Infrastructure Setup ⚪ BLOCKED
+
 ### DEPLOY-002: CI/CD Pipeline (GitHub Actions) ⚪ BLOCKED
+
 ### DEPLOY-003: Production Environment Variables ⚪ BLOCKED
+
 ### DEPLOY-004: Monitoring & Logging ⚪ BLOCKED
 
 ---
@@ -612,10 +675,15 @@
 ## Optional Features (Post-MVP) 🔵
 
 ### OPT-001: True/False Questions 🔵
+
 ### OPT-002: Short Answer Questions 🔵
+
 ### OPT-003: Exam Export (PDF/JSON) 🔵
+
 ### OPT-004: Student View (Take Exams) 🔵
+
 ### OPT-005: Exam Analytics 🔵
+
 ### OPT-006: Question Bank 🔵
 
 ---

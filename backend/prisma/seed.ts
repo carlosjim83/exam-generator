@@ -1,4 +1,11 @@
-import { PrismaClient, UserRole, AuthProvider, DocumentStatus, QuestionType, QuestionDifficulty } from '@prisma/client';
+import {
+  PrismaClient,
+  UserRole,
+  AuthProvider,
+  DocumentStatus,
+  QuestionType,
+  QuestionDifficulty,
+} from '@prisma/client';
 import { BcryptPasswordHasher } from '../src/infrastructure/security/BcryptPasswordHasher.js';
 import { Password } from '../src/domain/value-objects/Password.js';
 
@@ -12,24 +19,24 @@ async function main() {
   // Clear existing data (in reverse order of dependencies)
   // ============================================================================
   console.log('🧹 Cleaning existing data...');
-  
+
   await prisma.question.deleteMany();
   await prisma.exam.deleteMany();
   await prisma.documentChunk.deleteMany();
   await prisma.document.deleteMany();
   await prisma.user.deleteMany();
-  
+
   console.log('✅ Database cleaned\n');
 
   // ============================================================================
   // Create Users
   // ============================================================================
   console.log('👤 Creating users...');
-  
+
   // Hash password using BcryptPasswordHasher (ensures consistency with app logic)
   const password = Password.create('password123');
   const hashedPassword = await passwordHasher.hash(password);
-  
+
   const teacherLocal = await prisma.user.create({
     data: {
       email: 'teacher@example.com',
@@ -136,9 +143,9 @@ async function main() {
   // ============================================================================
   console.log('🧩 Creating document chunks...');
 
-  // Generate a mock embedding (768 dimensions for Gemini)
+  // Generate a mock embedding (1536 dimensions for Azure OpenAI)
   const generateMockEmbedding = () => {
-    return `[${Array.from({ length: 768 }, () => (Math.random() * 2 - 1).toFixed(6)).join(',')}]`;
+    return `[${Array.from({ length: 1536 }, () => (Math.random() * 2 - 1).toFixed(6)).join(',')}]`;
   };
 
   // Chunks for doc1 (TypeScript) - using raw SQL for vector embeddings
@@ -208,7 +215,9 @@ async function main() {
     )
   `;
 
-  const chunkCount = await prisma.$queryRaw<Array<{ count: bigint }>>`SELECT COUNT(*)::int as count FROM document_chunks`;
+  const chunkCount = await prisma.$queryRaw<
+    Array<{ count: bigint }>
+  >`SELECT COUNT(*)::int as count FROM document_chunks`;
   console.log(`✅ Created ${Number(chunkCount[0].count)} document chunks\n`);
 
   // ============================================================================
@@ -221,7 +230,8 @@ async function main() {
       title: 'TypeScript Fundamentals Quiz',
       description: 'A comprehensive quiz covering TypeScript basics, types, and best practices.',
       generatedFrom: [doc1.id],
-      promptUsed: 'Generate a quiz about TypeScript fundamentals with multiple choice and true/false questions.',
+      promptUsed:
+        'Generate a quiz about TypeScript fundamentals with multiple choice and true/false questions.',
       userId: teacherLocal.id,
       questions: {
         create: [
@@ -247,7 +257,8 @@ async function main() {
             questionText: 'TypeScript code runs directly in the browser without compilation.',
             options: ['True', 'False'],
             correctAnswer: 'False',
-            explanation: 'TypeScript needs to be compiled to JavaScript before it can run in browsers.',
+            explanation:
+              'TypeScript needs to be compiled to JavaScript before it can run in browsers.',
             points: 1,
             orderIndex: 1,
             sourceChunkIds: [],
@@ -278,7 +289,8 @@ async function main() {
       title: 'React Hooks Advanced Test',
       description: 'Test your knowledge of React hooks and advanced patterns.',
       generatedFrom: [doc2.id],
-      promptUsed: 'Generate an advanced exam about React hooks with medium and hard difficulty questions.',
+      promptUsed:
+        'Generate an advanced exam about React hooks with medium and hard difficulty questions.',
       userId: teacherLocal.id,
       questions: {
         create: [
@@ -293,7 +305,8 @@ async function main() {
               'To optimize performance',
             ],
             correctAnswer: 'To manage component state in function components',
-            explanation: 'useState is the most basic hook for managing state in function components.',
+            explanation:
+              'useState is the most basic hook for managing state in function components.',
             points: 2,
             orderIndex: 0,
             sourceChunkIds: [],
@@ -304,7 +317,8 @@ async function main() {
             questionText: 'Name the three lifecycle methods that useEffect replaces.',
             options: [],
             correctAnswer: 'componentDidMount, componentDidUpdate, and componentWillUnmount',
-            explanation: 'useEffect combines the functionality of these three class component lifecycle methods.',
+            explanation:
+              'useEffect combines the functionality of these three class component lifecycle methods.',
             points: 3,
             orderIndex: 1,
             sourceChunkIds: [],
@@ -319,7 +333,8 @@ async function main() {
       title: 'Full Stack Development Quiz',
       description: 'Combined exam covering TypeScript and React concepts.',
       generatedFrom: [doc1.id, doc2.id],
-      promptUsed: 'Generate a comprehensive exam covering both TypeScript and React with various difficulty levels.',
+      promptUsed:
+        'Generate a comprehensive exam covering both TypeScript and React with various difficulty levels.',
       userId: teacherGoogle.id,
       questions: {
         create: [

@@ -13,6 +13,7 @@ export { UploadDocumentUseCase } from './documents/UploadDocumentUseCase.js';
 export { GetDocumentUseCase } from './documents/GetDocumentUseCase.js';
 export { ListDocumentsUseCase } from './documents/ListDocumentsUseCase.js';
 export { ProcessDocumentUseCase } from './documents/ProcessDocumentUseCase.js';
+export { ReprocessDocumentUseCase } from './documents/ReprocessDocumentUseCase.js';
 
 // Export input/output types for document use cases
 export type {

@@ -11,7 +11,7 @@
 - **Backend**: Fastify + TypeScript + Prisma
 - **Database**: PostgreSQL + pgvector (for embeddings)
 - **Auth**: Passport.js (local strategy + OAuth: Google/GitHub/Microsoft)
-- **AI**: Google Gemini API (embeddings + text generation)
+- **AI**: Azure OpenAI Service (embeddings + text generation)
 - **Storage**: Azure Blob Storage (document files)
 - **Testing**: Vitest (unit) + Playwright (e2e)
 - **Development**: TDD approach with strict test coverage
@@ -48,12 +48,12 @@ exam-generator/
    - Stores file in Azure Blob Storage
    - Extracts text from PDF/DOCX
    - Splits into chunks
-   - Generates embeddings via Gemini API
+   - Generates embeddings via Azure OpenAI Service
    - Stores chunks + embeddings in PostgreSQL (pgvector)
 3. **Teacher requests exam generation**:
    - Backend performs similarity search on embeddings
    - Retrieves relevant chunks
-   - Sends chunks + prompt to Gemini API
+   - Sends chunks + prompt to Azure OpenAI Service
    - Returns structured exam (JSON)
 4. **Frontend displays exam** for review/editing
 
@@ -61,7 +61,7 @@ exam-generator/
 
 - **Auth Service**: JWT-based auth with Passport.js (local + OAuth)
 - **Document Service**: Upload, parsing, chunking, embedding
-- **Exam Service**: RAG-based generation using Gemini
+- **Exam Service**: RAG-based generation using Azure OpenAI
 - **Storage Service**: Azure Blob Storage integration
 - **Vector Search**: pgvector similarity search
 
@@ -79,16 +79,19 @@ exam-generator/
 ## 🧪 Testing Strategy (TDD)
 
 ### Backend
+
 - **Unit tests**: Vitest for services, repositories
 - **Integration tests**: Fastify route testing with test database
 - **Coverage**: Minimum 80% (enforced in CI)
 
 ### Frontend
+
 - **Unit tests**: Vitest + React Testing Library for components
 - **E2E tests**: Playwright for critical user flows
 - **Coverage**: Minimum 70%
 
 ### TDD Workflow
+
 1. Write test (RED)
 2. Write minimal code to pass (GREEN)
 3. Refactor (REFACTOR)
@@ -142,10 +145,11 @@ pnpm test
 ## 🎓 Learning Goals
 
 This project demonstrates:
+
 - ✅ Full-stack TypeScript development
 - ✅ Monorepo management with modern tools
 - ✅ RAG implementation with vector databases
-- ✅ AI integration (Gemini API)
+- ✅ AI integration (Azure OpenAI Service)
 - ✅ Cloud infrastructure (Azure)
 - ✅ TDD and clean architecture principles
 - ✅ OAuth + local authentication strategies

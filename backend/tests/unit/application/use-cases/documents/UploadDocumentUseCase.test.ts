@@ -31,6 +31,8 @@ describe('UploadDocumentUseCase', () => {
       exists: vi.fn(),
       countByUserId: vi.fn(),
       findMostRecentByUserId: vi.fn(),
+      searchSimilarChunks: vi.fn(() => Promise.resolve([])),
+      deleteChunksByDocumentId: vi.fn(),
     };
 
     // Mock storage service

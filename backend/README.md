@@ -9,7 +9,7 @@ Fastify-based REST API server with TypeScript, providing authentication, documen
 - **Database**: PostgreSQL + pgvector (via Prisma ORM)
 - **Auth**: Passport.js (local + OAuth) + JWT
 - **Testing**: Vitest (unit + integration tests)
-- **AI**: Google Gemini API (embeddings + text generation)
+- **AI**: Azure OpenAI Service (embeddings + text generation)
 - **Storage**: Azure Blob Storage (document files)
 
 ## Project Structure
@@ -106,7 +106,7 @@ describe('AuthService', () => {
   it('should hash password correctly', async () => {
     const password = 'myPassword123';
     const hashed = await authService.hashPassword(password);
-    
+
     expect(hashed).not.toBe(password);
     expect(hashed).toMatch(/^\$2[aby]\$/); // bcrypt format
   });
@@ -162,13 +162,15 @@ pnpm test:coverage --reporter=text src/services/auth.service.test.ts
 See `.env.example` for all required environment variables.
 
 **Required**:
+
 - `DATABASE_URL` - PostgreSQL connection string
 - `JWT_SECRET` - Secret key for JWT signing
 - `JWT_REFRESH_SECRET` - Secret key for refresh tokens
 
 **Optional** (for full functionality):
+
 - `AZURE_STORAGE_CONNECTION_STRING` - Azure Blob Storage
-- `GEMINI_API_KEY` - Google Gemini API
+
 - OAuth client IDs and secrets (Google, GitHub, Microsoft)
 
 ## Architecture Decisions

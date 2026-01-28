@@ -10,7 +10,10 @@
  * 4. Return top K most relevant chunks with similarity scores
  */
 
-import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
+import {
+  IDocumentRepository,
+  QueryDocumentResult,
+} from '../../../domain/repositories/IDocumentRepository.js';
 import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
 import { UserId } from '../../../domain/value-objects/UserId.js';
 import { AzureOpenAIEmbeddingService } from '../../../infrastructure/ai/AzureOpenAIEmbeddingService.js';
@@ -20,14 +23,6 @@ export interface QueryDocumentInput {
   userId: string;
   query: string;
   topK?: number; // Number of chunks to return (default: 5)
-}
-
-export interface QueryDocumentResult {
-  chunkIndex: number;
-  content: string;
-  similarity: number; // Cosine similarity score (0-1)
-  wordCount: number;
-  pageNumber?: number;
 }
 
 export interface QueryDocumentOutput {
