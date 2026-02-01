@@ -3,15 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import {
-  LayoutDashboard,
-  FileText,
-  ClipboardList,
-  Upload,
-  Settings,
-  Activity,
-  LogOut,
-} from 'lucide-react';
+import { LayoutDashboard, FileText, ClipboardList, Upload, Settings, LogOut } from 'lucide-react';
 
 interface NavItem {
   label: string;
@@ -39,11 +31,6 @@ const navigation: NavItem[] = [
     label: 'Upload Document',
     href: '/dashboard/upload',
     icon: Upload,
-  },
-  {
-    label: 'Monitoring',
-    href: '/dashboard/monitoring',
-    icon: Activity,
   },
 ];
 

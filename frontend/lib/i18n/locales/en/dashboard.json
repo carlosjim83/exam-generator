@@ -1,0 +1,45 @@
+{
+  "title": "Dashboard",
+  "greeting": "Good morning",
+  "subtitle": "Ready to create some assessment materials today?",
+  "stats": {
+    "totalDocuments": "Total Documents",
+    "totalExams": "Total Exams",
+    "recentActivity": "Recent Activity"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "uploadDocument": {
+      "title": "Upload Document",
+      "description": "Add PDF, DOCX, or TXT"
+    },
+    "generateExam": {
+      "title": "Generate Exam",
+      "description": "Create AI-powered exams"
+    }
+  },
+  "recentDocuments": {
+    "title": "Recent Documents",
+    "viewAll": "View all",
+    "ready": "Ready",
+    "processing": "Processing",
+    "error": "Error",
+    "retry": "Retry"
+  },
+  "recentExams": {
+    "title": "Recent Exams",
+    "viewAll": "View all",
+    "questions": "Questions",
+    "viewExam": "View Exam",
+    "editDraft": "Edit Draft",
+    "draft": "Draft",
+    "published": "Published"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "myLibrary": "My Library",
+    "myExams": "My Exams",
+    "uploadDocument": "Upload Document",
+    "settings": "Settings"
+  }
+}

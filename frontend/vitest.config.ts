@@ -41,6 +41,7 @@ export default defineConfig({
       'features/**/*.{test,spec}.{ts,tsx}',
       'app/**/*.{test,spec}.{ts,tsx}',
       'components/**/*.{test,spec}.{ts,tsx}',
+      'lib/**/*.{test,spec}.{ts,tsx}',
     ],
     exclude: ['node_modules/', '.next/', 'out/'],
 

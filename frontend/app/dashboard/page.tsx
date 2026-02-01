@@ -33,7 +33,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Main Content Grid */}
-            <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
+            <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
               {/* Left Column - Documents & Exams */}
               <div className="min-w-0 space-y-8 overflow-hidden">
                 <RecentDocuments />

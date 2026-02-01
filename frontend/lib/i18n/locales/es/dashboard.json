@@ -1,0 +1,45 @@
+{
+  "title": "Panel de Control",
+  "greeting": "Buenos días",
+  "subtitle": "¿Listo para crear materiales de evaluación hoy?",
+  "stats": {
+    "totalDocuments": "Documentos Totales",
+    "totalExams": "Exámenes Totales",
+    "recentActivity": "Actividad Reciente"
+  },
+  "quickActions": {
+    "title": "Acciones Rápidas",
+    "uploadDocument": {
+      "title": "Subir Documento",
+      "description": "Añadir PDF, DOCX o TXT"
+    },
+    "generateExam": {
+      "title": "Generar Examen",
+      "description": "Crear exámenes con IA"
+    }
+  },
+  "recentDocuments": {
+    "title": "Documentos Recientes",
+    "viewAll": "Ver todos",
+    "ready": "Listo",
+    "processing": "Procesando",
+    "error": "Error",
+    "retry": "Reintentar"
+  },
+  "recentExams": {
+    "title": "Exámenes Recientes",
+    "viewAll": "Ver todos",
+    "questions": "Preguntas",
+    "viewExam": "Ver Examen",
+    "editDraft": "Editar Borrador",
+    "draft": "Borrador",
+    "published": "Publicado"
+  },
+  "navigation": {
+    "dashboard": "Panel de Control",
+    "myLibrary": "Mi Biblioteca",
+    "myExams": "Mis Exámenes",
+    "uploadDocument": "Subir Documento",
+    "settings": "Configuración"
+  }
+}

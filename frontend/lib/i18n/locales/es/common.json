@@ -1,0 +1,14 @@
+{
+  "welcome": "Bienvenido",
+  "logout": "Cerrar sesión",
+  "settings": "Configuración",
+  "language": "Idioma",
+  "save": "Guardar",
+  "cancel": "Cancelar",
+  "edit": "Editar",
+  "delete": "Eliminar",
+  "search": "Buscar",
+  "loading": "Cargando...",
+  "error": "Error",
+  "success": "Éxito"
+}
