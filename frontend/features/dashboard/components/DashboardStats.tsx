@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { FileText, ClipboardCheck, Zap, TrendingUp } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useDashboardContext } from '../context/DashboardContext';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -57,6 +58,7 @@ function StatCardSkeleton() {
 }
 
 export function DashboardStats() {
+  const { t } = useTranslation();
   const { stats, statsLoading: loading, statsError: error } = useDashboardContext();
 
   if (loading) {
@@ -74,7 +76,7 @@ export function DashboardStats() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="p-6">
-            <p className="text-sm text-destructive">Failed to load stats</p>
+            <p className="text-sm text-destructive">{t('common:error')}</p>
           </CardContent>
         </Card>
       </div>
@@ -88,7 +90,7 @@ export function DashboardStats() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <StatCard
-        title="Total Documents"
+        title={t('dashboard:stats.totalDocuments')}
         value={stats.totalDocuments}
         change={stats.documentsChange}
         icon={FileText}
@@ -96,7 +98,7 @@ export function DashboardStats() {
         iconBgColor="bg-blue-100"
       />
       <StatCard
-        title="Total Exams"
+        title={t('dashboard:stats.totalExams')}
         value={stats.totalExams}
         change={stats.examsChange}
         icon={ClipboardCheck}
@@ -107,7 +109,9 @@ export function DashboardStats() {
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="mb-2 text-sm font-medium text-muted-foreground">Recent Activity</p>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">
+                {t('dashboard:stats.recentActivity')}
+              </p>
               <h3 className="mb-2 text-3xl font-bold tracking-tight">Active Now</h3>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />

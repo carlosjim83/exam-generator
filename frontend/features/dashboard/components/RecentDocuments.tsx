@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,19 +32,21 @@ function DocumentIcon({ mimeType }: { mimeType: string }) {
 }
 
 function DocumentStatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
+
   switch (status) {
     case 'COMPLETED':
       return (
         <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
           <CheckCircle2 className="h-3 w-3 mr-1" />
-          Ready
+          {t('dashboard:recentDocuments.ready')}
         </Badge>
       );
     case 'PROCESSING':
       return (
         <Badge variant="default" className="bg-blue-100 text-blue-700 hover:bg-blue-100">
           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-          Processing
+          {t('dashboard:recentDocuments.processing')}
         </Badge>
       );
     case 'PENDING':
@@ -57,7 +60,7 @@ function DocumentStatusBadge({ status }: { status: string }) {
       return (
         <Badge variant="destructive">
           <XCircle className="h-3 w-3 mr-1" />
-          Failed
+          {t('dashboard:recentDocuments.error')}
         </Badge>
       );
     default:
@@ -72,6 +75,7 @@ function DocumentItem({
   document: Document;
   onRetry: (id: string) => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [isRetrying, setIsRetrying] = useState(false);
 
   // Format file size
@@ -142,7 +146,7 @@ function DocumentItem({
           ) : (
             <>
               <RefreshCw className="mr-1 h-3 w-3" />
-              Retry
+              {t('dashboard:recentDocuments.retry')}
             </>
           )}
         </Button>
@@ -164,6 +168,7 @@ function DocumentItemSkeleton() {
 }
 
 export function RecentDocuments() {
+  const { t } = useTranslation();
   const {
     documents,
     documentsLoading: loading,
@@ -204,10 +209,10 @@ export function RecentDocuments() {
   return (
     <div className="overflow-hidden">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">Recent Documents</h2>
+        <h2 className="text-xl font-bold">{t('dashboard:recentDocuments.title')}</h2>
         <Link href="/dashboard/documents">
           <Button variant="link" className="text-primary">
-            View all
+            {t('dashboard:recentDocuments.viewAll')}
           </Button>
         </Link>
       </div>
@@ -223,7 +228,7 @@ export function RecentDocuments() {
         {error && (
           <Card>
             <CardContent className="p-6">
-              <p className="text-sm text-destructive">Failed to load documents</p>
+              <p className="text-sm text-destructive">{t('common:error')}</p>
               <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
             </CardContent>
           </Card>

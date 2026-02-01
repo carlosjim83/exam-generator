@@ -2,11 +2,14 @@
 
 import { Upload, Wand2 } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 
 export function QuickActions() {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Quick Actions</h2>
+      <h2 className="text-xl font-bold">{t('dashboard:quickActions.title')}</h2>
 
       {/* Primary Actions - Compact Stacked Cards */}
       <div className="space-y-3">
@@ -22,9 +25,11 @@ export function QuickActions() {
               </div>
               <div className="min-w-0">
                 <h3 className="mb-0.5 text-base font-bold text-blue-900 transition-colors group-hover:text-blue-700">
-                  Upload Document
+                  {t('dashboard:quickActions.uploadDocument.title')}
                 </h3>
-                <p className="text-xs text-blue-700">Add PDF, DOCX, or TXT</p>
+                <p className="text-xs text-blue-700">
+                  {t('dashboard:quickActions.uploadDocument.description')}
+                </p>
               </div>
             </div>
           </div>
@@ -42,9 +47,11 @@ export function QuickActions() {
               </div>
               <div className="min-w-0">
                 <h3 className="mb-0.5 text-base font-bold text-purple-900 transition-colors group-hover:text-purple-700">
-                  Generate Exam
+                  {t('dashboard:quickActions.generateExam.title')}
                 </h3>
-                <p className="text-xs text-purple-700">Create AI-powered exams</p>
+                <p className="text-xs text-purple-700">
+                  {t('dashboard:quickActions.generateExam.description')}
+                </p>
               </div>
             </div>
           </div>

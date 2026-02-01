@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { DashboardStats } from '@/features/dashboard/components/DashboardStats';
 import { RecentDocuments } from '@/features/dashboard/components/RecentDocuments';
@@ -10,6 +11,7 @@ import { useAuth } from '@/features/auth/context/AuthContext';
 import { DashboardProvider } from '@/features/dashboard/context/DashboardContext';
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
 
   return (
@@ -20,11 +22,10 @@ export default function DashboardPage() {
             {/* Hero Section */}
             <div className="mb-8">
               <h1 className="mb-2 text-4xl font-bold tracking-tight">
-                Good morning, {user ? `${user.firstName} ${user.lastName}` : 'Professor'}
+                {t('dashboard:greeting')},{' '}
+                {user ? `${user.firstName} ${user.lastName}` : 'Professor'}
               </h1>
-              <p className="text-lg text-muted-foreground">
-                Ready to create some assessment materials today?
-              </p>
+              <p className="text-lg text-muted-foreground">{t('dashboard:subtitle')}</p>
             </div>
 
             {/* Stats Cards */}

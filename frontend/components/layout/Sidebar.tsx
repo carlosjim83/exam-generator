@@ -2,33 +2,34 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { LayoutDashboard, FileText, ClipboardList, Upload, Settings, LogOut } from 'lucide-react';
 
 interface NavItem {
-  label: string;
+  labelKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
 }
 
 const navigation: NavItem[] = [
   {
-    label: 'Dashboard',
+    labelKey: 'dashboard:navigation.dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
   },
   {
-    label: 'My Library',
+    labelKey: 'dashboard:navigation.myLibrary',
     href: '/dashboard/documents',
     icon: FileText,
   },
   {
-    label: 'My Exams',
+    labelKey: 'dashboard:navigation.myExams',
     href: '/dashboard/exams',
     icon: ClipboardList,
   },
   {
-    label: 'Upload Document',
+    labelKey: 'dashboard:navigation.uploadDocument',
     href: '/dashboard/upload',
     icon: Upload,
   },
@@ -36,7 +37,7 @@ const navigation: NavItem[] = [
 
 const secondaryNavigation: NavItem[] = [
   {
-    label: 'Settings',
+    labelKey: 'dashboard:navigation.settings',
     href: '/dashboard/settings',
     icon: Settings,
   },
@@ -44,6 +45,7 @@ const secondaryNavigation: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -99,7 +101,7 @@ export function Sidebar() {
                 )}
               >
                 <Icon className={cn('h-5 w-5', active ? 'text-blue-700' : 'text-gray-500')} />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}
@@ -126,7 +128,7 @@ export function Sidebar() {
                 )}
               >
                 <Icon className={cn('h-5 w-5', active ? 'text-blue-700' : 'text-gray-500')} />
-                {item.label}
+                {t(item.labelKey)}
               </Link>
             );
           })}
@@ -145,7 +147,7 @@ export function Sidebar() {
           </div>
           <button
             className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-            title="Sign out"
+            title={t('common:logout')}
           >
             <LogOut className="h-4 w-4" />
           </button>
