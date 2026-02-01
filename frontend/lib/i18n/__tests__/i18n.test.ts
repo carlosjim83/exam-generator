@@ -19,6 +19,8 @@ describe('i18n Configuration', () => {
     const namespaces = i18n.options.ns as string[];
     expect(namespaces).toContain('common');
     expect(namespaces).toContain('dashboard');
+    expect(namespaces).toContain('exams');
+    expect(namespaces).toContain('documents');
   });
 
   it('should use common as default namespace', () => {
@@ -51,6 +53,18 @@ describe('i18n Translations', () => {
       expect(i18n.t('dashboard:stats.totalDocuments')).toBe('Total Documents');
       expect(i18n.t('dashboard:stats.totalExams')).toBe('Total Exams');
     });
+
+    it('should translate exams keys', () => {
+      expect(i18n.t('exams:title')).toBe('My Exams');
+      expect(i18n.t('exams:generateNew')).toBe('Generate New Exam');
+      expect(i18n.t('exams:questions')).toBe('questions');
+    });
+
+    it('should translate documents keys', () => {
+      expect(i18n.t('documents:title')).toBe('My Library');
+      expect(i18n.t('documents:uploadNew')).toBe('Upload Document');
+      expect(i18n.t('documents:ready')).toBe('Ready');
+    });
   });
 
   describe('Spanish translations', () => {
@@ -68,6 +82,18 @@ describe('i18n Translations', () => {
       expect(i18n.t('dashboard:title')).toBe('Panel de Control');
       expect(i18n.t('dashboard:stats.totalDocuments')).toBe('Documentos Totales');
       expect(i18n.t('dashboard:stats.totalExams')).toBe('Exámenes Totales');
+    });
+
+    it('should translate exams keys', () => {
+      expect(i18n.t('exams:title')).toBe('Mis Exámenes');
+      expect(i18n.t('exams:generateNew')).toBe('Generar Nuevo Examen');
+      expect(i18n.t('exams:questions')).toBe('preguntas');
+    });
+
+    it('should translate documents keys', () => {
+      expect(i18n.t('documents:title')).toBe('Mi Biblioteca');
+      expect(i18n.t('documents:uploadNew')).toBe('Subir Documento');
+      expect(i18n.t('documents:ready')).toBe('Listo');
     });
   });
 

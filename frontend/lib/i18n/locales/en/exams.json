@@ -1,0 +1,14 @@
+{
+  "title": "My Exams",
+  "subtitle": "View and manage all your generated exams",
+  "generateNew": "Generate New Exam",
+  "generateFirst": "Generate Your First Exam",
+  "noExams": "No exams yet",
+  "noExamsDescription": "Start by generating your first exam from your documents",
+  "questions": "questions",
+  "document": "document",
+  "document_other": "documents",
+  "deleteConfirm": "Are you sure you want to delete this exam?",
+  "deleteFailed": "Failed to delete exam",
+  "createdAt": "Created"
+}

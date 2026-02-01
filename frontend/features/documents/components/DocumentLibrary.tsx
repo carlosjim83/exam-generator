@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -41,33 +42,35 @@ function DocumentIcon({ mimeType }: { mimeType: string }) {
 }
 
 function DocumentStatusBadge({ status }: { status: string }) {
+  const { t } = useTranslation();
+
   switch (status) {
     case 'COMPLETED':
       return (
         <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
           <CheckCircle2 className="mr-1 h-3 w-3" />
-          Ready
+          {t('documents:ready')}
         </Badge>
       );
     case 'PROCESSING':
       return (
         <Badge variant="default" className="bg-blue-100 text-blue-700 hover:bg-blue-100">
           <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-          Processing
+          {t('documents:processing')}
         </Badge>
       );
     case 'PENDING':
       return (
         <Badge variant="default" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
           <Clock className="mr-1 h-3 w-3" />
-          Pending
+          {t('documents:pending')}
         </Badge>
       );
     case 'FAILED':
       return (
         <Badge variant="destructive">
           <XCircle className="mr-1 h-3 w-3" />
-          Failed
+          {t('documents:failed')}
         </Badge>
       );
     default:
@@ -76,6 +79,7 @@ function DocumentStatusBadge({ status }: { status: string }) {
 }
 
 export function DocumentLibrary() {
+  const { t } = useTranslation();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -151,7 +155,7 @@ export function DocumentLibrary() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
             type="text"
-            placeholder="Search documents..."
+            placeholder={t('documents:searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
@@ -159,7 +163,7 @@ export function DocumentLibrary() {
         </div>
         <Button variant="outline" size="sm" onClick={fetchDocuments}>
           <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
+          {t('documents:refresh')}
         </Button>
       </div>
 
@@ -168,7 +172,7 @@ export function DocumentLibrary() {
         <Card>
           <CardContent className="p-4">
             <div className="text-2xl font-bold">{documents.length}</div>
-            <div className="text-sm text-muted-foreground">Total Documents</div>
+            <div className="text-sm text-muted-foreground">{t('documents:totalDocuments')}</div>
           </CardContent>
         </Card>
         <Card>
@@ -176,7 +180,7 @@ export function DocumentLibrary() {
             <div className="text-2xl font-bold">
               {documents.filter((d) => d.status === 'COMPLETED').length}
             </div>
-            <div className="text-sm text-muted-foreground">Ready</div>
+            <div className="text-sm text-muted-foreground">{t('documents:ready')}</div>
           </CardContent>
         </Card>
         <Card>
@@ -184,7 +188,7 @@ export function DocumentLibrary() {
             <div className="text-2xl font-bold">
               {documents.filter((d) => d.status === 'PROCESSING').length}
             </div>
-            <div className="text-sm text-muted-foreground">Processing</div>
+            <div className="text-sm text-muted-foreground">{t('documents:processing')}</div>
           </CardContent>
         </Card>
         <Card>
@@ -192,7 +196,7 @@ export function DocumentLibrary() {
             <div className="text-2xl font-bold">
               {documents.filter((d) => d.status === 'FAILED').length}
             </div>
-            <div className="text-sm text-muted-foreground">Failed</div>
+            <div className="text-sm text-muted-foreground">{t('documents:failed')}</div>
           </CardContent>
         </Card>
       </div>
@@ -202,11 +206,9 @@ export function DocumentLibrary() {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <FileText className="mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-semibold">No documents found</h3>
+            <h3 className="mb-2 text-lg font-semibold">{t('documents:noDocumentsFound')}</h3>
             <p className="text-sm text-muted-foreground">
-              {searchQuery
-                ? 'Try adjusting your search query'
-                : 'Upload your first document to get started'}
+              {searchQuery ? t('documents:adjustSearch') : t('documents:noDocumentsDescription')}
             </p>
           </CardContent>
         </Card>
@@ -246,11 +248,15 @@ export function DocumentLibrary() {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>{fileSize}</span>
                         <span>•</span>
-                        <span>Uploaded {uploadDate}</span>
+                        <span>
+                          {t('documents:uploadedAt')} {uploadDate}
+                        </span>
                         {doc.status === 'PROCESSING' && minutesSinceUpload > 0 && (
                           <>
                             <span>•</span>
-                            <span>Processing for {minutesSinceUpload}m</span>
+                            <span>
+                              {t('documents:processingFor', { minutes: minutesSinceUpload })}
+                            </span>
                           </>
                         )}
                       </div>
@@ -261,7 +267,7 @@ export function DocumentLibrary() {
                         (doc.status === 'PROCESSING' && minutesSinceUpload > 5)) && (
                         <Button variant="outline" size="sm" onClick={() => handleRetry(doc.id)}>
                           <RefreshCw className="mr-2 h-4 w-4" />
-                          Retry
+                          {t('documents:retry')}
                         </Button>
                       )}
                       <Button variant="ghost" size="icon">

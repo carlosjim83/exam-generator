@@ -7,16 +7,24 @@ import commonEN from './locales/en/common.json';
 import commonES from './locales/es/common.json';
 import dashboardEN from './locales/en/dashboard.json';
 import dashboardES from './locales/es/dashboard.json';
+import examsEN from './locales/en/exams.json';
+import examsES from './locales/es/exams.json';
+import documentsEN from './locales/en/documents.json';
+import documentsES from './locales/es/documents.json';
 
 // Define resources type
 const resources = {
   en: {
     common: commonEN,
     dashboard: dashboardEN,
+    exams: examsEN,
+    documents: documentsEN,
   },
   es: {
     common: commonES,
     dashboard: dashboardES,
+    exams: examsES,
+    documents: documentsES,
   },
 } as const;
 
@@ -30,7 +38,7 @@ i18n
     resources,
     fallbackLng: ['en'],
     defaultNS: 'common',
-    ns: ['common', 'dashboard'],
+    ns: ['common', 'dashboard', 'exams', 'documents'],
 
     detection: {
       // Order of language detection
