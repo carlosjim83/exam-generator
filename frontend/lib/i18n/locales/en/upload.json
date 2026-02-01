@@ -1,0 +1,20 @@
+{
+  "title": "Upload Document",
+  "subtitle": "Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB.",
+  "selectFile": "Select a file to upload",
+  "dragDrop": "Drag and drop a file here, or click to select",
+  "supportedFormats": "Supported formats: PDF, DOCX",
+  "maxSize": "Maximum file size: 10 MB",
+  "uploading": "Uploading...",
+  "processing": "Processing document...",
+  "success": "Document uploaded successfully!",
+  "error": "Failed to upload document",
+  "fileSelected": "File selected",
+  "changeFile": "Change file",
+  "upload": "Upload",
+  "cancel": "Cancel",
+  "uploadingProgress": "Uploading... {{progress}}%",
+  "fileTooBig": "File is too large. Maximum size is 10 MB",
+  "invalidFormat": "Invalid file format. Please upload a PDF or DOCX file",
+  "uploadFailed": "Upload failed. Please try again."
+}

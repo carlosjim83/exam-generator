@@ -11,6 +11,10 @@ import examsEN from './locales/en/exams.json';
 import examsES from './locales/es/exams.json';
 import documentsEN from './locales/en/documents.json';
 import documentsES from './locales/es/documents.json';
+import uploadEN from './locales/en/upload.json';
+import uploadES from './locales/es/upload.json';
+import generateEN from './locales/en/generate.json';
+import generateES from './locales/es/generate.json';
 
 // Define resources type
 const resources = {
@@ -19,12 +23,16 @@ const resources = {
     dashboard: dashboardEN,
     exams: examsEN,
     documents: documentsEN,
+    upload: uploadEN,
+    generate: generateEN,
   },
   es: {
     common: commonES,
     dashboard: dashboardES,
     exams: examsES,
     documents: documentsES,
+    upload: uploadES,
+    generate: generateES,
   },
 } as const;
 
@@ -38,7 +46,7 @@ i18n
     resources,
     fallbackLng: ['en'],
     defaultNS: 'common',
-    ns: ['common', 'dashboard', 'exams', 'documents'],
+    ns: ['common', 'dashboard', 'exams', 'documents', 'upload', 'generate'],
 
     detection: {
       // Order of language detection

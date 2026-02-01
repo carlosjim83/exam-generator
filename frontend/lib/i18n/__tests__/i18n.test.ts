@@ -21,6 +21,8 @@ describe('i18n Configuration', () => {
     expect(namespaces).toContain('dashboard');
     expect(namespaces).toContain('exams');
     expect(namespaces).toContain('documents');
+    expect(namespaces).toContain('upload');
+    expect(namespaces).toContain('generate');
   });
 
   it('should use common as default namespace', () => {
@@ -65,6 +67,18 @@ describe('i18n Translations', () => {
       expect(i18n.t('documents:uploadNew')).toBe('Upload Document');
       expect(i18n.t('documents:ready')).toBe('Ready');
     });
+
+    it('should translate upload keys', () => {
+      expect(i18n.t('upload:title')).toBe('Upload Document');
+      expect(i18n.t('upload:uploading')).toBe('Uploading...');
+      expect(i18n.t('upload:success')).toBe('Document uploaded successfully!');
+    });
+
+    it('should translate generate keys', () => {
+      expect(i18n.t('generate:title')).toBe('Generate New Exam');
+      expect(i18n.t('generate:generate')).toBe('Generate Exam');
+      expect(i18n.t('generate:difficulty')).toBe('Difficulty Level');
+    });
   });
 
   describe('Spanish translations', () => {
@@ -94,6 +108,18 @@ describe('i18n Translations', () => {
       expect(i18n.t('documents:title')).toBe('Mi Biblioteca');
       expect(i18n.t('documents:uploadNew')).toBe('Subir Documento');
       expect(i18n.t('documents:ready')).toBe('Listo');
+    });
+
+    it('should translate upload keys', () => {
+      expect(i18n.t('upload:title')).toBe('Subir Documento');
+      expect(i18n.t('upload:uploading')).toBe('Subiendo...');
+      expect(i18n.t('upload:success')).toBe('¡Documento subido exitosamente!');
+    });
+
+    it('should translate generate keys', () => {
+      expect(i18n.t('generate:title')).toBe('Generar Nuevo Examen');
+      expect(i18n.t('generate:generate')).toBe('Generar Examen');
+      expect(i18n.t('generate:difficulty')).toBe('Nivel de Dificultad');
     });
   });
 

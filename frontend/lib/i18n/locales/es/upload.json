@@ -1,0 +1,20 @@
+{
+  "title": "Subir Documento",
+  "subtitle": "Sube un archivo PDF o DOCX para generar exámenes. Tamaño máximo: 10 MB.",
+  "selectFile": "Selecciona un archivo para subir",
+  "dragDrop": "Arrastra y suelta un archivo aquí, o haz clic para seleccionar",
+  "supportedFormats": "Formatos soportados: PDF, DOCX",
+  "maxSize": "Tamaño máximo: 10 MB",
+  "uploading": "Subiendo...",
+  "processing": "Procesando documento...",
+  "success": "¡Documento subido exitosamente!",
+  "error": "Error al subir el documento",
+  "fileSelected": "Archivo seleccionado",
+  "changeFile": "Cambiar archivo",
+  "upload": "Subir",
+  "cancel": "Cancelar",
+  "uploadingProgress": "Subiendo... {{progress}}%",
+  "fileTooBig": "El archivo es demasiado grande. El tamaño máximo es 10 MB",
+  "invalidFormat": "Formato de archivo inválido. Por favor sube un archivo PDF o DOCX",
+  "uploadFailed": "Error al subir. Por favor intenta de nuevo."
+}
