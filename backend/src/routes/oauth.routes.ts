@@ -5,8 +5,7 @@ import { prisma } from '../config/prisma.js';
 import { container } from '../config/container.js';
 import { UserId } from '../domain/value-objects/UserId.js';
 import { Email } from '../domain/value-objects/Email.js';
-import { UserRole } from '../domain/entities/User.js';
-import { AuthProvider } from '@prisma/client';
+import { UserRole, AuthProvider } from '../domain/entities/User.js';
 
 export async function oauthRoutes(fastify: FastifyInstance) {
   // Register Google OAuth2 plugin
