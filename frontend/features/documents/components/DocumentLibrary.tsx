@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ import {
 import { ApiDocumentService } from '@/lib/services/api-document.service';
 import type { Document } from '@/lib/types/dashboard.types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DeleteDocumentDialog } from './DeleteDocumentDialog';
 
 function DocumentIcon({ mimeType }: { mimeType: string }) {
   if (mimeType === 'application/pdf') {
@@ -85,6 +87,16 @@ export function DocumentLibrary() {
   const [searchQuery, setSearchQuery] = useState('');
   const [documentService] = useState(() => new ApiDocumentService());
 
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState<{ id: string; title: string } | null>(
+    null
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Download loading state
+  const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
+
   const fetchDocuments = async () => {
     try {
       setLoading(true);
@@ -119,6 +131,46 @@ export function DocumentLibrary() {
       fetchDocuments();
     } catch (error) {
       console.error('Failed to retry document:', error);
+    }
+  };
+
+  const handleDelete = async (documentId: string, title: string) => {
+    setDocumentToDelete({ id: documentId, title });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!documentToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await documentService.deleteDocument(documentToDelete.id);
+      toast.success(t('documents:deleteSuccess'));
+      setDeleteDialogOpen(false);
+      setDocumentToDelete(null);
+      fetchDocuments();
+    } catch (error) {
+      console.error('Failed to delete document:', error);
+      toast.error(t('documents:deleteFailed'));
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDownload = async (documentId: string, filename: string) => {
+    setDownloadingIds((prev) => new Set(prev).add(documentId));
+    try {
+      await documentService.downloadDocumentAsFile(documentId, filename);
+      toast.success(t('documents:downloadSuccess'));
+    } catch (error) {
+      console.error('Failed to download document:', error);
+      toast.error(t('documents:downloadFailed'));
+    } finally {
+      setDownloadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(documentId);
+        return newSet;
+      });
     }
   };
 
@@ -270,12 +322,47 @@ export function DocumentLibrary() {
                           {t('documents:retry')}
                         </Button>
                       )}
-                      <Button variant="ghost" size="icon">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="h-4 w-4 text-red-600" />
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDownload(doc.id, doc.filename)}
+                              disabled={downloadingIds.has(doc.id)}
+                            >
+                              {downloadingIds.has(doc.id) ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Download className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent suppressHydrationWarning>
+                            <p>
+                              {downloadingIds.has(doc.id)
+                                ? t('documents:downloading')
+                                : t('documents:download')}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDelete(doc.id, doc.title)}
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent suppressHydrationWarning>
+                            <p>{t('documents:delete')}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <Button variant="ghost" size="icon">
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -287,6 +374,15 @@ export function DocumentLibrary() {
           })}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteDocumentDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        documentTitle={documentToDelete?.title || ''}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

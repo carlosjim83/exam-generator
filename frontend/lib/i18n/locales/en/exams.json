@@ -9,6 +9,13 @@
   "document": "document",
   "document_other": "documents",
   "deleteConfirm": "Are you sure you want to delete this exam?",
+  "deleteConfirmTitle": "Delete Exam",
+  "deleteConfirmDescription": "Are you sure you want to delete \"{{title}}\"?",
+  "deleteConfirmWarning": "This action cannot be undone. All questions will be permanently deleted.",
+  "deleteButton": "Delete Exam",
+  "deleting": "Deleting...",
+  "deleteSuccess": "Exam deleted successfully",
   "deleteFailed": "Failed to delete exam",
+  "cancel": "Cancel",
   "createdAt": "Created"
 }

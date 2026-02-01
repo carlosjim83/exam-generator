@@ -35,13 +35,10 @@ export function ThemeSelector() {
           onChange={handleThemeChange}
           disabled={isLoading}
           className="block w-full rounded-md border border-input bg-card px-3 py-2 text-sm text-card-foreground focus:border-ring focus:outline-none focus:ring-1 focus:ring-ring disabled:opacity-50"
+          suppressHydrationWarning
         >
-          <option value="light">
-            <span suppressHydrationWarning>{t('preferences.theme.light')}</span>
-          </option>
-          <option value="dark">
-            <span suppressHydrationWarning>{t('preferences.theme.dark')}</span>
-          </option>
+          <option value="light">{t('preferences.theme.light')}</option>
+          <option value="dark">{t('preferences.theme.dark')}</option>
         </select>
       </div>
     </div>

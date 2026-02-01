@@ -117,13 +117,15 @@ export function DashboardStats() {
               >
                 {t('dashboard:stats.recentActivity')}
               </p>
-              <h3 className="mb-2 text-3xl font-bold tracking-tight">Active Now</h3>
+              <h3 className="mb-2 text-3xl font-bold tracking-tight">
+                {t('dashboard:stats.activeNow')}
+              </h3>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
                 <span>
                   {minutesAgo === 0
-                    ? 'Just now'
-                    : `${minutesAgo} min${minutesAgo > 1 ? 's' : ''} ago`}
+                    ? t('dashboard:stats.justNow')
+                    : t('dashboard:stats.minutesAgo', { count: minutesAgo })}
                 </span>
               </div>
             </div>

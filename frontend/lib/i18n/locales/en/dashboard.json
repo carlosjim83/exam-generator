@@ -5,7 +5,11 @@
   "stats": {
     "totalDocuments": "Total Documents",
     "totalExams": "Total Exams",
-    "recentActivity": "Recent Activity"
+    "recentActivity": "Recent Activity",
+    "activeNow": "Active Now",
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} min ago",
+    "minutesAgo_plural": "{{count}} mins ago"
   },
   "quickActions": {
     "title": "Quick Actions",

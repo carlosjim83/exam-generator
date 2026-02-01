@@ -13,6 +13,8 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileText, Calendar, Layers, Plus, Eye, Trash2, Download } from 'lucide-react';
 import { ApiExamService, type ExamListItem } from '@/lib/services/api-exam.service';
+import { DeleteExamDialog } from './DeleteExamDialog';
+import { toast } from 'sonner';
 import Link from 'next/link';
 
 const examService = new ApiExamService();
@@ -22,6 +24,11 @@ export function ExamList() {
   const [exams, setExams] = useState<ExamListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [examToDelete, setExamToDelete] = useState<{ id: string; title: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadExams();
@@ -40,15 +47,26 @@ export function ExamList() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm(t('exams:deleteConfirm'))) return;
+  const handleDelete = async (id: string, title: string) => {
+    setExamToDelete({ id, title });
+    setDeleteDialogOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!examToDelete) return;
+
+    setIsDeleting(true);
     try {
-      await examService.deleteExam(id);
+      await examService.deleteExam(examToDelete.id);
+      toast.success(t('exams:deleteSuccess'));
+      setDeleteDialogOpen(false);
+      setExamToDelete(null);
       await loadExams(); // Reload list
     } catch (error) {
       console.error('Failed to delete exam:', error);
-      alert(t('exams:deleteFailed'));
+      toast.error(t('exams:deleteFailed'));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -106,7 +124,11 @@ export function ExamList() {
                       <Eye className="h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button size="sm" variant="outline" onClick={() => handleDelete(exam.id)}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDelete(exam.id, exam.title)}
+                  >
                     <Trash2 className="h-4 w-4 text-red-600" />
                   </Button>
                 </div>
@@ -135,6 +157,15 @@ export function ExamList() {
           </Card>
         ))}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteExamDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        examTitle={examToDelete?.title || ''}
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

@@ -68,9 +68,9 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <FileText className="h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Exam not found</h3>
-          <p className="text-gray-600">
+          <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">Exam not found</h3>
+          <p className="text-muted-foreground">
             The exam you're looking for doesn't exist or you don't have access to it.
           </p>
         </CardContent>
@@ -84,8 +84,10 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <h1 className="text-3xl font-bold mb-2">{exam.exam.title}</h1>
-          {exam.exam.description && <p className="text-gray-600">{exam.exam.description}</p>}
-          <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600">
+          {exam.exam.description && (
+            <p className="text-muted-foreground">{exam.exam.description}</p>
+          )}
+          <div className="flex flex-wrap gap-4 mt-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               <span>{exam.exam.questionCount} questions</span>
@@ -152,23 +154,23 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
               {/* Options for Multiple Choice */}
               {question.type === 'MULTIPLE_CHOICE' && question.options && (
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-gray-700">Options:</p>
+                  <p className="text-sm font-medium text-muted-foreground">Options:</p>
                   <div className="space-y-2">
                     {question.options.map((option, i) => (
                       <div
                         key={i}
-                        className={`flex items-start gap-3 p-3 rounded-lg border ${
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
                           option === question.correctAnswer
-                            ? 'border-green-500 bg-green-50'
-                            : 'border-gray-200'
+                            ? 'border-green-500 bg-green-500/10 dark:bg-green-500/20'
+                            : 'border-border bg-card'
                         }`}
                       >
-                        <span className="font-mono font-medium text-gray-600">
+                        <span className="font-mono font-medium text-muted-foreground">
                           {String.fromCharCode(65 + i)}.
                         </span>
                         <span className="flex-1">{option}</span>
                         {option === question.correctAnswer && (
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
                         )}
                       </div>
                     ))}
@@ -178,8 +180,8 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
 
               {/* Correct Answer for True/False */}
               {question.type === 'TRUE_FALSE' && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-sm font-medium text-green-800">
+                <div className="bg-green-500/10 dark:bg-green-500/20 border border-green-500/50 rounded-lg p-4">
+                  <p className="text-sm font-medium text-green-800 dark:text-green-300">
                     Correct Answer: <span className="font-bold">{question.correctAnswer}</span>
                   </p>
                 </div>
@@ -187,17 +189,21 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
 
               {/* Sample Answer for Short Answer */}
               {question.type === 'SHORT_ANSWER' && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm font-medium text-blue-800 mb-2">Sample Answer:</p>
-                  <p className="text-sm text-blue-900">{question.correctAnswer}</p>
+                <div className="bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/50 rounded-lg p-4">
+                  <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                    Sample Answer:
+                  </p>
+                  <p className="text-sm text-blue-900 dark:text-blue-200">
+                    {question.correctAnswer}
+                  </p>
                 </div>
               )}
 
               {/* Explanation */}
               {question.explanation && (
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Explanation:</p>
-                  <p className="text-sm text-gray-600">{question.explanation}</p>
+                <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                  <p className="text-sm font-medium text-foreground mb-2">Explanation:</p>
+                  <p className="text-sm text-muted-foreground">{question.explanation}</p>
                 </div>
               )}
             </CardContent>
@@ -213,23 +219,23 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-gray-600">Total Questions</p>
+              <p className="text-sm text-muted-foreground">Total Questions</p>
               <p className="text-2xl font-bold">{exam.questions.length}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Total Points</p>
+              <p className="text-sm text-muted-foreground">Total Points</p>
               <p className="text-2xl font-bold">
                 {exam.questions.reduce((sum, q) => sum + q.points, 0)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Easy Questions</p>
+              <p className="text-sm text-muted-foreground">Easy Questions</p>
               <p className="text-2xl font-bold">
                 {exam.questions.filter((q) => q.difficulty === 'EASY').length}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Hard Questions</p>
+              <p className="text-sm text-muted-foreground">Hard Questions</p>
               <p className="text-2xl font-bold">
                 {exam.questions.filter((q) => q.difficulty === 'HARD').length}
               </p>

@@ -193,27 +193,6 @@ export class ApiDocumentService {
   }
 
   /**
-   * Delete a document by ID
-   */
-  async deleteDocument(id: string): Promise<void> {
-    const token = this.getAuthToken();
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-
-    const response = await fetch(`${API_BASE_URL}/documents/${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to delete document: ${response.statusText}`);
-    }
-  }
-
-  /**
    * Retry processing a failed or stuck document
    */
   async reprocessDocument(id: string): Promise<{ id: string; status: string; message: string }> {
@@ -235,5 +214,75 @@ export class ApiDocumentService {
     }
 
     return await response.json();
+  }
+
+  /**
+   * Delete a document by ID
+   */
+  async deleteDocument(id: string): Promise<void> {
+    const token = this.getAuthToken();
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/documents/${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(error.message || 'Failed to delete document');
+    }
+  }
+
+  /**
+   * Download a document by ID
+   * @returns Blob of the document file
+   */
+  async downloadDocument(id: string): Promise<Blob> {
+    const token = this.getAuthToken();
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/documents/${id}/download`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(error.message || 'Failed to download document');
+    }
+
+    return await response.blob();
+  }
+
+  /**
+   * Download a document and trigger browser download
+   * @param id - Document ID
+   * @param filename - Filename for the download
+   */
+  async downloadDocumentAsFile(id: string, filename: string): Promise<void> {
+    const blob = await this.downloadDocument(id);
+
+    // Create a temporary URL for the blob
+    const url = URL.createObjectURL(blob);
+
+    // Create a temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+
+    // Cleanup
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }
 }

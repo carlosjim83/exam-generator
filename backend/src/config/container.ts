@@ -37,10 +37,13 @@ import {
   ProcessDocumentUseCase,
   ReprocessDocumentUseCase, // Added
   QueryDocumentUseCase, // Added
+  DeleteDocumentUseCase, // Added
+  DownloadDocumentUseCase, // Added
   GetDashboardStatsUseCase,
   GenerateExamUseCase,
   GetExamUseCase,
   ListExamsUseCase,
+  DeleteExamUseCase, // Added
 } from '../application/use-cases/index.js';
 
 // Domain Interfaces (for type safety)
@@ -84,6 +87,8 @@ export class Container {
   private readonly _processDocumentUseCase: ProcessDocumentUseCase;
   private readonly _reprocessDocumentUseCase: ReprocessDocumentUseCase; // Added
   private readonly _queryDocumentUseCase: QueryDocumentUseCase; // Added
+  private readonly _deleteDocumentUseCase: DeleteDocumentUseCase; // Added
+  private readonly _downloadDocumentUseCase: DownloadDocumentUseCase; // Added
 
   // Application Layer - Dashboard Use Cases
   private readonly _getDashboardStatsUseCase: GetDashboardStatsUseCase;
@@ -92,6 +97,7 @@ export class Container {
   private readonly _generateExamUseCase: GenerateExamUseCase;
   private readonly _getExamUseCase: GetExamUseCase;
   private readonly _listExamsUseCase: ListExamsUseCase;
+  private readonly _deleteExamUseCase: DeleteExamUseCase; // Added
 
   private constructor() {
     // ========================================
@@ -171,8 +177,18 @@ export class Container {
 
     this._queryDocumentUseCase = new QueryDocumentUseCase(this._documentRepository);
 
+    this._deleteDocumentUseCase = new DeleteDocumentUseCase(this._documentRepository);
+
+    this._downloadDocumentUseCase = new DownloadDocumentUseCase(
+      this._documentRepository,
+      this._storageService
+    );
+
     // Dashboard Use Cases
-    this._getDashboardStatsUseCase = new GetDashboardStatsUseCase(this._documentRepository);
+    this._getDashboardStatsUseCase = new GetDashboardStatsUseCase(
+      this._documentRepository,
+      this._examRepository
+    );
 
     // Exam Use Cases
     this._generateExamUseCase = new GenerateExamUseCase(
@@ -184,6 +200,8 @@ export class Container {
     this._getExamUseCase = new GetExamUseCase(this._examRepository);
 
     this._listExamsUseCase = new ListExamsUseCase(this._examRepository);
+
+    this._deleteExamUseCase = new DeleteExamUseCase(this._examRepository);
   }
 
   /**
@@ -281,6 +299,14 @@ export class Container {
     return this._queryDocumentUseCase;
   }
 
+  public get deleteDocumentUseCase(): DeleteDocumentUseCase {
+    return this._deleteDocumentUseCase;
+  }
+
+  public get downloadDocumentUseCase(): DownloadDocumentUseCase {
+    return this._downloadDocumentUseCase;
+  }
+
   // Dashboard Use Cases
 
   public get getDashboardStatsUseCase(): GetDashboardStatsUseCase {
@@ -299,6 +325,10 @@ export class Container {
 
   public get listExamsUseCase(): ListExamsUseCase {
     return this._listExamsUseCase;
+  }
+
+  public get deleteExamUseCase(): DeleteExamUseCase {
+    return this._deleteExamUseCase;
   }
 
   /**

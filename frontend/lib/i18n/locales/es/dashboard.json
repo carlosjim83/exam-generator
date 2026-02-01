@@ -5,7 +5,11 @@
   "stats": {
     "totalDocuments": "Documentos Totales",
     "totalExams": "Exámenes Totales",
-    "recentActivity": "Actividad Reciente"
+    "recentActivity": "Actividad Reciente",
+    "activeNow": "Activo Ahora",
+    "justNow": "Justo ahora",
+    "minutesAgo": "hace {{count}} min",
+    "minutesAgo_plural": "hace {{count}} mins"
   },
   "quickActions": {
     "title": "Acciones Rápidas",

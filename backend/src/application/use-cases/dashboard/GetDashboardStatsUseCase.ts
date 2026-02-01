@@ -1,4 +1,5 @@
 import { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface GetDashboardStatsInput {
@@ -21,12 +22,15 @@ export interface GetDashboardStatsOutput {
  *
  * Returns dashboard statistics for a user:
  * - Total documents count
- * - Total exams count (future)
+ * - Total exams count
  * - Last activity information
  * - Percentage changes (future)
  */
 export class GetDashboardStatsUseCase {
-  constructor(private readonly documentRepository: IDocumentRepository) {}
+  constructor(
+    private readonly documentRepository: IDocumentRepository,
+    private readonly examRepository: IExamRepository
+  ) {}
 
   async execute(input: GetDashboardStatsInput): Promise<GetDashboardStatsOutput> {
     // Validate input
@@ -36,8 +40,11 @@ export class GetDashboardStatsUseCase {
 
     const userId = UserId.create(input.userId);
 
-    // Get document count
-    const totalDocuments = await this.documentRepository.countByUserId(userId);
+    // Get document and exam counts
+    const [totalDocuments, totalExams] = await Promise.all([
+      this.documentRepository.countByUserId(userId),
+      this.examRepository.countByUserId(userId),
+    ]);
 
     // Get most recent document for last activity
     const mostRecentDocument = await this.documentRepository.findMostRecentByUserId(userId);
@@ -52,9 +59,6 @@ export class GetDashboardStatsUseCase {
           timestamp: new Date(),
           description: 'No recent activity',
         };
-
-    // TODO: Implement exam count when exam domain is ready
-    const totalExams = 0;
 
     // TODO: Implement percentage changes (requires historical data or previous month comparison)
     const documentsChange = 'N/A';

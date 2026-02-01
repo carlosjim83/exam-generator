@@ -9,6 +9,13 @@
   "document": "documento",
   "document_other": "documentos",
   "deleteConfirm": "¿Estás seguro de que quieres eliminar este examen?",
+  "deleteConfirmTitle": "Eliminar Examen",
+  "deleteConfirmDescription": "¿Estás seguro de que quieres eliminar \"{{title}}\"?",
+  "deleteConfirmWarning": "Esta acción no se puede deshacer. Todas las preguntas serán eliminadas permanentemente.",
+  "deleteButton": "Eliminar Examen",
+  "deleting": "Eliminando...",
+  "deleteSuccess": "Examen eliminado exitosamente",
   "deleteFailed": "Error al eliminar el examen",
+  "cancel": "Cancelar",
   "createdAt": "Creado"
 }

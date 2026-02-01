@@ -405,4 +405,98 @@ export async function examRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  // DELETE /exams/:id - Delete exam
+  fastify.delete(
+    '/exams/:id',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['exams'],
+        summary: 'Delete exam',
+        description: 'Delete a specific exam and all its questions',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid', description: 'Exam ID' },
+          },
+          required: ['id'],
+        },
+        response: {
+          200: {
+            description: 'Exam deleted successfully',
+            type: 'object',
+            properties: {
+              success: { type: 'boolean' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Exam not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+
+        const result = await container.deleteExamUseCase.execute({
+          examId: id,
+          userId: (request as any).user.userId,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error: any) {
+        fastify.log.error('Delete exam error:', error);
+
+        if (error.message === 'Exam not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Exam not found',
+          });
+        }
+
+        if (error.message.includes('Unauthorized')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: 'You do not have access to this exam',
+          });
+        }
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to delete exam',
+        });
+      }
+    }
+  );
 }

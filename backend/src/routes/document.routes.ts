@@ -805,4 +805,227 @@ export async function documentRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  // DELETE /documents/:id - Delete a document
+  fastify.delete(
+    '/documents/:id',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Delete a document',
+        description: 'Delete a document and all its associated data (chunks, embeddings)',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Document UUID' },
+          },
+          required: ['id'],
+        },
+        response: {
+          200: {
+            description: 'Document deleted successfully',
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+            },
+          },
+          400: {
+            description: 'Bad request',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Document not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+
+        const result = await container.deleteDocumentUseCase.execute({
+          documentId: id,
+          userId: (request as any).user.userId,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error: any) {
+        fastify.log.error('Delete document error:', error);
+
+        if (error.message === 'Document not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Document not found',
+          });
+        }
+
+        if (error.message.includes('Unauthorized')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: 'You do not have permission to delete this document',
+          });
+        }
+
+        if (error.message.includes('valid UUID')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: 'Invalid document ID format',
+          });
+        }
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to delete document',
+        });
+      }
+    }
+  );
+
+  // GET /documents/:id/download - Download a document
+  fastify.get(
+    '/documents/:id/download',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Download a document',
+        description: 'Download the original document file',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Document UUID' },
+          },
+          required: ['id'],
+        },
+        response: {
+          200: {
+            description: 'Document file',
+            type: 'string',
+            format: 'binary',
+          },
+          400: {
+            description: 'Bad request',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Document not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+
+        const result = await container.downloadDocumentUseCase.execute({
+          documentId: id,
+          userId: (request as any).user.userId,
+        });
+
+        // Set headers for file download
+        reply.header('Content-Type', result.mimeType);
+        reply.header('Content-Disposition', `attachment; filename="${result.filename}"`);
+        reply.header('Content-Length', result.buffer.length);
+
+        return reply.status(200).send(result.buffer);
+      } catch (error: any) {
+        fastify.log.error('Download document error:', error);
+
+        if (error.message === 'Document not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Document not found',
+          });
+        }
+
+        if (error.message.includes('Unauthorized')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: 'You do not have permission to download this document',
+          });
+        }
+
+        if (error.message.includes('valid UUID')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: 'Invalid document ID format',
+          });
+        }
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to download document',
+        });
+      }
+    }
+  );
 }
