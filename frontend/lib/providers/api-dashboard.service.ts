@@ -202,8 +202,8 @@ export class ApiDashboardService {
     }
 
     try {
-      // Try to call /api/exams endpoint (when implemented)
-      const response = await this.fetchWithAuth<{ exams: any[] }>('/api/exams');
+      // Call /exams endpoint
+      const response = await this.fetchWithAuth<{ exams: any[] }>('/exams');
 
       // If no response, return empty array
       if (!response) {
@@ -213,18 +213,16 @@ export class ApiDashboardService {
       const exams = response.exams.map((exam: any) => ({
         id: exam.id,
         title: exam.title,
-        status: exam.status as 'draft' | 'published' | 'archived',
-        questionsCount: exam.questionsCount,
-        gradeLevel: exam.gradeLevel,
+        status: 'draft' as const, // Backend doesn't have status field yet
+        questionsCount: exam.questionCount || 0,
+        gradeLevel: 'N/A', // Backend doesn't have gradeLevel yet
         createdAt: new Date(exam.createdAt),
-        updatedAt: new Date(exam.updatedAt),
+        updatedAt: new Date(exam.createdAt), // Backend doesn't have updatedAt
       }));
 
-      return exams.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()).slice(0, limit);
+      return exams.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, limit);
     } catch (error) {
-      // Exam endpoints don't exist yet - return empty array
-      // TODO: Implement exam domain in backend (see ENDPOINTS_TODO.md - Phase 2)
-      console.warn('[ApiDashboardService] /api/exams not implemented yet - returning empty array');
+      console.error('[ApiDashboardService] Failed to fetch exams:', error);
       return [];
     }
   }
