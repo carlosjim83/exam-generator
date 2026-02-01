@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: examgenacr.azurecr.io
+  REGISTRY: examgeneratorcj.azurecr.io
   IMAGE_NAME: exam-generator-backend
   AZURE_CONTAINER_APP_NAME: exam-generator-backend
   AZURE_RESOURCE_GROUP: exam-generator-rg
@@ -154,7 +154,7 @@ jobs:
         with:
           resourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
           containerAppName: ${{ env.AZURE_CONTAINER_APP_NAME }}
-          acrName: examgenacr
+          acrName: examgeneratorcj
           acrUsername: ${{ secrets.ACR_USERNAME }}
           acrPassword: ${{ secrets.ACR_PASSWORD }}
           imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest

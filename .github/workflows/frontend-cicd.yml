@@ -22,7 +22,7 @@ on:
   workflow_dispatch:
 
 env:
-  REGISTRY: examgenacr.azurecr.io
+  REGISTRY: examgeneratorcj.azurecr.io
   IMAGE_NAME: exam-generator-frontend
   AZURE_CONTAINER_APP_NAME: exam-generator-frontend
   AZURE_RESOURCE_GROUP: exam-generator-rg
@@ -86,7 +86,7 @@ jobs:
         working-directory: ./frontend
         run: pnpm build
         env:
-          NEXT_PUBLIC_API_URL: https://exam-generator-backend.azurecontainerapps.io
+          NEXT_PUBLIC_API_URL: https://exam-generator-backend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io
 
   # ================================
   # Job 2: Build and Push Docker Image
@@ -158,7 +158,7 @@ jobs:
         with:
           resourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
           containerAppName: ${{ env.AZURE_CONTAINER_APP_NAME }}
-          acrName: examgenacr
+          acrName: examgeneratorcj
           acrUsername: ${{ secrets.ACR_USERNAME }}
           acrPassword: ${{ secrets.ACR_PASSWORD }}
           imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
