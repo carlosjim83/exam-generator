@@ -16,7 +16,7 @@ export default function DashboardPage() {
     <ProtectedRoute>
       <DashboardProvider>
         <DashboardLayout>
-          <div className="px-8 py-8">
+          <div className="overflow-x-hidden px-8 py-8">
             {/* Hero Section */}
             <div className="mb-8">
               <h1 className="mb-2 text-4xl font-bold tracking-tight">
@@ -35,7 +35,7 @@ export default function DashboardPage() {
             {/* Main Content Grid */}
             <div className="grid gap-8 lg:grid-cols-[1fr_380px]">
               {/* Left Column - Documents & Exams */}
-              <div className="space-y-8">
+              <div className="min-w-0 space-y-8 overflow-hidden">
                 <RecentDocuments />
                 <RecentExams />
               </div>

@@ -109,21 +109,23 @@ function DocumentItem({
     <div className="flex items-center gap-4 rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50">
       <DocumentIcon mimeType={document.mimeType} />
 
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 overflow-hidden">
         <div className="mb-1 flex items-center gap-2">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <h4 className="truncate text-sm font-medium">{document.title}</h4>
+                <h4 className="truncate text-sm font-medium max-w-[300px] lg:max-w-[500px]">
+                  {document.title}
+                </h4>
               </TooltipTrigger>
-              <TooltipContent>
-                <p className="max-w-xs">{document.title}</p>
+              <TooltipContent side="top" className="max-w-md">
+                <p className="break-words">{document.title}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
           <DocumentStatusBadge status={document.status} />
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="truncate text-xs text-muted-foreground">
           Modified {dateFormatted} • {fileSizeFormatted}
           {document.status === 'PROCESSING' && minutesSinceUpload > 0 && (
             <span className="ml-1">• Processing for {minutesSinceUpload}m</span>
@@ -131,7 +133,7 @@ function DocumentItem({
         </p>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex flex-shrink-0 items-center gap-2">
         {(document.status === 'FAILED' ||
           (document.status === 'PROCESSING' && minutesSinceUpload > 5)) && (
           <Button
@@ -218,8 +220,8 @@ export function RecentDocuments() {
   );
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-4">
+    <div className="overflow-hidden">
+      <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold">Recent Documents</h2>
         <Button variant="link" className="text-primary">
           View all
@@ -238,7 +240,7 @@ export function RecentDocuments() {
           <Card>
             <CardContent className="p-6">
               <p className="text-sm text-destructive">Failed to load documents</p>
-              <p className="text-xs text-muted-foreground mt-1">{error.message}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
             </CardContent>
           </Card>
         )}
