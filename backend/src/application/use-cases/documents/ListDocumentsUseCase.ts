@@ -4,7 +4,7 @@ import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepos
 /**
  * ListDocumentsUseCase
  * Application use case for listing user documents
- * 
+ *
  * Responsibilities:
  * - Find all documents for a user
  * - Return document list
@@ -20,8 +20,12 @@ export interface ListDocumentsOutput {
     title: string;
     filename: string;
     fileSize: number;
+    mimeType: string;
     status: string;
+    pageCount: number | null;
+    wordCount: number | null;
     uploadedAt: Date;
+    processedAt: Date | null;
   }>;
 }
 
@@ -47,8 +51,12 @@ export class ListDocumentsUseCase {
         title: doc.title,
         filename: doc.filename,
         fileSize: doc.fileSize,
+        mimeType: doc.mimeType,
         status: doc.status,
+        pageCount: doc.pageCount,
+        wordCount: doc.wordCount,
         uploadedAt: doc.uploadedAt,
+        processedAt: doc.processedAt,
       })),
     };
   }

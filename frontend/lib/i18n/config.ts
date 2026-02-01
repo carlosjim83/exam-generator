@@ -37,19 +37,20 @@ const resources = {
 } as const;
 
 i18n
-  // Detect user language
+  // Detect user language (only on client side after hydration)
   .use(LanguageDetector)
   // Pass the i18n instance to react-i18next
   .use(initReactI18next)
   // Initialize i18next
   .init({
     resources,
+    lng: typeof window === 'undefined' ? 'en' : undefined, // Force English on server
     fallbackLng: ['en'],
     defaultNS: 'common',
     ns: ['common', 'dashboard', 'exams', 'documents', 'upload', 'generate'],
 
     detection: {
-      // Order of language detection
+      // Order of language detection (only used on client)
       order: ['localStorage', 'navigator'],
       // Cache user language selection
       caches: ['localStorage'],
@@ -61,7 +62,7 @@ i18n
     },
 
     react: {
-      useSuspense: false, // Disable suspense for now
+      useSuspense: false, // Disable suspense for SSR compatibility
     },
   });
 

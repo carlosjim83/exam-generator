@@ -101,7 +101,7 @@ export function Sidebar() {
                 )}
               >
                 <Icon className={cn('h-5 w-5', active ? 'text-blue-700' : 'text-gray-500')} />
-                {t(item.labelKey)}
+                <span suppressHydrationWarning>{t(item.labelKey)}</span>
               </Link>
             );
           })}
@@ -128,7 +128,7 @@ export function Sidebar() {
                 )}
               >
                 <Icon className={cn('h-5 w-5', active ? 'text-blue-700' : 'text-gray-500')} />
-                {t(item.labelKey)}
+                <span suppressHydrationWarning>{t(item.labelKey)}</span>
               </Link>
             );
           })}
