@@ -1,0 +1,262 @@
+import { z } from 'genkit';
+import { ai } from '../genkit.config.js';
+import { AzureOpenAI } from 'openai';
+import { env } from '@config/env.js';
+import {
+  QuestionType,
+  QuestionDifficulty,
+  isStorableDifficulty,
+} from '@domain/entities/ExamTypes.js';
+
+// Re-export for convenience
+export { QuestionType, QuestionDifficulty } from '@domain/entities/ExamTypes.js';
+
+/**
+ * Generate Exam Flow with Genkit + Azure OpenAI GPT-4o
+ *
+ * This flow handles exam generation using RAG + GPT-4o:
+ * 1. Receives context chunks from RAG search
+ * 2. Generates questions using GPT-4o
+ * 3. Returns structured questions with validation
+ *
+ * Architecture:
+ * - Uses Genkit's ai.run() for observability
+ * - Uses Azure OpenAI GPT-4o for question generation
+ * - Structured JSON output with zod validation
+ */
+
+// Initialize Azure OpenAI client
+const azureClient = new AzureOpenAI({
+  apiKey: env.AZURE_OPENAI_API_KEY,
+  endpoint: env.AZURE_OPENAI_ENDPOINT,
+  apiVersion: env.AZURE_OPENAI_API_VERSION,
+  deployment: env.AZURE_OPENAI_CHAT_DEPLOYMENT,
+});
+
+/**
+ * Question schema (difficulty cannot be MIXED for individual questions)
+ */
+const QuestionSchema = z.object({
+  type: z.nativeEnum(QuestionType),
+  difficulty: z.enum([QuestionDifficulty.EASY, QuestionDifficulty.MEDIUM, QuestionDifficulty.HARD]),
+  questionText: z.string(),
+  options: z.array(z.string()),
+  correctAnswer: z.string(),
+  explanation: z.string().optional(),
+  points: z.number().int().positive(),
+});
+
+/**
+ * Input schema for generate exam flow
+ */
+const GenerateExamInputSchema = z.object({
+  context: z.string().describe('RAG context from document chunks'),
+  numQuestions: z.number().int().min(5).max(50),
+  difficulty: z.nativeEnum(QuestionDifficulty),
+  questionTypes: z.array(z.nativeEnum(QuestionType)).min(1),
+});
+
+/**
+ * Output schema for generate exam flow
+ */
+const GenerateExamOutputSchema = z.object({
+  questions: z.array(QuestionSchema),
+  promptTokens: z.number().optional(),
+  completionTokens: z.number().optional(),
+  totalTokens: z.number().optional(),
+});
+
+/**
+ * Build the system prompt for exam generation
+ */
+function buildSystemPrompt(difficulty: QuestionDifficulty, questionTypes: QuestionType[]): string {
+  const typeInstructions = questionTypes
+    .map((type) => {
+      switch (type) {
+        case QuestionType.MULTIPLE_CHOICE:
+          return '- MULTIPLE_CHOICE: Provide exactly 4 options, with only 1 correct answer';
+        case QuestionType.TRUE_FALSE:
+          return '- TRUE_FALSE: Create statements that are clearly true or false based on the context';
+        case QuestionType.SHORT_ANSWER:
+          return '- SHORT_ANSWER: Create questions with definite, verifiable answers (1-3 sentences)';
+      }
+    })
+    .join('\n');
+
+  return `You are an expert exam question generator. Your task is to create high-quality exam questions based on the provided context.
+
+Requirements:
+- Questions must be clear, unambiguous, and directly based on the context
+- Each question must have a detailed explanation
+- Questions should test understanding, not just memorization
+- Avoid questions that can be answered with "it depends" or "both"
+
+Question Types:
+${typeInstructions}
+
+Difficulty Level: ${difficulty === QuestionDifficulty.MIXED ? 'Mix of EASY, MEDIUM, and HARD (equal distribution)' : difficulty}
+${difficulty === QuestionDifficulty.EASY ? '- EASY: Basic recall and comprehension' : ''}
+${difficulty === QuestionDifficulty.MEDIUM ? '- MEDIUM: Application and analysis' : ''}
+${difficulty === QuestionDifficulty.HARD ? '- HARD: Evaluation and synthesis' : ''}
+
+Points:
+- EASY: 1 point
+- MEDIUM: 2 points
+- HARD: 3 points
+
+Return ONLY valid JSON matching this schema:
+{
+  "questions": [
+    {
+      "type": "MULTIPLE_CHOICE" | "TRUE_FALSE" | "SHORT_ANSWER",
+      "difficulty": "EASY" | "MEDIUM" | "HARD",
+      "questionText": "string",
+      "options": ["string"] (4 for MULTIPLE_CHOICE, ["True", "False"] for TRUE_FALSE, [] for SHORT_ANSWER),
+      "correctAnswer": "string",
+      "explanation": "string",
+      "points": number
+    }
+  ]
+}`;
+}
+
+/**
+ * Build the user prompt for exam generation
+ */
+function buildUserPrompt(
+  context: string,
+  numQuestions: number,
+  questionTypes: QuestionType[]
+): string {
+  return `Generate ${numQuestions} exam questions based on the following context.
+
+Question types to generate: ${questionTypes.join(', ')}
+
+Context:
+${context}
+
+Generate exactly ${numQuestions} questions. Return ONLY the JSON object, no additional text.`;
+}
+
+/**
+ * Validate and normalize generated questions
+ */
+function validateAndNormalizeQuestions(
+  questions: any[],
+  difficulty: QuestionDifficulty
+): z.infer<typeof QuestionSchema>[] {
+  const validated: z.infer<typeof QuestionSchema>[] = [];
+
+  for (const q of questions) {
+    try {
+      // Normalize difficulty for MIXED
+      if (difficulty === QuestionDifficulty.MIXED) {
+        // Keep the difficulty as generated by GPT-4o, but ensure it's storable
+        if (!isStorableDifficulty(q.difficulty)) {
+          // Default to MEDIUM if invalid or MIXED
+          q.difficulty = QuestionDifficulty.MEDIUM;
+        }
+      } else {
+        // Force the requested difficulty
+        q.difficulty = difficulty;
+      }
+
+      // Assign points based on difficulty
+      if (q.difficulty === QuestionDifficulty.EASY) {
+        q.points = 1;
+      } else if (q.difficulty === QuestionDifficulty.MEDIUM) {
+        q.points = 2;
+      } else if (q.difficulty === QuestionDifficulty.HARD) {
+        q.points = 3;
+      }
+
+      // Normalize options for TRUE_FALSE
+      if (q.type === QuestionType.TRUE_FALSE) {
+        q.options = ['True', 'False'];
+      }
+
+      // Validate with Zod
+      const validatedQuestion = QuestionSchema.parse(q);
+      validated.push(validatedQuestion);
+    } catch (error) {
+      console.warn('Invalid question filtered out:', error);
+      // Skip invalid questions
+    }
+  }
+
+  return validated;
+}
+
+/**
+ * Genkit Flow: Generate Exam Questions
+ *
+ * Main entry point for exam generation with GPT-4o
+ */
+export const generateExamFlow = ai.defineFlow(
+  {
+    name: 'generateExam',
+    inputSchema: GenerateExamInputSchema,
+    outputSchema: GenerateExamOutputSchema,
+  },
+  async ({ context, numQuestions, difficulty, questionTypes }) => {
+    // Step 1: Build prompts
+    const systemPrompt = buildSystemPrompt(difficulty, questionTypes);
+    const userPrompt = buildUserPrompt(context, numQuestions, questionTypes);
+
+    // Step 2: Call GPT-4o with Genkit observability
+    const response = await ai.run('gpt4o-generate-questions', async () => {
+      console.log(`[GPT-4o] Generating ${numQuestions} questions...`);
+
+      const completion = await azureClient.chat.completions.create({
+        model: env.AZURE_OPENAI_CHAT_DEPLOYMENT,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: numQuestions * 500, // Estimate ~500 tokens per question
+        response_format: { type: 'json_object' }, // Force JSON mode
+      });
+
+      return completion;
+    });
+
+    // Step 3: Parse and validate response
+    const parsedResponse = await ai.run('parse-questions', async () => {
+      const content = response.choices[0]?.message?.content;
+
+      if (!content) {
+        throw new Error('No content in GPT-4o response');
+      }
+
+      let parsed: any;
+      try {
+        parsed = JSON.parse(content);
+      } catch (error) {
+        throw new Error('Failed to parse GPT-4o response as JSON');
+      }
+
+      if (!parsed.questions || !Array.isArray(parsed.questions)) {
+        throw new Error('Invalid response format: missing questions array');
+      }
+
+      // Validate and normalize questions
+      const validatedQuestions = validateAndNormalizeQuestions(parsed.questions, difficulty);
+
+      if (validatedQuestions.length === 0) {
+        throw new Error('No valid questions generated');
+      }
+
+      console.log(`[GPT-4o] ✅ Generated ${validatedQuestions.length} valid questions`);
+
+      return {
+        questions: validatedQuestions,
+        promptTokens: response.usage?.prompt_tokens,
+        completionTokens: response.usage?.completion_tokens,
+        totalTokens: response.usage?.total_tokens,
+      };
+    });
+
+    return parsedResponse;
+  }
+);

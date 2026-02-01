@@ -16,8 +16,8 @@ export class AzureOpenAIEmbeddingService {
   constructor() {
     const apiKey = process.env.AZURE_OPENAI_API_KEY;
     const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
-    const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-01';
-    this.deploymentName = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'text-embedding-ada-002';
+    const apiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-08-01-preview';
+    this.deploymentName = process.env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-3-small';
 
     if (!apiKey || !endpoint) {
       throw new Error(

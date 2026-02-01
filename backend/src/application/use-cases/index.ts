@@ -37,3 +37,13 @@ export type {
   GetDashboardStatsInput,
   GetDashboardStatsOutput,
 } from './dashboard/GetDashboardStatsUseCase.js';
+
+// Application Layer - Exam Use Cases
+export { GenerateExamUseCase } from './exams/GenerateExamUseCase.js';
+export { GetExamUseCase } from './exams/GetExamUseCase.js';
+export { ListExamsUseCase } from './exams/ListExamsUseCase.js';
+
+// Export input/output types for exam use cases
+export type { GenerateExamInput, GenerateExamOutput } from './exams/GenerateExamUseCase.js';
+export type { GetExamInput, GetExamOutput } from './exams/GetExamUseCase.js';
+export type { ListExamsInput, ListExamsOutput } from './exams/ListExamsUseCase.js';

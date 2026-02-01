@@ -33,6 +33,7 @@
     "@fastify/type-provider-typebox": "^4.1.0",
     "@prisma/client": "^6.1.0",
     "@sinclair/typebox": "^0.32.15",
+    "@types/uuid": "^11.0.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^5.67.2",
     "dotenv": "^16.4.5",
@@ -45,7 +46,8 @@
     "openai": "^6.16.0",
     "pdf-parse": "^1.1.4",
     "pgvector": "^0.2.1",
-    "postgres": "^3.4.8"
+    "postgres": "^3.4.8",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

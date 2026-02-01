@@ -32,9 +32,10 @@ export const env = {
   // Azure OpenAI
   AZURE_OPENAI_API_KEY: process.env.AZURE_OPENAI_API_KEY || '',
   AZURE_OPENAI_ENDPOINT: process.env.AZURE_OPENAI_ENDPOINT || '',
-  AZURE_OPENAI_DEPLOYMENT_NAME:
-    process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'text-embedding-ada-002',
-  AZURE_OPENAI_API_VERSION: process.env.AZURE_OPENAI_API_VERSION || '2024-02-01',
+  AZURE_OPENAI_EMBEDDING_DEPLOYMENT:
+    process.env.AZURE_OPENAI_EMBEDDING_DEPLOYMENT || 'text-embedding-3-small',
+  AZURE_OPENAI_CHAT_DEPLOYMENT: process.env.AZURE_OPENAI_CHAT_DEPLOYMENT || 'gpt-4o',
+  AZURE_OPENAI_API_VERSION: process.env.AZURE_OPENAI_API_VERSION || '2024-08-01-preview',
 
   // OAuth - Google
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',

@@ -23,6 +23,8 @@ import {
   TextExtractorService,
   BullMQMessageBroker, // Added
 } from '../infrastructure/index.js';
+import { PrismaExamRepository } from '../infrastructure/repositories/PrismaExamRepository.js';
+import { AzureOpenAIEmbeddingService } from '../infrastructure/ai/AzureOpenAIEmbeddingService.js';
 
 // Application Use Cases
 import {
@@ -36,11 +38,15 @@ import {
   ReprocessDocumentUseCase, // Added
   QueryDocumentUseCase, // Added
   GetDashboardStatsUseCase,
+  GenerateExamUseCase,
+  GetExamUseCase,
+  ListExamsUseCase,
 } from '../application/use-cases/index.js';
 
 // Domain Interfaces (for type safety)
 import type { IUserRepository } from '../domain/repositories/IUserRepository.js';
 import type { IDocumentRepository } from '../domain/repositories/IDocumentRepository.js';
+import type { IExamRepository } from '../domain/repositories/IExamRepository.js';
 import type { IPasswordHasher } from '../domain/services/IPasswordHasher.js';
 import type { ITokenService } from '../domain/services/ITokenService.js';
 import type { IStorageService } from '../domain/services/IStorageService.js';
@@ -58,11 +64,13 @@ export class Container {
   private readonly _prisma: PrismaClient;
   private readonly _userRepository: IUserRepository;
   private readonly _documentRepository: IDocumentRepository;
+  private readonly _examRepository: IExamRepository;
   private readonly _passwordHasher: IPasswordHasher;
   private readonly _tokenService: ITokenService;
   private readonly _storageService: IStorageService;
   private readonly _textExtractor: ITextExtractor;
   private readonly _messageBroker: IMessageBroker; // Added
+  private readonly _embeddingService: AzureOpenAIEmbeddingService;
 
   // Application Layer - Auth Use Cases
   private readonly _registerUserUseCase: RegisterUserUseCase;
@@ -80,6 +88,11 @@ export class Container {
   // Application Layer - Dashboard Use Cases
   private readonly _getDashboardStatsUseCase: GetDashboardStatsUseCase;
 
+  // Application Layer - Exam Use Cases
+  private readonly _generateExamUseCase: GenerateExamUseCase;
+  private readonly _getExamUseCase: GetExamUseCase;
+  private readonly _listExamsUseCase: ListExamsUseCase;
+
   private constructor() {
     // ========================================
     // INFRASTRUCTURE LAYER
@@ -93,6 +106,7 @@ export class Container {
     // Repositories
     this._userRepository = PrismaUserRepository.create(this._prisma);
     this._documentRepository = PrismaDocumentRepository.create(this._prisma);
+    this._examRepository = PrismaExamRepository.create(this._prisma);
 
     // Security Services
     this._passwordHasher = new BcryptPasswordHasher();
@@ -112,6 +126,9 @@ export class Container {
     // Text Extraction Service
     this._textExtractor = new TextExtractorService();
     this._messageBroker = new BullMQMessageBroker(); // Instantiate Message Broker
+
+    // AI Services
+    this._embeddingService = new AzureOpenAIEmbeddingService();
 
     // ========================================
     // APPLICATION LAYER - USE CASES
@@ -156,6 +173,17 @@ export class Container {
 
     // Dashboard Use Cases
     this._getDashboardStatsUseCase = new GetDashboardStatsUseCase(this._documentRepository);
+
+    // Exam Use Cases
+    this._generateExamUseCase = new GenerateExamUseCase(
+      this._documentRepository,
+      this._examRepository,
+      this._embeddingService
+    );
+
+    this._getExamUseCase = new GetExamUseCase(this._examRepository);
+
+    this._listExamsUseCase = new ListExamsUseCase(this._examRepository);
   }
 
   /**
@@ -257,6 +285,20 @@ export class Container {
 
   public get getDashboardStatsUseCase(): GetDashboardStatsUseCase {
     return this._getDashboardStatsUseCase;
+  }
+
+  // Exam Use Cases
+
+  public get generateExamUseCase(): GenerateExamUseCase {
+    return this._generateExamUseCase;
+  }
+
+  public get getExamUseCase(): GetExamUseCase {
+    return this._getExamUseCase;
+  }
+
+  public get listExamsUseCase(): ListExamsUseCase {
+    return this._listExamsUseCase;
   }
 
   /**
