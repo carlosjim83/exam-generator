@@ -1,42 +1,23 @@
 'use client';
 
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Upload, Wand2, FolderOpen, Users, Lightbulb } from 'lucide-react';
-import { UploadDocumentDialog } from '@/features/documents/components/UploadDocumentDialog';
-import { useDashboardContext } from '@/features/dashboard/context/DashboardContext';
 import Link from 'next/link';
 
 export function QuickActions() {
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const { refreshAll } = useDashboardContext();
-
-  const handleUploadSuccess = async () => {
-    // Refresh all dashboard data after successful upload
-    await refreshAll();
-  };
-
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-bold mb-4">Quick Actions</h2>
 
       {/* Primary Actions */}
       <div className="space-y-3">
-        <Button
-          className="w-full justify-start gap-3 h-12"
-          size="lg"
-          onClick={() => setUploadDialogOpen(true)}
-        >
-          <Upload className="h-5 w-5" />
-          Upload Document
-        </Button>
-
-        <UploadDocumentDialog
-          open={uploadDialogOpen}
-          onOpenChange={setUploadDialogOpen}
-          onUploadSuccess={handleUploadSuccess}
-        />
+        <Link href="/dashboard/upload" className="block">
+          <Button className="w-full justify-start gap-3 h-12" size="lg">
+            <Upload className="h-5 w-5" />
+            Upload Document
+          </Button>
+        </Link>
 
         <Link href="/dashboard/exams/generate" className="block">
           <Button variant="secondary" className="w-full justify-start gap-3 h-12" size="lg">

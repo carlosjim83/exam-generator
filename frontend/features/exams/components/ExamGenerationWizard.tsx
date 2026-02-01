@@ -162,7 +162,7 @@ export function ExamGenerationWizard() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       {/* Progress Indicator */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-gray-600">
@@ -263,7 +263,7 @@ export function ExamGenerationWizard() {
                     </Button>
                   </Link>
                   {allDocuments.length === 0 && (
-                    <Link href="/dashboard">
+                    <Link href="/dashboard/upload">
                       <Button className="gap-2">
                         <Upload className="h-4 w-4" />
                         Upload Documents

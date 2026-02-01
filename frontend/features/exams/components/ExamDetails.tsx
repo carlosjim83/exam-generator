@@ -10,17 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  ArrowLeft,
-  FileText,
-  Calendar,
-  Layers,
-  Download,
-  Printer,
-  CheckCircle2,
-} from 'lucide-react';
+import { FileText, Calendar, Layers, Download, Printer, CheckCircle2 } from 'lucide-react';
 import { ApiExamService, type ExamDetailsResponse } from '@/lib/services/api-exam.service';
-import Link from 'next/link';
 
 const examService = new ApiExamService();
 
@@ -79,15 +70,9 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
         <CardContent className="flex flex-col items-center justify-center py-12">
           <FileText className="h-16 w-16 text-gray-400 mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Exam not found</h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600">
             The exam you're looking for doesn't exist or you don't have access to it.
           </p>
-          <Link href="/dashboard/exams">
-            <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Exams
-            </Button>
-          </Link>
         </CardContent>
       </Card>
     );
@@ -98,12 +83,6 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <Link href="/dashboard/exams">
-            <Button variant="ghost" size="sm" className="mb-2">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Exams
-            </Button>
-          </Link>
           <h1 className="text-3xl font-bold mb-2">{exam.exam.title}</h1>
           {exam.exam.description && <p className="text-gray-600">{exam.exam.description}</p>}
           <div className="flex flex-wrap gap-4 mt-4 text-sm text-gray-600">
