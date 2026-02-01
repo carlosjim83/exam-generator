@@ -37,7 +37,7 @@ export class PrismaDocumentRepository implements IDocumentRepository {
       orderBy: { uploadedAt: 'desc' },
     });
 
-    return documents.map((doc) => this.toDomain(doc));
+    return documents.map((doc: any) => this.toDomain(doc));
   }
 
   async create(data: CreateDocumentDTO): Promise<Document> {

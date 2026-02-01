@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GetDashboardStatsUseCase } from '@application/use-cases/dashboard/GetDashboardStatsUseCase.js';
 import { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import { IExamRepository } from '@domain/repositories/IExamRepository.js';
 
 describe('GetDashboardStatsUseCase', () => {
   let getDashboardStatsUseCase: GetDashboardStatsUseCase;
   let mockDocumentRepository: IDocumentRepository;
+  let mockExamRepository: IExamRepository;
 
   beforeEach(() => {
     // Mock document repository
@@ -18,7 +20,20 @@ describe('GetDashboardStatsUseCase', () => {
       findMostRecentByUserId: vi.fn(),
     } as any;
 
-    getDashboardStatsUseCase = new GetDashboardStatsUseCase(mockDocumentRepository);
+    // Mock exam repository
+    mockExamRepository = {
+      findById: vi.fn(),
+      findByUserId: vi.fn(),
+      create: vi.fn(),
+      delete: vi.fn(),
+      exists: vi.fn(),
+      countByUserId: vi.fn(),
+    } as any;
+
+    getDashboardStatsUseCase = new GetDashboardStatsUseCase(
+      mockDocumentRepository,
+      mockExamRepository
+    );
   });
 
   it('should return dashboard stats with document count', async () => {
@@ -37,6 +52,7 @@ describe('GetDashboardStatsUseCase', () => {
     };
 
     vi.mocked(mockDocumentRepository.countByUserId).mockResolvedValue(5);
+    vi.mocked(mockExamRepository.countByUserId).mockResolvedValue(0);
     vi.mocked(mockDocumentRepository.findMostRecentByUserId).mockResolvedValue(mockDocument as any);
 
     // Act
@@ -59,6 +75,7 @@ describe('GetDashboardStatsUseCase', () => {
     // Arrange
     const userId = '550e8400-e29b-41d4-a716-446655440000'; // Valid UUID
     vi.mocked(mockDocumentRepository.countByUserId).mockResolvedValue(0);
+    vi.mocked(mockExamRepository.countByUserId).mockResolvedValue(0);
     vi.mocked(mockDocumentRepository.findMostRecentByUserId).mockResolvedValue(null);
 
     // Act

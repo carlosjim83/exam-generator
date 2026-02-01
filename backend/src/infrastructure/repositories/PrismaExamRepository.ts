@@ -27,7 +27,7 @@ export class PrismaExamRepository implements IExamRepository {
    * Create exam with questions in a transaction
    */
   async create(examData: CreateExamDTO, questionsData: CreateQuestionDTO[]): Promise<Exam> {
-    const result = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx: any) => {
       // Create exam
       const exam = await tx.exam.create({
         data: {
@@ -91,7 +91,7 @@ export class PrismaExamRepository implements IExamRepository {
       },
     });
 
-    return exams.map((exam) =>
+    return exams.map((exam: any) =>
       Exam.create({
         id: ExamId.create(exam.id),
         userId: UserId.create(exam.userId),
