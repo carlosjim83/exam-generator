@@ -81,8 +81,9 @@ export function ExamGenerationWizard() {
     try {
       setLoadingDocuments(true);
       const docs = await documentService.listDocuments();
-      // Only show COMPLETED documents
-      const completedDocs = docs.filter((d) => d.status === 'COMPLETED');
+      // Ensure docs is an array and only show COMPLETED documents
+      const docsArray = Array.isArray(docs) ? docs : [];
+      const completedDocs = docsArray.filter((d) => d.status === 'COMPLETED');
       setDocuments(completedDocs);
     } catch (err) {
       console.error('Failed to load documents:', err);

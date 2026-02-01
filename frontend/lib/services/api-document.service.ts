@@ -153,7 +153,9 @@ export class ApiDocumentService {
         throw new Error(`Failed to fetch documents: ${response.statusText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      // Backend returns { documents: [...] }, extract the array
+      return Array.isArray(data) ? data : data.documents || [];
     } catch (error) {
       console.error('Error fetching documents:', error);
       return [];
