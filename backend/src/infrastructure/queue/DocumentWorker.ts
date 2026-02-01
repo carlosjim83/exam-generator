@@ -18,6 +18,7 @@ import { ProcessDocumentUseCase } from '../../application/use-cases/documents/Pr
 import { PrismaDocumentRepository } from '../repositories/PrismaDocumentRepository.js';
 import { LocalFileStorageService } from '../storage/LocalFileStorageService.js';
 import { prisma } from '../../config/prisma.js';
+import { workerLogger } from './WorkerLogger.js';
 
 // Initialize dependencies
 const documentRepository = PrismaDocumentRepository.create(prisma);
@@ -69,40 +70,47 @@ export const documentWorker = new Worker<DocumentJobData>(
   async (job: Job<DocumentJobData>) => {
     const { documentId, userId } = job.data;
 
-    console.log(`[Worker] 🚀 Processing document: ${documentId} (Job: ${job.id})`);
-    console.log(`[Worker] 📊 Attempt ${job.attemptsMade + 1}/${job.opts.attempts}`);
+    workerLogger.jobStarted(job.id!, documentId, job.attemptsMade + 1, job.opts.attempts || 3);
 
     try {
+      const startTime = Date.now();
+
       // Execute the use case with timeout protection
       const result = await processWithTimeout(documentId, userId);
 
-      console.log(
-        `[Worker] ✅ Document processed successfully: ${documentId}`,
-        `\n  - Chunks created: ${result.document.chunksCreated}`,
-        `\n  - Processing time: ${result.processingTimeMs}ms`,
-        `\n  - Word count: ${result.document.wordCount}`,
-        `\n  - Page count: ${result.document.pageCount}`
+      const processingTime = Date.now() - startTime;
+
+      workerLogger.jobCompleted(
+        job.id!,
+        documentId,
+        processingTime,
+        result.document.chunksCreated,
+        result.document.wordCount,
+        result.document.pageCount
       );
 
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-      console.error(
-        `[Worker] ❌ Document processing failed: ${documentId}`,
-        `\n  - Error: ${errorMessage}`,
-        `\n  - Attempt: ${job.attemptsMade + 1}/${job.opts.attempts}`
-      );
+      const err = error instanceof Error ? error : new Error('Unknown error');
+      const errorMessage = err.message;
 
       // Check if it's a timeout error
       if (errorMessage.includes('Processing timeout')) {
-        console.error(`[Worker] ⏱️  Timeout: Document ${documentId} took too long to process.`);
+        workerLogger.jobTimeout(job.id!, documentId, 10 * 60 * 1000);
       }
-
       // Check if it's a rate limit error
-      if (errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('Quota exceeded')) {
-        console.warn(
-          `[Worker] ⚠️  Rate limit hit for ${documentId}. Job will retry automatically.`
+      else if (
+        errorMessage.includes('RESOURCE_EXHAUSTED') ||
+        errorMessage.includes('Quota exceeded')
+      ) {
+        workerLogger.jobRateLimited(job.id!, documentId);
+      } else {
+        workerLogger.jobFailed(
+          job.id!,
+          documentId,
+          job.attemptsMade + 1,
+          job.opts.attempts || 3,
+          err
         );
       }
 
@@ -133,50 +141,64 @@ export const documentWorker = new Worker<DocumentJobData>(
 // Event handlers for monitoring
 documentWorker.on('completed', (job: Job<DocumentJobData, any, string>) => {
   const result = job.returnvalue;
-  console.log(
-    `[Worker] 🎉 Job completed: ${job.id}`,
-    `\n  - Document: ${job.data.documentId}`,
-    `\n  - Chunks: ${result?.document?.chunksCreated || 'unknown'}`,
-    `\n  - Duration: ${result?.processingTimeMs || 'unknown'}ms`
-  );
+  workerLogger.debug('Job event: completed', {
+    event: 'job.event.completed',
+    jobId: job.id,
+    documentId: job.data.documentId,
+    chunks: result?.document?.chunksCreated,
+    duration: result?.processingTimeMs,
+  });
 });
 
 documentWorker.on('failed', (job: Job<DocumentJobData, any, string> | undefined, error: Error) => {
   if (!job) {
-    console.error('[Worker] 💥 Job failed with no job data:', error);
+    workerLogger.error('Job failed with no job data', {
+      event: 'job.event.failed_no_data',
+      errorMessage: error.message,
+      errorStack: error.stack,
+    });
     return;
   }
 
-  console.error(
-    `[Worker] 💥 Job failed permanently: ${job.id}`,
-    `\n  - Document: ${job.data.documentId}`,
-    `\n  - Attempts: ${job.attemptsMade}/${job.opts.attempts}`,
-    `\n  - Error: ${error.message}`
-  );
+  workerLogger.error('Job failed permanently', {
+    event: 'job.event.failed_permanent',
+    jobId: job.id,
+    documentId: job.data.documentId,
+    attemptsMade: job.attemptsMade,
+    maxAttempts: job.opts.attempts,
+    errorMessage: error.message,
+  });
 });
 
 documentWorker.on('active', (job: Job<DocumentJobData>) => {
-  console.log(
-    `[Worker] ⚡ Job started: ${job.id}`,
-    `\n  - Document: ${job.data.documentId}`,
-    `\n  - Waiting time: ${Date.now() - job.timestamp}ms`
-  );
+  const waitTime = Date.now() - job.timestamp;
+  workerLogger.debug('Job event: active', {
+    event: 'job.event.active',
+    jobId: job.id,
+    documentId: job.data.documentId,
+    waitTimeMs: waitTime,
+  });
 });
 
 documentWorker.on('error', (error: Error) => {
-  console.error('[Worker] 🔥 Worker error:', error);
+  workerLogger.workerError(error);
 });
 
 // Graceful shutdown
 const gracefulShutdown = async (signal: string) => {
-  console.log(`\n[Worker] 🛑 Received ${signal}. Shutting down gracefully...`);
+  workerLogger.workerShutdown(signal);
 
   try {
     await documentWorker.close();
-    console.log('[Worker] ✅ Worker closed successfully');
+    workerLogger.info('Worker closed successfully', { event: 'worker.closed' });
     process.exit(0);
   } catch (error) {
-    console.error('[Worker] ❌ Error during shutdown:', error);
+    const err = error instanceof Error ? error : new Error('Unknown error');
+    workerLogger.error('Error during shutdown', {
+      event: 'worker.shutdown_error',
+      errorMessage: err.message,
+      errorStack: err.stack,
+    });
     process.exit(1);
   }
 };
@@ -184,10 +206,16 @@ const gracefulShutdown = async (signal: string) => {
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
-console.log('[Worker] 🚀 Document processing worker started');
-console.log('[Worker] 📋 Queue: document-processing');
-console.log('[Worker] ⚙️  Concurrency: 1 document at a time');
-console.log('[Worker] ⏱️  Rate limit: 1 document per 60 seconds');
-console.log('[Worker] ⏰ Timeout: 10 minutes per document');
-console.log('[Worker] 🔄 Retry policy: 3 attempts with exponential backoff');
-console.log('[Worker] 🎯 Ready to process documents...\n');
+workerLogger.workerStarted({
+  concurrency: 1,
+  rateLimitPerMinute: 1,
+  timeoutMs: 10 * 60 * 1000,
+});
+
+workerLogger.info('Worker configuration', {
+  queue: 'document-processing',
+  concurrency: 1,
+  rateLimit: '1 document per 60 seconds',
+  timeout: '10 minutes per document',
+  retryPolicy: '3 attempts with exponential backoff',
+});
