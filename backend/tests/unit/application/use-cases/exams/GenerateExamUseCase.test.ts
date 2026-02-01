@@ -137,7 +137,7 @@ describe('GenerateExamUseCase', () => {
       await expect(
         generateExamUseCase.execute({
           userId: mockUserId.value,
-          documentId: mockDocumentId.value,
+          documentIds: [mockDocumentId.value],
           title: '',
           numQuestions: 5,
           difficulty: 'EASY',
@@ -150,7 +150,7 @@ describe('GenerateExamUseCase', () => {
       await expect(
         generateExamUseCase.execute({
           userId: mockUserId.value,
-          documentId: mockDocumentId.value,
+          documentIds: [mockDocumentId.value],
           title: 'Test Exam',
           numQuestions: 3,
           difficulty: 'EASY',
@@ -163,7 +163,7 @@ describe('GenerateExamUseCase', () => {
       await expect(
         generateExamUseCase.execute({
           userId: mockUserId.value,
-          documentId: mockDocumentId.value,
+          documentIds: [mockDocumentId.value],
           title: 'Test Exam',
           numQuestions: 100,
           difficulty: 'EASY',
@@ -176,7 +176,7 @@ describe('GenerateExamUseCase', () => {
       await expect(
         generateExamUseCase.execute({
           userId: mockUserId.value,
-          documentId: mockDocumentId.value,
+          documentIds: [mockDocumentId.value],
           title: 'Test Exam',
           numQuestions: 5,
           difficulty: 'EASY',
@@ -189,7 +189,7 @@ describe('GenerateExamUseCase', () => {
       await expect(
         generateExamUseCase.execute({
           userId: mockUserId.value,
-          documentId: mockDocumentId.value,
+          documentIds: [mockDocumentId.value],
           title: 'Test Exam',
           numQuestions: 5,
           difficulty: 'SUPER_HARD' as any,
@@ -206,7 +206,7 @@ describe('GenerateExamUseCase', () => {
       await expect(
         generateExamUseCase.execute({
           userId: mockUserId.value,
-          documentId: mockDocumentId.value,
+          documentIds: [mockDocumentId.value],
           title: 'Test Exam',
           numQuestions: 5,
           difficulty: 'EASY',
@@ -222,13 +222,13 @@ describe('GenerateExamUseCase', () => {
       await expect(
         generateExamUseCase.execute({
           userId: anotherUserId.value,
-          documentId: mockDocumentId.value,
+          documentIds: [mockDocumentId.value],
           title: 'Test Exam',
           numQuestions: 5,
           difficulty: 'EASY',
           questionTypes: ['MULTIPLE_CHOICE'],
         })
-      ).rejects.toThrow('Unauthorized: Document does not belong to user');
+      ).rejects.toThrow(/Unauthorized: Document .+ does not belong to user/);
     });
 
     it('should throw error if document is not COMPLETED', async () => {
@@ -252,13 +252,13 @@ describe('GenerateExamUseCase', () => {
       await expect(
         generateExamUseCase.execute({
           userId: mockUserId.value,
-          documentId: mockDocumentId.value,
+          documentIds: [mockDocumentId.value],
           title: 'Test Exam',
           numQuestions: 5,
           difficulty: 'EASY',
           questionTypes: ['MULTIPLE_CHOICE'],
         })
-      ).rejects.toThrow('Document not ready for exam generation');
+      ).rejects.toThrow(/Document .+ not ready for exam generation/);
     });
   });
 
@@ -318,7 +318,7 @@ describe('GenerateExamUseCase', () => {
     it('should successfully generate an exam', async () => {
       const result = await generateExamUseCase.execute({
         userId: mockUserId.value,
-        documentId: mockDocumentId.value,
+        documentIds: [mockDocumentId.value],
         title: 'Test Exam',
         description: 'Test description',
         numQuestions: 5,
@@ -345,7 +345,7 @@ describe('GenerateExamUseCase', () => {
     it('should generate questions with correct difficulty', async () => {
       const result = await generateExamUseCase.execute({
         userId: mockUserId.value,
-        documentId: mockDocumentId.value,
+        documentIds: [mockDocumentId.value],
         title: 'Hard Exam',
         numQuestions: 5,
         difficulty: 'HARD',
@@ -362,7 +362,7 @@ describe('GenerateExamUseCase', () => {
     it('should generate mixed question types', async () => {
       const result = await generateExamUseCase.execute({
         userId: mockUserId.value,
-        documentId: mockDocumentId.value,
+        documentIds: [mockDocumentId.value],
         title: 'Mixed Exam',
         numQuestions: 6,
         difficulty: 'MEDIUM',
@@ -379,7 +379,7 @@ describe('GenerateExamUseCase', () => {
     it('should extract context using multiple RAG queries', async () => {
       await generateExamUseCase.execute({
         userId: mockUserId.value,
-        documentId: mockDocumentId.value,
+        documentIds: [mockDocumentId.value],
         title: 'Test Exam',
         numQuestions: 10,
         difficulty: 'EASY',
@@ -393,7 +393,7 @@ describe('GenerateExamUseCase', () => {
     it('should store exam with correct metadata', async () => {
       await generateExamUseCase.execute({
         userId: mockUserId.value,
-        documentId: mockDocumentId.value,
+        documentIds: [mockDocumentId.value],
         title: 'Metadata Test',
         description: 'Test description',
         numQuestions: 5,
@@ -410,6 +410,239 @@ describe('GenerateExamUseCase', () => {
         }),
         expect.any(Array)
       );
+    });
+  });
+
+  describe('Multi-Document Generation', () => {
+    let mockDocument2: Document;
+    let mockDocumentId2: DocumentId;
+
+    beforeEach(() => {
+      // Create second document
+      mockDocumentId2 = DocumentId.create(randomUUID());
+      mockDocument2 = Document.create({
+        id: mockDocumentId2,
+        userId: mockUserId,
+        title: 'Test Document 2',
+        filename: 'test2.pdf',
+        fileSize: 1024,
+        mimeType: 'application/pdf',
+        blobUrl: 'https://storage.example.com/test2.pdf',
+        status: DocumentStatus.COMPLETED,
+        pageCount: 8,
+        wordCount: 800,
+        errorMessage: null,
+        uploadedAt: new Date(),
+        processedAt: new Date(),
+      });
+
+      // Mock finding both documents
+      vi.mocked(mockDocumentRepository.findById).mockImplementation(async (id: DocumentId) => {
+        if (id.equals(mockDocumentId)) return mockCompletedDocument;
+        if (id.equals(mockDocumentId2)) return mockDocument2;
+        return null;
+      });
+
+      // Mock chunks from both documents
+      vi.mocked(mockDocumentRepository.searchSimilarChunks).mockResolvedValue([
+        {
+          chunkIndex: 0,
+          content: 'Chunk from doc 1',
+          similarity: 0.95,
+          wordCount: 50,
+        },
+        {
+          chunkIndex: 1,
+          content: 'Another chunk from doc 1',
+          similarity: 0.9,
+          wordCount: 45,
+        },
+      ]);
+
+      // Mock exam repository create
+      vi.mocked(mockExamRepository.create).mockImplementation(async (examData, questionsData) => {
+        const examId = ExamId.create();
+        const questions = questionsData.map((q, index) =>
+          Question.create({
+            id: QuestionId.create(),
+            examId,
+            type: q.type,
+            difficulty: q.difficulty,
+            questionText: q.questionText,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation,
+            points: q.points,
+            orderIndex: index,
+            sourceChunkIds: [],
+          })
+        );
+
+        return Exam.create({
+          id: examId,
+          userId: examData.userId,
+          title: examData.title,
+          description: examData.description,
+          generatedFrom: examData.generatedFrom,
+          promptUsed: examData.promptUsed,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          questions,
+        });
+      });
+    });
+
+    it('should generate exam from 2 documents', async () => {
+      const result = await generateExamUseCase.execute({
+        userId: mockUserId.value,
+        documentIds: [mockDocumentId.value, mockDocumentId2.value],
+        title: 'Multi-Doc Exam',
+        numQuestions: 10,
+        difficulty: 'MIXED',
+        questionTypes: ['MULTIPLE_CHOICE'],
+      });
+
+      expect(result.exam.title).toBe('Multi-Doc Exam');
+      expect(result.questions).toHaveLength(10);
+
+      // Verify both documents were validated
+      expect(mockDocumentRepository.findById).toHaveBeenCalledWith(mockDocumentId);
+      expect(mockDocumentRepository.findById).toHaveBeenCalledWith(mockDocumentId2);
+
+      // Verify exam was stored with both document IDs
+      expect(mockExamRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          generatedFrom: [mockDocumentId.value, mockDocumentId2.value],
+        }),
+        expect.any(Array)
+      );
+    });
+
+    it('should throw error if documentIds array is empty', async () => {
+      await expect(
+        generateExamUseCase.execute({
+          userId: mockUserId.value,
+          documentIds: [],
+          title: 'Test Exam',
+          numQuestions: 5,
+          difficulty: 'EASY',
+          questionTypes: ['MULTIPLE_CHOICE'],
+        })
+      ).rejects.toThrow(/At least one document must be provided/);
+    });
+
+    it('should throw error if more than 10 documents', async () => {
+      const manyDocIds = Array.from({ length: 11 }, () => randomUUID());
+
+      await expect(
+        generateExamUseCase.execute({
+          userId: mockUserId.value,
+          documentIds: manyDocIds,
+          title: 'Test Exam',
+          numQuestions: 5,
+          difficulty: 'EASY',
+          questionTypes: ['MULTIPLE_CHOICE'],
+        })
+      ).rejects.toThrow(/Maximum 10 documents allowed/);
+    });
+
+    it('should throw error for duplicate document IDs', async () => {
+      await expect(
+        generateExamUseCase.execute({
+          userId: mockUserId.value,
+          documentIds: [mockDocumentId.value, mockDocumentId.value],
+          title: 'Test Exam',
+          numQuestions: 5,
+          difficulty: 'EASY',
+          questionTypes: ['MULTIPLE_CHOICE'],
+        })
+      ).rejects.toThrow(/Duplicate document IDs are not allowed/);
+    });
+
+    it('should throw error if any document is not COMPLETED', async () => {
+      const pendingDoc = Document.create({
+        id: mockDocumentId2,
+        userId: mockUserId,
+        title: 'Pending Doc',
+        filename: 'pending.pdf',
+        fileSize: 1024,
+        mimeType: 'application/pdf',
+        blobUrl: 'https://storage.example.com/pending.pdf',
+        status: DocumentStatus.PENDING,
+        pageCount: null,
+        wordCount: null,
+        errorMessage: null,
+        uploadedAt: new Date(),
+        processedAt: null,
+      });
+
+      vi.mocked(mockDocumentRepository.findById).mockImplementation(async (id: DocumentId) => {
+        if (id.equals(mockDocumentId)) return mockCompletedDocument;
+        if (id.equals(mockDocumentId2)) return pendingDoc;
+        return null;
+      });
+
+      await expect(
+        generateExamUseCase.execute({
+          userId: mockUserId.value,
+          documentIds: [mockDocumentId.value, mockDocumentId2.value],
+          title: 'Test Exam',
+          numQuestions: 5,
+          difficulty: 'EASY',
+          questionTypes: ['MULTIPLE_CHOICE'],
+        })
+      ).rejects.toThrow(/not ready for exam generation/);
+    });
+
+    it('should throw error if any document not found', async () => {
+      const nonExistentId = randomUUID();
+
+      await expect(
+        generateExamUseCase.execute({
+          userId: mockUserId.value,
+          documentIds: [mockDocumentId.value, nonExistentId],
+          title: 'Test Exam',
+          numQuestions: 5,
+          difficulty: 'EASY',
+          questionTypes: ['MULTIPLE_CHOICE'],
+        })
+      ).rejects.toThrow(/Document not found/);
+    });
+
+    it('should throw error if user does not own one of the documents', async () => {
+      const anotherUserId = UserId.create(randomUUID());
+      const unauthorizedDoc = Document.create({
+        id: mockDocumentId2,
+        userId: anotherUserId, // Different user
+        title: 'Unauthorized Doc',
+        filename: 'unauthorized.pdf',
+        fileSize: 1024,
+        mimeType: 'application/pdf',
+        blobUrl: 'https://storage.example.com/unauthorized.pdf',
+        status: DocumentStatus.COMPLETED,
+        pageCount: 5,
+        wordCount: 500,
+        errorMessage: null,
+        uploadedAt: new Date(),
+        processedAt: new Date(),
+      });
+
+      vi.mocked(mockDocumentRepository.findById).mockImplementation(async (id: DocumentId) => {
+        if (id.equals(mockDocumentId)) return mockCompletedDocument;
+        if (id.equals(mockDocumentId2)) return unauthorizedDoc;
+        return null;
+      });
+
+      await expect(
+        generateExamUseCase.execute({
+          userId: mockUserId.value,
+          documentIds: [mockDocumentId.value, mockDocumentId2.value],
+          title: 'Test Exam',
+          numQuestions: 5,
+          difficulty: 'EASY',
+          questionTypes: ['MULTIPLE_CHOICE'],
+        })
+      ).rejects.toThrow(/does not belong to user/);
     });
   });
 });

@@ -8,24 +8,29 @@ import { container } from '../config/container.js';
 import { authenticateUser } from '../middleware/auth.middleware.js';
 
 export async function examRoutes(fastify: FastifyInstance) {
-  // POST /exams/generate - Generate exam from document
+  // POST /exams/generate - Generate exam from documents
   fastify.post(
     '/exams/generate',
     {
       preHandler: authenticateUser,
       schema: {
         tags: ['exams'],
-        summary: 'Generate exam from document using AI',
+        summary: 'Generate exam from one or more documents using AI',
         description:
-          'Generate exam questions from a document using RAG + GPT-4o. The document must be processed (status: COMPLETED).',
+          'Generate exam questions from 1-10 documents using RAG + GPT-4o. All documents must be processed (status: COMPLETED).',
         security: [{ bearerAuth: [] }],
         body: {
           type: 'object',
           properties: {
-            documentId: {
-              type: 'string',
-              format: 'uuid',
-              description: 'ID of the document to generate exam from',
+            documentIds: {
+              type: 'array',
+              items: {
+                type: 'string',
+                format: 'uuid',
+              },
+              minItems: 1,
+              maxItems: 10,
+              description: 'IDs of documents to generate exam from (1-10 documents)',
             },
             title: {
               type: 'string',
@@ -62,7 +67,7 @@ export async function examRoutes(fastify: FastifyInstance) {
               description: 'Types of questions to generate',
             },
           },
-          required: ['documentId', 'title'],
+          required: ['documentIds', 'title'],
         },
         response: {
           200: {
@@ -149,7 +154,7 @@ export async function examRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const body = request.body as {
-          documentId: string;
+          documentIds: string[];
           title: string;
           description?: string;
           numQuestions?: number;
@@ -159,7 +164,7 @@ export async function examRoutes(fastify: FastifyInstance) {
 
         const result = await container.generateExamUseCase.execute({
           userId: (request as any).user.userId,
-          documentId: body.documentId,
+          documentIds: body.documentIds,
           title: body.title,
           description: body.description,
           numQuestions: body.numQuestions || 10,
@@ -241,6 +246,7 @@ export async function examRoutes(fastify: FastifyInstance) {
                     title: { type: 'string' },
                     description: { type: 'string' },
                     questionCount: { type: 'integer' },
+                    documentCount: { type: 'integer' },
                     createdAt: { type: 'string' },
                   },
                 },
@@ -308,6 +314,7 @@ export async function examRoutes(fastify: FastifyInstance) {
                   title: { type: 'string' },
                   description: { type: 'string' },
                   questionCount: { type: 'integer' },
+                  documentCount: { type: 'integer' },
                   createdAt: { type: 'string' },
                   updatedAt: { type: 'string' },
                 },
