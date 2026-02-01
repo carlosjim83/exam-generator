@@ -1,20 +1,12 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  FileText,
-  Share2,
-  MoreVertical,
-  RefreshCw,
-  Loader2,
-  CheckCircle2,
-  XCircle,
-  Clock,
-} from 'lucide-react';
+import { FileText, RefreshCw, Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { useDashboardContext } from '../context/DashboardContext';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiDocumentService } from '@/lib/services/api-document.service';
@@ -133,36 +125,28 @@ function DocumentItem({
         </p>
       </div>
 
-      <div className="flex flex-shrink-0 items-center gap-2">
-        {(document.status === 'FAILED' ||
-          (document.status === 'PROCESSING' && minutesSinceUpload > 5)) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-xs"
-            onClick={handleRetry}
-            disabled={isRetrying}
-          >
-            {isRetrying ? (
-              <>
-                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-                Retrying...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="mr-1 h-3 w-3" />
-                Retry
-              </>
-            )}
-          </Button>
-        )}
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <Share2 className="h-4 w-4" />
+      {(document.status === 'FAILED' ||
+        (document.status === 'PROCESSING' && minutesSinceUpload > 5)) && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 text-xs flex-shrink-0"
+          onClick={handleRetry}
+          disabled={isRetrying}
+        >
+          {isRetrying ? (
+            <>
+              <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+              Retrying...
+            </>
+          ) : (
+            <>
+              <RefreshCw className="mr-1 h-3 w-3" />
+              Retry
+            </>
+          )}
         </Button>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreVertical className="h-4 w-4" />
-        </Button>
-      </div>
+      )}
     </div>
   );
 }
@@ -175,8 +159,6 @@ function DocumentItemSkeleton() {
         <Skeleton className="h-4 w-48" />
         <Skeleton className="h-3 w-36" />
       </div>
-      <Skeleton className="h-8 w-8 rounded" />
-      <Skeleton className="h-8 w-8 rounded" />
     </div>
   );
 }
@@ -223,9 +205,11 @@ export function RecentDocuments() {
     <div className="overflow-hidden">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold">Recent Documents</h2>
-        <Button variant="link" className="text-primary">
-          View all
-        </Button>
+        <Link href="/dashboard/documents">
+          <Button variant="link" className="text-primary">
+            View all
+          </Button>
+        </Link>
       </div>
 
       <div className="space-y-2">

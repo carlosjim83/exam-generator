@@ -21,16 +21,16 @@ function StatCard({ title, value, change, icon: Icon, iconColor, iconBgColor }: 
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-muted-foreground mb-2">{title}</p>
-            <h3 className="text-3xl font-bold tracking-tight mb-2">{value}</h3>
-            {change && (
-              <div className="flex items-center gap-1 text-sm text-green-600">
-                <TrendingUp className="h-3 w-3" />
-                <span className="font-medium">{change}</span>
+            <p className="mb-2 text-sm font-medium text-muted-foreground">{title}</p>
+            <h3 className="mb-2 text-3xl font-bold tracking-tight">{value}</h3>
+            {change && change !== 'N/A' && (
+              <div className="flex items-center gap-1 text-sm">
+                <TrendingUp className="h-3 w-3 text-green-600" />
+                <span className="font-medium text-green-600">{change}</span>
               </div>
             )}
           </div>
-          <div className={`p-3 rounded-lg ${iconBgColor}`}>
+          <div className={`rounded-lg p-3 ${iconBgColor}`}>
             <Icon className={`h-5 w-5 ${iconColor}`} />
           </div>
         </div>
@@ -88,7 +88,7 @@ export function DashboardStats() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       <StatCard
-        title="TOTAL DOCUMENTS"
+        title="Total Documents"
         value={stats.totalDocuments}
         change={stats.documentsChange}
         icon={FileText}
@@ -96,36 +96,34 @@ export function DashboardStats() {
         iconBgColor="bg-blue-100"
       />
       <StatCard
-        title="TOTAL EXAMS"
+        title="Total Exams"
         value={stats.totalExams}
         change={stats.examsChange}
         icon={ClipboardCheck}
-        iconColor="text-blue-600"
-        iconBgColor="bg-blue-100"
+        iconColor="text-indigo-600"
+        iconBgColor="bg-indigo-100"
       />
-      <div className="relative">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <p className="text-sm font-medium text-muted-foreground mb-2">RECENT ACTIVITY</p>
-                <h3 className="text-3xl font-bold tracking-tight mb-2">Active Now</h3>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span>
-                    {minutesAgo === 0
-                      ? 'Just now'
-                      : `${minutesAgo} min${minutesAgo > 1 ? 's' : ''} ago`}
-                  </span>
-                </div>
-              </div>
-              <div className="p-3 rounded-lg bg-blue-100">
-                <Zap className="h-5 w-5 text-blue-600" />
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <p className="mb-2 text-sm font-medium text-muted-foreground">Recent Activity</p>
+              <h3 className="mb-2 text-3xl font-bold tracking-tight">Active Now</h3>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+                <span>
+                  {minutesAgo === 0
+                    ? 'Just now'
+                    : `${minutesAgo} min${minutesAgo > 1 ? 's' : ''} ago`}
+                </span>
               </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="rounded-lg bg-green-100 p-3">
+              <Zap className="h-5 w-5 text-green-600" />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

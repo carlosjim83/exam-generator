@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,21 +36,9 @@ function ExamCard({ exam }: { exam: Exam }) {
       </CardContent>
 
       <CardFooter className="p-6 pt-0 flex gap-2">
-        {isPublished ? (
-          <>
-            <Button className="flex-1">Preview</Button>
-            <Button variant="outline" className="flex-1">
-              Assign
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button className="flex-1">Edit Draft</Button>
-            <Button variant="outline" className="flex-1">
-              Settings
-            </Button>
-          </>
-        )}
+        <Link href={`/dashboard/exams/${exam.id}`} className="flex-1">
+          <Button className="w-full">{isPublished ? 'View Exam' : 'Edit Draft'}</Button>
+        </Link>
       </CardFooter>
     </Card>
   );
@@ -81,9 +70,11 @@ export function RecentExams() {
     <div>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">Recent Exams</h2>
-        <Button variant="link" className="text-primary">
-          View all
-        </Button>
+        <Link href="/dashboard/exams">
+          <Button variant="link" className="text-primary">
+            View all
+          </Button>
+        </Link>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
