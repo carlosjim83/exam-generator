@@ -1,11 +1,6 @@
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { MonitoringDashboard } from '@/features/monitoring/components/MonitoringDashboard';
 
-export const metadata = {
-  title: 'Worker Monitoring | Exam Generator',
-  description: 'Real-time monitoring of document processing worker',
-};
-
 export default function MonitoringPage() {
   return (
     <DashboardLayout>
