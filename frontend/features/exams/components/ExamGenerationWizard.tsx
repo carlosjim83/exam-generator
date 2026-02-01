@@ -32,6 +32,8 @@ import {
   Eye,
   Sparkles,
   AlertCircle,
+  Upload,
+  Home,
 } from 'lucide-react';
 import { ApiDocumentService } from '@/lib/services/api-document.service';
 import {
@@ -40,6 +42,7 @@ import {
   type Difficulty,
 } from '@/lib/services/api-exam.service';
 import type { Document } from '@/lib/types/dashboard.types';
+import Link from 'next/link';
 
 type WizardStep = 1 | 2 | 3 | 4;
 
@@ -58,6 +61,7 @@ const examService = new ApiExamService();
 export function ExamGenerationWizard() {
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [allDocuments, setAllDocuments] = useState<Document[]>([]); // Track all docs for better messaging
   const [loadingDocuments, setLoadingDocuments] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [generatedExam, setGeneratedExam] = useState<any>(null);
@@ -83,6 +87,7 @@ export function ExamGenerationWizard() {
       const docs = await documentService.listDocuments();
       // Ensure docs is an array and only show COMPLETED documents
       const docsArray = Array.isArray(docs) ? docs : [];
+      setAllDocuments(docsArray); // Store all documents
       const completedDocs = docsArray.filter((d) => d.status === 'COMPLETED');
       setDocuments(completedDocs);
     } catch (err) {
@@ -225,9 +230,47 @@ export function ExamGenerationWizard() {
               </div>
             ) : documents.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                <p className="text-gray-600">No completed documents available</p>
-                <p className="text-sm text-gray-500 mt-1">Upload and process documents first</p>
+                <FileText className="h-16 w-16 mx-auto text-gray-400 mb-4" />
+                {allDocuments.length === 0 ? (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No documents uploaded yet
+                    </h3>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                      You need to upload and process documents before you can generate exams. Upload
+                      PDF or DOCX files to get started.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Documents are being processed
+                    </h3>
+                    <p className="text-gray-600 mb-2 max-w-md mx-auto">
+                      You have {allDocuments.length} document{allDocuments.length !== 1 ? 's' : ''},
+                      but {allDocuments.length === 1 ? 'it is' : 'they are'} still being processed.
+                    </p>
+                    <p className="text-sm text-gray-500 mb-6">
+                      Processing usually takes 1-3 minutes. Please wait or check back later.
+                    </p>
+                  </>
+                )}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <Link href="/dashboard">
+                    <Button variant="outline" className="gap-2">
+                      <Home className="h-4 w-4" />
+                      Back to Dashboard
+                    </Button>
+                  </Link>
+                  {allDocuments.length === 0 && (
+                    <Link href="/dashboard">
+                      <Button className="gap-2">
+                        <Upload className="h-4 w-4" />
+                        Upload Documents
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
             ) : (
               <>
