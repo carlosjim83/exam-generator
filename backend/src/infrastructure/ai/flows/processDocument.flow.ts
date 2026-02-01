@@ -99,19 +99,22 @@ export const processDocumentFlow = ai.defineFlow(
         throw new Error('No chunks were created from the text');
       }
 
-      // Step 3: Generate embeddings for all chunks (batch processing)
-      const chunkTexts = chunks.map((c) => c);
-
-      const embeddings = await ai.run('generate-embeddings', async () => {
-        return await embeddingService.generateEmbeddings(chunkTexts);
-      });
+      // Step 3: Generate embeddings for all chunks (process individually to avoid rate limits)
+      // Process each chunk separately instead of batching to prevent 429 errors
+      const embeddings: any[][] = await Promise.all(
+        chunks.map((chunkText) =>
+          ai.run('generate-embeddings', async () => {
+            return await embeddingService.generateEmbeddings([chunkText]);
+          })
+        )
+      );
 
       // Step 4: Combine chunks with their embeddings
       const chunksWithEmbeddings: ChunkWithEmbedding[] = chunks.map((chunkText, i) => ({
         documentId,
         chunkIndex: i,
         content: chunkText,
-        embedding: embeddings[i],
+        embedding: embeddings[i][0], // Extract first element since we're sending single chunks
         wordCount: calculateWordCount(chunkText),
         pageNumber: undefined, // Could be extracted from PDF metadata if needed
       }));
