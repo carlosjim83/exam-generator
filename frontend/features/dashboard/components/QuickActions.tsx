@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Upload, Wand2, FolderOpen, Users, Lightbulb } from 'lucide-react';
 import { UploadDocumentDialog } from '@/features/documents/components/UploadDocumentDialog';
 import { useDashboardContext } from '@/features/dashboard/context/DashboardContext';
+import Link from 'next/link';
 
 export function QuickActions() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
@@ -37,15 +38,19 @@ export function QuickActions() {
           onUploadSuccess={handleUploadSuccess}
         />
 
-        <Button variant="secondary" className="w-full justify-start gap-3 h-12" size="lg">
-          <Wand2 className="h-5 w-5" />
-          Generate Exam
-        </Button>
+        <Link href="/dashboard/exams/generate" className="block">
+          <Button variant="secondary" className="w-full justify-start gap-3 h-12" size="lg">
+            <Wand2 className="h-5 w-5" />
+            Generate Exam
+          </Button>
+        </Link>
 
-        <Button variant="outline" className="w-full justify-start gap-3 h-11">
-          <FolderOpen className="h-4 w-4" />
-          Browse Library
-        </Button>
+        <Link href="/dashboard/exams" className="block">
+          <Button variant="outline" className="w-full justify-start gap-3 h-11">
+            <FolderOpen className="h-4 w-4" />
+            My Exams
+          </Button>
+        </Link>
 
         <Button variant="outline" className="w-full justify-start gap-3 h-11">
           <Users className="h-4 w-4" />
