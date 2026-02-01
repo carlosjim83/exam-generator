@@ -1,7 +1,6 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Upload, Wand2, Sparkles } from 'lucide-react';
+import { Upload, Wand2, Sparkles, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 export function QuickActions() {
@@ -12,44 +11,64 @@ export function QuickActions() {
       {/* Primary Actions - Large Cards */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Upload Document Card */}
-        <Link href="/dashboard/upload" className="block group">
-          <div className="relative h-44 overflow-hidden rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6 transition-all hover:border-blue-400 hover:shadow-lg">
-            <div className="flex h-full flex-col justify-between">
+        <Link href="/dashboard/upload" className="group block">
+          <div className="relative h-48 overflow-hidden rounded-2xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 p-6 transition-all duration-300 hover:border-blue-400 hover:shadow-xl hover:scale-[1.02]">
+            {/* Background decoration */}
+            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-blue-300/20 blur-3xl" />
+            <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-blue-400/20 blur-3xl" />
+
+            <div className="relative flex h-full flex-col justify-between">
               <div className="flex items-start justify-between">
-                <div className="rounded-lg bg-blue-600 p-3 shadow-md">
-                  <Upload className="h-6 w-6 text-white" />
+                <div className="rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 p-3.5 shadow-lg transition-transform duration-300 group-hover:scale-110">
+                  <Upload className="h-7 w-7 text-white" />
                 </div>
-                <Sparkles className="h-5 w-5 text-blue-400 opacity-50" />
+                <Sparkles className="h-6 w-6 text-blue-500 opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:rotate-12" />
               </div>
+
               <div>
-                <h3 className="mb-1 text-xl font-bold text-blue-900">Upload Document</h3>
-                <p className="text-sm leading-relaxed text-blue-700">
+                <h3 className="mb-2 text-2xl font-bold text-blue-900 transition-colors group-hover:text-blue-700">
+                  Upload Document
+                </h3>
+                <p className="mb-3 text-sm leading-relaxed text-blue-700">
                   Add PDF, DOCX, or TXT files to your library
                 </p>
+                <div className="flex items-center gap-2 text-sm font-semibold text-blue-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                  <span>Get started</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
               </div>
             </div>
-            <div className="absolute -bottom-2 -right-2 h-24 w-24 rounded-full bg-blue-200/50 blur-2xl" />
           </div>
         </Link>
 
         {/* Generate Exam Card */}
-        <Link href="/dashboard/exams/generate" className="block group">
-          <div className="relative h-44 overflow-hidden rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6 transition-all hover:border-purple-400 hover:shadow-lg">
-            <div className="flex h-full flex-col justify-between">
+        <Link href="/dashboard/exams/generate" className="group block">
+          <div className="relative h-48 overflow-hidden rounded-2xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 via-purple-100 to-purple-50 p-6 transition-all duration-300 hover:border-purple-400 hover:shadow-xl hover:scale-[1.02]">
+            {/* Background decoration */}
+            <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-purple-300/20 blur-3xl" />
+            <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-purple-400/20 blur-3xl" />
+
+            <div className="relative flex h-full flex-col justify-between">
               <div className="flex items-start justify-between">
-                <div className="rounded-lg bg-purple-600 p-3 shadow-md">
-                  <Wand2 className="h-6 w-6 text-white" />
+                <div className="rounded-xl bg-gradient-to-br from-purple-600 to-purple-700 p-3.5 shadow-lg transition-transform duration-300 group-hover:scale-110">
+                  <Wand2 className="h-7 w-7 text-white" />
                 </div>
-                <Sparkles className="h-5 w-5 text-purple-400 opacity-50" />
+                <Sparkles className="h-6 w-6 text-purple-500 opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:rotate-12" />
               </div>
+
               <div>
-                <h3 className="mb-1 text-xl font-bold text-purple-900">Generate Exam</h3>
-                <p className="text-sm leading-relaxed text-purple-700">
+                <h3 className="mb-2 text-2xl font-bold text-purple-900 transition-colors group-hover:text-purple-700">
+                  Generate Exam
+                </h3>
+                <p className="mb-3 text-sm leading-relaxed text-purple-700">
                   Create AI-powered exams from your documents
                 </p>
+                <div className="flex items-center gap-2 text-sm font-semibold text-purple-600 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                  <span>Start creating</span>
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
               </div>
             </div>
-            <div className="absolute -bottom-2 -right-2 h-24 w-24 rounded-full bg-purple-200/50 blur-2xl" />
           </div>
         </Link>
       </div>
