@@ -1,17 +1,20 @@
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { ExamGenerationWizard } from '@/features/exams/components/ExamGenerationWizard';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function GenerateExamPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <PageHeader
-        title="Generate New Exam"
-        description="Create AI-powered exam questions from your documents"
-      />
-      <PageContainer maxWidth="5xl">
-        <ExamGenerationWizard />
-      </PageContainer>
-    </div>
+    <DashboardLayout>
+      <div className="px-8 py-8">
+        <div className="mb-8">
+          <h1 className="mb-2 text-3xl font-bold tracking-tight">Generate New Exam</h1>
+          <p className="text-muted-foreground">
+            Create AI-powered exam questions from your documents
+          </p>
+        </div>
+        <div className="mx-auto max-w-5xl">
+          <ExamGenerationWizard />
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }

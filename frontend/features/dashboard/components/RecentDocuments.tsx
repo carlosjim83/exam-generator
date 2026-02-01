@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   FileText,
   Share2,
@@ -105,12 +106,21 @@ function DocumentItem({
   };
 
   return (
-    <div className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
+    <div className="flex items-center gap-4 rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50">
       <DocumentIcon mimeType={document.mimeType} />
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <h4 className="font-medium text-sm truncate">{document.title}</h4>
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <h4 className="truncate text-sm font-medium">{document.title}</h4>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">{document.title}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <DocumentStatusBadge status={document.status} />
         </div>
         <p className="text-xs text-muted-foreground">
@@ -133,12 +143,12 @@ function DocumentItem({
           >
             {isRetrying ? (
               <>
-                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                 Retrying...
               </>
             ) : (
               <>
-                <RefreshCw className="h-3 w-3 mr-1" />
+                <RefreshCw className="mr-1 h-3 w-3" />
                 Retry
               </>
             )}

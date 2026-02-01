@@ -1,6 +1,6 @@
 'use client';
 
-import { TopNavigation } from '@/features/dashboard/components/TopNavigation';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { DashboardStats } from '@/features/dashboard/components/DashboardStats';
 import { RecentDocuments } from '@/features/dashboard/components/RecentDocuments';
 import { RecentExams } from '@/features/dashboard/components/RecentExams';
@@ -15,13 +15,11 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <DashboardProvider>
-        <div className="min-h-screen bg-gray-50/50">
-          <TopNavigation />
-
-          <main className="container px-4 py-8 md:px-6">
+        <DashboardLayout>
+          <div className="px-8 py-8">
             {/* Hero Section */}
             <div className="mb-8">
-              <h1 className="text-4xl font-bold tracking-tight mb-2">
+              <h1 className="mb-2 text-4xl font-bold tracking-tight">
                 Good morning, {user ? `${user.firstName} ${user.lastName}` : 'Professor'}
               </h1>
               <p className="text-lg text-muted-foreground">
@@ -47,8 +45,8 @@ export default function DashboardPage() {
                 <QuickActions />
               </div>
             </div>
-          </main>
-        </div>
+          </div>
+        </DashboardLayout>
       </DashboardProvider>
     </ProtectedRoute>
   );

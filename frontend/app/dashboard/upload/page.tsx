@@ -1,9 +1,8 @@
 'use client';
 
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
+import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { UploadDocumentForm } from '@/features/documents/components/UploadDocumentForm';
-import { PageHeader } from '@/components/layout/PageHeader';
-import { PageContainer } from '@/components/layout/PageContainer';
 import { useRouter } from 'next/navigation';
 
 export default function UploadDocumentPage() {
@@ -16,15 +15,19 @@ export default function UploadDocumentPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        <PageHeader
-          title="Upload Document"
-          description="Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB."
-        />
-        <PageContainer maxWidth="3xl">
-          <UploadDocumentForm onUploadSuccess={handleUploadSuccess} />
-        </PageContainer>
-      </div>
+      <DashboardLayout>
+        <div className="px-8 py-8">
+          <div className="mb-8">
+            <h1 className="mb-2 text-3xl font-bold tracking-tight">Upload Document</h1>
+            <p className="text-muted-foreground">
+              Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB.
+            </p>
+          </div>
+          <div className="mx-auto max-w-3xl">
+            <UploadDocumentForm onUploadSuccess={handleUploadSuccess} />
+          </div>
+        </div>
+      </DashboardLayout>
     </ProtectedRoute>
   );
 }
