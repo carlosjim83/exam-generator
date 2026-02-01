@@ -43,3 +43,15 @@ uploads/
 # Test artifacts
 test-uploads/
 temp/
+
+# Test files
+test-docx-extraction.js
+test-docx-with-ocr.ts
+
+# OCR training data
+*.traineddata
+
+# Test documents
+*.docx
+*.pdf
+
