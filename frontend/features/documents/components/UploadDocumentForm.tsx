@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,7 @@ interface UploadDocumentFormProps {
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
 
 export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps) {
+  const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
@@ -49,12 +51,12 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
     if (!allowedTypes.includes(file.type)) {
-      return 'Invalid file type. Only PDF and DOCX files are allowed.';
+      return t('upload:invalidFileType');
     }
 
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      return 'File size exceeds 10MB limit.';
+      return t('upload:fileSizeExceeded');
     }
 
     return null;
@@ -158,11 +160,8 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
       {/* Upload Area Card */}
       <Card>
         <CardHeader>
-          <CardTitle>Select Document</CardTitle>
-          <CardDescription>
-            Choose a PDF or DOCX file from your computer. Supported formats: PDF, DOCX • Max size:
-            10 MB
-          </CardDescription>
+          <CardTitle>{t('upload:selectDocument')}</CardTitle>
+          <CardDescription>{t('upload:selectDocumentDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* File Drop Zone */}
@@ -180,11 +179,11 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-base font-medium mb-2">Drag & drop your document here</p>
-              <p className="text-sm text-muted-foreground mb-4">or</p>
+              <p className="text-base font-medium mb-2">{t('upload:dragDropHere')}</p>
+              <p className="text-sm text-muted-foreground mb-4">{t('upload:or')}</p>
               <Button type="button" variant="secondary" size="lg">
                 <Upload className="h-4 w-4 mr-2" />
-                Choose File
+                {t('upload:chooseFile')}
               </Button>
               <input
                 ref={fileInputRef}
@@ -229,14 +228,16 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-base truncate">{file?.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatFileSize(uploadProgress.loaded)} of{' '}
-                      {formatFileSize(uploadProgress.total)}
+                      {t('upload:uploadingBytes', {
+                        loaded: formatFileSize(uploadProgress.loaded),
+                        total: formatFileSize(uploadProgress.total),
+                      })}
                     </p>
                   </div>
                 </div>
                 <Progress value={uploadProgress.percentage} className="h-2" />
                 <p className="text-sm text-muted-foreground mt-3 text-center">
-                  Uploading... {uploadProgress.percentage}%
+                  {t('upload:uploadingProgress', { percentage: uploadProgress.percentage })}
                 </p>
               </div>
             </div>
@@ -246,8 +247,10 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
           {uploadStatus === 'success' && (
             <div className="border border-green-200 bg-green-50 rounded-lg p-8 text-center">
               <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-green-600" />
-              <p className="font-semibold text-lg text-green-900 mb-1">Upload successful!</p>
-              <p className="text-sm text-green-700">Your document is being processed.</p>
+              <p className="font-semibold text-lg text-green-900 mb-1">
+                {t('upload:uploadSuccess')}
+              </p>
+              <p className="text-sm text-green-700">{t('upload:uploadSuccessMessage')}</p>
             </div>
           )}
 
@@ -257,7 +260,9 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-semibold text-base text-red-900 mb-1">Upload failed</p>
+                  <p className="font-semibold text-base text-red-900 mb-1">
+                    {t('upload:uploadFailed')}
+                  </p>
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
               </div>
@@ -280,22 +285,20 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
       {file && uploadStatus === 'idle' && (
         <Card>
           <CardHeader>
-            <CardTitle>Document Details</CardTitle>
-            <CardDescription>Provide additional information about your document</CardDescription>
+            <CardTitle>{t('upload:documentDetails')}</CardTitle>
+            <CardDescription>{t('upload:documentDetailsDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">Document Title (optional)</Label>
+              <Label htmlFor="title">{t('upload:documentTitle')}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Biology Chapter 3"
+                placeholder={t('upload:documentTitlePlaceholder')}
                 className="text-base"
               />
-              <p className="text-xs text-muted-foreground">
-                If left empty, the filename will be used
-              </p>
+              <p className="text-xs text-muted-foreground">{t('upload:documentTitleHelper')}</p>
             </div>
           </CardContent>
         </Card>
@@ -306,11 +309,11 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
         {uploadStatus === 'idle' && file && (
           <>
             <Button type="button" variant="outline" onClick={handleRemoveFile} size="lg">
-              Cancel
+              {t('upload:cancel')}
             </Button>
             <Button type="button" onClick={handleUpload} disabled={!file || !!error} size="lg">
               <Upload className="h-4 w-4 mr-2" />
-              Upload Document
+              {t('upload:uploadDocument')}
             </Button>
           </>
         )}
@@ -318,11 +321,11 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
         {uploadStatus === 'error' && (
           <>
             <Button type="button" variant="outline" onClick={handleReset} size="lg">
-              Start Over
+              {t('upload:startOver')}
             </Button>
             <Button type="button" onClick={handleUpload} size="lg">
               <Upload className="h-4 w-4 mr-2" />
-              Retry Upload
+              {t('upload:retryUpload')}
             </Button>
           </>
         )}

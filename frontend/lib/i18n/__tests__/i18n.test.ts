@@ -71,13 +71,13 @@ describe('i18n Translations', () => {
     it('should translate upload keys', () => {
       expect(i18n.t('upload:title')).toBe('Upload Document');
       expect(i18n.t('upload:uploading')).toBe('Uploading...');
-      expect(i18n.t('upload:success')).toBe('Document uploaded successfully!');
+      expect(i18n.t('upload:uploadSuccess')).toBe('Upload successful!');
     });
 
     it('should translate generate keys', () => {
       expect(i18n.t('generate:title')).toBe('Generate New Exam');
-      expect(i18n.t('generate:generate')).toBe('Generate Exam');
-      expect(i18n.t('generate:difficulty')).toBe('Difficulty Level');
+      expect(i18n.t('generate:generateExam')).toBe('Generate Exam');
+      expect(i18n.t('generate:difficultyLevel')).toBe('Difficulty Level');
     });
   });
 
@@ -113,13 +113,13 @@ describe('i18n Translations', () => {
     it('should translate upload keys', () => {
       expect(i18n.t('upload:title')).toBe('Subir Documento');
       expect(i18n.t('upload:uploading')).toBe('Subiendo...');
-      expect(i18n.t('upload:success')).toBe('¡Documento subido exitosamente!');
+      expect(i18n.t('upload:uploadSuccess')).toBe('¡Subida exitosa!');
     });
 
     it('should translate generate keys', () => {
       expect(i18n.t('generate:title')).toBe('Generar Nuevo Examen');
-      expect(i18n.t('generate:generate')).toBe('Generar Examen');
-      expect(i18n.t('generate:difficulty')).toBe('Nivel de Dificultad');
+      expect(i18n.t('generate:generateExam')).toBe('Generar Examen');
+      expect(i18n.t('generate:difficultyLevel')).toBe('Nivel de Dificultad');
     });
   });
 

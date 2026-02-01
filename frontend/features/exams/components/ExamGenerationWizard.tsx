@@ -13,6 +13,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,6 +60,7 @@ const documentService = new ApiDocumentService();
 const examService = new ApiExamService();
 
 export function ExamGenerationWizard() {
+  const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [allDocuments, setAllDocuments] = useState<Document[]>([]); // Track all docs for better messaging
@@ -166,17 +168,19 @@ export function ExamGenerationWizard() {
       {/* Progress Indicator */}
       <div className="space-y-2">
         <div className="flex items-center justify-between text-sm text-gray-600">
-          <span>Step {currentStep} of 4</span>
-          <span>{Math.round((currentStep / 4) * 100)}% Complete</span>
+          <span>{t('generate:stepOf', { current: currentStep, total: 4 })}</span>
+          <span>
+            {t('generate:percentComplete', { percent: Math.round((currentStep / 4) * 100) })}
+          </span>
         </div>
         <Progress value={(currentStep / 4) * 100} className="h-2" />
 
         <div className="flex justify-between mt-4">
           {[
-            { num: 1, label: 'Select Documents', icon: FileText },
-            { num: 2, label: 'Configure', icon: Settings },
-            { num: 3, label: 'Review', icon: Eye },
-            { num: 4, label: 'Generate', icon: Sparkles },
+            { num: 1, label: t('generate:selectDocuments'), icon: FileText },
+            { num: 2, label: t('generate:configure'), icon: Settings },
+            { num: 3, label: t('generate:review'), icon: Eye },
+            { num: 4, label: t('generate:generate'), icon: Sparkles },
           ].map((step) => (
             <div
               key={step.num}
@@ -217,11 +221,9 @@ export function ExamGenerationWizard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              Select Documents
+              {t('generate:step1Title')}
             </CardTitle>
-            <CardDescription>
-              Choose 1-10 completed documents to generate exam questions from
-            </CardDescription>
+            <CardDescription>{t('generate:step1Description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {loadingDocuments ? (
@@ -234,39 +236,35 @@ export function ExamGenerationWizard() {
                 {allDocuments.length === 0 ? (
                   <>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      No documents uploaded yet
+                      {t('generate:noDocumentsUploaded')}
                     </h3>
                     <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                      You need to upload and process documents before you can generate exams. Upload
-                      PDF or DOCX files to get started.
+                      {t('generate:noDocumentsUploadedDescription')}
                     </p>
                   </>
                 ) : (
                   <>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      Documents are being processed
+                      {t('generate:documentsProcessing')}
                     </h3>
                     <p className="text-gray-600 mb-2 max-w-md mx-auto">
-                      You have {allDocuments.length} document{allDocuments.length !== 1 ? 's' : ''},
-                      but {allDocuments.length === 1 ? 'it is' : 'they are'} still being processed.
+                      {t('generate:documentsProcessingDescription', { count: allDocuments.length })}
                     </p>
-                    <p className="text-sm text-gray-500 mb-6">
-                      Processing usually takes 1-3 minutes. Please wait or check back later.
-                    </p>
+                    <p className="text-sm text-gray-500 mb-6">{t('generate:processingNote')}</p>
                   </>
                 )}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Link href="/dashboard">
                     <Button variant="outline" className="gap-2">
                       <Home className="h-4 w-4" />
-                      Back to Dashboard
+                      {t('generate:backToDashboard')}
                     </Button>
                   </Link>
                   {allDocuments.length === 0 && (
                     <Link href="/dashboard/upload">
                       <Button className="gap-2">
                         <Upload className="h-4 w-4" />
-                        Upload Documents
+                        {t('generate:uploadDocuments')}
                       </Button>
                     </Link>
                   )}
@@ -296,8 +294,12 @@ export function ExamGenerationWizard() {
                         <p className="text-sm text-gray-500">{doc.filename}</p>
                       </div>
                       <div className="text-right text-sm text-gray-500">
-                        <p>{doc.pageCount || 0} pages</p>
-                        <p>{doc.wordCount?.toLocaleString() || 0} words</p>
+                        <p>
+                          {doc.pageCount || 0} {t('generate:pages')}
+                        </p>
+                        <p>
+                          {doc.wordCount?.toLocaleString() || 0} {t('generate:words')}
+                        </p>
                       </div>
                     </label>
                   ))}
@@ -305,14 +307,14 @@ export function ExamGenerationWizard() {
 
                 <div className="flex items-center gap-2 text-sm">
                   <Badge variant={config.documentIds.length > 10 ? 'destructive' : 'default'}>
-                    {config.documentIds.length} selected
+                    {config.documentIds.length} {t('generate:selected')}
                   </Badge>
                   <span className="text-gray-500">
-                    {config.documentIds.length === 0 && 'Select at least 1 document'}
+                    {config.documentIds.length === 0 && t('generate:selectAtLeast')}
                     {config.documentIds.length > 0 &&
                       config.documentIds.length <= 10 &&
-                      '✓ Valid selection'}
-                    {config.documentIds.length > 10 && '⚠ Maximum 10 documents allowed'}
+                      t('generate:validSelection')}
+                    {config.documentIds.length > 10 && t('generate:maxDocuments')}
                   </span>
                 </div>
               </>
@@ -327,29 +329,29 @@ export function ExamGenerationWizard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              Configure Exam
+              {t('generate:step2Title')}
             </CardTitle>
-            <CardDescription>Set exam details and question preferences</CardDescription>
+            <CardDescription>{t('generate:step2Description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="title">Exam Title *</Label>
+              <Label htmlFor="title">{t('generate:examTitle')}</Label>
               <Input
                 id="title"
                 value={config.title}
                 onChange={(e) => setConfig({ ...config, title: e.target.value })}
-                placeholder="e.g., Midterm Exam - Chapter 1-5"
+                placeholder={t('generate:examTitlePlaceholder')}
                 maxLength={200}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description (Optional)</Label>
+              <Label htmlFor="description">{t('generate:description')}</Label>
               <Textarea
                 id="description"
                 value={config.description}
                 onChange={(e) => setConfig({ ...config, description: e.target.value })}
-                placeholder="Brief description of the exam content..."
+                placeholder={t('generate:descriptionPlaceholder')}
                 maxLength={1000}
                 rows={3}
               />
@@ -357,7 +359,7 @@ export function ExamGenerationWizard() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="numQuestions">Number of Questions</Label>
+                <Label htmlFor="numQuestions">{t('generate:numberOfQuestions')}</Label>
                 <Input
                   id="numQuestions"
                   type="number"
@@ -368,11 +370,11 @@ export function ExamGenerationWizard() {
                     setConfig({ ...config, numQuestions: parseInt(e.target.value) || 10 })
                   }
                 />
-                <p className="text-xs text-gray-500">Between 5 and 50 questions</p>
+                <p className="text-xs text-gray-500">{t('generate:questionsRange')}</p>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="difficulty">Difficulty Level</Label>
+                <Label htmlFor="difficulty">{t('generate:difficultyLevel')}</Label>
                 <select
                   id="difficulty"
                   value={config.difficulty}
@@ -381,21 +383,21 @@ export function ExamGenerationWizard() {
                   }
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <option value="EASY">Easy</option>
-                  <option value="MEDIUM">Medium</option>
-                  <option value="HARD">Hard</option>
-                  <option value="MIXED">Mixed</option>
+                  <option value="EASY">{t('generate:easy')}</option>
+                  <option value="MEDIUM">{t('generate:medium')}</option>
+                  <option value="HARD">{t('generate:hard')}</option>
+                  <option value="MIXED">{t('generate:mixed')}</option>
                 </select>
               </div>
             </div>
 
             <div className="space-y-3">
-              <Label>Question Types *</Label>
+              <Label>{t('generate:questionTypes')}</Label>
               <div className="space-y-2">
                 {[
-                  { value: 'MULTIPLE_CHOICE', label: 'Multiple Choice' },
-                  { value: 'TRUE_FALSE', label: 'True/False' },
-                  { value: 'SHORT_ANSWER', label: 'Short Answer' },
+                  { value: 'MULTIPLE_CHOICE', label: t('generate:multipleChoice') },
+                  { value: 'TRUE_FALSE', label: t('generate:trueFalse') },
+                  { value: 'SHORT_ANSWER', label: t('generate:shortAnswer') },
                 ].map((type) => (
                   <label
                     key={type.value}
@@ -412,7 +414,7 @@ export function ExamGenerationWizard() {
                 ))}
               </div>
               {config.questionTypes.length === 0 && (
-                <p className="text-sm text-red-500">Select at least one question type</p>
+                <p className="text-sm text-red-500">{t('generate:selectOneQuestionType')}</p>
               )}
             </div>
           </CardContent>
@@ -425,14 +427,14 @@ export function ExamGenerationWizard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5" />
-              Review Configuration
+              {t('generate:step3Title')}
             </CardTitle>
-            <CardDescription>Verify your exam settings before generation</CardDescription>
+            <CardDescription>{t('generate:step3Description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-4">
               <div>
-                <h3 className="font-semibold mb-2">Selected Documents</h3>
+                <h3 className="font-semibold mb-2">{t('generate:selectedDocuments')}</h3>
                 <div className="space-y-1">
                   {documents
                     .filter((d) => config.documentIds.includes(d.id))
@@ -446,28 +448,28 @@ export function ExamGenerationWizard() {
               </div>
 
               <div className="border-t pt-4">
-                <h3 className="font-semibold mb-3">Exam Details</h3>
+                <h3 className="font-semibold mb-3">{t('generate:examDetails')}</h3>
                 <dl className="grid grid-cols-2 gap-3 text-sm">
                   <div>
-                    <dt className="text-gray-500">Title</dt>
+                    <dt className="text-gray-500">{t('generate:titleLabel')}</dt>
                     <dd className="font-medium">{config.title}</dd>
                   </div>
                   {config.description && (
                     <div className="col-span-2">
-                      <dt className="text-gray-500">Description</dt>
+                      <dt className="text-gray-500">{t('generate:descriptionLabel')}</dt>
                       <dd className="font-medium">{config.description}</dd>
                     </div>
                   )}
                   <div>
-                    <dt className="text-gray-500">Questions</dt>
+                    <dt className="text-gray-500">{t('generate:questionsLabel')}</dt>
                     <dd className="font-medium">{config.numQuestions}</dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500">Difficulty</dt>
+                    <dt className="text-gray-500">{t('generate:difficultyLabel')}</dt>
                     <dd className="font-medium">{config.difficulty}</dd>
                   </div>
                   <div className="col-span-2">
-                    <dt className="text-gray-500">Question Types</dt>
+                    <dt className="text-gray-500">{t('generate:questionTypesLabel')}</dt>
                     <dd className="font-medium flex gap-2 mt-1">
                       {config.questionTypes.map((type) => (
                         <Badge key={type} variant="outline">
@@ -482,9 +484,7 @@ export function ExamGenerationWizard() {
 
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-800">
-                <strong>Note:</strong> Exam generation may take 20-60 seconds depending on the
-                number of questions and documents. The AI will analyze your documents and create
-                relevant questions.
+                <strong>{t('generate:noteLabel')}</strong> {t('generate:generationNote')}
               </p>
             </div>
           </CardContent>
@@ -497,41 +497,42 @@ export function ExamGenerationWizard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-yellow-500" />
-              {generating ? 'Generating Exam...' : 'Exam Generated Successfully!'}
+              {generating ? t('generate:generatingExam') : t('generate:examGeneratedSuccess')}
             </CardTitle>
             <CardDescription>
               {generating
-                ? 'Please wait while AI analyzes your documents and creates questions...'
-                : `Created ${generatedExam?.questions?.length || 0} questions in ${(
-                    (generatedExam?.generationTimeMs || 0) / 1000
-                  ).toFixed(1)}s`}
+                ? t('generate:generatingMessage')
+                : t('generate:generatedIn', {
+                    count: generatedExam?.questions?.length || 0,
+                    time: ((generatedExam?.generationTimeMs || 0) / 1000).toFixed(1),
+                  })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             {generating ? (
               <div className="flex flex-col items-center justify-center py-12">
                 <Loader2 className="h-12 w-12 animate-spin text-blue-600 mb-4" />
-                <p className="text-gray-600">Analyzing documents and generating questions...</p>
-                <p className="text-sm text-gray-500 mt-2">This may take up to a minute</p>
+                <p className="text-gray-600">{t('generate:analyzingDocuments')}</p>
+                <p className="text-sm text-gray-500 mt-2">{t('generate:mayTakeMinute')}</p>
               </div>
             ) : generatedExam ? (
               <div className="space-y-6">
                 {/* Exam Summary */}
                 <div className="grid grid-cols-3 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-600">Questions</p>
+                    <p className="text-sm text-gray-600">{t('generate:questionsLabel')}</p>
                     <p className="text-2xl font-bold text-blue-600">
                       {generatedExam.exam.questionCount}
                     </p>
                   </div>
                   <div className="bg-green-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-600">Documents</p>
+                    <p className="text-sm text-gray-600">{t('generate:selectDocuments')}</p>
                     <p className="text-2xl font-bold text-green-600">
                       {generatedExam.exam.documentCount}
                     </p>
                   </div>
                   <div className="bg-purple-50 rounded-lg p-4">
-                    <p className="text-sm text-gray-600">Generated</p>
+                    <p className="text-sm text-gray-600">{t('generate:generate')}</p>
                     <p className="text-2xl font-bold text-purple-600">
                       {((generatedExam.generationTimeMs || 0) / 1000).toFixed(1)}s
                     </p>
@@ -540,7 +541,7 @@ export function ExamGenerationWizard() {
 
                 {/* Questions Preview */}
                 <div>
-                  <h3 className="font-semibold mb-3">Questions Preview</h3>
+                  <h3 className="font-semibold mb-3">{t('generate:questionsPreview')}</h3>
                   <div className="space-y-4 max-h-96 overflow-y-auto">
                     {generatedExam.questions.slice(0, 5).map((q: any, i: number) => (
                       <div key={q.id} className="border rounded-lg p-4">
@@ -566,7 +567,9 @@ export function ExamGenerationWizard() {
                             <div className="flex gap-2 mt-2">
                               <Badge variant="secondary">{q.type.replace('_', ' ')}</Badge>
                               <Badge variant="secondary">{q.difficulty}</Badge>
-                              <Badge variant="secondary">{q.points} pts</Badge>
+                              <Badge variant="secondary">
+                                {q.points} {t('generate:pts')}
+                              </Badge>
                             </div>
                           </div>
                         </div>
@@ -574,7 +577,7 @@ export function ExamGenerationWizard() {
                     ))}
                     {generatedExam.questions.length > 5 && (
                       <p className="text-sm text-gray-500 text-center">
-                        ...and {generatedExam.questions.length - 5} more questions
+                        {t('generate:andMore', { count: generatedExam.questions.length - 5 })}
                       </p>
                     )}
                   </div>
@@ -583,7 +586,7 @@ export function ExamGenerationWizard() {
                 {/* Actions */}
                 <div className="flex gap-3">
                   <Button onClick={handleStartOver} variant="outline" className="flex-1">
-                    Generate Another Exam
+                    {t('generate:generateAnotherExam')}
                   </Button>
                   <Button
                     onClick={() => {
@@ -592,7 +595,7 @@ export function ExamGenerationWizard() {
                     }}
                     className="flex-1"
                   >
-                    View Full Exam
+                    {t('generate:viewFullExam')}
                   </Button>
                 </div>
               </div>
@@ -606,7 +609,7 @@ export function ExamGenerationWizard() {
         <div className="flex justify-between">
           <Button variant="outline" onClick={handleBack} disabled={currentStep === 1}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+            {t('generate:back')}
           </Button>
 
           {currentStep === 3 ? (
@@ -614,12 +617,12 @@ export function ExamGenerationWizard() {
               {generating ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
+                  {t('generate:generating')}
                 </>
               ) : (
                 <>
                   <Sparkles className="h-4 w-4 mr-2" />
-                  Generate Exam
+                  {t('generate:generateExam')}
                 </>
               )}
             </Button>
@@ -631,7 +634,7 @@ export function ExamGenerationWizard() {
                 (currentStep === 2 && !canProceedFromStep2)
               }
             >
-              Next
+              {t('generate:next')}
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           )}
