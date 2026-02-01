@@ -34,6 +34,7 @@ import {
   ListDocumentsUseCase,
   ProcessDocumentUseCase,
   ReprocessDocumentUseCase, // Added
+  QueryDocumentUseCase, // Added
   GetDashboardStatsUseCase,
 } from '../application/use-cases/index.js';
 
@@ -74,6 +75,7 @@ export class Container {
   private readonly _listDocumentsUseCase: ListDocumentsUseCase;
   private readonly _processDocumentUseCase: ProcessDocumentUseCase;
   private readonly _reprocessDocumentUseCase: ReprocessDocumentUseCase; // Added
+  private readonly _queryDocumentUseCase: QueryDocumentUseCase; // Added
 
   // Application Layer - Dashboard Use Cases
   private readonly _getDashboardStatsUseCase: GetDashboardStatsUseCase;
@@ -149,6 +151,8 @@ export class Container {
       this._documentRepository,
       this._messageBroker
     );
+
+    this._queryDocumentUseCase = new QueryDocumentUseCase(this._documentRepository);
 
     // Dashboard Use Cases
     this._getDashboardStatsUseCase = new GetDashboardStatsUseCase(this._documentRepository);
@@ -243,6 +247,10 @@ export class Container {
 
   public get reprocessDocumentUseCase(): ReprocessDocumentUseCase {
     return this._reprocessDocumentUseCase;
+  }
+
+  public get queryDocumentUseCase(): QueryDocumentUseCase {
+    return this._queryDocumentUseCase;
   }
 
   // Dashboard Use Cases

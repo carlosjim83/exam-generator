@@ -614,4 +614,169 @@ export async function documentRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  // POST /documents/:documentId/query - Query a document using semantic search
+  fastify.post(
+    '/documents/:documentId/query',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Query a document using semantic search',
+        description: 'Search for relevant chunks within a document using natural language query',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            documentId: { type: 'string', format: 'uuid', description: 'Document UUID' },
+          },
+          required: ['documentId'],
+        },
+        body: {
+          type: 'object',
+          properties: {
+            query: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 500,
+              description: 'Natural language query to search for',
+            },
+            topK: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 50,
+              default: 5,
+              description: 'Number of results to return (default: 5)',
+            },
+          },
+          required: ['query'],
+        },
+        response: {
+          200: {
+            description: 'Query results',
+            type: 'object',
+            properties: {
+              documentId: { type: 'string' },
+              documentTitle: { type: 'string' },
+              query: { type: 'string' },
+              totalResults: { type: 'integer' },
+              results: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    chunkIndex: { type: 'integer' },
+                    content: { type: 'string' },
+                    similarity: { type: 'number' },
+                    wordCount: { type: 'integer' },
+                    pageNumber: { type: 'integer', nullable: true },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: 'Bad request',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          401: {
+            description: 'Unauthorized',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Document not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { documentId } = request.params as { documentId: string };
+        const { query, topK } = request.body as { query: string; topK?: number };
+
+        const result = await container.queryDocumentUseCase.execute({
+          documentId,
+          userId: (request as any).user.userId,
+          query,
+          topK: topK || 5,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error: any) {
+        fastify.log.error('Document query error:', error);
+
+        if (error.message === 'Document not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Document not found',
+          });
+        }
+
+        if (error.message.includes('Unauthorized')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: 'You do not have access to this document',
+          });
+        }
+
+        if (error.message.includes('not ready for querying')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: error.message,
+          });
+        }
+
+        if (error.message.includes('valid UUID')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: 'Invalid document ID format',
+          });
+        }
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Query failed',
+        });
+      }
+    }
+  );
 }
