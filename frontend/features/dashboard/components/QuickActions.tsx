@@ -13,7 +13,7 @@ export function QuickActions() {
       <div className="grid gap-4 md:grid-cols-2">
         {/* Upload Document Card */}
         <Link href="/dashboard/upload" className="block group">
-          <div className="relative h-40 overflow-hidden rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6 transition-all hover:border-blue-400 hover:shadow-lg">
+          <div className="relative h-44 overflow-hidden rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-6 transition-all hover:border-blue-400 hover:shadow-lg">
             <div className="flex h-full flex-col justify-between">
               <div className="flex items-start justify-between">
                 <div className="rounded-lg bg-blue-600 p-3 shadow-md">
@@ -23,7 +23,9 @@ export function QuickActions() {
               </div>
               <div>
                 <h3 className="mb-1 text-xl font-bold text-blue-900">Upload Document</h3>
-                <p className="text-sm text-blue-700">Add PDF, DOCX, or TXT files to your library</p>
+                <p className="text-sm leading-relaxed text-blue-700">
+                  Add PDF, DOCX, or TXT files to your library
+                </p>
               </div>
             </div>
             <div className="absolute -bottom-2 -right-2 h-24 w-24 rounded-full bg-blue-200/50 blur-2xl" />
@@ -32,7 +34,7 @@ export function QuickActions() {
 
         {/* Generate Exam Card */}
         <Link href="/dashboard/exams/generate" className="block group">
-          <div className="relative h-40 overflow-hidden rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6 transition-all hover:border-purple-400 hover:shadow-lg">
+          <div className="relative h-44 overflow-hidden rounded-xl border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 p-6 transition-all hover:border-purple-400 hover:shadow-lg">
             <div className="flex h-full flex-col justify-between">
               <div className="flex items-start justify-between">
                 <div className="rounded-lg bg-purple-600 p-3 shadow-md">
@@ -42,7 +44,7 @@ export function QuickActions() {
               </div>
               <div>
                 <h3 className="mb-1 text-xl font-bold text-purple-900">Generate Exam</h3>
-                <p className="text-sm text-purple-700">
+                <p className="text-sm leading-relaxed text-purple-700">
                   Create AI-powered exams from your documents
                 </p>
               </div>
