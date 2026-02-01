@@ -25,10 +25,41 @@ const storageService = new LocalFileStorageService();
 const processDocumentUseCase = new ProcessDocumentUseCase(documentRepository, storageService);
 
 /**
+ * Timeout wrapper for processing with automatic abort
+ * Maximum 10 minutes per document to prevent stuck jobs
+ */
+async function processWithTimeout(
+  documentId: string,
+  userId: string,
+  timeoutMs: number = 10 * 60 * 1000 // 10 minutes default
+): Promise<any> {
+  return new Promise(async (resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      reject(
+        new Error(`Processing timeout: Document ${documentId} exceeded ${timeoutMs / 1000}s limit`)
+      );
+    }, timeoutMs);
+
+    try {
+      const result = await processDocumentUseCase.execute({
+        documentId,
+        userId,
+      });
+      clearTimeout(timeoutId);
+      resolve(result);
+    } catch (error) {
+      clearTimeout(timeoutId);
+      reject(error);
+    }
+  });
+}
+
+/**
  * Worker instance
  *
  * Concurrency: 1 - Process one document at a time
  * Rate Limiter: 1 job per 60 seconds - Respects external AI service rate limits
+ * Timeout: 10 minutes per document - Prevents stuck jobs
  *
  * With this config, even a 100-chunk document should process without hitting rate limits
  * because we're spacing out document processing, not individual chunk processing.
@@ -42,11 +73,8 @@ export const documentWorker = new Worker<DocumentJobData>(
     console.log(`[Worker] 📊 Attempt ${job.attemptsMade + 1}/${job.opts.attempts}`);
 
     try {
-      // Execute the use case
-      const result = await processDocumentUseCase.execute({
-        documentId,
-        userId,
-      });
+      // Execute the use case with timeout protection
+      const result = await processWithTimeout(documentId, userId);
 
       console.log(
         `[Worker] ✅ Document processed successfully: ${documentId}`,
@@ -65,6 +93,11 @@ export const documentWorker = new Worker<DocumentJobData>(
         `\n  - Error: ${errorMessage}`,
         `\n  - Attempt: ${job.attemptsMade + 1}/${job.opts.attempts}`
       );
+
+      // Check if it's a timeout error
+      if (errorMessage.includes('Processing timeout')) {
+        console.error(`[Worker] ⏱️  Timeout: Document ${documentId} took too long to process.`);
+      }
 
       // Check if it's a rate limit error
       if (errorMessage.includes('RESOURCE_EXHAUSTED') || errorMessage.includes('Quota exceeded')) {
@@ -155,5 +188,6 @@ console.log('[Worker] 🚀 Document processing worker started');
 console.log('[Worker] 📋 Queue: document-processing');
 console.log('[Worker] ⚙️  Concurrency: 1 document at a time');
 console.log('[Worker] ⏱️  Rate limit: 1 document per 60 seconds');
+console.log('[Worker] ⏰ Timeout: 10 minutes per document');
 console.log('[Worker] 🔄 Retry policy: 3 attempts with exponential backoff');
 console.log('[Worker] 🎯 Ready to process documents...\n');

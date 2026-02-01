@@ -1,10 +1,22 @@
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Share2, MoreVertical } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  FileText,
+  Share2,
+  MoreVertical,
+  RefreshCw,
+  Loader2,
+  CheckCircle2,
+  XCircle,
+  Clock,
+} from 'lucide-react';
 import { useDashboardContext } from '../context/DashboardContext';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ApiDocumentService } from '@/lib/services/api-document.service';
 import type { Document } from '@/lib/types/dashboard.types';
 
 function DocumentIcon({ mimeType }: { mimeType: string }) {
@@ -25,7 +37,50 @@ function DocumentIcon({ mimeType }: { mimeType: string }) {
   );
 }
 
-function DocumentItem({ document }: { document: Document }) {
+function DocumentStatusBadge({ status }: { status: string }) {
+  switch (status) {
+    case 'COMPLETED':
+      return (
+        <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          Ready
+        </Badge>
+      );
+    case 'PROCESSING':
+      return (
+        <Badge variant="default" className="bg-blue-100 text-blue-700 hover:bg-blue-100">
+          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+          Processing
+        </Badge>
+      );
+    case 'PENDING':
+      return (
+        <Badge variant="default" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
+          <Clock className="h-3 w-3 mr-1" />
+          Pending
+        </Badge>
+      );
+    case 'FAILED':
+      return (
+        <Badge variant="destructive">
+          <XCircle className="h-3 w-3 mr-1" />
+          Failed
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
+}
+
+function DocumentItem({
+  document,
+  onRetry,
+}: {
+  document: Document;
+  onRetry: (id: string) => Promise<void>;
+}) {
+  const [isRetrying, setIsRetrying] = useState(false);
+
   // Format file size
   const fileSizeFormatted = (document.fileSize / (1024 * 1024)).toFixed(1) + ' MB';
 
@@ -36,18 +91,59 @@ function DocumentItem({ document }: { document: Document }) {
     year: 'numeric',
   }).format(document.uploadedAt);
 
+  // Calculate time since upload for processing documents
+  const timeSinceUpload = Date.now() - new Date(document.uploadedAt).getTime();
+  const minutesSinceUpload = Math.floor(timeSinceUpload / 60000);
+
+  const handleRetry = async () => {
+    setIsRetrying(true);
+    try {
+      await onRetry(document.id);
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
   return (
     <div className="flex items-center gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors">
       <DocumentIcon mimeType={document.mimeType} />
 
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-sm truncate">{document.title}</h4>
+        <div className="flex items-center gap-2 mb-1">
+          <h4 className="font-medium text-sm truncate">{document.title}</h4>
+          <DocumentStatusBadge status={document.status} />
+        </div>
         <p className="text-xs text-muted-foreground">
           Modified {dateFormatted} • {fileSizeFormatted}
+          {document.status === 'PROCESSING' && minutesSinceUpload > 0 && (
+            <span className="ml-1">• Processing for {minutesSinceUpload}m</span>
+          )}
         </p>
       </div>
 
       <div className="flex items-center gap-2">
+        {(document.status === 'FAILED' ||
+          (document.status === 'PROCESSING' && minutesSinceUpload > 5)) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 text-xs"
+            onClick={handleRetry}
+            disabled={isRetrying}
+          >
+            {isRetrying ? (
+              <>
+                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                Retrying...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Retry
+              </>
+            )}
+          </Button>
+        )}
         <Button variant="ghost" size="icon" className="h-8 w-8">
           <Share2 className="h-4 w-4" />
         </Button>
@@ -74,7 +170,42 @@ function DocumentItemSkeleton() {
 }
 
 export function RecentDocuments() {
-  const { documents, documentsLoading: loading, documentsError: error } = useDashboardContext();
+  const {
+    documents,
+    documentsLoading: loading,
+    documentsError: error,
+    refreshDocuments,
+  } = useDashboardContext();
+  const [documentService] = useState(() => new ApiDocumentService());
+
+  // Auto-refresh every 5 seconds if there are processing documents
+  useEffect(() => {
+    const hasProcessingDocs = documents.some(
+      (doc) => doc.status === 'PROCESSING' || doc.status === 'PENDING'
+    );
+
+    if (!hasProcessingDocs) return;
+
+    const interval = setInterval(() => {
+      refreshDocuments();
+    }, 5000); // Refresh every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [documents, refreshDocuments]);
+
+  const handleRetry = useCallback(
+    async (documentId: string) => {
+      try {
+        await documentService.reprocessDocument(documentId);
+        // Refresh documents list after retry
+        await refreshDocuments();
+      } catch (error) {
+        console.error('Failed to retry document:', error);
+        throw error;
+      }
+    },
+    [documentService, refreshDocuments]
+  );
 
   return (
     <div>
@@ -114,7 +245,11 @@ export function RecentDocuments() {
           </Card>
         )}
 
-        {!loading && !error && documents.map((doc) => <DocumentItem key={doc.id} document={doc} />)}
+        {!loading &&
+          !error &&
+          documents.map((doc) => (
+            <DocumentItem key={doc.id} document={doc} onRetry={handleRetry} />
+          ))}
       </div>
     </div>
   );

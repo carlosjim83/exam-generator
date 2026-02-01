@@ -77,6 +77,64 @@ export async function getQueueMetrics() {
 }
 
 /**
+ * Retry a failed job by document ID
+ *
+ * @param documentId - Document UUID
+ * @returns Job ID if found and retried, null if not found
+ */
+export async function retryFailedJob(documentId: string): Promise<string | null> {
+  const jobId = `doc-${documentId}`;
+
+  // Try to get the job
+  const job = await documentQueue.getJob(jobId);
+
+  if (!job) {
+    console.log(`📋 No job found for document: ${documentId}`);
+    return null;
+  }
+
+  // Check if job is in a failed state
+  const state = await job.getState();
+
+  if (state === 'failed') {
+    // Retry the job
+    await job.retry();
+    console.log(`🔄 Retrying failed job for document: ${documentId} (Job: ${jobId})`);
+    return jobId;
+  }
+
+  console.log(`📋 Job ${jobId} is in state: ${state}, cannot retry`);
+  return null;
+}
+
+/**
+ * Get job status for a document
+ *
+ * @param documentId - Document UUID
+ * @returns Job state and details if found
+ */
+export async function getJobStatus(documentId: string) {
+  const jobId = `doc-${documentId}`;
+  const job = await documentQueue.getJob(jobId);
+
+  if (!job) {
+    return null;
+  }
+
+  const state = await job.getState();
+
+  return {
+    jobId: job.id,
+    state,
+    attemptsMade: job.attemptsMade,
+    timestamp: job.timestamp,
+    processedOn: job.processedOn,
+    finishedOn: job.finishedOn,
+    failedReason: job.failedReason,
+  };
+}
+
+/**
  * Clean old completed and failed jobs
  */
 export async function cleanQueue() {

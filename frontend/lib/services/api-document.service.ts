@@ -212,4 +212,29 @@ export class ApiDocumentService {
       throw new Error(`Failed to delete document: ${response.statusText}`);
     }
   }
+
+  /**
+   * Retry processing a failed or stuck document
+   */
+  async reprocessDocument(id: string): Promise<{ id: string; status: string; message: string }> {
+    const token = this.getAuthToken();
+    if (!token) {
+      throw new Error('Not authenticated');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/documents/${id}/reprocess`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(error.message || 'Failed to retry document processing');
+    }
+
+    return await response.json();
+  }
 }

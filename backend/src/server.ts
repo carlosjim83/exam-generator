@@ -11,6 +11,7 @@ import { documentRoutes } from './routes/document.routes.js';
 import { examRoutes } from './routes/exam.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
+import { healthRoutes } from './routes/health.routes.js';
 import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 
 // Validate environment variables on startup
@@ -116,6 +117,10 @@ await fastify.register(swagger, {
     ],
     tags: [
       {
+        name: 'health',
+        description: 'Health check and monitoring endpoints',
+      },
+      {
         name: 'auth',
         description: 'Authentication endpoints (register, login, refresh, logout)',
       },
@@ -165,6 +170,7 @@ await fastify.register(swaggerUi, {
 });
 
 // Register routes
+await fastify.register(healthRoutes);
 await fastify.register(authRoutes);
 await fastify.register(oauthRoutes);
 await fastify.register(documentRoutes);
@@ -172,8 +178,8 @@ await fastify.register(examRoutes);
 await fastify.register(dashboardRoutes);
 await fastify.register(protectedRoutes);
 
-// Health check endpoint
-fastify.get('/health', async () => {
+// Legacy health check endpoint (kept for backwards compatibility)
+fastify.get('/health-legacy', async () => {
   return {
     status: 'ok',
     timestamp: new Date().toISOString(),
