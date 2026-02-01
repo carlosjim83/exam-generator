@@ -55,13 +55,13 @@ export function Sidebar() {
   };
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r bg-white">
+    <div className="flex h-screen w-64 flex-col border-r border-border bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center border-b border-border px-6">
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <svg
-              className="h-5 w-5 text-white"
+              className="h-5 w-5 text-primary-foreground"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -75,8 +75,8 @@ export function Sidebar() {
             </svg>
           </div>
           <div>
-            <h1 className="text-lg font-bold text-gray-900">ExamGen</h1>
-            <p className="text-xs text-gray-500">SaaS</p>
+            <h1 className="text-lg font-bold text-card-foreground">ExamGen</h1>
+            <p className="text-xs text-muted-foreground">SaaS</p>
           </div>
         </Link>
       </div>
@@ -96,11 +96,11 @@ export function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   active
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
                 )}
               >
-                <Icon className={cn('h-5 w-5', active ? 'text-blue-700' : 'text-gray-500')} />
+                <Icon className="h-5 w-5" />
                 <span suppressHydrationWarning>{t(item.labelKey)}</span>
               </Link>
             );
@@ -108,7 +108,7 @@ export function Sidebar() {
         </div>
 
         {/* Divider */}
-        <div className="my-4 border-t" />
+        <div className="my-4 border-t border-border" />
 
         {/* Secondary Navigation */}
         <div className="space-y-1">
@@ -123,11 +123,11 @@ export function Sidebar() {
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                   active
-                    ? 'bg-blue-50 text-blue-700'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground'
                 )}
               >
-                <Icon className={cn('h-5 w-5', active ? 'text-blue-700' : 'text-gray-500')} />
+                <Icon className="h-5 w-5" />
                 <span suppressHydrationWarning>{t(item.labelKey)}</span>
               </Link>
             );
@@ -136,18 +136,19 @@ export function Sidebar() {
       </nav>
 
       {/* User Profile */}
-      <div className="border-t p-4">
+      <div className="border-t border-border p-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
             MT
           </div>
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-gray-900">Mock Teacher</p>
-            <p className="truncate text-xs text-gray-500">teacher@example.com</p>
+            <p className="truncate text-sm font-medium text-card-foreground">Mock Teacher</p>
+            <p className="truncate text-xs text-muted-foreground">teacher@example.com</p>
           </div>
           <button
-            className="rounded-lg p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             title={t('common:logout')}
+            suppressHydrationWarning
           >
             <LogOut className="h-4 w-4" />
           </button>

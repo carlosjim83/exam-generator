@@ -110,6 +110,7 @@ export class ProcessDocumentUseCase {
       const result = await processDocumentFlow({
         documentId: documentId.value,
         filePath: tempFilePath,
+        mimeType: document.mimeType,
       });
 
       if (!result.success) {

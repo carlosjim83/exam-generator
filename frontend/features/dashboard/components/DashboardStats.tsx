@@ -22,7 +22,9 @@ function StatCard({ title, value, change, icon: Icon, iconColor, iconBgColor }: 
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="mb-2 text-sm font-medium text-muted-foreground">{title}</p>
+            <p className="mb-2 text-sm font-medium text-muted-foreground" suppressHydrationWarning>
+              {title}
+            </p>
             <h3 className="mb-2 text-3xl font-bold tracking-tight">{value}</h3>
             {change && change !== 'N/A' && (
               <div className="flex items-center gap-1 text-sm">
@@ -109,7 +111,10 @@ export function DashboardStats() {
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <p className="mb-2 text-sm font-medium text-muted-foreground">
+              <p
+                className="mb-2 text-sm font-medium text-muted-foreground"
+                suppressHydrationWarning
+              >
                 {t('dashboard:stats.recentActivity')}
               </p>
               <h3 className="mb-2 text-3xl font-bold tracking-tight">Active Now</h3>

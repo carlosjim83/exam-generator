@@ -50,10 +50,7 @@ class ApiClient {
     this.baseURL = baseURL;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -85,10 +82,7 @@ class ApiClient {
       const contentType = response.headers.get('content-type');
       if (!contentType?.includes('application/json')) {
         if (!response.ok) {
-          throw new ApiError(
-            response.status,
-            `HTTP ${response.status}: ${response.statusText}`
-          );
+          throw new ApiError(response.status, `HTTP ${response.status}: ${response.statusText}`);
         }
         return {} as T;
       }
@@ -121,7 +115,7 @@ class ApiClient {
 
     // Store tokens
     TokenManager.setTokens(response.accessToken, response.refreshToken);
-    
+
     return response;
   }
 
@@ -139,7 +133,7 @@ class ApiClient {
 
     // Store tokens
     TokenManager.setTokens(response.accessToken, response.refreshToken);
-    
+
     return response;
   }
 
@@ -182,6 +176,13 @@ class ApiClient {
   async put<T>(endpoint: string, body: unknown): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
+      body: JSON.stringify(body),
+    });
+  }
+
+  async patch<T>(endpoint: string, body: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
       body: JSON.stringify(body),
     });
   }

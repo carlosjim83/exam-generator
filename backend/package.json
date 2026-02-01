@@ -42,12 +42,14 @@
     "genkit": "^1.28.0",
     "ioredis": "^5.9.2",
     "jsonwebtoken": "^9.0.2",
+    "jszip": "^3.10.1",
     "llm-chunk": "^0.0.1",
     "mammoth": "^1.11.0",
     "openai": "^6.16.0",
     "pdf-parse": "^1.1.4",
     "pgvector": "^0.2.1",
     "postgres": "^3.4.8",
+    "tesseract.js": "^7.0.0",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

@@ -28,11 +28,20 @@ const textExtractor = new TextExtractorService();
 const embeddingService = new AzureOpenAIEmbeddingService();
 
 /**
- * Extract text from a PDF file
+ * Extract text from a document file (PDF or DOCX)
  */
-async function extractTextFromPdf(filePath: string): Promise<string> {
+async function extractTextFromDocument(filePath: string, mimeType: string): Promise<string> {
   const dataBuffer = await readFile(filePath);
-  return await textExtractor.extractFromPDF(dataBuffer);
+
+  if (mimeType === 'application/pdf') {
+    return await textExtractor.extractFromPDF(dataBuffer);
+  } else if (
+    mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ) {
+    return await textExtractor.extractFromDOCX(dataBuffer);
+  } else {
+    throw new Error(`Unsupported file type: ${mimeType}`);
+  }
 }
 
 /**
@@ -55,6 +64,11 @@ function estimatePageCount(wordCount: number): number {
 const ProcessDocumentInputSchema = z.object({
   documentId: z.string().describe('Document ID from database'),
   filePath: z.string().describe('Local file path to the document'),
+  mimeType: z
+    .string()
+    .describe(
+      'MIME type of the document (application/pdf or application/vnd.openxmlformats-officedocument.wordprocessingml.document)'
+    ),
 });
 
 /**
@@ -79,21 +93,47 @@ export const processDocumentFlow = ai.defineFlow(
     inputSchema: ProcessDocumentInputSchema,
     outputSchema: ProcessDocumentOutputSchema,
   },
-  async ({ documentId, filePath }) => {
+  async ({ documentId, filePath, mimeType }) => {
     try {
-      // Step 1: Extract text from PDF
-      const pdfText = await ai.run('extract-text', () => extractTextFromPdf(filePath));
+      console.log(`[processDocumentFlow] Starting document processing:`, {
+        documentId,
+        filePath,
+        mimeType,
+      });
 
-      if (!pdfText || pdfText.trim().length === 0) {
-        throw new Error('No text could be extracted from the PDF');
+      // Step 1: Extract text from document (PDF or DOCX)
+      const documentText = await ai.run('extract-text', () =>
+        extractTextFromDocument(filePath, mimeType)
+      );
+
+      console.log(`[processDocumentFlow] Text extracted:`, {
+        documentId,
+        textLength: documentText.length,
+        textPreview: documentText.substring(0, 200) + '...',
+      });
+
+      if (!documentText || documentText.trim().length === 0) {
+        throw new Error('No text could be extracted from the document');
       }
 
       // Calculate metadata
-      const wordCount = calculateWordCount(pdfText);
+      const wordCount = calculateWordCount(documentText);
       const pageCount = estimatePageCount(wordCount);
 
+      console.log(`[processDocumentFlow] Document metadata:`, {
+        documentId,
+        wordCount,
+        pageCount,
+      });
+
       // Step 2: Chunk the text
-      const chunks = await ai.run('chunk-text', async () => chunk(pdfText, chunkingConfig));
+      const chunks = await ai.run('chunk-text', async () => chunk(documentText, chunkingConfig));
+
+      console.log(`[processDocumentFlow] Text chunked:`, {
+        documentId,
+        chunksCount: chunks.length,
+        firstChunkPreview: chunks[0]?.substring(0, 100) + '...',
+      });
 
       if (chunks.length === 0) {
         throw new Error('No chunks were created from the text');
@@ -108,6 +148,11 @@ export const processDocumentFlow = ai.defineFlow(
           })
         )
       );
+
+      console.log(`[processDocumentFlow] Embeddings generated:`, {
+        documentId,
+        embeddingsCount: embeddings.length,
+      });
 
       // Step 4: Combine chunks with their embeddings
       const chunksWithEmbeddings: ChunkWithEmbedding[] = chunks.map((chunkText, i) => ({
@@ -124,6 +169,13 @@ export const processDocumentFlow = ai.defineFlow(
         await indexChunks(chunksWithEmbeddings);
       });
 
+      console.log(`[processDocumentFlow] Processing completed successfully:`, {
+        documentId,
+        chunksCreated: chunksWithEmbeddings.length,
+        wordCount,
+        pageCount,
+      });
+
       return {
         success: true,
         chunksCreated: chunksWithEmbeddings.length,
@@ -131,7 +183,11 @@ export const processDocumentFlow = ai.defineFlow(
         pageCount,
       };
     } catch (error: any) {
-      console.error('Error in processDocumentFlow:', error);
+      console.error('[processDocumentFlow] Error:', {
+        documentId,
+        error: error.message,
+        stack: error.stack,
+      });
       return {
         success: false,
         chunksCreated: 0,

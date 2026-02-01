@@ -1,0 +1,34 @@
+{
+  "title": "Settings",
+  "subtitle": "Manage your account settings and preferences",
+  "profile": {
+    "title": "Profile",
+    "subtitle": "Your personal information",
+    "name": "Name",
+    "email": "Email"
+  },
+  "preferences": {
+    "title": "Preferences",
+    "subtitle": "Customize your experience",
+    "language": {
+      "title": "Language",
+      "subtitle": "Choose your preferred language",
+      "label": "Language"
+    },
+    "theme": {
+      "title": "Theme",
+      "subtitle": "Choose your preferred appearance",
+      "label": "Appearance",
+      "light": "Light",
+      "dark": "Dark"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "subtitle": "Coming soon"
+  },
+  "security": {
+    "title": "Security",
+    "subtitle": "Coming soon"
+  }
+}

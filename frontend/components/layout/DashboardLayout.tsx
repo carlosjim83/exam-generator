@@ -8,13 +8,13 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar */}
       <Sidebar />
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">{children}</main>
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-background">{children}</main>
       </div>
     </div>
   );

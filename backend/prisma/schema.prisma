@@ -33,8 +33,9 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
   
   // Relations
-  documents Document[]
-  exams     Exam[]
+  documents   Document[]
+  exams       Exam[]
+  preferences UserPreferences?
   
   @@map("users")
 }
@@ -49,6 +50,26 @@ enum AuthProvider {
   GOOGLE
   GITHUB
   MICROSOFT
+}
+
+// ============================================================================
+// User Preferences
+// ============================================================================
+
+model UserPreferences {
+  id       String @id @default(uuid())
+  userId   String @unique @map("user_id")
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Preferences
+  language String @default("en") // User's preferred language (en, es)
+  theme    String @default("light") // User's preferred theme (light, dark)
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("user_preferences")
 }
 
 // ============================================================================

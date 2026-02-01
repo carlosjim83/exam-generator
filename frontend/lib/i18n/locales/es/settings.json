@@ -1,0 +1,34 @@
+{
+  "title": "Configuración",
+  "subtitle": "Gestiona tu cuenta y preferencias",
+  "profile": {
+    "title": "Perfil",
+    "subtitle": "Tu información personal",
+    "name": "Nombre",
+    "email": "Correo electrónico"
+  },
+  "preferences": {
+    "title": "Preferencias",
+    "subtitle": "Personaliza tu experiencia",
+    "language": {
+      "title": "Idioma",
+      "subtitle": "Elige tu idioma preferido",
+      "label": "Idioma"
+    },
+    "theme": {
+      "title": "Tema",
+      "subtitle": "Elige tu apariencia preferida",
+      "label": "Apariencia",
+      "light": "Claro",
+      "dark": "Oscuro"
+    }
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "subtitle": "Próximamente"
+  },
+  "security": {
+    "title": "Seguridad",
+    "subtitle": "Próximamente"
+  }
+}

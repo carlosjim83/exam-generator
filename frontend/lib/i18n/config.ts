@@ -15,6 +15,8 @@ import uploadEN from './locales/en/upload.json';
 import uploadES from './locales/es/upload.json';
 import generateEN from './locales/en/generate.json';
 import generateES from './locales/es/generate.json';
+import settingsEN from './locales/en/settings.json';
+import settingsES from './locales/es/settings.json';
 
 // Define resources type
 const resources = {
@@ -25,6 +27,7 @@ const resources = {
     documents: documentsEN,
     upload: uploadEN,
     generate: generateEN,
+    settings: settingsEN,
   },
   es: {
     common: commonES,
@@ -33,6 +36,7 @@ const resources = {
     documents: documentsES,
     upload: uploadES,
     generate: generateES,
+    settings: settingsES,
   },
 } as const;
 
@@ -47,7 +51,7 @@ i18n
     lng: typeof window === 'undefined' ? 'en' : undefined, // Force English on server
     fallbackLng: ['en'],
     defaultNS: 'common',
-    ns: ['common', 'dashboard', 'exams', 'documents', 'upload', 'generate'],
+    ns: ['common', 'dashboard', 'exams', 'documents', 'upload', 'generate', 'settings'],
 
     detection: {
       // Order of language detection (only used on client)
