@@ -26,6 +26,11 @@ try {
 // Bootstrap event handlers for background processing
 bootstrapEventHandlers();
 
+// Start the document processing worker
+// This imports and initializes the BullMQ worker that processes documents in the background
+import './infrastructure/queue/DocumentWorker.js';
+console.log('📦 Document processing worker initialized');
+
 // Create Fastify instance with logging
 const fastify = Fastify({
   logger: {

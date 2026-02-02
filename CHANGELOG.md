@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Fastify server with TypeScript and hot reload (tsx watch)
 - CORS configuration for frontend communication
 - Health check endpoint (`GET /health`)
@@ -35,9 +36,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Release History
 
+### [1.0.0] - 2026-02-02 - Production Release 🚀
+
+#### Infrastructure & Deployment
+
+- Deployed to Azure Container Apps (serverless containers)
+- Azure PostgreSQL Flexible Server with pgvector extension
+- Azure Redis Cache for BullMQ job queue
+- Azure Blob Storage for document storage
+- Azure Container Registry for Docker images
+- Multi-stage Docker builds for optimized production images
+
+#### Backend Improvements
+
+- Fixed Redis TLS connection for Azure Redis Cache
+- Integrated BullMQ worker into main server process
+- Fixed Azure Blob Storage URL encoding/decoding issue
+- Disabled source maps in production (reduced bundle size ~50%)
+- Moved utility scripts to `backend/scripts/` directory
+- Added comprehensive logging for blob operations
+
+#### Frontend
+
+- Deployed Next.js 15 application to Azure Container Apps
+- Environment-based API URL configuration
+
+#### Documentation
+
+- Cleaned up temporary session summaries and TODO files
+- Updated README with current tech stack (Azure OpenAI)
+- Added production URLs and deployment instructions
+- Removed outdated test results and E2E documentation
+
+#### Production URLs
+
+- Frontend: https://exam-generator-frontend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io
+- Backend: https://exam-generator-backend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io
+
+---
+
 ### [0.1.0] - 2026-01-26 - Initial Setup
 
 #### Documentation Phase
+
 - Created 7 Architecture Decision Records (ADRs)
   - ADR 0001: Monorepo structure with pnpm and Turborepo
   - ADR 0002: Backend framework selection (Fastify)
@@ -54,7 +95,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - System architecture diagram with Mermaid diagrams
 
 #### Monorepo Setup Phase
-- Initialized pnpm workspaces (frontend, backend, packages/*)
+
+- Initialized pnpm workspaces (frontend, backend, packages/\*)
 - Configured Turborepo with intelligent caching
 - Added Prettier for code formatting
 - Created shared types package with 229 lines of TypeScript definitions
@@ -62,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added comprehensive README with development workflow
 
 #### Statistics
+
 - **Total Commits**: 23 (all atomic, conventional commit format)
 - **Documentation**: ~30,000 words across ADRs, specs, and README
 - **Lines of Code**: 341 (shared types + configs)
@@ -104,6 +147,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 ### [0.2.0] - Backend Core (In Progress)
 
 **Target Features**:
+
 - Fastify server setup with TypeScript
 - Prisma schema and database migrations
 - Authentication service (local + JWT)
@@ -115,4 +159,4 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 ---
 
-**Last Updated**: 2026-01-26
+**Last Updated**: 2026-02-02

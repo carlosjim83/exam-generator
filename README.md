@@ -5,38 +5,50 @@ AI-powered exam generator using RAG (Retrieval-Augmented Generation) for teacher
 ## 🎯 Features
 
 - 📄 **Document Upload**: Upload PDF and DOCX files to Azure Blob Storage
-- 🧠 **AI Processing**: Automatic text extraction, chunking, and embedding generation with Google Gemini
-- 🔍 **RAG-based Generation**: Vector similarity search across multiple documents
+- 🧠 **AI Processing**: Automatic text extraction, chunking, and embedding generation with Azure OpenAI
+- 🔍 **RAG-based Generation**: Vector similarity search across multiple documents using pgvector
 - 📝 **Smart Exam Creation**: Generate multiple-choice questions with explanations
 - ✏️ **Manual Review**: Edit and refine AI-generated questions
-- 🔐 **Secure Authentication**: Local login + OAuth (Google, GitHub, Microsoft)
+- 🔐 **Secure Authentication**: JWT-based auth + OAuth (Google)
+- ⚡ **Background Processing**: Async document processing with BullMQ workers
 
 ## 🏗️ Tech Stack
 
 ### Monorepo
+
 - **pnpm workspaces** - Fast, efficient package management
 - **Turborepo** - Intelligent build caching and task orchestration
 
 ### Frontend
+
 - **Next.js 15** (App Router) - React framework
 - **TypeScript** - Type safety
 - **Tailwind CSS** - Utility-first styling
 - **shadcn/ui** - Beautiful, accessible components
 
 ### Backend
+
 - **Fastify** - Fast, low-overhead web framework
 - **TypeScript** - Type safety
-- **Prisma** - Type-safe ORM
+- **Prisma** - Type-safe ORM with pgvector support
 - **Passport.js** - Authentication strategies
+- **BullMQ** - Background job processing with Redis
+- **Firebase Genkit** - AI workflow orchestration
 
 ### Database & AI
-- **PostgreSQL** - Relational database
-- **pgvector** - Vector similarity search
-- **Google Gemini API** - Embeddings and text generation
 
-### Infrastructure
+- **PostgreSQL** - Relational database
+- **pgvector** - Vector similarity search extension
+- **Azure OpenAI** - GPT-4o for text generation, text-embedding-3-small for embeddings
+- **Redis** - Job queue and caching
+
+### Infrastructure (Azure)
+
+- **Azure Container Apps** - Serverless container hosting
 - **Azure Blob Storage** - Document file storage
-- **Docker** - Local development (PostgreSQL)
+- **Azure PostgreSQL Flexible Server** - Managed PostgreSQL with pgvector
+- **Azure Redis Cache** - Managed Redis for BullMQ
+- **Azure Container Registry** - Private Docker registry
 
 ## 📁 Project Structure
 
@@ -79,11 +91,18 @@ pnpm --filter backend prisma migrate dev
 pnpm dev
 ```
 
-### Access
+### Access (Local Development)
 
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:3001
+- **API Documentation**: http://localhost:3001/documentation
 - **PostgreSQL**: localhost:5432
+- **Redis**: localhost:6379 (if running locally)
+
+### Access (Production)
+
+- **Frontend**: https://exam-generator-frontend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io
+- **Backend API**: https://exam-generator-backend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io
 
 ## 🧪 Testing
 
@@ -101,26 +120,32 @@ pnpm --filter frontend test:e2e
 
 ## 📚 Documentation
 
-- **[AGENTS.md](./AGENTS.md)** - Quick reference for AI assistants
 - **[Architecture Decision Records](./docs/adr/)** - Why we made technical choices
 - **[Functional Specifications](./docs/specs/)** - Detailed feature specs
 - **[System Architecture](./docs/architecture.md)** - Diagrams and data flows
+- **[Deployment Guide](./docs/DEPLOYMENT.md)** - Azure deployment instructions
 
 ## 🔑 Environment Variables
 
-See [.env.example](./.env.example) for all required environment variables.
+See `.env.example` for all required environment variables.
 
-**Required for development**:
+**Required for local development**:
+
 - `DATABASE_URL` - PostgreSQL connection string
-- `GEMINI_API_KEY` - Get from [Google AI Studio](https://ai.google.dev/)
+- `AZURE_OPENAI_API_KEY` - Azure OpenAI API key
+- `AZURE_OPENAI_ENDPOINT` - Azure OpenAI endpoint URL
 - `JWT_SECRET` - Generate with `openssl rand -base64 32`
+- `JWT_REFRESH_SECRET` - Generate with `openssl rand -base64 32`
 
-**Optional (for full features)**:
-- `AZURE_STORAGE_ACCOUNT_NAME` - Azure Blob Storage
-- `AZURE_STORAGE_ACCOUNT_KEY` - Azure access key
-- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` - OAuth
-- `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` - OAuth
-- `MICROSOFT_CLIENT_ID` / `MICROSOFT_CLIENT_SECRET` - OAuth
+**Required for production**:
+
+- `REDIS_HOST` / `REDIS_PORT` / `REDIS_PASSWORD` - Redis for BullMQ
+- `AZURE_STORAGE_CONNECTION_STRING` - Azure Blob Storage
+- `FRONTEND_URL` - CORS configuration
+
+**Optional (for OAuth)**:
+
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `GOOGLE_CALLBACK_URL` - Google OAuth
 
 ## 🛠️ Development Workflow
 
@@ -143,26 +168,45 @@ chore(scope): update tooling
 
 ## 📦 Deployment
 
-### Azure (Recommended)
+### Production (Azure Container Apps)
 
-- **Frontend**: Azure Static Web Apps
-- **Backend**: Azure App Service (Node.js)
-- **Database**: Azure Database for PostgreSQL (with pgvector)
-- **Storage**: Azure Blob Storage
+The application is deployed on Azure using:
 
-See [deployment guide](./docs/deployment.md) for detailed instructions.
+- **Frontend**: Azure Container Apps (Next.js container)
+- **Backend**: Azure Container Apps (Fastify container with BullMQ worker)
+- **Database**: Azure PostgreSQL Flexible Server with pgvector extension
+- **Storage**: Azure Blob Storage for documents
+- **Cache**: Azure Redis Cache for BullMQ job queue
+- **Registry**: Azure Container Registry for Docker images
+
+**Deployment Process**:
+
+```bash
+# Build and push Docker images
+docker buildx build --platform linux/amd64 -t examgeneratorcj.azurecr.io/exam-generator-backend:v13 -f Dockerfile.backend . --push
+docker buildx build --platform linux/amd64 -t examgeneratorcj.azurecr.io/exam-generator-frontend:v3 -f Dockerfile.frontend . --push
+
+# Update Container Apps
+az containerapp update --name exam-generator-backend --resource-group exam-generator-rg --image examgeneratorcj.azurecr.io/exam-generator-backend:v13
+az containerapp update --name exam-generator-frontend --resource-group exam-generator-rg --image examgeneratorcj.azurecr.io/exam-generator-frontend:v3
+```
+
+See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed instructions.
 
 ## 🎓 Learning Goals
 
 This project demonstrates:
+
 - ✅ Full-stack TypeScript development
-- ✅ Monorepo management with modern tools
-- ✅ RAG implementation with vector databases
-- ✅ AI integration (Gemini API)
-- ✅ Cloud infrastructure (Azure)
-- ✅ TDD and clean architecture
-- ✅ OAuth + local authentication
+- ✅ Monorepo management with modern tools (pnpm + Turborepo)
+- ✅ RAG implementation with vector databases (pgvector)
+- ✅ AI integration (Azure OpenAI + Firebase Genkit)
+- ✅ Background job processing (BullMQ + Redis)
+- ✅ Cloud-native deployment (Azure Container Apps)
+- ✅ Clean architecture and domain-driven design
+- ✅ OAuth authentication flow
 - ✅ Professional documentation (ADRs, specs)
+- ✅ Docker multi-stage builds for production
 
 ## 📄 License
 

@@ -16,13 +16,27 @@ import { redisConnection } from './redis.connection.js';
 import type { DocumentJobData } from './DocumentQueue.js';
 import { ProcessDocumentUseCase } from '../../application/use-cases/documents/ProcessDocumentUseCase.js';
 import { PrismaDocumentRepository } from '../repositories/PrismaDocumentRepository.js';
+import { AzureBlobStorageService } from '../storage/AzureBlobStorageService.js';
 import { LocalFileStorageService } from '../storage/LocalFileStorageService.js';
 import { prisma } from '../../config/prisma.js';
 import { workerLogger } from './WorkerLogger.js';
 
 // Initialize dependencies
 const documentRepository = PrismaDocumentRepository.create(prisma);
-const storageService = new LocalFileStorageService();
+
+// Storage Service - Auto-select based on configuration
+// Use Azure if configured, otherwise fallback to local filesystem
+const azureStorageService = new AzureBlobStorageService();
+const storageService = azureStorageService.isConfigured()
+  ? azureStorageService
+  : new LocalFileStorageService('./uploads');
+
+if (azureStorageService.isConfigured()) {
+  console.log('📦 [Worker] Using Azure Blob Storage for file storage');
+} else {
+  console.log('📁 [Worker] Using Local File Storage for file storage (./uploads)');
+}
+
 const processDocumentUseCase = new ProcessDocumentUseCase(documentRepository, storageService);
 
 /**

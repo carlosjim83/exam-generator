@@ -1,8 +1,8 @@
 import { BlobServiceClient } from '@azure/storage-blob';
-import { 
-  IStorageService, 
-  FileValidationResult, 
-  FileMetadata 
+import {
+  IStorageService,
+  FileValidationResult,
+  FileMetadata,
 } from '../../domain/services/IStorageService.js';
 import { env } from '../../config/env.js';
 
@@ -36,8 +36,7 @@ export class AzureBlobStorageService implements IStorageService {
    */
   isConfigured(): boolean {
     return (
-      !!env.AZURE_STORAGE_CONNECTION_STRING &&
-      env.AZURE_STORAGE_CONNECTION_STRING !== 'placeholder'
+      !!env.AZURE_STORAGE_CONNECTION_STRING && env.AZURE_STORAGE_CONNECTION_STRING !== 'placeholder'
     );
   }
 
@@ -77,9 +76,7 @@ export class AzureBlobStorageService implements IStorageService {
       throw new Error('Azure Blob Storage not configured');
     }
 
-    const containerClient = this.blobServiceClient.getContainerClient(
-      this.containerName
-    );
+    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
 
     // Ensure container exists
     await containerClient.createIfNotExists();
@@ -88,13 +85,18 @@ export class AzureBlobStorageService implements IStorageService {
     const timestamp = Date.now();
     const blobName = `${timestamp}-${filename}`;
 
+    console.log(`📤 [AzureBlobStorage] Uploading blob: ${blobName}`);
+
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
     // Upload buffer to blob
     await blockBlobClient.upload(buffer, buffer.length);
 
     // Return blob URL
-    return blockBlobClient.url;
+    const blobUrl = blockBlobClient.url;
+    console.log(`✅ [AzureBlobStorage] Upload successful. URL: ${blobUrl}`);
+
+    return blobUrl;
   }
 
   /**
@@ -105,29 +107,38 @@ export class AzureBlobStorageService implements IStorageService {
       throw new Error('Azure Blob Storage not configured');
     }
 
+    console.log(`📥 [AzureBlobStorage] Download requested for URL: ${url}`);
+
     // Extract blob name from URL
     const blobName = this.extractBlobNameFromUrl(url);
+    console.log(`🔍 [AzureBlobStorage] Extracted blob name: ${blobName}`);
 
-    const containerClient = this.blobServiceClient.getContainerClient(
-      this.containerName
-    );
+    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
 
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+    console.log(`🔗 [AzureBlobStorage] Full blob path: ${blockBlobClient.url}`);
 
     // Download blob to buffer
-    const downloadResponse = await blockBlobClient.download();
+    try {
+      const downloadResponse = await blockBlobClient.download();
 
-    if (!downloadResponse.readableStreamBody) {
-      throw new Error('Failed to download file: no stream body');
+      if (!downloadResponse.readableStreamBody) {
+        throw new Error('Failed to download file: no stream body');
+      }
+
+      // Convert stream to buffer
+      const chunks: Buffer[] = [];
+      for await (const chunk of downloadResponse.readableStreamBody) {
+        chunks.push(Buffer.from(chunk));
+      }
+
+      const buffer = Buffer.concat(chunks);
+      console.log(`✅ [AzureBlobStorage] Download successful. Size: ${buffer.length} bytes`);
+      return buffer;
+    } catch (error) {
+      console.error(`❌ [AzureBlobStorage] Download failed:`, error);
+      throw error;
     }
-
-    // Convert stream to buffer
-    const chunks: Buffer[] = [];
-    for await (const chunk of downloadResponse.readableStreamBody) {
-      chunks.push(Buffer.from(chunk));
-    }
-
-    return Buffer.concat(chunks);
   }
 
   /**
@@ -141,9 +152,7 @@ export class AzureBlobStorageService implements IStorageService {
     // Extract blob name from URL
     const blobName = this.extractBlobNameFromUrl(url);
 
-    const containerClient = this.blobServiceClient.getContainerClient(
-      this.containerName
-    );
+    const containerClient = this.blobServiceClient.getContainerClient(this.containerName);
 
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
@@ -154,10 +163,40 @@ export class AzureBlobStorageService implements IStorageService {
   /**
    * Extract blob name from full URL
    * Example: https://account.blob.core.windows.net/container/blobname
-   * Returns: blobname
+   * Returns: blobname (decoded)
    */
   private extractBlobNameFromUrl(url: string): string {
+    console.log(`🔍 [AzureBlobStorage] Parsing URL: ${url}`);
+
+    // Try URL parsing first
+    try {
+      const urlObj = new URL(url);
+      console.log(`🔍 [AzureBlobStorage] URL pathname: ${urlObj.pathname}`);
+
+      // pathname should be: /container/blobname
+      // Split and get the part after container name
+      const pathParts = urlObj.pathname.split('/').filter((p) => p.length > 0);
+      console.log(`🔍 [AzureBlobStorage] Path parts: ${JSON.stringify(pathParts)}`);
+
+      // First part is container name, rest is blob name (may include slashes)
+      if (pathParts.length >= 2) {
+        // Join everything after container name (in case blob name has slashes)
+        // IMPORTANT: Decode the URL-encoded blob name
+        const encodedBlobName = pathParts.slice(1).join('/');
+        const blobName = decodeURIComponent(encodedBlobName);
+        console.log(`🔍 [AzureBlobStorage] Encoded blob name: ${encodedBlobName}`);
+        console.log(`🔍 [AzureBlobStorage] Decoded blob name: ${blobName}`);
+        return blobName;
+      }
+    } catch (error) {
+      console.error(`❌ [AzureBlobStorage] URL parsing failed:`, error);
+    }
+
+    // Fallback to simple split (also decode)
     const urlParts = url.split('/');
-    return urlParts[urlParts.length - 1];
+    const encodedBlobName = urlParts[urlParts.length - 1];
+    const blobName = decodeURIComponent(encodedBlobName);
+    console.log(`🔍 [AzureBlobStorage] Extracted blob name (fallback, decoded): ${blobName}`);
+    return blobName;
   }
 }

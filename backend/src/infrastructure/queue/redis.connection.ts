@@ -10,6 +10,9 @@ const REDIS_HOST = process.env.REDIS_HOST || 'localhost';
 const REDIS_PORT = parseInt(process.env.REDIS_PORT || '6379', 10);
 const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 
+// Determine if we need TLS (Azure Redis uses port 6380 with TLS)
+const needsTLS = REDIS_PORT === 6380 || REDIS_HOST.includes('redis.cache.windows.net');
+
 export const redisConnection = new Redis({
   host: REDIS_HOST,
   port: REDIS_PORT,
@@ -20,6 +23,11 @@ export const redisConnection = new Redis({
     const delay = Math.min(times * 50, 2000);
     return delay;
   },
+  ...(needsTLS && {
+    tls: {
+      servername: REDIS_HOST,
+    },
+  }),
 });
 
 // Log connection events

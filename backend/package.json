@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "worker": "tsx watch worker.ts",
-    "build": "tsc",
+    "build": "tsc && tsc-alias",
     "start": "node dist/server.js",
     "start:worker": "node dist/worker.js",
     "test": "vitest run",
@@ -65,6 +65,7 @@
     "form-data": "^4.0.5",
     "pino-pretty": "^11.0.0",
     "prisma": "^6.1.0",
+    "tsc-alias": "^1.8.10",
     "tsx": "^4.7.1",
     "typescript": "^5.3.3",
     "vitest": "^2.1.8"

@@ -257,6 +257,10 @@ export class Container {
     return this._textExtractor;
   }
 
+  public get messageBroker(): IMessageBroker {
+    return this._messageBroker;
+  }
+
   // ========================================
   // GETTERS - Application Layer (Use Cases)
   // ========================================
