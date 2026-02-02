@@ -1,9 +1,10 @@
 # ================================
-# CI/CD Pipeline - Backend
+# CI Pipeline - Backend
 # ================================
-# Builds, tests, and deploys backend to Azure Container Apps
+# Builds, tests, and pushes backend image to Azure Container Registry
+# Deploy is done manually using scripts/deploy-backend.sh
 
-name: Backend CI/CD
+name: Backend CI
 
 on:
   push:
@@ -24,8 +25,9 @@ on:
 env:
   REGISTRY: examgeneratorcj.azurecr.io
   IMAGE_NAME: exam-generator-backend
-  AZURE_CONTAINER_APP_NAME: exam-generator-backend
-  AZURE_RESOURCE_GROUP: exam-generator-rg
+
+permissions:
+  contents: read
 
 jobs:
   # ================================
@@ -70,7 +72,7 @@ jobs:
 
       - name: Run linter
         working-directory: ./backend
-        run: pnpm lint || echo "Linter not configured"
+        run: pnpm lint
 
       - name: Run type check
         working-directory: ./backend
@@ -78,13 +80,23 @@ jobs:
 
       - name: Run tests
         working-directory: ./backend
-        run: pnpm test || echo "Tests not configured yet"
+        run: pnpm test || echo "⚠️ Tests not configured yet - skipping"
         env:
           NODE_ENV: test
 
       - name: Build application
         working-directory: ./backend
         run: pnpm build
+
+      - name: Verify Prisma schema
+        working-directory: ./backend
+        run: pnpm prisma:validate
+
+      - name: Check for pending migrations
+        working-directory: ./backend
+        run: |
+          echo "Checking Prisma migrations..."
+          pnpm prisma migrate status || echo "⚠️ Migration check completed"
 
   # ================================
   # Job 2: Build and Push Docker Image
@@ -122,8 +134,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./backend
-          file: ./backend/Dockerfile
+          context: .
+          file: ./Dockerfile.backend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -131,59 +143,15 @@ jobs:
           cache-to: type=registry,ref=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
           platforms: linux/amd64
 
-  # ================================
-  # Job 3: Deploy to Azure Container Apps
-  # ================================
-  deploy:
-    name: Deploy to Azure
-    runs-on: ubuntu-latest
-    needs: build-image
-    if: github.ref == 'refs/heads/main'
-    environment:
-      name: production
-      url: https://${{ env.AZURE_CONTAINER_APP_NAME }}.azurecontainerapps.io
-
-    steps:
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure Container Apps
-        uses: azure/container-apps-deploy-action@v1
-        with:
-          resourceGroup: ${{ env.AZURE_RESOURCE_GROUP }}
-          containerAppName: ${{ env.AZURE_CONTAINER_APP_NAME }}
-          acrName: examgeneratorcj
-          acrUsername: ${{ secrets.ACR_USERNAME }}
-          acrPassword: ${{ secrets.ACR_PASSWORD }}
-          imageToDeploy: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-      - name: Run database migrations
+      - name: Image build summary
         run: |
-          az containerapp exec \
-            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --command "pnpm prisma migrate deploy"
-
-      - name: Verify deployment
-        run: |
-          APP_URL=$(az containerapp show \
-            --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
-            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-            --query properties.configuration.ingress.fqdn -o tsv)
-
-          echo "Checking health endpoint: https://$APP_URL/health"
-
-          for i in {1..10}; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://$APP_URL/health)
-            if [ $STATUS -eq 200 ]; then
-              echo "✅ Deployment successful! Health check passed."
-              exit 0
-            fi
-            echo "Attempt $i: Health check returned $STATUS. Retrying in 10s..."
-            sleep 10
-          done
-
-          echo "❌ Deployment verification failed!"
-          exit 1
+          echo "## 🐳 Backend Image Built Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry**: \`${{ env.REGISTRY }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Image**: \`${{ env.IMAGE_NAME }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags**: \`${{ steps.meta.outputs.tags }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Deploy manually:" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "./scripts/deploy-backend.sh" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

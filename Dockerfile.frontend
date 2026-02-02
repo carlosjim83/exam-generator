@@ -23,8 +23,9 @@ RUN pnpm install --frozen-lockfile
 
 # Set build-time environment variables
 # NEXT_PUBLIC_* variables must be set at build time
-ARG NEXT_PUBLIC_API_URL=https://exam-generator-backend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+# Default to production backend URL if not specified
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://exam-generator-backend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io}
 
 # Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
