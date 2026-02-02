@@ -120,6 +120,7 @@ pnpm --filter frontend test:e2e
 
 ## 📚 Documentation
 
+- **[Contributing Guide](./CONTRIBUTING.md)** - Development workflow and Git Flow strategy
 - **[Architecture Decision Records](./docs/adr/)** - Why we made technical choices
 - **[Functional Specifications](./docs/specs/)** - Detailed feature specs
 - **[System Architecture](./docs/architecture.md)** - Diagrams and data flows
