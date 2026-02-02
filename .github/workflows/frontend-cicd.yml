@@ -1,7 +1,8 @@
 # ================================
 # CI Pipeline - Frontend
 # ================================
-# Builds, tests, and pushes frontend image to Azure Container Registry
+# - Pull Requests: Runs tests, linting, and build (validation only)
+# - Push to main/develop: Runs tests, linting, build, and pushes image to ACR
 # Deploy is done manually using scripts/deploy-frontend.sh
 
 name: Frontend CI
@@ -94,6 +95,20 @@ jobs:
           fi
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://exam-generator-backend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io' }}
+
+      - name: PR validation summary
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "## ✅ Frontend Validation Passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All checks completed successfully:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Linting" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Type checking" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Tests" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Build" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Build warnings check" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Ready to merge!** 🚀" >> $GITHUB_STEP_SUMMARY
 
   # ================================
   # Job 2: Build and Push Docker Image
