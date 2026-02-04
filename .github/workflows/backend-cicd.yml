@@ -96,7 +96,7 @@ jobs:
 
       - name: Verify Prisma schema
         working-directory: ./backend
-        run: pnpm prisma:validate
+        run: npx prisma validate
 
       - name: Check for pending migrations
         working-directory: ./backend
