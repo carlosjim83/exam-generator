@@ -7,6 +7,9 @@ export default tseslint.config(
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    ignores: ['eslint.config.js', 'dist/**', 'node_modules/**'],
+  },
+  {
     languageOptions: {
       globals: {
         ...globals.node,

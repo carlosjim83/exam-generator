@@ -8,6 +8,9 @@ export default tseslint.config(
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   {
+    ignores: ['eslint.config.js', 'dist/**', 'node_modules/**'],
+  },
+  {
     languageOptions: {
       globals: {
         ...globals.node,
@@ -74,9 +77,7 @@ export default tseslint.config(
       // Vitest plugin rules (if applicable)
       'vitest/consistent-test-filename': 'warn',
       'vitest/no-alias-methods': 'error',
-      'vitest/no-duplicate-hooks': 'error',
       'vitest/no-focused-tests': 'warn',
-      'vitest/no-skipped-tests': 'warn',
       'vitest/prefer-to-be': 'error',
       'vitest/prefer-to-have-length': 'error',
       'vitest/valid-expect': 'error',
