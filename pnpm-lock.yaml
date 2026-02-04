@@ -26,6 +26,9 @@ importers:
       eslint-plugin-vitest:
         specifier: ^0.5.4
         version: 0.5.4(@typescript-eslint/eslint-plugin@8.54.0)(eslint@9.39.2)(typescript@5.9.3)
+      globals:
+        specifier: ^17.3.0
+        version: 17.3.0
       prettier:
         specifier: ^3.2.5
         version: 3.8.1
@@ -35,6 +38,9 @@ importers:
       typescript:
         specifier: ^5.3.3
         version: 5.9.3
+      typescript-eslint:
+        specifier: ^8.54.0
+        version: 8.54.0(eslint@9.39.2)(typescript@5.9.3)
 
   backend:
     dependencies:
@@ -156,6 +162,9 @@ importers:
       form-data:
         specifier: ^4.0.5
         version: 4.0.5
+      globals:
+        specifier: ^17.3.0
+        version: 17.3.0
       pino-pretty:
         specifier: ^11.0.0
         version: 11.3.0
@@ -7755,6 +7764,11 @@ packages:
     engines: {node: '>=18'}
     dev: true
 
+  /globals@17.3.0:
+    resolution: {integrity: sha512-yMqGUQVVCkD4tqjOJf3TnrvaaHDMYp4VlUSObbkIiuCPe/ofdMBFIAcBbCSRFWOnos6qRiTVStDwqPLUclaxIw==}
+    engines: {node: '>=18'}
+    dev: true
+
   /globalthis@1.0.4:
     resolution: {integrity: sha512-DpLKbNU4WylpxJykQujfCcwYWiV/Jhm50Goo0wrVILAv5jOr9d+H+UR3PhSCD2rCCEIg0uc+G+muBTwD54JhDQ==}
     engines: {node: '>= 0.4'}
@@ -11402,6 +11416,23 @@ packages:
       is-typed-array: 1.1.15
       possible-typed-array-names: 1.1.0
       reflect.getprototypeof: 1.0.10
+    dev: true
+
+  /typescript-eslint@8.54.0(eslint@9.39.2)(typescript@5.9.3):
+    resolution: {integrity: sha512-CKsJ+g53QpsNPqbzUsfKVgd3Lny4yKZ1pP4qN3jdMOg/sisIDLGyDMezycquXLE5JsEU0wp3dGNdzig0/fmSVQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: ^8.57.0 || ^9.0.0
+      typescript: '>=4.8.4 <6.0.0'
+    dependencies:
+      '@typescript-eslint/eslint-plugin': 8.54.0(@typescript-eslint/parser@8.54.0)(eslint@9.39.2)(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.54.0(eslint@9.39.2)(typescript@5.9.3)
+      '@typescript-eslint/typescript-estree': 8.54.0(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.54.0(eslint@9.39.2)(typescript@5.9.3)
+      eslint: 9.39.2
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /typescript@5.9.3:
