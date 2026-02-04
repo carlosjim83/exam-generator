@@ -89,6 +89,18 @@ jobs:
         run: pnpm test || echo "⚠️ Tests not configured yet - skipping"
         env:
           NODE_ENV: test
+          DATABASE_URL: 'postgresql://test:test@localhost:5432/testdb?schema=public'
+          AZURE_OPENAI_API_KEY: 'test-key-for-ci'
+          AZURE_OPENAI_ENDPOINT: 'https://test.openai.azure.com'
+          AZURE_OPENAI_EMBEDDING_DEPLOYMENT: 'text-embedding-3-small'
+          AZURE_OPENAI_CHAT_DEPLOYMENT: 'gpt-4'
+          JWT_SECRET: 'test-jwt-secret-for-ci-only'
+          JWT_REFRESH_SECRET: 'test-jwt-refresh-secret-for-ci-only'
+          AZURE_STORAGE_ACCOUNT_NAME: 'testaccount'
+          AZURE_STORAGE_ACCOUNT_KEY: 'testkey'
+          AZURE_STORAGE_CONTAINER_NAME: 'testcontainer'
+          REDIS_HOST: 'localhost'
+          REDIS_PORT: '6379'
 
       - name: Build application
         working-directory: ./backend
