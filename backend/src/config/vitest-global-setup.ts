@@ -1,4 +1,4 @@
-import { beforeAll, afterAll } from 'vitest';
+import { beforeAll, afterAll, vi } from 'vitest';
 import { prisma } from './prisma'; // Import prisma for cleanup/reset
 import { Container } from './container'; // Ensure container can be reset
 
@@ -15,6 +15,65 @@ import { Container } from './container'; // Ensure container can be reset
  * Note: Individual test files should use beforeAll/beforeEach to set up
  * their specific test data as needed.
  */
+
+// Mock Azure OpenAI SDK to prevent real API calls in tests
+vi.mock('openai', () => {
+  return {
+    AzureOpenAI: class MockAzureOpenAI {
+      embeddings = {
+        create: vi.fn().mockResolvedValue({
+          data: [
+            {
+              embedding: Array(1536)
+                .fill(0)
+                .map(() => Math.random()),
+              index: 0,
+              object: 'embedding',
+            },
+          ],
+          model: 'text-embedding-3-small',
+          object: 'list',
+          usage: { prompt_tokens: 8, total_tokens: 8 },
+        }),
+      };
+
+      chat = {
+        completions: {
+          create: vi.fn().mockResolvedValue({
+            id: 'chatcmpl-mock',
+            object: 'chat.completion',
+            created: Date.now(),
+            model: 'gpt-4',
+            choices: [
+              {
+                index: 0,
+                message: {
+                  role: 'assistant',
+                  content: JSON.stringify({
+                    questions: [
+                      {
+                        id: '1',
+                        type: 'multiple_choice',
+                        question: 'Mock question?',
+                        options: ['A', 'B', 'C', 'D'],
+                        correctAnswer: 'A',
+                        explanation: 'Mock explanation',
+                        difficulty: 'medium',
+                        topic: 'Mock topic',
+                      },
+                    ],
+                  }),
+                },
+                finish_reason: 'stop',
+              },
+            ],
+            usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
+          }),
+        },
+      };
+    },
+  };
+});
 
 // Reset container and cleanup database ONCE before all tests run
 beforeAll(async () => {
