@@ -171,7 +171,8 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop') && secrets.ACR_USERNAME != ''
+    # Only push images when ACR credentials are available (check if build-image job should run)
+    if: false
 
     steps:
       - name: Checkout code
