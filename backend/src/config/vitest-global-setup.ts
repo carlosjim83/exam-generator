@@ -1,4 +1,5 @@
 import { beforeAll, afterAll, vi } from 'vitest';
+import './env'; // Load environment variables FIRST (triggers dotenv.config())
 import { prisma } from './prisma'; // Import prisma for cleanup/reset
 import { Container } from './container'; // Ensure container can be reset
 
@@ -71,6 +72,27 @@ vi.mock('openai', () => {
           }),
         },
       };
+    },
+  };
+});
+
+// Mock AzureOpenAIEmbeddingService to prevent env var checks
+vi.mock('../infrastructure/ai/AzureOpenAIEmbeddingService.js', () => {
+  return {
+    AzureOpenAIEmbeddingService: class MockAzureOpenAIEmbeddingService {
+      async generateEmbedding(_text: string): Promise<number[]> {
+        return Array(1536)
+          .fill(0)
+          .map(() => Math.random());
+      }
+
+      async generateEmbeddings(_texts: string[]): Promise<number[][]> {
+        return _texts.map(() =>
+          Array(1536)
+            .fill(0)
+            .map(() => Math.random())
+        );
+      }
     },
   };
 });
