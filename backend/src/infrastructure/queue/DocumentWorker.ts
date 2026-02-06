@@ -14,12 +14,14 @@
 import { Worker, Job } from 'bullmq';
 import { redisConnection } from './redis.connection.js';
 import type { DocumentJobData } from './DocumentQueue.js';
+import { documentQueue } from './DocumentQueue.js';
 import { ProcessDocumentUseCase } from '../../application/use-cases/documents/ProcessDocumentUseCase.js';
 import { PrismaDocumentRepository } from '../repositories/PrismaDocumentRepository.js';
 import { AzureBlobStorageService } from '../storage/AzureBlobStorageService.js';
 import { LocalFileStorageService } from '../storage/LocalFileStorageService.js';
 import { prisma } from '../../config/prisma.js';
 import { workerLogger } from './WorkerLogger.js';
+import { WorkerHealthService } from './WorkerHealthService.js';
 
 // Initialize dependencies
 const documentRepository = PrismaDocumentRepository.create(prisma);
@@ -38,6 +40,13 @@ if (azureStorageService.isConfigured()) {
 }
 
 const processDocumentUseCase = new ProcessDocumentUseCase(documentRepository, storageService);
+
+// Initialize Worker Health Service for monitoring
+export const workerHealthService = new WorkerHealthService({
+  workerQueueName: 'document-processing',
+  queue: documentQueue,
+  redisConnection,
+});
 
 /**
  * Timeout wrapper for processing with automatic abort
@@ -155,12 +164,17 @@ export const documentWorker = new Worker<DocumentJobData>(
 // Event handlers for monitoring
 documentWorker.on('completed', (job: Job<DocumentJobData, any, string>) => {
   const result = job.returnvalue;
+  const processingTime = result?.processingTimeMs || 0;
+
+  // Track job completion in health service
+  workerHealthService.trackJobProcessed(processingTime);
+
   workerLogger.debug('Job event: completed', {
     event: 'job.event.completed',
     jobId: job.id,
     documentId: job.data.documentId,
     chunks: result?.document?.chunksCreated,
-    duration: result?.processingTimeMs,
+    duration: processingTime,
   });
 });
 
@@ -219,6 +233,9 @@ const gracefulShutdown = async (signal: string) => {
 
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Track worker start time for health monitoring
+workerHealthService.trackWorkerStart();
 
 workerLogger.workerStarted({
   concurrency: 1,

@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { getWorkerMetrics, getJobMetrics } from '../infrastructure/queue/WorkerMetrics.js';
+import { workerHealthService } from '../infrastructure/queue/DocumentWorker.js';
 
 /**
  * Health check routes for monitoring system status
@@ -12,7 +13,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
       schema: {
         tags: ['health'],
         summary: 'Basic health check',
-        description: 'Check if the API is running',
+        description: 'Check if the API and worker are running',
         response: {
           200: {
             description: 'API is healthy',
@@ -20,16 +21,56 @@ export async function healthRoutes(fastify: FastifyInstance) {
             properties: {
               status: { type: 'string' },
               timestamp: { type: 'string' },
+              worker: { type: 'object' },
             },
+          },
+          503: {
+            description: 'Service degraded or unhealthy',
+            type: 'object',
           },
         },
       },
     },
     async (_request, reply) => {
-      return reply.status(200).send({
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-      });
+      try {
+        // Get worker health status
+        const workerHealth = await workerHealthService.getHealth();
+
+        // Determine overall status
+        // API is UP, but overall health depends on worker
+        const overallStatus = workerHealth.status === 'healthy' ? 'healthy' : workerHealth.status;
+        const httpStatus = workerHealth.status === 'unhealthy' ? 503 : 200;
+
+        return reply.status(httpStatus).send({
+          status: overallStatus,
+          timestamp: new Date().toISOString(),
+          api: {
+            status: 'ok', // API is always ok if we reach this handler
+          },
+          worker: {
+            status: workerHealth.status,
+            isOnline: workerHealth.isWorkerOnline,
+            uptime: workerHealth.uptime,
+            queueBacklog: workerHealth.waitingJobs,
+            failureRate: workerHealth.failureRate,
+          },
+        });
+      } catch (error: any) {
+        fastify.log.error('Health check error:', error);
+
+        // API is up, but worker check failed
+        return reply.status(503).send({
+          status: 'degraded',
+          timestamp: new Date().toISOString(),
+          api: {
+            status: 'ok',
+          },
+          worker: {
+            status: 'unhealthy',
+            error: error.message || 'Failed to check worker status',
+          },
+        });
+      }
     }
   );
 
@@ -55,24 +96,62 @@ export async function healthRoutes(fastify: FastifyInstance) {
     },
     async (_request, reply) => {
       try {
-        const metrics = await getWorkerMetrics();
+        // Get health status from WorkerHealthService (worker lifecycle + basic metrics)
+        const healthStatus = await workerHealthService.getHealth();
+
+        // Get detailed job metrics from WorkerMetrics (job details, performance, etc.)
+        const jobMetrics = await getWorkerMetrics();
+
+        // Combine both: Worker health + Job details
+        const combinedMetrics = {
+          // Worker health and lifecycle (from WorkerHealthService)
+          worker: {
+            status: healthStatus.status,
+            isOnline: healthStatus.isWorkerOnline,
+            startTime: healthStatus.workerStartTime,
+            uptime: healthStatus.uptime,
+            lastActivity: healthStatus.lastActivity,
+            timeSinceLastActivity: healthStatus.timeSinceLastActivity,
+          },
+
+          // Queue metrics (from WorkerHealthService)
+          queue: {
+            waiting: healthStatus.waitingJobs,
+            active: healthStatus.activeJobs,
+            completed: healthStatus.completedJobs,
+            failed: healthStatus.failedJobs,
+            failureRate: healthStatus.failureRate,
+          },
+
+          // Detailed job metrics and performance (from WorkerMetrics)
+          performance: jobMetrics.performance,
+          recentJobs: jobMetrics.recentJobs,
+
+          timestamp: new Date().toISOString(),
+        };
 
         // Return 503 if unhealthy
-        if (metrics.health.status === 'unhealthy') {
-          return reply.status(503).send(metrics);
+        if (healthStatus.status === 'unhealthy') {
+          return reply.status(503).send(combinedMetrics);
         }
 
-        return reply.status(200).send(metrics);
+        return reply.status(200).send(combinedMetrics);
       } catch (error: any) {
         fastify.log.error('Worker health check error:', error);
 
         return reply.status(503).send({
-          counts: { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0, total: 0 },
-          health: {
+          worker: {
             status: 'unhealthy',
+            isOnline: false,
+            uptime: 0,
+            timeSinceLastActivity: 0,
+          },
+          queue: {
+            waiting: 0,
+            active: 0,
+            completed: 0,
+            failed: 0,
             failureRate: 0,
-            isProcessing: false,
-            hasFailures: false,
           },
           performance: {
             avgProcessingTime: 0,
