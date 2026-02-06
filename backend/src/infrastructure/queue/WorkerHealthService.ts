@@ -92,9 +92,6 @@ const HEALTH_CONFIG = {
 export class WorkerHealthService {
   private queue: Queue;
   private queueName: string;
-  // Reserved for future use (e.g., direct Redis health checks)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  private redisConnection: Redis;
 
   // Internal state
   private workerStartTime?: number;
@@ -106,7 +103,7 @@ export class WorkerHealthService {
   constructor(params: { workerQueueName: string; queue: Queue; redisConnection: Redis }) {
     this.queueName = params.workerQueueName;
     this.queue = params.queue;
-    this.redisConnection = params.redisConnection;
+    // redisConnection reserved for future use (direct Redis health checks)
   }
 
   // ==========================================================================
