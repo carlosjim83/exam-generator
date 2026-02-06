@@ -52,6 +52,7 @@ export class ReprocessDocumentUseCase {
       errorMessage: document.errorMessage,
       pageCount: document.pageCount,
       wordCount: document.wordCount,
+      processedAt: document.processedAt,
     });
 
     // Remove existing chunks to ensure a clean re-embedding

@@ -83,16 +83,24 @@ describe('ListDocumentsUseCase', () => {
         title: 'Document 1',
         filename: 'doc1.pdf',
         fileSize: 1024,
+        mimeType: 'application/pdf',
         status: DocumentStatus.COMPLETED,
+        pageCount: 5,
+        wordCount: 250,
         uploadedAt: new Date('2026-01-01'),
+        processedAt: new Date('2026-01-02'),
       });
       expect(result.documents[1]).toEqual({
         id: expect.any(String),
         title: 'Document 2',
         filename: 'doc2.docx',
         fileSize: 2048,
+        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         status: DocumentStatus.PENDING,
+        pageCount: null,
+        wordCount: null,
         uploadedAt: new Date('2026-01-03'),
+        processedAt: null,
       });
 
       // Verify interactions
