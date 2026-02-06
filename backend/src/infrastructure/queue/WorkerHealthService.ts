@@ -92,7 +92,8 @@ const HEALTH_CONFIG = {
 export class WorkerHealthService {
   private queue: Queue;
   private queueName: string;
-  // @ts-ignore - Reserved for future use (e.g., direct Redis health checks)
+  // Reserved for future use (e.g., direct Redis health checks)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private redisConnection: Redis;
 
   // Internal state

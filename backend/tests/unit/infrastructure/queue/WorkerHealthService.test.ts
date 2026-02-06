@@ -45,6 +45,20 @@ describe('WorkerHealthService - Unit Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Setup default mocks to avoid undefined errors
+    vi.mocked(mockQueue.getJobCounts).mockResolvedValue({
+      waiting: 0,
+      active: 0,
+      completed: 0,
+      failed: 0,
+      delayed: 0,
+      paused: 0,
+    });
+    vi.mocked(mockQueue.getActive).mockResolvedValue([]);
+    vi.mocked(mockQueue.getFailed).mockResolvedValue([]);
+    vi.mocked(mockQueue.getCompleted).mockResolvedValue([]);
+
     healthService = new WorkerHealthService({
       workerQueueName: 'document-processing',
       queue: mockQueue as Queue,
@@ -89,6 +103,7 @@ describe('WorkerHealthService - Unit Tests', () => {
       vi.mocked(mockQueue.getFailed).mockResolvedValue([]);
 
       // Act
+      await new Promise((resolve) => setTimeout(resolve, 1)); // Wait 1ms for uptime
       const health = await healthService.getHealth();
 
       // Assert
