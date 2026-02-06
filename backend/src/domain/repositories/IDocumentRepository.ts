@@ -24,6 +24,7 @@ export interface UpdateDocumentStatusDTO {
   pageCount?: number | null;
   wordCount?: number | null;
   errorMessage?: string | null;
+  processedAt?: Date | null;
 }
 
 /**
