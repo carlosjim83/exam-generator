@@ -1,0 +1,49 @@
+# ================================
+# Exam Generator - Terraform Variables (EXAMPLE)
+# ================================
+# Copy this file to terraform.tfvars and fill in your actual values
+# NEVER commit terraform.tfvars to git (it's in .gitignore)
+
+# ================================
+# Azure Subscription
+# ================================
+
+subscription_id = "3dd664e4-ed58-463c-8afc-ccc2cd460b5f"
+
+# ================================
+# PostgreSQL Credentials
+# ================================
+
+postgres_admin_password = "CHANGE-THIS-TO-YOUR-SECURE-PASSWORD"
+
+# ================================
+# Application Secrets
+# ================================
+
+jwt_secret         = "CHANGE-THIS-TO-YOUR-JWT-SECRET"
+jwt_refresh_secret = "CHANGE-THIS-TO-YOUR-JWT-REFRESH-SECRET"
+
+# ================================
+# OAuth Configuration
+# ================================
+
+google_client_id     = "YOUR-GOOGLE-CLIENT-ID.apps.googleusercontent.com"
+google_client_secret = "YOUR-GOOGLE-CLIENT-SECRET"
+
+# ================================
+# Redis Configuration
+# ================================
+# For PRODUCTION: Use HA (High Availability)
+# redis_non_ha = false
+
+# For DEV/TEST: Use non-HA to save costs (~50% cheaper)
+redis_non_ha = true
+
+# ================================
+# Optional: Override default names
+# ================================
+
+# resource_group_name = "exam-generator-rg"
+# location            = "swedencentral"
+# redis_sku_name      = "B0"  # B0, B1, M10, X3, etc.
+# redis_capacity_gb   = 1

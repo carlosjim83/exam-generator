@@ -25,7 +25,11 @@ RUN pnpm install --frozen-lockfile
 # NEXT_PUBLIC_* variables must be set at build time
 # Default to production backend URL if not specified
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://exam-generator-backend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io}
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://exam-generator-backend.delightfulforest-a488ef6b.swedencentral.azurecontainerapps.io}
+
+# Control OAuth mock behavior (default: false for production)
+ARG NEXT_PUBLIC_ENABLE_OAUTH_MOCK
+ENV NEXT_PUBLIC_ENABLE_OAUTH_MOCK=${NEXT_PUBLIC_ENABLE_OAUTH_MOCK:-false}
 
 # Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
