@@ -3,7 +3,7 @@
 # ================================
 # Frontend Deployment Script
 # ================================
-# Deploys the latest frontend image from ACR to Azure Container Apps
+# Deploys the latest frontend image from GHCR to Azure Container Apps
 
 set -e  # Exit on error
 
@@ -15,10 +15,11 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-REGISTRY="examgeneratorcj.azurecr.io"
+REGISTRY="ghcr.io"
+GITHUB_USERNAME="carlosjim83"
 IMAGE_NAME="exam-generator-frontend"
 CONTAINER_APP_NAME="exam-generator-frontend"
-RESOURCE_GROUP="exam-generator-rg"
+RESOURCE_GROUP="exam-generator-rg-v2"
 
 echo -e "${BLUE}========================================${NC}"
 echo -e "${BLUE}  Frontend Deployment Script${NC}"
@@ -46,27 +47,14 @@ echo ""
 
 # Get image tag (default to latest)
 IMAGE_TAG="${1:-latest}"
-FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+FULL_IMAGE="${REGISTRY}/${GITHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo -e "${BLUE}📦 Image to deploy: ${YELLOW}${FULL_IMAGE}${NC}"
 echo ""
 
-# Verify image exists in ACR
-echo -e "${BLUE}🔍 Verifying image exists in ACR...${NC}"
-if ! az acr repository show --name examgeneratorcj --repository $IMAGE_NAME --query "name" -o tsv &> /dev/null; then
-    echo -e "${RED}❌ Repository ${IMAGE_NAME} not found in ACR${NC}"
-    exit 1
-fi
-
-# Check if the specific tag exists
-if ! az acr repository show-tags --name examgeneratorcj --repository $IMAGE_NAME --query "[?@=='${IMAGE_TAG}']" -o tsv | grep -q "${IMAGE_TAG}"; then
-    echo -e "${RED}❌ Tag ${IMAGE_TAG} not found in repository${NC}"
-    echo -e "${YELLOW}Available tags:${NC}"
-    az acr repository show-tags --name examgeneratorcj --repository $IMAGE_NAME --orderby time_desc --output table | head -10
-    exit 1
-fi
-
-echo -e "${GREEN}✅ Image found in ACR${NC}"
+# Note: We skip image verification for GHCR since it requires authentication
+echo -e "${BLUE}🔍 Skipping image verification (GHCR requires auth)...${NC}"
+echo -e "${GREEN}✅ Proceeding with deployment${NC}"
 echo ""
 
 # Get current revision for potential rollback
