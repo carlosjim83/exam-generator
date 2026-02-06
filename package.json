@@ -16,7 +16,10 @@
     "test": "turbo test",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
-    "clean": "turbo clean && rm -rf node_modules"
+    "clean": "turbo clean && rm -rf node_modules",
+    "prepare": "husky",
+    "type-check": "pnpm -r --parallel exec tsc --noEmit",
+    "validate": "pnpm lint && pnpm type-check && pnpm test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
@@ -26,9 +29,22 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-vitest": "^0.5.4",
     "globals": "^17.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.2.5",
     "turbo": "^1.12.4",
     "typescript": "^5.3.3",
     "typescript-eslint": "^8.54.0"
+  },
+  "lint-staged": {
+    "backend/**/*.{ts,tsx}": [
+      "eslint --fix"
+    ],
+    "frontend/**/*.{ts,tsx}": [
+      "eslint --fix"
+    ],
+    "**/*.{js,jsx,ts,tsx,json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }
