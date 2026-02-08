@@ -3,6 +3,7 @@
 # ================================
 FROM node:20-alpine AS deps
 
+# Force rebuild - v2026.02.08.01
 # Install pnpm (use version from packageManager field)
 RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
