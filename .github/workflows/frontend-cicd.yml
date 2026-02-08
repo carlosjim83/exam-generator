@@ -126,6 +126,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Copy pnpm-lock.yaml to frontend (monorepo fix)
+        run: cp pnpm-lock.yaml frontend/
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
