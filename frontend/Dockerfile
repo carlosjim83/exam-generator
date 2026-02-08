@@ -3,8 +3,8 @@
 # ================================
 FROM node:20-alpine AS deps
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm (use version from packageManager field)
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
 # Install libc6-compat for compatibility
 RUN apk add --no-cache libc6-compat
@@ -22,8 +22,8 @@ RUN pnpm install --frozen-lockfile
 # ================================
 FROM node:20-alpine AS builder
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm (use version from packageManager field)
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
 WORKDIR /app
 
