@@ -11,8 +11,7 @@
 'use client';
 
 import type { Document } from '../types/dashboard.types';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { configManager } from '@/lib/config/config-manager';
 
 export interface UploadDocumentInput {
   file: File;
@@ -37,6 +36,10 @@ export interface UploadProgress {
 }
 
 export class ApiDocumentService {
+  private get API_BASE_URL(): string {
+    return configManager.getApiUrl();
+  }
+
   private getAuthToken(): string | null {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('access_token');
@@ -124,7 +127,7 @@ export class ApiDocumentService {
       });
 
       // Send request
-      xhr.open('POST', `${API_BASE_URL}/documents/upload`);
+      xhr.open('POST', `${this.API_BASE_URL}/documents/upload`);
       xhr.setRequestHeader('Authorization', `Bearer ${token}`);
       xhr.send(formData);
     });
@@ -140,7 +143,7 @@ export class ApiDocumentService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/documents`, {
+      const response = await fetch(`${this.API_BASE_URL}/documents`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -172,7 +175,7 @@ export class ApiDocumentService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/documents/${id}`, {
+      const response = await fetch(`${this.API_BASE_URL}/documents/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -201,7 +204,7 @@ export class ApiDocumentService {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/documents/${id}/reprocess`, {
+    const response = await fetch(`${this.API_BASE_URL}/documents/${id}/reprocess`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -225,7 +228,7 @@ export class ApiDocumentService {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/documents/${id}`, {
+    const response = await fetch(`${this.API_BASE_URL}/documents/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -248,7 +251,7 @@ export class ApiDocumentService {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/documents/${id}/download`, {
+    const response = await fetch(`${this.API_BASE_URL}/documents/${id}/download`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,

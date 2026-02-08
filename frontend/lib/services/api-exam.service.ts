@@ -10,7 +10,7 @@
 
 'use client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { configManager } from '@/lib/config/config-manager';
 
 export type QuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER';
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'MIXED';
@@ -72,6 +72,10 @@ export interface ExamDetailsResponse {
 }
 
 export class ApiExamService {
+  private get API_BASE_URL(): string {
+    return configManager.getApiUrl();
+  }
+
   private getAuthToken(): string | null {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('access_token');
@@ -86,7 +90,7 @@ export class ApiExamService {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/exams/generate`, {
+    const response = await fetch(`${this.API_BASE_URL}/exams/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +124,7 @@ export class ApiExamService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/exams`, {
+      const response = await fetch(`${this.API_BASE_URL}/exams`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -150,7 +154,7 @@ export class ApiExamService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/exams/${id}`, {
+      const response = await fetch(`${this.API_BASE_URL}/exams/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -179,7 +183,7 @@ export class ApiExamService {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/exams/${id}`, {
+    const response = await fetch(`${this.API_BASE_URL}/exams/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,
