@@ -52,6 +52,12 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Build Next.js application
 RUN pnpm build
 
+# DEBUG: List contents of standalone output to verify structure
+RUN echo "=== Contents of .next/standalone ===" && \
+    ls -la /app/frontend/.next/standalone/ && \
+    echo "=== Checking for server.js ===" && \
+    find /app/frontend/.next -name "server.js" -type f
+
 # Create public directory if it doesn't exist (optional static assets)
 RUN mkdir -p /app/frontend/public
 
@@ -97,6 +103,12 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 RUN ln -sf ../frontend/node_modules/next ./node_modules/next && \
     ln -sf ../frontend/node_modules/react ./node_modules/react && \
     ln -sf ../frontend/node_modules/react-dom ./node_modules/react-dom
+
+# DEBUG: Verify server.js exists and structure is correct
+RUN echo "=== Files in /app ===" && \
+    ls -la /app/ && \
+    echo "=== Checking server.js ===" && \
+    test -f /app/server.js && echo "✅ server.js EXISTS" || echo "❌ server.js NOT FOUND"
 
 # Switch to non-root user
 USER nextjs
