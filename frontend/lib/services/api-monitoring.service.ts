@@ -6,7 +6,7 @@
 
 'use client';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { configManager } from '@/lib/config/config-manager';
 
 export interface WorkerMetrics {
   counts: {
@@ -70,6 +70,7 @@ export interface JobMetrics {
  */
 export async function getWorkerMetrics(): Promise<WorkerMetrics> {
   const token = localStorage.getItem('token');
+  const API_BASE_URL = configManager.getApiUrl();
 
   const response = await fetch(`${API_BASE_URL}/health/worker`, {
     method: 'GET',
@@ -92,6 +93,7 @@ export async function getJobMetrics(
   documentId: string
 ): Promise<{ found: boolean; job: JobMetrics | null }> {
   const token = localStorage.getItem('token');
+  const API_BASE_URL = configManager.getApiUrl();
 
   const response = await fetch(`${API_BASE_URL}/health/worker/job/${documentId}`, {
     method: 'GET',
@@ -111,6 +113,7 @@ export async function getJobMetrics(
  * Get basic health check
  */
 export async function getHealthCheck(): Promise<{ status: string; timestamp: string }> {
+  const API_BASE_URL = configManager.getApiUrl();
   const response = await fetch(`${API_BASE_URL}/health`, {
     method: 'GET',
   });

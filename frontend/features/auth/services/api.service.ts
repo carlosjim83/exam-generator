@@ -1,6 +1,5 @@
 import { AuthResponse, RefreshTokenResponse } from '../types/auth.types';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+import { configManager } from '@/lib/config/config-manager';
 
 // Token management
 class TokenManager {
@@ -44,10 +43,8 @@ export class ApiError extends Error {
 
 // API Client
 class ApiClient {
-  private baseURL: string;
-
-  constructor(baseURL: string) {
-    this.baseURL = baseURL;
+  private get baseURL(): string {
+    return configManager.getApiUrl();
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
@@ -193,5 +190,5 @@ class ApiClient {
 }
 
 // Export singleton instance
-export const apiClient = new ApiClient(API_BASE_URL);
+export const apiClient = new ApiClient();
 export { TokenManager };

@@ -6,6 +6,7 @@
  */
 
 import type { Document, Exam, DashboardStats } from '../types/dashboard.types';
+import { configManager } from '@/lib/config/config-manager';
 
 /**
  * Token Manager (same as auth service)
@@ -20,10 +21,12 @@ class TokenManager {
 }
 
 export class ApiDashboardService {
-  private readonly baseUrl: string;
+  private get baseUrl(): string {
+    return configManager.getApiUrl();
+  }
 
-  constructor(baseUrl: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001') {
-    this.baseUrl = baseUrl;
+  constructor() {
+    // Empty constructor - baseUrl is now a getter
   }
 
   /**
