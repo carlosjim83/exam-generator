@@ -83,16 +83,17 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # CRITICAL: Copy monorepo structure to make pnpm symlinks work correctly
 
-# Step 1: Copy entire standalone output to /tmp/standalone first
+# Step 1: Copy entire standalone output preserving monorepo structure
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone /tmp/standalone
 
-# Step 2: In monorepos, Next.js may nest the app inside standalone/frontend/
-# We need to detect and copy from the correct location
+# Step 2: Detect structure and copy appropriately
 RUN if [ -f /tmp/standalone/frontend/server.js ]; then \
-        echo "✅ Monorepo structure detected - copying from standalone/frontend/"; \
-        cp -r /tmp/standalone/frontend/* ./; \
+        echo "✅ Monorepo structure detected"; \
+        # Copy everything from standalone root (includes node_modules with .pnpm)
+        cp -r /tmp/standalone/* ./; \
+        # Now /app/frontend/ contains the app, /app/node_modules contains shared deps
     elif [ -f /tmp/standalone/server.js ]; then \
-        echo "✅ Flat structure detected - copying from standalone/"; \
+        echo "✅ Flat structure detected"; \
         cp -r /tmp/standalone/* ./; \
     else \
         echo "❌ ERROR: Could not find server.js in standalone output"; \
@@ -101,31 +102,25 @@ RUN if [ -f /tmp/standalone/frontend/server.js ]; then \
     fi && \
     rm -rf /tmp/standalone
 
-# Step 2: Copy public assets
-COPY --from=builder /app/frontend/public ./public
+# Step 3: Copy public assets to the correct location based on structure
+COPY --from=builder /app/frontend/public ./frontend/public
 
-# Step 3: Copy .next/static files
+# Step 4: Copy .next/static files to the correct location
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
 
-# Step 4: Copy frontend workspace node_modules with correct symlinks
+# Step 5: Copy the actual workspace node_modules (fixes broken symlinks from standalone)
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/node_modules ./frontend/node_modules
 
-# Step 5: Copy root node_modules containing .pnpm directory
+# Step 6: Copy root node_modules (overwrites if already exists from standalone)
 COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 
-# Step 6: CRITICAL FIX - Create symlinks for runtime dependencies that server.js needs
-# The server.js runs from /app/ and looks for modules in /app/node_modules
-# But Next.js runtime dependencies (next, react, react-dom) are in /app/frontend/node_modules
-# Solution: Create symlinks from /app/node_modules to /app/frontend/node_modules for these packages
-RUN ln -sf ../frontend/node_modules/next ./node_modules/next && \
-    ln -sf ../frontend/node_modules/react ./node_modules/react && \
-    ln -sf ../frontend/node_modules/react-dom ./node_modules/react-dom
-
-# DEBUG: Verify server.js exists and structure is correct
+# DEBUG: Verify structure is correct
 RUN echo "=== Files in /app ===" && \
     ls -la /app/ && \
     echo "=== Checking server.js ===" && \
-    test -f /app/server.js && echo "✅ server.js EXISTS" || echo "❌ server.js NOT FOUND"
+    find /app -name "server.js" -type f && \
+    echo "=== Checking .next directory ===" && \
+    ls -la /app/frontend/.next/ 2>/dev/null || ls -la /app/.next/ 2>/dev/null || echo "❌ .next not found"
 
 # Switch to non-root user
 USER nextjs
@@ -141,4 +136,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start Next.js server
-CMD ["node", "server.js"]
+# In monorepo builds, server.js is at /app/frontend/server.js  
+# In flat builds, server.js is at /app/server.js
+CMD ["sh", "-c", "if [ -f /app/frontend/server.js ]; then cd /app/frontend && node server.js; else node server.js; fi"]
