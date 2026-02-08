@@ -11,11 +11,12 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
+# Copy workspace configuration (monorepo setup)
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY frontend/package.json ./frontend/
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile
+# Install dependencies for frontend workspace only
+RUN pnpm install --frozen-lockfile --filter=exam-generator-frontend...
 
 # ================================
 # Stage 2: Builder
@@ -27,11 +28,17 @@ RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
 WORKDIR /app
 
+# Copy workspace configuration
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+
 # Copy dependencies from deps stage
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/frontend ./frontend
 
-# Copy source code
-COPY . .
+# Copy frontend source code
+COPY frontend ./frontend
+
+WORKDIR /app/frontend
 
 # Set build-time environment variables
 # NEXT_PUBLIC_* variables must be set at build time
@@ -43,6 +50,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build Next.js application
 RUN pnpm build
+
+# Create public directory if it doesn't exist (optional static assets)
+RUN mkdir -p /app/frontend/public
 
 # ================================
 # Stage 3: Runner (Production)
@@ -62,15 +72,30 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
-# Copy public assets
-COPY --from=builder /app/public ./public
+# CRITICAL: Copy monorepo structure to make pnpm symlinks work correctly
 
-# Create .next directory with proper permissions
-RUN mkdir .next && chown nextjs:nodejs .next
+# Step 1: Copy Next.js standalone output first (includes server.js, package.json, .next/, node_modules with broken symlinks)
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 
-# Copy Next.js build output
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Step 2: Copy public assets
+COPY --from=builder /app/frontend/public ./public
+
+# Step 3: Copy .next/static files
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
+
+# Step 4: Copy frontend workspace node_modules with correct symlinks
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/node_modules ./frontend/node_modules
+
+# Step 5: Copy root node_modules containing .pnpm directory
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+
+# Step 6: CRITICAL FIX - Create symlinks for runtime dependencies that server.js needs
+# The server.js runs from /app/ and looks for modules in /app/node_modules
+# But Next.js runtime dependencies (next, react, react-dom) are in /app/frontend/node_modules
+# Solution: Create symlinks from /app/node_modules to /app/frontend/node_modules for these packages
+RUN ln -sf ../frontend/node_modules/next ./node_modules/next && \
+    ln -sf ../frontend/node_modules/react ./node_modules/react && \
+    ln -sf ../frontend/node_modules/react-dom ./node_modules/react-dom
 
 # Switch to non-root user
 USER nextjs
