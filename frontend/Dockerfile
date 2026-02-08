@@ -54,9 +54,11 @@ RUN pnpm build
 
 # DEBUG: List contents of standalone output to verify structure
 RUN echo "=== Contents of .next/standalone ===" && \
-    ls -la /app/frontend/.next/standalone/ && \
+    ls -laR /app/frontend/.next/standalone/ && \
     echo "=== Checking for server.js ===" && \
-    find /app/frontend/.next -name "server.js" -type f
+    find /app/frontend/.next -name "server.js" -type f && \
+    echo "=== Full tree structure ===" && \
+    find /app/frontend/.next/standalone -type f | head -20
 
 # Create public directory if it doesn't exist (optional static assets)
 RUN mkdir -p /app/frontend/public
@@ -81,8 +83,23 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # CRITICAL: Copy monorepo structure to make pnpm symlinks work correctly
 
-# Step 1: Copy Next.js standalone output first (includes server.js, package.json, .next/, node_modules with broken symlinks)
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+# Step 1: Copy entire standalone output to /tmp/standalone first
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone /tmp/standalone
+
+# Step 2: In monorepos, Next.js may nest the app inside standalone/frontend/
+# We need to detect and copy from the correct location
+RUN if [ -f /tmp/standalone/frontend/server.js ]; then \
+        echo "✅ Monorepo structure detected - copying from standalone/frontend/"; \
+        cp -r /tmp/standalone/frontend/* ./; \
+    elif [ -f /tmp/standalone/server.js ]; then \
+        echo "✅ Flat structure detected - copying from standalone/"; \
+        cp -r /tmp/standalone/* ./; \
+    else \
+        echo "❌ ERROR: Could not find server.js in standalone output"; \
+        ls -laR /tmp/standalone; \
+        exit 1; \
+    fi && \
+    rm -rf /tmp/standalone
 
 # Step 2: Copy public assets
 COPY --from=builder /app/frontend/public ./public
