@@ -72,7 +72,7 @@ export class GetExamResultsUseCase {
       return {
         question,
         studentAnswer: studentAnswer || null,
-        isCorrect: studentAnswer?.isCorrect || null,
+        isCorrect: studentAnswer?.isCorrect ?? null,
         correctAnswer: question.correctAnswer,
         explanation: question.explanation || null,
       };
