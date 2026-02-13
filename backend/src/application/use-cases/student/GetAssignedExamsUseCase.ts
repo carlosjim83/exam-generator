@@ -1,9 +1,9 @@
 import {
   IExamAssignmentRepository,
   FindAssignmentsFilters,
-} from '../../../domain/repositories/IExamAssignmentRepository.js';
-import { ExamAssignment, ExamAssignmentStatus } from '../../../domain/entities/ExamAssignment.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
+} from '@domain/repositories/IExamAssignmentRepository.js';
+import { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface GetAssignedExamsInput {
   studentId: string;

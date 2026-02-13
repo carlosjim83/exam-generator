@@ -1,8 +1,8 @@
-import { IExamAssignmentRepository } from '../../../domain/repositories/IExamAssignmentRepository.js';
-import { IStudentAnswerRepository } from '../../../domain/repositories/IStudentAnswerRepository.js';
-import { IExamRepository } from '../../../domain/repositories/IExamRepository.js';
-import { ExamAssignment } from '../../../domain/entities/ExamAssignment.js';
-import { AssignmentId } from '../../../domain/value-objects/AssignmentId.js';
+import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
+import { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 
 export interface SubmitExamAnswersInput {
   assignmentId: string;
