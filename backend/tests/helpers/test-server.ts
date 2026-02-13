@@ -5,6 +5,7 @@ import { authRoutes } from '@routes/auth.routes.js';
 import { documentRoutes } from '@routes/document.routes.js';
 import { protectedRoutes } from '@routes/protected.routes.js';
 import { oauthRoutes } from '@routes/oauth.routes.js';
+import { studentRoutes } from '@routes/student.routes.js';
 
 /**
  * Creates and configures a Fastify test server instance.
@@ -27,6 +28,7 @@ export async function createTestServer(): Promise<FastifyInstance> {
   app.register(documentRoutes);
   app.register(protectedRoutes);
   app.register(oauthRoutes);
+  app.register(studentRoutes);
 
   // Ensure all plugins and routes are ready
   await app.ready();
