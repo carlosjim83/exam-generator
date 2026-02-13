@@ -107,7 +107,7 @@ export class GenerateExamUseCase {
       sourceChunkIds: [], // TODO: Track which chunks were used
     }));
 
-    const exam = await this.examRepository.create(
+    const exam = await (this.examRepository as any).createWithQuestions(
       {
         userId,
         title: input.title,
@@ -132,7 +132,7 @@ export class GenerateExamUseCase {
         documentCount: input.documentIds.length,
         createdAt: exam.createdAt,
       },
-      questions: (exam.questions || []).map((q) => ({
+      questions: (exam.questions || []).map((q: any) => ({
         id: q.id,
         type: q.type,
         difficulty: q.difficulty,

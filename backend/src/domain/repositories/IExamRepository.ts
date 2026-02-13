@@ -31,32 +31,37 @@ export interface CreateQuestionDTO {
 
 export interface IExamRepository {
   /**
-   * Create a new exam with questions
+   * Find an exam by ID
    */
-  create(exam: CreateExamDTO, questions: CreateQuestionDTO[]): Promise<Exam>;
+  findById(id: string): Promise<Exam | null>;
 
   /**
-   * Find an exam by ID (with questions)
+   * Find an exam by ID with questions
    */
-  findById(id: ExamId): Promise<Exam | null>;
+  findByIdWithQuestions(id: string): Promise<Exam | null>;
 
   /**
-   * Find all exams for a user
+   * Find all exams by user ID
    */
-  findByUserId(userId: UserId): Promise<Exam[]>;
+  findByUserId(userId: string): Promise<Exam[]>;
 
   /**
-   * Check if exam exists
+   * Create a new exam
    */
-  exists(id: ExamId): Promise<boolean>;
+  create(data: CreateExamDTO): Promise<Exam>;
 
   /**
-   * Delete an exam (cascade deletes questions)
+   * Update an existing exam
    */
-  delete(id: ExamId): Promise<void>;
+  update(exam: Exam): Promise<Exam>;
 
   /**
-   * Count exams by user
+   * Delete an exam
    */
-  countByUserId(userId: UserId): Promise<number>;
+  delete(id: string): Promise<void>;
+
+  /**
+   * Count exams by user ID
+   */
+  countByUserId(userId: string): Promise<number>;
 }

@@ -25,8 +25,29 @@ export class PrismaExamRepository implements IExamRepository {
 
   /**
    * Create exam with questions in a transaction
+   * Note: Questions are created separately via GenerateExamUseCase
    */
-  async create(examData: CreateExamDTO, questionsData: CreateQuestionDTO[]): Promise<Exam> {
+  async create(examData: CreateExamDTO): Promise<Exam> {
+    const exam = await this.prisma.exam.create({
+      data: {
+        userId: examData.userId.value,
+        title: examData.title,
+        description: examData.description,
+        generatedFrom: examData.generatedFrom,
+        promptUsed: examData.promptUsed,
+      },
+    });
+
+    return this.toDomain(exam, []);
+  }
+
+  /**
+   * Create exam with questions in a transaction (legacy method for GenerateExamUseCase)
+   */
+  async createWithQuestions(
+    examData: CreateExamDTO,
+    questionsData: CreateQuestionDTO[]
+  ): Promise<Exam> {
     const result = await this.prisma.$transaction(async (tx: any) => {
       // Create exam
       const exam = await tx.exam.create({
@@ -66,11 +87,34 @@ export class PrismaExamRepository implements IExamRepository {
   }
 
   /**
+   * Update an exam (title, description)
+   */
+  async update(exam: Exam): Promise<Exam> {
+    const updated = await this.prisma.exam.update({
+      where: { id: exam.id },
+      data: {
+        title: exam.title,
+        description: exam.description,
+      },
+      include: { questions: { orderBy: { orderIndex: 'asc' } } },
+    });
+
+    return this.toDomain(updated, updated.questions);
+  }
+
+  /**
+   * Find exam by ID (with questions)
+   */
+  async findById(id: string): Promise<Exam | null> {
+    return this.findByIdWithQuestions(id);
+  }
+
+  /**
    * Find exam by ID with questions
    */
-  async findById(id: ExamId): Promise<Exam | null> {
+  async findByIdWithQuestions(id: string): Promise<Exam | null> {
     const exam = await this.prisma.exam.findUnique({
-      where: { id: id.value },
+      where: { id },
       include: { questions: { orderBy: { orderIndex: 'asc' } } },
     });
 
@@ -82,9 +126,9 @@ export class PrismaExamRepository implements IExamRepository {
   /**
    * Find all exams by user (without questions for performance)
    */
-  async findByUserId(userId: UserId): Promise<Exam[]> {
+  async findByUserId(userId: string): Promise<Exam[]> {
     const exams = await this.prisma.exam.findMany({
-      where: { userId: userId.value },
+      where: { userId },
       orderBy: { createdAt: 'desc' },
       include: {
         _count: { select: { questions: true } }, // Get question count
@@ -108,7 +152,16 @@ export class PrismaExamRepository implements IExamRepository {
   }
 
   /**
-   * Check if exam exists
+   * Delete exam (cascade deletes questions)
+   */
+  async delete(id: string): Promise<void> {
+    await this.prisma.exam.delete({
+      where: { id },
+    });
+  }
+
+  /**
+   * Check if exam exists (helper method, not in interface)
    */
   async exists(id: ExamId): Promise<boolean> {
     const count = await this.prisma.exam.count({
@@ -118,20 +171,11 @@ export class PrismaExamRepository implements IExamRepository {
   }
 
   /**
-   * Delete exam (cascade deletes questions)
+   * Count exams by user (helper method, not in interface)
    */
-  async delete(id: ExamId): Promise<void> {
-    await this.prisma.exam.delete({
-      where: { id: id.value },
-    });
-  }
-
-  /**
-   * Count exams by user
-   */
-  async countByUserId(userId: UserId): Promise<number> {
+  async countByUserId(userId: string): Promise<number> {
     return this.prisma.exam.count({
-      where: { userId: userId.value },
+      where: { userId },
     });
   }
 

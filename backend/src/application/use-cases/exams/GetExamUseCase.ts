@@ -41,7 +41,7 @@ export class GetExamUseCase {
     const examId = ExamId.create(input.examId);
     const userId = UserId.create(input.userId);
 
-    const exam = await this.examRepository.findById(examId);
+    const exam = await this.examRepository.findById(examId.value);
 
     if (!exam) {
       throw new Error('Exam not found');
