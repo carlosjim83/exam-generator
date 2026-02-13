@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { createTestServer } from '@tests/helpers/test-server.js';
 import { ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
+import { UserMother, ExamMother, ExamAssignmentMother } from '@tests/helpers/mothers/index.js';
 
 /**
  * E2E Tests for Student Routes
@@ -162,17 +163,54 @@ describe('Student Routes E2E Tests', () => {
     });
 
     describe('🟢 GREEN: Success cases', () => {
-      it.skip('should assign exam to student successfully', async () => {
-        // TODO: Implement after exam creation is working
-        // This requires:
-        // 1. Upload document
-        // 2. Process document
-        // 3. Generate exam from document
-        // 4. Assign exam to student
+      it('should assign exam to student successfully', async () => {
+        // Create exam using Object Mother
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+
+        const response = await app.inject({
+          method: 'POST',
+          url: '/students/assignments',
+          headers: {
+            authorization: `Bearer ${teacherToken}`,
+          },
+          payload: {
+            examId: exam.id,
+            studentId: studentId,
+          },
+        });
+
+        expect(response.statusCode).toBe(201);
+        const body = JSON.parse(response.body);
+        expect(body.assignment.examId).toBe(exam.id);
+        expect(body.assignment.studentId).toBe(studentId);
+        expect(body.assignment.status).toBe('PENDING');
       });
 
-      it.skip('should assign exam with optional due date', async () => {
-        // TODO: Implement after basic assignment works
+      it('should assign exam with optional due date', async () => {
+        // Create exam using Object Mother
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const dueDate = new Date(Date.now() + 86400000 * 7); // 7 days from now
+
+        const response = await app.inject({
+          method: 'POST',
+          url: '/students/assignments',
+          headers: {
+            authorization: `Bearer ${teacherToken}`,
+          },
+          payload: {
+            examId: exam.id,
+            studentId: studentId,
+            dueDate: dueDate.toISOString(),
+          },
+        });
+
+        expect(response.statusCode).toBe(201);
+        const body = JSON.parse(response.body);
+        expect(body.assignment.dueDate).toBeDefined();
+        expect(new Date(body.assignment.dueDate).getTime()).toBeCloseTo(
+          dueDate.getTime(),
+          -2 // within 100ms
+        );
       });
     });
   });
@@ -207,14 +245,19 @@ describe('Student Routes E2E Tests', () => {
 
     describe('🟢 GREEN: Success cases', () => {
       it('should return empty array when student has no assignments', async () => {
+        // ARRANGE: Create a NEW student who has no assignments yet
+        const freshStudent = await UserMother.student(app);
+
+        // ACT: Fetch assignments for this fresh student
         const response = await app.inject({
           method: 'GET',
           url: '/students/assignments',
           headers: {
-            authorization: `Bearer ${studentToken}`,
+            authorization: `Bearer ${freshStudent.tokens.accessToken}`,
           },
         });
 
+        // ASSERT: Should return empty array
         expect(response.statusCode).toBe(200);
         const body = JSON.parse(response.body);
         expect(body.assignments).toEqual([]);
@@ -236,8 +279,36 @@ describe('Student Routes E2E Tests', () => {
         expect(Array.isArray(body.assignments)).toBe(true);
       });
 
-      it.skip('should return all assignments with exam details', async () => {
-        // TODO: Implement after assignment creation works
+      it('should return all assignments with exam details', async () => {
+        // ARRANGE: Create a NEW student and assignment
+        const freshStudent = await UserMother.student(app);
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.pending({
+          examId: exam.id,
+          studentId: freshStudent.user.id,
+          teacherId: teacherId,
+        });
+
+        // ACT: Fetch assignments
+        const response = await app.inject({
+          method: 'GET',
+          url: '/students/assignments',
+          headers: {
+            authorization: `Bearer ${freshStudent.tokens.accessToken}`,
+          },
+        });
+
+        // ASSERT: Verify response
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.assignments).toBeDefined();
+        expect(Array.isArray(body.assignments)).toBe(true);
+        expect(body.assignments.length).toBeGreaterThan(0);
+
+        // Verify assignment details (should have at least the one we created)
+        const foundAssignment = body.assignments.find((a: any) => a.examId === exam.id);
+        expect(foundAssignment).toBeDefined();
+        expect(foundAssignment.status).toBe('PENDING');
       });
     });
   });
@@ -283,22 +354,113 @@ describe('Student Routes E2E Tests', () => {
         expect(body.message).toContain('Assignment not found');
       });
 
-      it.skip('should reject if assignment does not belong to student', async () => {
-        // TODO: Need to create assignment for different student
+      it('should reject if assignment does not belong to student', async () => {
+        // ARRANGE: Create another student and assignment for them
+        const otherStudent = await UserMother.student(app);
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.pending({
+          examId: exam.id,
+          studentId: otherStudent.user.id, // Different student
+          teacherId: teacherId,
+        });
+
+        // ACT: Try to start with original student token
+        const response = await app.inject({
+          method: 'POST',
+          url: `/students/assignments/${assignment.id}/start`,
+          headers: {
+            authorization: `Bearer ${studentToken}`, // Wrong student
+          },
+        });
+
+        // ASSERT: Should be forbidden
+        expect(response.statusCode).toBe(403);
+        const body = JSON.parse(response.body);
+        expect(body.message).toContain('do not have access');
       });
 
-      it.skip('should reject if assignment is not in PENDING status', async () => {
-        // TODO: Need to create and start an assignment first
+      it('should reject if assignment is not in PENDING status', async () => {
+        // ARRANGE: Create assignment already in IN_PROGRESS status
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.inProgress({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Try to start again
+        const response = await app.inject({
+          method: 'POST',
+          url: `/students/assignments/${assignment.id}/start`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+        });
+
+        // ASSERT: Should fail with business rule error
+        expect(response.statusCode).toBe(400);
+        const body = JSON.parse(response.body);
+        expect(body.message).toContain('Cannot start assignment with status');
+        expect(body.message).toContain('IN_PROGRESS');
       });
     });
 
     describe('🟢 GREEN: Success cases', () => {
-      it.skip('should start exam successfully and return IN_PROGRESS status', async () => {
-        // TODO: Implement after assignment creation works
+      it('should start exam successfully and return IN_PROGRESS status', async () => {
+        // ARRANGE: Create pending assignment
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.pending({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Start the exam
+        const response = await app.inject({
+          method: 'POST',
+          url: `/students/assignments/${assignment.id}/start`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+        });
+
+        // ASSERT: Should transition to IN_PROGRESS
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.assignment.status).toBe('IN_PROGRESS');
+        expect(body.assignment.startedAt).toBeDefined();
       });
 
-      it.skip('should set startedAt timestamp', async () => {
-        // TODO: Implement after assignment creation works
+      it('should set startedAt timestamp', async () => {
+        // ARRANGE: Create pending assignment
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.pending({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        const beforeStart = new Date();
+
+        // ACT: Start the exam
+        const response = await app.inject({
+          method: 'POST',
+          url: `/students/assignments/${assignment.id}/start`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+        });
+
+        const afterStart = new Date();
+
+        // ASSERT: startedAt should be recent
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.assignment.startedAt).toBeDefined();
+
+        const startedAt = new Date(body.assignment.startedAt);
+        expect(startedAt.getTime()).toBeGreaterThanOrEqual(beforeStart.getTime());
+        expect(startedAt.getTime()).toBeLessThanOrEqual(afterStart.getTime());
       });
     });
   });
@@ -370,22 +532,127 @@ describe('Student Routes E2E Tests', () => {
         expect(body.message).toContain('Assignment not found');
       });
 
-      it.skip('should reject if assignment is not IN_PROGRESS', async () => {
-        // TODO: Need to create assignment without starting it
+      it('should reject if assignment is not IN_PROGRESS', async () => {
+        // ARRANGE: Create PENDING assignment (not started)
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.pending({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Try to submit without starting
+        const response = await app.inject({
+          method: 'POST',
+          url: `/students/assignments/${assignment.id}/submit`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+          payload: {
+            answers: [],
+          },
+        });
+
+        // ASSERT: Should fail with business rule error
+        expect(response.statusCode).toBe(400);
+        const body = JSON.parse(response.body);
+        expect(body.message).toContain('Cannot submit assignment with status');
+        expect(body.message).toContain('PENDING');
       });
     });
 
     describe('🟢 GREEN: Success cases', () => {
-      it.skip('should submit answers and auto-grade multiple-choice questions', async () => {
-        // TODO: Implement after full flow works
+      it('should submit answers and auto-grade multiple-choice questions', async () => {
+        // ARRANGE: Create exam and start it
+        const { exam, questions } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.inProgress({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // Prepare answers (mix of correct and incorrect)
+        const answers = [
+          { questionId: questions[0].id, answerText: questions[0].correctAnswer }, // Correct
+          { questionId: questions[1].id, answerText: 'Wrong answer' }, // Incorrect
+          { questionId: questions[2].id, answerText: questions[2].correctAnswer }, // Correct
+        ];
+
+        // ACT: Submit answers
+        const response = await app.inject({
+          method: 'POST',
+          url: `/students/assignments/${assignment.id}/submit`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+          payload: {
+            answers,
+          },
+        });
+
+        // ASSERT: Should auto-grade and calculate score
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.assignment.status).toBe('SUBMITTED');
+        expect(body.assignment.score).toBeDefined();
+        expect(body.assignment.score).toBeGreaterThan(0); // 2 out of 3 correct
+        expect(body.assignment.score).toBeLessThan(100); // Not perfect
       });
 
-      it.skip('should transition to SUBMITTED status', async () => {
-        // TODO: Implement after full flow works
+      it('should transition to SUBMITTED status', async () => {
+        // ARRANGE: Create exam and start it
+        const { exam, questions } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.inProgress({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Submit answers
+        const response = await app.inject({
+          method: 'POST',
+          url: `/students/assignments/${assignment.id}/submit`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+          payload: {
+            answers: [{ questionId: questions[0].id, answerText: questions[0].correctAnswer }],
+          },
+        });
+
+        // ASSERT: Status should be SUBMITTED
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.assignment.status).toBe('SUBMITTED');
+        expect(body.assignment.submittedAt).toBeDefined();
       });
 
-      it.skip('should allow submitting with empty answers array', async () => {
-        // TODO: Implement after full flow works
+      it('should allow submitting with empty answers array', async () => {
+        // ARRANGE: Create exam and start it
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.inProgress({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Submit with no answers
+        const response = await app.inject({
+          method: 'POST',
+          url: `/students/assignments/${assignment.id}/submit`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+          payload: {
+            answers: [], // Empty submission
+          },
+        });
+
+        // ASSERT: Should accept and score as 0
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.assignment.status).toBe('SUBMITTED');
+        expect(body.assignment.score).toBe(0); // No correct answers
       });
     });
   });
@@ -431,22 +698,127 @@ describe('Student Routes E2E Tests', () => {
         expect(body.message).toContain('Assignment not found');
       });
 
-      it.skip('should reject if assignment is not graded yet', async () => {
-        // TODO: Need to create submitted but not graded assignment
+      it('should reject if assignment is not graded yet', async () => {
+        // ARRANGE: Create SUBMITTED assignment (not graded yet)
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.submitted({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Try to get results before grading
+        const response = await app.inject({
+          method: 'GET',
+          url: `/students/assignments/${assignment.id}/results`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+        });
+
+        // ASSERT: Should fail since not graded
+        expect(response.statusCode).toBe(400);
+        const body = JSON.parse(response.body);
+        expect(body.message).toContain('graded');
       });
     });
 
     describe('🟢 GREEN: Success cases', () => {
-      it.skip('should return exam results with all question details', async () => {
-        // TODO: Implement after grading works
+      it('should return exam results with all question details', async () => {
+        // ARRANGE: Create GRADED assignment with answers
+        const { exam, questions } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.graded({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Get results
+        const response = await app.inject({
+          method: 'GET',
+          url: `/students/assignments/${assignment.id}/results`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+        });
+
+        // ASSERT: Should return full results with question details
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.assignment).toBeDefined();
+        expect(body.exam).toBeDefined();
+        expect(body.results).toBeDefined();
+        expect(Array.isArray(body.results)).toBe(true);
+        expect(body.results.length).toBe(questions.length);
+
+        // Verify each result has question details
+        body.results.forEach((result: any) => {
+          expect(result.question).toBeDefined();
+          expect(result.correctAnswer).toBeDefined();
+        });
       });
 
-      it.skip('should include score and feedback', async () => {
-        // TODO: Implement after grading works
+      it('should include score and feedback', async () => {
+        // ARRANGE: Create GRADED assignment
+        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.graded({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Get results
+        const response = await app.inject({
+          method: 'GET',
+          url: `/students/assignments/${assignment.id}/results`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+        });
+
+        // ASSERT: Should include score (feedback is optional)
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.assignment.score).toBeDefined();
+        expect(typeof body.assignment.score).toBe('number');
+        expect(body.assignment.score).toBeGreaterThanOrEqual(0);
+        expect(body.assignment.score).toBeLessThanOrEqual(100);
       });
 
-      it.skip('should show correct/incorrect status for each answer', async () => {
-        // TODO: Implement after grading works
+      it('should show correct/incorrect status for each answer', async () => {
+        // ARRANGE: Create GRADED assignment with answers
+        const { exam, questions } = await ExamMother.complete({ userId: teacherId });
+        const assignment = await ExamAssignmentMother.graded({
+          examId: exam.id,
+          studentId: studentId,
+          teacherId: teacherId,
+        });
+
+        // ACT: Get results
+        const response = await app.inject({
+          method: 'GET',
+          url: `/students/assignments/${assignment.id}/results`,
+          headers: {
+            authorization: `Bearer ${studentToken}`,
+          },
+        });
+
+        // ASSERT: Each answer should have isCorrect flag
+        expect(response.statusCode).toBe(200);
+        const body = JSON.parse(response.body);
+        expect(body.results).toBeDefined();
+        expect(Array.isArray(body.results)).toBe(true);
+
+        // At least one result should exist
+        if (body.results.length > 0) {
+          body.results.forEach((result: any) => {
+            expect(result.isCorrect).toBeDefined();
+            // isCorrect can be null for unanswered questions
+            if (result.isCorrect !== null) {
+              expect(typeof result.isCorrect).toBe('boolean');
+            }
+          });
+        }
       });
     });
   });

@@ -361,7 +361,11 @@ export async function studentRoutes(fastify: FastifyInstance) {
           });
         }
 
-        if (error.message.includes('only view your own') || error.message.includes('belong to')) {
+        if (
+          error.message.includes('only view your own') ||
+          error.message.includes('only start your own') ||
+          error.message.includes('belong to')
+        ) {
           return reply.status(403).send({
             statusCode: 403,
             error: 'Forbidden',
