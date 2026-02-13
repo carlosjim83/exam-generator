@@ -14,6 +14,7 @@ export interface ExamAssignmentProps {
   studentId: UserId;
   teacherId: UserId;
   status: ExamAssignmentStatus;
+  dueDate: Date | null;
   startedAt: Date | null;
   submittedAt: Date | null;
   score: number | null;
@@ -71,6 +72,10 @@ export class ExamAssignment {
 
   get status(): ExamAssignmentStatus {
     return this.props.status;
+  }
+
+  get dueDate(): Date | null {
+    return this.props.dueDate;
   }
 
   get startedAt(): Date | null {

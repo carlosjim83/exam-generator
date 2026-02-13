@@ -6,6 +6,7 @@ export interface CreateExamAssignmentDTO {
   examId: string;
   studentId: UserId;
   teacherId: UserId;
+  dueDate?: Date;
 }
 
 export interface FindAssignmentsFilters {

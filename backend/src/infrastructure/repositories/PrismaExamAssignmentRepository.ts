@@ -70,6 +70,7 @@ export class PrismaExamAssignmentRepository implements IExamAssignmentRepository
         studentId: data.studentId.value,
         teacherId: data.teacherId.value,
         status: ExamAssignmentStatus.PENDING,
+        dueDate: data.dueDate,
       },
     });
 
@@ -104,6 +105,7 @@ export class PrismaExamAssignmentRepository implements IExamAssignmentRepository
       studentId: UserId.create(prismaAssignment.studentId),
       teacherId: UserId.create(prismaAssignment.teacherId),
       status: prismaAssignment.status as ExamAssignmentStatus,
+      dueDate: prismaAssignment.dueDate,
       startedAt: prismaAssignment.startedAt,
       submittedAt: prismaAssignment.submittedAt,
       score: prismaAssignment.score,

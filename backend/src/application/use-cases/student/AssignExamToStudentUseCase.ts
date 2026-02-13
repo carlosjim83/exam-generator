@@ -8,6 +8,7 @@ export interface AssignExamToStudentInput {
   examId: string;
   studentId: string;
   teacherId: string;
+  dueDate?: Date;
 }
 
 export class AssignExamToStudentUseCase {
@@ -53,6 +54,7 @@ export class AssignExamToStudentUseCase {
       examId: input.examId,
       studentId: UserId.create(input.studentId),
       teacherId: UserId.create(input.teacherId),
+      dueDate: input.dueDate,
     });
 
     return assignment;

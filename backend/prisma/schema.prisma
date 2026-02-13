@@ -224,6 +224,7 @@ model ExamAssignment {
   
   // Status tracking
   status      ExamAssignmentStatus @default(PENDING)
+  dueDate     DateTime?            @map("due_date")
   startedAt   DateTime?            @map("started_at")
   submittedAt DateTime?            @map("submitted_at")
   
