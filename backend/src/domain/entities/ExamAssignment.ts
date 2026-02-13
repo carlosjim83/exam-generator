@@ -133,13 +133,9 @@ export class ExamAssignment {
       throw new Error(`Cannot submit assignment with status ${this.props.status}`);
     }
 
-    if (score < 0 || score > 100) {
-      throw new Error('Score must be between 0 and 100');
-    }
-
     return ExamAssignment.create({
       ...this.props,
-      status: ExamAssignmentStatus.GRADED,
+      status: ExamAssignmentStatus.SUBMITTED,
       submittedAt: new Date(),
       score,
       updatedAt: new Date(),

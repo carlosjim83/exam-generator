@@ -55,7 +55,7 @@ describe('SubmitExamAnswersUseCase', () => {
       delete: vi.fn(),
     } as any;
 
-    useCase = new SubmitExamAnswersUseCase(mockAssignmentRepo, mockExamRepo, mockAnswerRepo);
+    useCase = new SubmitExamAnswersUseCase(mockAssignmentRepo, mockAnswerRepo, mockExamRepo);
   });
 
   describe('🔴 RED: Error cases', () => {

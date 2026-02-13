@@ -10,10 +10,20 @@ export interface GetAssignedExamsInput {
   status?: 'PENDING' | 'IN_PROGRESS' | 'SUBMITTED' | 'GRADED' | 'ALL';
 }
 
+export interface GetAssignedExamsOutput {
+  assignments: ExamAssignment[];
+  total: number;
+}
+
 export class GetAssignedExamsUseCase {
   constructor(private assignmentRepo: IExamAssignmentRepository) {}
 
-  async execute(input: GetAssignedExamsInput): Promise<ExamAssignment[]> {
+  async execute(input: GetAssignedExamsInput): Promise<GetAssignedExamsOutput> {
+    // Validate studentId
+    if (!input.studentId || input.studentId.trim().length === 0) {
+      throw new Error('studentId is required');
+    }
+
     const filters: FindAssignmentsFilters = {
       studentId: UserId.create(input.studentId),
     };
@@ -24,6 +34,9 @@ export class GetAssignedExamsUseCase {
 
     const assignments = await this.assignmentRepo.findAll(filters);
 
-    return assignments;
+    return {
+      assignments,
+      total: assignments.length,
+    };
   }
 }

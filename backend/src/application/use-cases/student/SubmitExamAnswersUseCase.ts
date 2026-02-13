@@ -2,7 +2,6 @@ import { IExamAssignmentRepository } from '../../../domain/repositories/IExamAss
 import { IStudentAnswerRepository } from '../../../domain/repositories/IStudentAnswerRepository.js';
 import { IExamRepository } from '../../../domain/repositories/IExamRepository.js';
 import { ExamAssignment } from '../../../domain/entities/ExamAssignment.js';
-import { StudentAnswer } from '../../../domain/entities/StudentAnswer.js';
 import { AssignmentId } from '../../../domain/value-objects/AssignmentId.js';
 
 export interface SubmitExamAnswersInput {
@@ -31,7 +30,12 @@ export class SubmitExamAnswersUseCase {
 
     // Verify ownership
     if (assignment.studentId.value !== input.studentId) {
-      throw new Error('You can only submit your own assignments');
+      throw new Error('Assignment does not belong to student');
+    }
+
+    // Validate assignment can be submitted
+    if (!assignment.canSubmit()) {
+      throw new Error(`Cannot submit assignment with status ${assignment.status}`);
     }
 
     // Get exam with questions
@@ -41,44 +45,38 @@ export class SubmitExamAnswersUseCase {
       throw new Error('Exam not found');
     }
 
-    if (!exam.questions || exam.questions.length === 0) {
-      throw new Error('Exam has no questions');
-    }
-
     // Validate all questions belong to exam
-    const examQuestionIds = exam.questions.map((q: any) => q.id);
+    const examQuestionIds = exam.questions?.map((q) => q.id) || [];
     for (const answer of input.answers) {
       if (!examQuestionIds.includes(answer.questionId)) {
-        throw new Error(`Question ${answer.questionId} does not belong to this exam`);
+        throw new Error(`Question ${answer.questionId} does not belong to exam`);
       }
     }
 
-    // Save answers and grade them
-    const gradedAnswers: StudentAnswer[] = [];
+    // Save answers and auto-grade multiple-choice questions
+    let totalScore = 0;
     for (const answerInput of input.answers) {
-      const question = exam.questions!.find((q: any) => q.id === answerInput.questionId);
+      const question = exam.questions?.find((q) => q.id === answerInput.questionId);
       if (!question) continue;
 
-      // Upsert answer
-      const answer = await this.answerRepo.upsert({
+      // Create answer
+      await this.answerRepo.create({
         assignmentId: assignment.id,
         questionId: answerInput.questionId,
         answerText: answerInput.answerText,
       });
 
-      // Grade answer
-      const graded = answer.grade(question.correctAnswer);
-      const updated = await this.answerRepo.update(graded);
-      gradedAnswers.push(updated);
+      // Auto-grade if multiple-choice
+      if (question.type === 'MULTIPLE_CHOICE' && question.correctAnswer) {
+        const isCorrect = answerInput.answerText.trim() === question.correctAnswer.trim();
+        if (isCorrect) {
+          totalScore += question.points;
+        }
+      }
     }
 
-    // Calculate score
-    const correctAnswers = gradedAnswers.filter((a) => a.isCorrect === true).length;
-    const totalQuestions = exam.questions!.length;
-    const score = (correctAnswers / totalQuestions) * 100;
-
     // Submit assignment with score
-    const submittedAssignment = assignment.submit(score);
+    const submittedAssignment = assignment.submit(totalScore);
 
     // Persist
     const updated = await this.assignmentRepo.update(submittedAssignment);
