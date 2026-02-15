@@ -137,5 +137,8 @@
     "language": {
       "label": "Idioma"
     }
+  },
+  "common": {
+    "withGoogle": "con Google"
   }
 }

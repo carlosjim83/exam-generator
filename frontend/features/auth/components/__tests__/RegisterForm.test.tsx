@@ -22,20 +22,24 @@ vi.mock('react-i18next', () => ({
       const translations: Record<string, string> = {
         'auth.createAccount': 'Create your account',
         'auth.getStarted': 'Get started with AI-powered exam generation',
+        'auth.signInWithGoogle': 'Sign in with Google',
+        googleAuth: 'Sign up with Google(Mock)',
         firstName: 'First Name',
         lastName: 'Last Name',
         email: 'Email',
         password: 'Password',
         confirmPassword: 'Confirm Password',
-        iAmA: 'I am a...',
+        'auth.iAmA': 'I am a...',
         'auth.teacher': 'Teacher',
         'auth.student': 'Student',
-        'auth.signUp': 'Create account',
-        'auth.signingUp': 'Creating account',
+        'auth.signUp': 'Sign up',
+        'auth.signingUp': 'Signing up',
         signIn: 'Sign in',
-        signingUpAs: 'Signing up as',
+        'auth.signingUpAs': 'Signing up as',
         'auth.alreadyHaveAccount': 'Already have an account?',
         'auth.signIn': 'Sign in',
+        'auth.orContinueWith': 'Or continue with',
+        'common.withGoogle': 'with Google',
         unexpectedError: 'An unexpected error occurred. Please try again.',
         'auth.passwordsDoNotMatch': 'Passwords do not match',
         'auth.passwordTooShort': 'Password must be at least 8 characters long',
@@ -91,7 +95,7 @@ describe('RegisterForm', () => {
     it('should render create account button', () => {
       render(<RegisterForm />);
 
-      expect(screen.getByRole('button', { name: /create account/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /^sign up$/i })).toBeInTheDocument();
     });
 
     it('should render link to login page', () => {
@@ -172,7 +176,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       const teacherButton = screen.getByRole('button', { name: /teacher/i });
@@ -227,7 +231,7 @@ describe('RegisterForm', () => {
 
       fillForm({ password: 'password123', confirmPassword: 'different123' });
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -242,7 +246,7 @@ describe('RegisterForm', () => {
 
       fillForm({ password: 'short', confirmPassword: 'short' });
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -257,7 +261,7 @@ describe('RegisterForm', () => {
 
       fillForm({ password: 'password123', confirmPassword: 'different' });
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -276,7 +280,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -300,7 +304,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -321,14 +325,14 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
-      expect(screen.getByText('Creating account...')).toBeInTheDocument();
+      expect(screen.getByText('Signing up...')).toBeInTheDocument();
       expect(submitButton).toBeDisabled();
 
       await waitFor(() => {
-        expect(screen.getByText('Create account')).toBeInTheDocument();
+        expect(screen.getByText('Sign up')).toBeInTheDocument();
       });
     });
 
@@ -339,7 +343,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       expect(screen.getByLabelText(/first name/i)).toBeDisabled();
@@ -360,7 +364,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -384,7 +388,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -404,7 +408,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -420,7 +424,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -437,7 +441,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       await waitFor(() => {
@@ -445,7 +449,7 @@ describe('RegisterForm', () => {
       });
 
       expect(submitButton).not.toBeDisabled();
-      expect(screen.getByText('Create account')).toBeInTheDocument();
+      expect(screen.getByText('Sign up')).toBeInTheDocument();
     });
   });
 
@@ -464,7 +468,7 @@ describe('RegisterForm', () => {
 
       fillForm();
 
-      const submitButton = screen.getByRole('button', { name: /create account/i });
+      const submitButton = screen.getByRole('button', { name: /^sign up$/i });
       fireEvent.click(submitButton);
 
       const oauthButton = screen.getByRole('button', { name: /sign up with google/i });

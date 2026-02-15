@@ -2,6 +2,29 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { OAuthButtons } from '../OAuthButtons';
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'auth.signIn': 'Sign in',
+        'auth.signUp': 'Sign up',
+        'common.withGoogle': 'with Google',
+        'auth.orContinueWith': 'Or continue with',
+        'auth.chooseYourRole': 'Choose Your Role',
+        'auth.signInWithGoogle': 'Sign in with Google',
+        'auth.teacher': 'Teacher',
+        'auth.teacherDescription': 'Create and manage exams for your students',
+        'auth.student': 'Student',
+        'auth.studentDescription': 'Take exams and track your progress',
+        cancel: 'Cancel',
+        'common.clickToContinue': 'Click to continue',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 // Mock window.location
 delete (window as any).location;
 window.location = { href: '' } as any;
@@ -223,7 +246,7 @@ describe('OAuthButtons', () => {
       fireEvent.click(button);
 
       // Click Cancel
-      const cancelButton = screen.getByText('Cancel');
+      const cancelButton = screen.getByRole('button', { name: /cancel/i });
       fireEvent.click(cancelButton);
 
       // Modal should close

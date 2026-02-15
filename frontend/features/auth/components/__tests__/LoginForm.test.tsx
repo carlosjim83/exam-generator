@@ -27,6 +27,10 @@ vi.mock('react-i18next', () => ({
         'auth.signingIn': 'Signing in',
         'auth.dontHaveAccount': "Don't have an account?",
         'auth.signUp': 'Create one',
+        'auth.orContinueWith': 'Or continue with',
+        'common.withGoogle': 'with Google',
+        emailPlaceholder: 'professor@university.edu',
+        passwordPlaceholder: 'Enter your password',
         unexpectedError: 'An unexpected error occurred. Please try again.',
       };
       return translations[key] || key;

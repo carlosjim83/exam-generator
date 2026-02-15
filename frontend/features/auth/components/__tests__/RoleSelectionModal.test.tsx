@@ -24,6 +24,7 @@ vi.mock('react-i18next', () => ({
         'auth.passwordTooShort': 'Password must be at least 8 characters long',
         'auth.iAmA': 'I am a...',
         'auth.signingUpAs': 'Signing up as',
+        signingUpAs: 'Signing up as', // Add this for RegisterForm
         'auth.withGoogle': 'with Google',
         'auth.with': 'with',
         cancel: 'Cancel',

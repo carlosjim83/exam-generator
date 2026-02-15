@@ -137,5 +137,8 @@
     "close": "Close",
     "retryButton": "Retry",
     "uploadDocument": "Upload"
+  },
+  "common": {
+    "withGoogle": "with Google"
   }
 }

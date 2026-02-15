@@ -126,7 +126,7 @@ export function RegisterForm() {
 
               {/* Role Toggle Selector */}
               <div className="space-y-3">
-                <label className="text-sm font-medium">{t('iAmA')}</label>
+                <label className="text-sm font-medium">{t('auth.iAmA')}</label>
                 <div className="relative flex items-center bg-muted/50 rounded-lg p-1.5">
                   {/* Sliding Indicator */}
                   <div
@@ -175,7 +175,7 @@ export function RegisterForm() {
                   >
                     <Icon className={`w-3.5 h-3.5 ${currentTheme.accentText}`} />
                     <span className={`text-xs font-medium ${currentTheme.accentText}`}>
-                      {t('signingUpAs')}{' '}
+                      {t('auth.signingUpAs')}{' '}
                       {role === 'TEACHER' ? t('auth.teacher') : t('auth.student')}
                     </span>
                   </div>
