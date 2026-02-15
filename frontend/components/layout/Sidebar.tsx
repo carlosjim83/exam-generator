@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/features/auth/context/AuthContext';
 import { LayoutDashboard, FileText, ClipboardList, Upload, Settings, LogOut } from 'lucide-react';
 
 interface NavItem {
@@ -46,6 +47,17 @@ const secondaryNavigation: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { user, logout } = useAuth();
+
+  const getUserInitials = () => {
+    if (!user) return '??';
+    return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+  };
+
+  const getUserDisplayName = () => {
+    if (!user) return 'Guest';
+    return `${user.firstName} ${user.lastName}`;
+  };
 
   const isActive = (href: string) => {
     if (href === '/dashboard') {
@@ -139,16 +151,19 @@ export function Sidebar() {
       <div className="border-t border-border p-4">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-            MT
+            {getUserInitials()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="truncate text-sm font-medium text-card-foreground">Mock Teacher</p>
-            <p className="truncate text-xs text-muted-foreground">teacher@example.com</p>
+            <p className="truncate text-sm font-medium text-card-foreground">
+              {getUserDisplayName()}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">{user?.email || ''}</p>
           </div>
           <button
+            onClick={logout}
+            aria-label={t('common:logout')}
             className="rounded-lg p-2 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
             title={t('common:logout')}
-            suppressHydrationWarning
           >
             <LogOut className="h-4 w-4" />
           </button>
