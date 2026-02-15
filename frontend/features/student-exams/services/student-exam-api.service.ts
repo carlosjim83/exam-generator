@@ -23,7 +23,7 @@ export class StudentExamAPIService {
    * Get all exams assigned to the current student
    */
   async getAssignedExams(token: string): Promise<StudentExamListItem[]> {
-    const response = await fetch(`${this.baseUrl}/student/exam-assignments`, {
+    const response = await fetch(`${this.baseUrl}/students/assignments`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -46,7 +46,7 @@ export class StudentExamAPIService {
    * Start an exam (changes status from PENDING to IN_PROGRESS)
    */
   async startExam(assignmentId: string, token: string): Promise<StartExamResponse> {
-    const response = await fetch(`${this.baseUrl}/student/exam-assignments/${assignmentId}/start`, {
+    const response = await fetch(`${this.baseUrl}/students/assignments/${assignmentId}/start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -71,20 +71,16 @@ export class StudentExamAPIService {
     answer: string,
     token: string
   ): Promise<SubmitAnswerResponse> {
-    const response = await fetch(
-      `${this.baseUrl}/student/exam-assignments/${assignmentId}/answers`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          questionId,
-          answer,
-        }),
-      }
-    );
+    const response = await fetch(`${this.baseUrl}/students/assignments/${assignmentId}/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        answers: [{ questionId, answerText: answer }],
+      }),
+    });
 
     if (!response.ok) {
       const error = await response.json();
@@ -100,16 +96,13 @@ export class StudentExamAPIService {
    * Submit the complete exam (finalize and mark as SUBMITTED)
    */
   async submitExam(assignmentId: string, token: string): Promise<SubmitExamResponse> {
-    const response = await fetch(
-      `${this.baseUrl}/student/exam-assignments/${assignmentId}/submit`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${this.baseUrl}/students/assignments/${assignmentId}/submit`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       const error = await response.json();
@@ -123,16 +116,13 @@ export class StudentExamAPIService {
    * Get exam results (only available after grading)
    */
   async getExamResults(assignmentId: string, token: string): Promise<ExamResultsData> {
-    const response = await fetch(
-      `${this.baseUrl}/student/exam-assignments/${assignmentId}/results`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await fetch(`${this.baseUrl}/students/assignments/${assignmentId}/results`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
     if (!response.ok) {
       const error = await response.json();

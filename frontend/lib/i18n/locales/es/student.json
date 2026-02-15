@@ -1,0 +1,92 @@
+{
+  "title": "Mis Exámenes",
+  "navigation": {
+    "myExams": "Mis Exámenes"
+  },
+  "welcome": {
+    "greeting": "Bienvenido de nuevo",
+    "subtitle": "Aquí están tus exámenes asignados"
+  },
+  "dashboard": {
+    "stats": {
+      "pending": "Exámenes Pendientes",
+      "inProgress": "En Progreso",
+      "completed": "Completados"
+    },
+    "sections": {
+      "pendingExams": "Exámenes Pendientes",
+      "inProgressExams": "En Progreso",
+      "completedExams": "Exámenes Completados"
+    },
+    "viewAll": "Ver todos los exámenes →",
+    "noExams": "No hay exámenes asignados aún"
+  },
+  "examList": {
+    "title": "Exámenes Asignados",
+    "noExams": "No hay exámenes asignados aún",
+    "errorLoading": "Error al cargar exámenes",
+    "assigned": "Asignado",
+    "questions": "preguntas",
+    "maxScore": "Puntaje máximo",
+    "status": {
+      "PENDING": "Pendiente",
+      "IN_PROGRESS": "En Progreso",
+      "SUBMITTED": "Enviado",
+      "GRADED": "Calificado"
+    },
+    "actions": {
+      "start": "Iniciar Examen",
+      "continue": "Continuar",
+      "viewResults": "Ver Resultados"
+    }
+  },
+  "examTaking": {
+    "ready": "¿Listo para Comenzar?",
+    "startButton": "Iniciar Examen",
+    "yourAnswer": "Tu Respuesta",
+    "saveAnswer": "Guardar Respuesta",
+    "previousQuestion": "Anterior",
+    "nextQuestion": "Siguiente",
+    "question": "Pregunta",
+    "submitExam": "Enviar Examen",
+    "confirmSubmit": "¿Estás seguro de enviar?",
+    "confirmSubmitWarning": "Esta acción no se puede deshacer.",
+    "cancel": "Cancelar",
+    "success": {
+      "title": "¡Examen Enviado Exitosamente!",
+      "message": "Tus respuestas han sido registradas."
+    },
+    "error": {
+      "title": "Error",
+      "tryAgain": "Intentar de Nuevo"
+    }
+  },
+  "examDetail": {
+    "timeRemaining": "Tiempo Restante",
+    "questions": "Preguntas",
+    "submit": "Enviar Examen",
+    "confirmSubmit": "¿Estás seguro de enviar? Esta acción no se puede deshacer."
+  },
+  "results": {
+    "title": "Resultados del Examen",
+    "score": "Puntuación",
+    "percentage": "Porcentaje",
+    "passed": "¡Felicitaciones! Aprobaste el examen.",
+    "failed": "¡Sigue practicando! Puedes mejorar.",
+    "questionBreakdown": "Desglose de Preguntas",
+    "question": "Pregunta",
+    "yourAnswer": "Tu Respuesta",
+    "correctAnswer": "Respuesta Correcta",
+    "feedback": "Comentarios",
+    "correct": "¡Correcto!",
+    "incorrect": "Incorrecto.",
+    "noResults": "No Se Encontraron Resultados",
+    "errorLoading": "Error al Cargar Resultados",
+    "correctCount": "Correctas",
+    "incorrectCount": "Incorrectas"
+  },
+  "errors": {
+    "retry": "Reintentar",
+    "noExams": "No Hay Exámenes Asignados"
+  }
+}

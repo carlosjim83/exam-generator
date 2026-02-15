@@ -17,6 +17,35 @@ vi.mock('../../hooks', () => ({
   useExamResults: vi.fn(),
 }));
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'results.title': 'Exam Results',
+        'results.score': 'Score',
+        'results.percentage': 'Percentage',
+        'results.passed': 'Great job! You passed the exam.',
+        'results.failed': 'Keep practicing! You can improve.',
+        'results.questionBreakdown': 'Question Breakdown',
+        'results.question': 'Question',
+        'results.yourAnswer': 'Your Answer',
+        'results.feedback': 'Feedback',
+        'results.correctCount': 'Correct',
+        'results.incorrectCount': 'Incorrect',
+        'results.correct': 'Correct!',
+        'results.incorrect': 'Incorrect.',
+        'results.noResults': 'No Results Found',
+        'results.errorLoading': 'Error Loading Results',
+        'examList.actions.viewResults': 'View Results',
+        'examList.actions.backToExams': 'Back to Exams',
+        'errors.retry': 'Retry',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('ExamResults', () => {
   const mockToken = 'test-jwt-token';
   const mockAssignmentId = 'assignment-123';

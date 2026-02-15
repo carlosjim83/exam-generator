@@ -49,7 +49,7 @@ describe('StudentExamAPIService', () => {
 
       // ASSERT
       expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/student/exam-assignments`,
+        `${service['baseUrl']}/students/assignments`,
         expect.objectContaining({
           method: 'GET',
           headers: {
@@ -119,7 +119,7 @@ describe('StudentExamAPIService', () => {
 
       // ASSERT
       expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/student/exam-assignments/assignment-1/start`,
+        `${service['baseUrl']}/students/assignments/assignment-1/start`,
         expect.objectContaining({
           method: 'POST',
           headers: {
@@ -156,7 +156,7 @@ describe('StudentExamAPIService', () => {
 
       // ASSERT
       expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/student/exam-assignments/assignment-1/answers`,
+        `${service['baseUrl']}/students/assignments/assignment-1/submit`,
         expect.objectContaining({
           method: 'POST',
           headers: {
@@ -164,8 +164,7 @@ describe('StudentExamAPIService', () => {
             Authorization: `Bearer ${mockToken}`,
           },
           body: JSON.stringify({
-            questionId: 'q1',
-            answer: '4',
+            answers: [{ questionId: 'q1', answerText: '4' }],
           }),
         })
       );
@@ -202,7 +201,7 @@ describe('StudentExamAPIService', () => {
 
       // ASSERT
       expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/student/exam-assignments/assignment-1/submit`,
+        `${service['baseUrl']}/students/assignments/assignment-1/submit`,
         expect.objectContaining({
           method: 'POST',
           headers: {
@@ -272,7 +271,7 @@ describe('StudentExamAPIService', () => {
 
       // ASSERT
       expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/student/exam-assignments/assignment-1/results`,
+        `${service['baseUrl']}/students/assignments/assignment-1/results`,
         expect.objectContaining({
           method: 'GET',
           headers: {

@@ -84,7 +84,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
           isLoading: false,
         });
-        router.push('/dashboard');
+        // Redirect based on user role
+        const redirectPath = response.user.role === 'STUDENT' ? '/student/exams' : '/dashboard';
+        router.push(redirectPath);
       } catch (error) {
         throw error;
       }
@@ -107,7 +109,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isAuthenticated: true,
           isLoading: false,
         });
-        router.push('/dashboard');
+        // Redirect based on user role
+        const redirectPath = response.user.role === 'STUDENT' ? '/student/exams' : '/dashboard';
+        router.push(redirectPath);
       } catch (error) {
         throw error;
       }

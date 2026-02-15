@@ -8,6 +8,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -42,6 +43,7 @@ interface ExamTakingProps {
 }
 
 export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps) {
+  const { t } = useTranslation('student');
   const {
     assignment,
     exam,
@@ -109,10 +111,8 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
       <Card className="max-w-2xl mx-auto">
         <CardContent className="flex flex-col items-center justify-center py-12">
           <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Exam Submitted Successfully!</h2>
-          <p className="text-gray-600 text-center">
-            Your answers have been recorded. You can view your results once they are graded.
-          </p>
+          <h2 className="text-2xl font-bold mb-2">{t('examTaking.success.title')}</h2>
+          <p className="text-gray-600 text-center">{t('examTaking.success.message')}</p>
         </CardContent>
       </Card>
     );
@@ -126,27 +126,27 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
           {examError ? (
             <>
               <AlertCircle className="h-16 w-16 text-red-400 mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">Error</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                {t('examTaking.error.title')}
+              </h2>
               <p className="text-gray-600 mb-6 text-center">{examError.message}</p>
-              <Button onClick={startExam}>Try Again</Button>
+              <Button onClick={startExam}>{t('examTaking.error.tryAgain')}</Button>
             </>
           ) : (
             <>
               <Play className="h-16 w-16 text-primary mb-4" />
-              <h2 className="text-2xl font-bold mb-2">Ready to Start?</h2>
-              <p className="text-gray-600 text-center mb-6">
-                Once you start the exam, the timer will begin. Make sure you&apos;re ready!
-              </p>
+              <h2 className="text-2xl font-bold mb-2">{t('examTaking.ready')}</h2>
+              <p className="text-gray-600 text-center mb-6">{t('examTaking.ready')}</p>
               <Button onClick={startExam} disabled={isStarting} size="lg">
                 {isStarting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Starting Exam...
+                    {t('examTaking.starting')}
                   </>
                 ) : (
                   <>
                     <Play className="h-4 w-4 mr-2" />
-                    Start Exam
+                    {t('examTaking.startButton')}
                   </>
                 )}
               </Button>
@@ -167,12 +167,13 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
             <div>
               <CardTitle className="text-2xl">{exam.title}</CardTitle>
               <CardDescription className="mt-1">
-                Question {currentQuestionIndex + 1} of {totalQuestions}
+                {t('examTaking.question')} {currentQuestionIndex + 1} {t('examTaking.of')}{' '}
+                {totalQuestions}
               </CardDescription>
             </div>
             <div className="text-right">
               <p className="text-sm font-medium text-gray-600">
-                {answeredCount} of {totalQuestions} answered
+                {answeredCount} of {totalQuestions} {t('examList.answered')}
               </p>
             </div>
           </div>
@@ -212,14 +213,14 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="answer">Your Answer</Label>
+            <Label htmlFor="answer">{t('examTaking.yourAnswer')}</Label>
             <Textarea
               id="answer"
-              placeholder="Type your answer here..."
+              placeholder={t('examTaking.yourAnswer')}
               value={currentAnswer}
               onChange={(e) => setCurrentAnswer(e.target.value)}
               className="min-h-[150px] resize-none"
-              aria-label="Your Answer"
+              aria-label={t('examTaking.yourAnswer')}
             />
           </div>
 
@@ -232,7 +233,7 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
           <div className="flex justify-between items-center pt-4">
             <Button variant="outline" onClick={previousQuestion} disabled={isFirstQuestion}>
               <ChevronLeft className="h-4 w-4 mr-1" />
-              Previous
+              {t('examTaking.previousQuestion')}
             </Button>
 
             <Button
@@ -248,7 +249,7 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
               ) : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Answer
+                  {t('examTaking.saveAnswer')}
                 </>
               )}
             </Button>
@@ -263,13 +264,13 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
                 ) : (
                   <>
                     <Send className="h-4 w-4 mr-2" />
-                    Submit Exam
+                    {t('examTaking.submitExam')}
                   </>
                 )}
               </Button>
             ) : (
               <Button onClick={nextQuestion}>
-                Next
+                {t('examTaking.nextQuestion')}
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             )}
@@ -281,20 +282,21 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
       <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to submit?</AlertDialogTitle>
+            <AlertDialogTitle>{t('examTaking.confirmSubmit')}</AlertDialogTitle>
             <AlertDialogDescription>
-              You have answered {answeredCount} of {totalQuestions} questions.
+              {t('examTaking.question')} {answeredCount} / {totalQuestions}
               {answeredCount < totalQuestions && (
                 <span className="block mt-2 text-amber-600 font-medium">
-                  Warning: You have {totalQuestions - answeredCount} unanswered questions.
+                  {t('examTaking.confirmSubmitWarning')}
                 </span>
               )}
-              <span className="block mt-2">This action cannot be undone.</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmSubmit}>Submit Exam</AlertDialogAction>
+            <AlertDialogCancel>{t('examTaking.cancel')}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>
+              {t('examTaking.submitExam')}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

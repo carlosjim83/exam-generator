@@ -6,6 +6,7 @@
 
 'use client';
 
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,18 +23,19 @@ interface StudentExamListProps {
 const statusConfig: Record<
   ExamAssignmentStatus,
   {
-    label: string;
+    labelKey: string;
     variant: 'default' | 'secondary' | 'destructive' | 'outline';
     icon: typeof Clock;
   }
 > = {
-  PENDING: { label: 'Pending', variant: 'secondary', icon: Clock },
-  IN_PROGRESS: { label: 'In Progress', variant: 'default', icon: PlayCircle },
-  SUBMITTED: { label: 'Submitted', variant: 'outline', icon: CheckCircle },
-  GRADED: { label: 'Graded', variant: 'default', icon: CheckCircle },
+  PENDING: { labelKey: 'examList.status.PENDING', variant: 'secondary', icon: Clock },
+  IN_PROGRESS: { labelKey: 'examList.status.IN_PROGRESS', variant: 'default', icon: PlayCircle },
+  SUBMITTED: { labelKey: 'examList.status.SUBMITTED', variant: 'outline', icon: CheckCircle },
+  GRADED: { labelKey: 'examList.status.GRADED', variant: 'default', icon: CheckCircle },
 };
 
 export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
+  const { t } = useTranslation('student');
   const { exams, loading, error, refetch } = useStudentExams(token);
 
   if (loading) {
@@ -56,10 +58,10 @@ export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <AlertCircle className="h-16 w-16 text-red-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Exams</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('examList.errorLoading')}</h3>
           <p className="text-gray-600 mb-6 text-center max-w-sm">{error.message}</p>
           <Button onClick={refetch} variant="outline">
-            Retry
+            {t('errors.retry')}
           </Button>
         </CardContent>
       </Card>
@@ -71,10 +73,8 @@ export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
           <FileText className="h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Exams Assigned</h3>
-          <p className="text-gray-600 text-center max-w-sm">
-            You don&apos;t have any exams assigned yet. Check back later!
-          </p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('examList.noExams')}</h3>
+          <p className="text-gray-600 text-center max-w-sm">{t('dashboard.noExams')}</p>
         </CardContent>
       </Card>
     );
@@ -86,28 +86,28 @@ export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
         return (
           <Button onClick={() => onExamSelect?.(exam)} size="sm">
             <PlayCircle className="h-4 w-4 mr-2" />
-            Start Exam
+            {t('examList.actions.start')}
           </Button>
         );
       case 'IN_PROGRESS':
         return (
           <Button onClick={() => onExamSelect?.(exam)} size="sm" variant="secondary">
             <PlayCircle className="h-4 w-4 mr-2" />
-            Continue Exam
+            {t('examList.actions.continue')} Exam
           </Button>
         );
       case 'SUBMITTED':
         return (
           <Button onClick={() => onExamSelect?.(exam)} size="sm" variant="outline" disabled>
             <Clock className="h-4 w-4 mr-2" />
-            Awaiting Grade
+            {t('examList.status.SUBMITTED')}
           </Button>
         );
       case 'GRADED':
         return (
           <Button onClick={() => onExamSelect?.(exam)} size="sm" variant="outline">
             <Eye className="h-4 w-4 mr-2" />
-            View Results
+            {t('examList.actions.viewResults')}
           </Button>
         );
       default:
@@ -130,7 +130,7 @@ export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
                     <CardTitle className="text-xl">{exam.examTitle}</CardTitle>
                     <Badge variant={status.variant}>
                       <StatusIcon className="h-3 w-3 mr-1" />
-                      {status.label}
+                      {t(status.labelKey)}
                     </Badge>
                   </div>
                   {exam.examDescription && (
@@ -146,19 +146,23 @@ export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
-                  <span>{exam.questionCount} questions</span>
+                  <span>
+                    {exam.questionCount} {t('examList.questions')}
+                  </span>
                 </div>
                 {exam.status === 'GRADED' && exam.score !== null && (
                   <div className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-600" />
                     <span className="font-medium">
-                      Score: {exam.score}/{exam.maxScore}
+                      {t('results.score')}: {exam.score}/{exam.maxScore}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  <span>Assigned: {new Date(exam.createdAt).toLocaleDateString()}</span>
+                  <span>
+                    {t('examList.assigned')}: {new Date(exam.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </CardContent>

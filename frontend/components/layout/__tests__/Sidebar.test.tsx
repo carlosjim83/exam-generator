@@ -20,6 +20,7 @@ vi.mock('react-i18next', () => ({
         'dashboard:navigation.myExams': 'My Exams',
         'dashboard:navigation.uploadDocument': 'Upload Document',
         'dashboard:navigation.settings': 'Settings',
+        'student:navigation.myExams': 'My Exams',
         'common:logout': 'Logout',
       };
       return translations[key] || key;

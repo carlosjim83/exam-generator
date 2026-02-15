@@ -5,15 +5,25 @@ import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { LayoutDashboard, FileText, ClipboardList, Upload, Settings, LogOut } from 'lucide-react';
+import {
+  LayoutDashboard,
+  FileText,
+  ClipboardList,
+  Upload,
+  Settings,
+  LogOut,
+  GraduationCap,
+} from 'lucide-react';
 
 interface NavItem {
   labelKey: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  roles?: Array<'TEACHER' | 'STUDENT'>; // If specified, only show for these roles
 }
 
-const navigation: NavItem[] = [
+// Teacher navigation
+const teacherNavigation: NavItem[] = [
   {
     labelKey: 'dashboard:navigation.dashboard',
     href: '/dashboard',
@@ -36,6 +46,16 @@ const navigation: NavItem[] = [
   },
 ];
 
+// Student navigation
+const studentNavigation: NavItem[] = [
+  {
+    labelKey: 'student:navigation.myExams',
+    href: '/student/exams',
+    icon: GraduationCap,
+    roles: ['STUDENT'],
+  },
+];
+
 const secondaryNavigation: NavItem[] = [
   {
     labelKey: 'dashboard:navigation.settings',
@@ -49,6 +69,21 @@ export function Sidebar() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
 
+  // Get navigation based on user role
+  const getNavigation = () => {
+    if (!user) return teacherNavigation;
+    return user.role === 'STUDENT' ? studentNavigation : teacherNavigation;
+  };
+
+  const navigation = getNavigation();
+
+  // Filter items by role if specified
+  const canShowItem = (item: NavItem) => {
+    if (!item.roles) return true;
+    if (!user) return false;
+    return item.roles.includes(user.role);
+  };
+
   const getUserInitials = () => {
     if (!user) return '??';
     return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
@@ -59,8 +94,13 @@ export function Sidebar() {
     return `${user.firstName} ${user.lastName}`;
   };
 
+  const getLogoLink = () => {
+    if (!user) return '/dashboard';
+    return user.role === 'STUDENT' ? '/student/exams' : '/dashboard';
+  };
+
   const isActive = (href: string) => {
-    if (href === '/dashboard') {
+    if (href === '/dashboard' || href === '/student/exams') {
       return pathname === href;
     }
     return pathname.startsWith(href);
@@ -70,7 +110,7 @@ export function Sidebar() {
     <div className="flex h-screen w-64 flex-col border-r border-border bg-card">
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-border px-6">
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href={getLogoLink()} className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <svg
               className="h-5 w-5 text-primary-foreground"
@@ -95,9 +135,9 @@ export function Sidebar() {
 
       {/* Navigation */}
       <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        {/* Primary Navigation */}
+        {/* Primary Navigation - filtered by role */}
         <div className="space-y-1">
-          {navigation.map((item) => {
+          {navigation.filter(canShowItem).map((item) => {
             const Icon = item.icon;
             const active = isActive(item.href);
 

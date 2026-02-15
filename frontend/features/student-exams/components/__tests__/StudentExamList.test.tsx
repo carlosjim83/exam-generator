@@ -25,6 +25,31 @@ vi.mock('next/navigation', () => ({
   }),
 }));
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'examList.errorLoading': 'Error Loading Exams',
+        'examList.noExams': 'No Exams Assigned',
+        'dashboard.noExams': 'No exams assigned yet',
+        'examList.status.PENDING': 'Pending',
+        'examList.status.IN_PROGRESS': 'In Progress',
+        'examList.status.SUBMITTED': 'Submitted',
+        'examList.status.GRADED': 'Graded',
+        'examList.actions.start': 'Start Exam',
+        'examList.actions.continue': 'Continue',
+        'examList.actions.viewResults': 'View Results',
+        'examList.questions': 'questions',
+        'examList.assigned': 'Assigned',
+        'results.score': 'Score',
+        'errors.retry': 'Retry',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('StudentExamList', () => {
   const mockToken = 'test-jwt-token';
 
@@ -102,7 +127,7 @@ describe('StudentExamList', () => {
 
       render(<StudentExamList token={mockToken} />);
 
-      expect(screen.getByText(/no exams assigned/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/no exams assigned/i)).toHaveLength(2);
     });
   });
 
