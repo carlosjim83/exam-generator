@@ -77,7 +77,14 @@
     "uploadFirstDocument": "Sube tu primer documento para comenzar",
     "modifiedAt": "Modificado {date}",
     "processingFor": "Procesando por {minutes}m",
-    "retrying": "Reintentando..."
+    "retrying": "Reintentando...",
+    "navigation": {
+      "dashboard": " Panel",
+      "myLibrary": "Mi Biblioteca",
+      "myExams": "Mis Exámenes",
+      "uploadDocument": "Subir Documento",
+      "settings": "Configuración"
+    }
   },
   "examGeneration": {
     "failedToLoadDocuments": "Error al cargar los documentos",
@@ -89,31 +96,42 @@
   "sidebar": {
     "guest": "Invitado"
   },
-  "dashboard": {
-    "status": {
-      "draft": "Sin publicar",
-      "published": "Listo",
-      "pending": "Pendiente"
-    },
-    "createFirstExam": "Crea tu primer examen a partir de un documento",
-    "uploadFirstDocument": "Sube tu primer documento para comenzar",
-    "modifiedAt": "Modificado {date}",
-    "processingFor": "Procesando por {minutes}m",
-    "retrying": "Reintentando...",
-    "navigation": {
-      "dashboard": " Panel",
-      "myLibrary": "Mi Biblioteca",
-      "myExams": "Mis Exámenes",
-      "uploadDocument": "Subir Documento",
-      "settings": "Configuración"
-    }
-  },
   "topNav": {
     "userPlaceholder": "Usuario"
   },
   "upload": {
+    "invalidFileType": "Tipo de archivo inválido. Solo se permiten archivos PDF y DOCX.",
+    "fileSizeExceeded": "El tamaño del archivo excede el límite de 10 MB.",
     "selectDocument": "Seleccionar Documento",
-    "selectDocumentDescription": "Sube un archivo PDF o DOCX para generar exámenes. Tamaño máximo: 10 MB."
+    "selectDocumentDescription": "Sube un archivo PDF o DOCX para generar exámenes. Tamaño máximo: 10 MB.",
+    "dragDrop": "Arrastra y suelta tu documento aquí",
+    "dragDropHere": "Arrastra y suelta tu documento aquí",
+    "or": "o",
+    "chooseFile": "Seleccionar archivo",
+    "uploadingBytes": "{loaded} de {total}",
+    "uploadingProgress": "Subiendo... {percentage}%",
+    "uploadSuccess": "¡Subida Exitosa!",
+    "uploadSuccessMessage": "Tu documento está siendo procesado.",
+    "uploadFailed": "Error al subir",
+    "documentDetails": "Detalles del Documento",
+    "documentDetailsDescription": "Agrega un título para ayudarte a identificar este documento",
+    "documentTitle": "Título del documento (opcional)",
+    "documentTitlePlaceholder": "ej., Capítulo 3 de Biología",
+    "documentTitleHelper": "Si se deja vacío, se usará el nombre del archivo",
+    "cancel": "Cancelar",
+    "uploadButton": "Subir",
+    "startOver": "Reiniciar",
+    "retryUpload": "Reintentar Subida",
+    "uploadDocumentDescription": "Sube un archivo PDF o DOCX para generar exámenes. Tamaño máximo: 10 MB.",
+    "supportedFormats": "Formatos soportados: PDF, DOCX • Tamaño máximo: 10 MB",
+    "uploading": "Subiendo",
+    "uploadSuccessful": "¡Subida exitosa!",
+    "uploadProcessing": "Tu documento está siendo procesado.",
+    "titlePlaceholder": "ej., Capítulo 3 de Biología",
+    "titleHint": "Si se deja vacío, se usará el nombre del archivo",
+    "close": "Cerrar",
+    "retryButton": "Reintentar",
+    "uploadDocument": "Subir"
   },
   "preferences": {
     "language": {

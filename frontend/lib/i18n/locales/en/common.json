@@ -77,7 +77,14 @@
     "uploadFirstDocument": "Upload your first document to get started",
     "modifiedAt": "Modified {date}",
     "processingFor": "Processing for {minutes}m",
-    "retrying": "Retrying..."
+    "retrying": "Retrying...",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "myLibrary": "My Library",
+      "myExams": "My Exams",
+      "uploadDocument": "Upload Document",
+      "settings": "Settings"
+    }
   },
   "examGeneration": {
     "failedToLoadDocuments": "Failed to load documents",
@@ -89,25 +96,6 @@
   "sidebar": {
     "guest": "Guest"
   },
-  "dashboard": {
-    "status": {
-      "draft": "Unpublished",
-      "published": "Ready",
-      "pending": "Pending"
-    },
-    "createFirstExam": "Create your first exam from a document",
-    "uploadFirstDocument": "Upload your first document to get started",
-    "modifiedAt": "Modified {date}",
-    "processingFor": "Processing for {minutes}m",
-    "retrying": "Retrying...",
-    "navigation": {
-      "dashboard": "Dashboard",
-      "myLibrary": "My Library",
-      "myExams": "My Exams",
-      "uploadDocument": "Upload Document",
-      "settings": "Settings"
-    }
-  },
   "topNav": {
     "userPlaceholder": "User"
   },
@@ -117,7 +105,37 @@
     }
   },
   "upload": {
+    "invalidFileType": "Invalid file type. Only PDF and DOCX files are allowed.",
+    "fileSizeExceeded": "File size exceeds 10MB limit.",
     "selectDocument": "Select Document",
-    "selectDocumentDescription": "Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB."
+    "selectDocumentDescription": "Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB.",
+    "dragDrop": "Drag & drop your document here",
+    "dragDropHere": "Drag & drop your document here",
+    "or": "or",
+    "chooseFile": "Choose File",
+    "uploadingBytes": "{loaded} of {total}",
+    "uploadingProgress": "Uploading... {percentage}%",
+    "uploadSuccess": "Upload Successful!",
+    "uploadSuccessMessage": "Your document is being processed.",
+    "uploadFailed": "Upload failed",
+    "documentDetails": "Document Details",
+    "documentDetailsDescription": "Add a title to help you identify this document",
+    "documentTitle": "Document Title (optional)",
+    "documentTitlePlaceholder": "e.g., Biology Chapter 3",
+    "documentTitleHelper": "If left empty, the filename will be used",
+    "cancel": "Cancel",
+    "uploadButton": "Upload",
+    "startOver": "Start Over",
+    "retryUpload": "Retry Upload",
+    "uploadDocumentDescription": "Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB.",
+    "supportedFormats": "Supported formats: PDF, DOCX • Max size: 10 MB",
+    "uploading": "Uploading",
+    "uploadSuccessful": "Upload successful!",
+    "uploadProcessing": "Your document is being processed.",
+    "titlePlaceholder": "e.g., Biology Chapter 3",
+    "titleHint": "If left empty, the filename will be used",
+    "close": "Close",
+    "retryButton": "Retry",
+    "uploadDocument": "Upload"
   }
 }
