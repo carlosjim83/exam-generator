@@ -18,7 +18,7 @@ interface UploadDocumentFormProps {
 type UploadStatus = 'idle' | 'uploading' | 'success' | 'error';
 
 export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
@@ -51,12 +51,12 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
     if (!allowedTypes.includes(file.type)) {
-      return t('upload:invalidFileType');
+      return t('upload.invalidFileType');
     }
 
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      return t('upload:fileSizeExceeded');
+      return t('upload.fileSizeExceeded');
     }
 
     return null;
@@ -160,8 +160,8 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
       {/* Upload Area Card */}
       <Card>
         <CardHeader>
-          <CardTitle>{t('upload:selectDocument')}</CardTitle>
-          <CardDescription>{t('upload:selectDocumentDescription')}</CardDescription>
+          <CardTitle>{t('upload.selectDocument')}</CardTitle>
+          <CardDescription>{t('upload.selectDocumentDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
           {/* File Drop Zone */}
@@ -179,11 +179,11 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-base font-medium mb-2">{t('upload:dragDropHere')}</p>
-              <p className="text-sm text-muted-foreground mb-4">{t('upload:or')}</p>
+              <p className="text-base font-medium mb-2">{t('upload.dragDropHere')}</p>
+              <p className="text-sm text-muted-foreground mb-4">{t('upload.or')}</p>
               <Button type="button" variant="secondary" size="lg">
                 <Upload className="h-4 w-4 mr-2" />
-                {t('upload:chooseFile')}
+                {t('upload.chooseFile')}
               </Button>
               <input
                 ref={fileInputRef}
@@ -228,7 +228,7 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-base truncate">{file?.name}</p>
                     <p className="text-sm text-muted-foreground">
-                      {t('upload:uploadingBytes', {
+                      {t('upload.uploadingBytes', {
                         loaded: formatFileSize(uploadProgress.loaded),
                         total: formatFileSize(uploadProgress.total),
                       })}
@@ -237,7 +237,7 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
                 </div>
                 <Progress value={uploadProgress.percentage} className="h-2" />
                 <p className="text-sm text-muted-foreground mt-3 text-center">
-                  {t('upload:uploadingProgress', { percentage: uploadProgress.percentage })}
+                  {t('upload.uploadingProgress', { percentage: uploadProgress.percentage })}
                 </p>
               </div>
             </div>
@@ -248,9 +248,9 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
             <div className="border border-green-200 bg-green-50 rounded-lg p-8 text-center">
               <CheckCircle2 className="h-16 w-16 mx-auto mb-4 text-green-600" />
               <p className="font-semibold text-lg text-green-900 mb-1">
-                {t('upload:uploadSuccess')}
+                {t('upload.uploadSuccess')}
               </p>
-              <p className="text-sm text-green-700">{t('upload:uploadSuccessMessage')}</p>
+              <p className="text-sm text-green-700">{t('upload.uploadSuccessMessage')}</p>
             </div>
           )}
 
@@ -261,7 +261,7 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
                 <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <p className="font-semibold text-base text-red-900 mb-1">
-                    {t('upload:uploadFailed')}
+                    {t('upload.uploadFailed')}
                   </p>
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
@@ -285,20 +285,20 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
       {file && uploadStatus === 'idle' && (
         <Card>
           <CardHeader>
-            <CardTitle>{t('upload:documentDetails')}</CardTitle>
-            <CardDescription>{t('upload:documentDetailsDescription')}</CardDescription>
+            <CardTitle>{t('upload.documentDetails')}</CardTitle>
+            <CardDescription>{t('upload.documentDetailsDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title">{t('upload:documentTitle')}</Label>
+              <Label htmlFor="title">{t('upload.documentTitle')}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder={t('upload:documentTitlePlaceholder')}
+                placeholder={t('upload.documentTitlePlaceholder')}
                 className="text-base"
               />
-              <p className="text-xs text-muted-foreground">{t('upload:documentTitleHelper')}</p>
+              <p className="text-xs text-muted-foreground">{t('upload.documentTitleHelper')}</p>
             </div>
           </CardContent>
         </Card>
@@ -309,11 +309,11 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
         {uploadStatus === 'idle' && file && (
           <>
             <Button type="button" variant="outline" onClick={handleRemoveFile} size="lg">
-              {t('upload:cancel')}
+              {t('upload.cancel')}
             </Button>
             <Button type="button" onClick={handleUpload} disabled={!file || !!error} size="lg">
               <Upload className="h-4 w-4 mr-2" />
-              {t('upload:uploadDocument')}
+              {t('upload.uploadDocument')}
             </Button>
           </>
         )}
@@ -321,11 +321,11 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
         {uploadStatus === 'error' && (
           <>
             <Button type="button" variant="outline" onClick={handleReset} size="lg">
-              {t('upload:startOver')}
+              {t('upload.startOver')}
             </Button>
             <Button type="button" onClick={handleUpload} size="lg">
               <Upload className="h-4 w-4 mr-2" />
-              {t('upload:retryUpload')}
+              {t('upload.retryUpload')}
             </Button>
           </>
         )}

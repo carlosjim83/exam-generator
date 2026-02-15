@@ -43,7 +43,6 @@ class ConfigManager {
       .then((config) => {
         this.apiUrl = config.apiUrl;
         this.initialized = true;
-        console.log('[ConfigManager] Initialized with API URL:', this.apiUrl);
       })
       .catch((error) => {
         console.error('[ConfigManager] Failed to initialize, using fallback:', error);

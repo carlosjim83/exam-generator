@@ -85,7 +85,7 @@ export function LoginForm() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="professor@university.edu"
+                  placeholder={t('emailPlaceholder')}
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -104,7 +104,7 @@ export function LoginForm() {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={t('passwordPlaceholder')}
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);

@@ -1,4 +1,5 @@
 {
+  "appName": "ExamForge",
   "welcome": "Bienvenido",
   "logout": "Cerrar sesión",
   "settings": "Configuración",
@@ -12,13 +13,19 @@
   "loading": "Cargando...",
   "error": "Error",
   "success": "Éxito",
+  "clickToContinue": "Haz clic para continuar",
   "email": "Correo electrónico",
   "password": "Contraseña",
+  "emailPlaceholder": "profesor@universidad.edu",
+  "passwordPlaceholder": "Ingresa tu contraseña",
   "firstName": "Nombre",
   "lastName": "Apellido",
   "confirmPassword": "Confirmar contraseña",
   "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+  "or": "o",
+  "close": "Cerrar",
   "auth": {
+    "authenticationFailed": "Error de autenticación. Por favor, inténtalo de nuevo.",
     "welcomeBack": "Bienvenido de nuevo",
     "signInToContinue": "Inicia sesión en tu cuenta para continuar",
     "createAccount": "Crea tu cuenta",
@@ -39,7 +46,9 @@
     "passwordsDoNotMatch": "Las contraseñas no coinciden",
     "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
     "iAmA": "Soy...",
-    "signingUpAs": "Registrándose como"
+    "signingUpAs": "Registrándose como",
+    "withGoogle": "con Google",
+    "with": "con"
   },
   "examDetails": {
     "examNotFound": "Examen no encontrado",
@@ -58,12 +67,53 @@
     "noExams": "Aún no hay exámenes",
     "noDocuments": "Aún no hay documentos"
   },
-  "upload": {
-    "uploadDocument": "Subir Documento",
-    "dragDrop": "Arrastra y suelta tu documento aquí",
-    "uploadSuccessful": "¡Subida exitosa!",
-    "uploadProcessing": "Tu documento está siendo procesado.",
-    "uploadFailed": "Error al subir",
-    "documentTitle": "Título del documento (opcional)"
+  "dashboard": {
+    "status": {
+      "draft": "Sin publicar",
+      "published": "Listo",
+      "pending": "Pendiente"
+    },
+    "createFirstExam": "Crea tu primer examen a partir de un documento",
+    "uploadFirstDocument": "Sube tu primer documento para comenzar",
+    "modifiedAt": "Modificado {date}",
+    "processingFor": "Procesando por {minutes}m",
+    "retrying": "Reintentando..."
+  },
+  "examGeneration": {
+    "failedToLoadDocuments": "Error al cargar los documentos",
+    "selectDocuments": "Seleccionar Documentos",
+    "configureExam": "Configurar Examen",
+    "reviewAndGenerate": "Revisar y Generar",
+    "viewResults": "Ver Resultados"
+  },
+  "sidebar": {
+    "guest": "Invitado"
+  },
+  "dashboard": {
+    "status": {
+      "draft": "Sin publicar",
+      "published": "Listo",
+      "pending": "Pendiente"
+    },
+    "createFirstExam": "Crea tu primer examen a partir de un documento",
+    "uploadFirstDocument": "Sube tu primer documento para comenzar",
+    "modifiedAt": "Modificado {date}",
+    "processingFor": "Procesando por {minutes}m",
+    "retrying": "Reintentando...",
+    "navigation": {
+      "dashboard": " Panel",
+      "myLibrary": "Mi Biblioteca",
+      "myExams": "Mis Exámenes",
+      "uploadDocument": "Subir Documento",
+      "settings": "Configuración"
+    }
+  },
+  "topNav": {
+    "userPlaceholder": "Usuario"
+  },
+  "preferences": {
+    "language": {
+      "label": "Idioma"
+    }
   }
 }

@@ -53,7 +53,7 @@ function DocumentStatusBadge({ status }: { status: string }) {
       return (
         <Badge variant="default" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
           <Clock className="h-3 w-3 mr-1" />
-          Pending
+          {t('dashboard.status.pending')}
         </Badge>
       );
     case 'FAILED':
@@ -122,9 +122,11 @@ function DocumentItem({
           <DocumentStatusBadge status={document.status} />
         </div>
         <p className="truncate text-xs text-muted-foreground">
-          Modified {dateFormatted} • {fileSizeFormatted}
+          {t('dashboard.modifiedAt', { date: dateFormatted })} • {fileSizeFormatted}
           {document.status === 'PROCESSING' && minutesSinceUpload > 0 && (
-            <span className="ml-1">• Processing for {minutesSinceUpload}m</span>
+            <span className="ml-1">
+              • {t('dashboard.processingFor', { minutes: minutesSinceUpload })}
+            </span>
           )}
         </p>
       </div>
@@ -141,7 +143,7 @@ function DocumentItem({
           {isRetrying ? (
             <>
               <Loader2 className="mr-1 h-3 w-3 animate-spin" />
-              Retrying...
+              {t('dashboard.retrying')}
             </>
           ) : (
             <>
@@ -238,9 +240,9 @@ export function RecentDocuments() {
           <Card>
             <CardContent className="p-6 text-center">
               <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No documents yet</p>
+              <p className="text-sm text-muted-foreground">{t('noContent.noDocuments')}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Upload your first document to get started
+                {t('dashboard.uploadFirstDocument')}
               </p>
             </CardContent>
           </Card>

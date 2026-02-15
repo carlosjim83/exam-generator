@@ -1,4 +1,5 @@
 {
+  "appName": "ExamForge",
   "welcome": "Welcome",
   "logout": "Sign out",
   "settings": "Settings",
@@ -12,13 +13,19 @@
   "loading": "Loading...",
   "error": "Error",
   "success": "Success",
+  "clickToContinue": "Click to continue",
   "email": "Email",
   "password": "Password",
+  "emailPlaceholder": "professor@university.edu",
+  "passwordPlaceholder": "Enter your password",
   "firstName": "First Name",
   "lastName": "Last Name",
   "confirmPassword": "Confirm Password",
   "unexpectedError": "An unexpected error occurred. Please try again.",
+  "or": "or",
+  "close": "Close",
   "auth": {
+    "authenticationFailed": "Authentication failed. Please try again.",
     "welcomeBack": "Welcome back",
     "signInToContinue": "Sign in to your account to continue",
     "createAccount": "Create your account",
@@ -39,7 +46,9 @@
     "passwordsDoNotMatch": "Passwords do not match",
     "passwordTooShort": "Password must be at least 8 characters long",
     "iAmA": "I am a...",
-    "signingUpAs": "Signing up as"
+    "signingUpAs": "Signing up as",
+    "withGoogle": "with Google",
+    "with": "with"
   },
   "examDetails": {
     "examNotFound": "Exam not found",
@@ -58,12 +67,53 @@
     "noExams": "No exams yet",
     "noDocuments": "No documents yet"
   },
-  "upload": {
-    "uploadDocument": "Upload Document",
-    "dragDrop": "Drag & drop your document here",
-    "uploadSuccessful": "Upload successful!",
-    "uploadProcessing": "Your document is being processed.",
-    "uploadFailed": "Upload failed",
-    "documentTitle": "Document Title (optional)"
+  "dashboard": {
+    "status": {
+      "draft": "Unpublished",
+      "published": "Ready",
+      "pending": "Pending"
+    },
+    "createFirstExam": "Create your first exam from a document",
+    "uploadFirstDocument": "Upload your first document to get started",
+    "modifiedAt": "Modified {date}",
+    "processingFor": "Processing for {minutes}m",
+    "retrying": "Retrying..."
+  },
+  "examGeneration": {
+    "failedToLoadDocuments": "Failed to load documents",
+    "selectDocuments": "Select Documents",
+    "configureExam": "Configure Exam",
+    "reviewAndGenerate": "Review & Generate",
+    "viewResults": "View Results"
+  },
+  "sidebar": {
+    "guest": "Guest"
+  },
+  "dashboard": {
+    "status": {
+      "draft": "Unpublished",
+      "published": "Ready",
+      "pending": "Pending"
+    },
+    "createFirstExam": "Create your first exam from a document",
+    "uploadFirstDocument": "Upload your first document to get started",
+    "modifiedAt": "Modified {date}",
+    "processingFor": "Processing for {minutes}m",
+    "retrying": "Retrying...",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "myLibrary": "My Library",
+      "myExams": "My Exams",
+      "uploadDocument": "Upload Document",
+      "settings": "Settings"
+    }
+  },
+  "topNav": {
+    "userPlaceholder": "User"
+  },
+  "preferences": {
+    "language": {
+      "label": "Language"
+    }
   }
 }

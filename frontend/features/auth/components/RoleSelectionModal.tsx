@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GraduationCap, BookOpen, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -11,6 +12,7 @@ interface RoleSelectionModalProps {
 }
 
 export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelectionModalProps) {
+  const { t } = useTranslation('common');
   const [hoveredRole, setHoveredRole] = useState<'TEACHER' | 'STUDENT' | null>(null);
 
   if (!isOpen) return null;
@@ -41,8 +43,8 @@ export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelect
 
           {/* Header */}
           <div className="text-center pt-8 pb-6 px-6">
-            <h2 className="text-3xl font-bold text-gray-900">Choose Your Role</h2>
-            <p className="text-gray-600 mt-2">Sign in with Google as a teacher or student</p>
+            <h2 className="text-3xl font-bold text-gray-900">{t('auth.chooseYourRole')}</h2>
+            <p className="text-gray-600 mt-2">{t('auth.signInWithGoogle')}</p>
           </div>
 
           {/* Role Selection Cards */}
@@ -82,8 +84,8 @@ export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelect
                 </div>
 
                 {/* Text */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Teacher</h3>
-                <p className="text-sm text-gray-600">Create and manage exams for your students</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.teacher')}</h3>
+                <p className="text-sm text-gray-600">{t('auth.teacherDescription')}</p>
 
                 {/* Badge - Always rendered to reserve space */}
                 <div
@@ -96,7 +98,7 @@ export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelect
                     }
                   `}
                 >
-                  Click to continue
+                  {t('common.clickToContinue')}
                 </div>
               </div>
             </button>
@@ -136,8 +138,8 @@ export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelect
                 </div>
 
                 {/* Text */}
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Student</h3>
-                <p className="text-sm text-gray-600">Take exams and track your progress</p>
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">{t('auth.student')}</h3>
+                <p className="text-sm text-gray-600">{t('auth.studentDescription')}</p>
 
                 {/* Badge - Always rendered to reserve space */}
                 <div
@@ -150,7 +152,7 @@ export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelect
                     }
                   `}
                 >
-                  Click to continue
+                  {t('common.clickToContinue')}
                 </div>
               </div>
             </button>
@@ -162,7 +164,7 @@ export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelect
               onClick={onClose}
               className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
             >
-              Cancel
+              {t('cancel')}
             </button>
           </div>
         </div>

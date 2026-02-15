@@ -5,6 +5,7 @@ import { Search, Bell, Sparkles, LogOut, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/features/auth/context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function TopNavigation() {
+  const { t } = useTranslation('common');
   const { user, logout } = useAuth();
 
   const getUserInitials = (firstName: string, lastName: string) => {
@@ -97,7 +99,7 @@ export function TopNavigation() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                  {user ? getUserInitials(user.firstName, user.lastName) : 'U'}
+                  {user ? getUserInitials(user.firstName, user.lastName) : t('sidebar.guest')}
                 </div>
               </Button>
             </DropdownMenuTrigger>
@@ -105,7 +107,7 @@ export function TopNavigation() {
               <DropdownMenuLabel>
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">
-                    {user ? `${user.firstName} ${user.lastName}` : 'User'}
+                    {user ? `${user.firstName} ${user.lastName}` : t('topNav.userPlaceholder')}
                   </p>
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>

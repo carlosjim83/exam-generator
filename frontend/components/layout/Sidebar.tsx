@@ -72,7 +72,7 @@ const secondaryNavigation: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const { user, logout } = useAuth();
 
   // Get navigation based on user role
@@ -96,7 +96,7 @@ export function Sidebar() {
   };
 
   const getUserDisplayName = () => {
-    if (!user) return 'Guest';
+    if (!user) return t('sidebar.guest');
     return `${user.firstName} ${user.lastName}`;
   };
 
