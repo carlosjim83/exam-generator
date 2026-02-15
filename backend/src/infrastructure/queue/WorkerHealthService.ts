@@ -305,37 +305,24 @@ export class WorkerHealthService {
     timeSinceLastActivity: number;
     isWorkerOnline: boolean;
   }): WorkerHealthStatus {
-    const {
-      activeJobs: _activeJobs,
-      waitingJobs,
-      failedJobs: _failedJobs,
-      failureRate,
-      timeSinceLastActivity,
-      isWorkerOnline,
-    } = params;
+    const { waitingJobs, failureRate, timeSinceLastActivity, isWorkerOnline } = params;
 
-    // If worker is not online (not started or shut down), it's unhealthy
-    if (!isWorkerOnline) {
-      return 'unhealthy';
-    }
-
-    // Check for unhealthy conditions (critical)
+    // Unhealthy conditions (priority 1)
+    // An idle worker (no waiting jobs) is healthy, so inactivity is only a problem if jobs are piling up.
     if (
+      !isWorkerOnline ||
       failureRate > HEALTH_CONFIG.CRITICAL_FAILURE_RATE ||
-      waitingJobs > HEALTH_CONFIG.CRITICAL_QUEUE_BACKLOG
+      waitingJobs > HEALTH_CONFIG.CRITICAL_QUEUE_BACKLOG ||
+      (waitingJobs > 0 && timeSinceLastActivity > HEALTH_CONFIG.MAX_INACTIVITY_MS)
     ) {
       return 'unhealthy';
     }
 
-    // Check for degraded conditions (warning)
-    // Note: We only check inactivity if there ARE waiting jobs
-    // An idle worker with no waiting jobs is perfectly healthy
+    // Degraded conditions (priority 2)
     if (
       failureRate > HEALTH_CONFIG.DEGRADED_FAILURE_RATE ||
       waitingJobs > HEALTH_CONFIG.DEGRADED_QUEUE_BACKLOG ||
-      (waitingJobs > 0 &&
-        timeSinceLastActivity !== Infinity &&
-        timeSinceLastActivity > HEALTH_CONFIG.MAX_DEGRADED_INACTIVITY_MS)
+      (waitingJobs > 0 && timeSinceLastActivity > HEALTH_CONFIG.MAX_DEGRADED_INACTIVITY_MS)
     ) {
       return 'degraded';
     }

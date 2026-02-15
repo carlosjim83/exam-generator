@@ -121,6 +121,7 @@ describe('WorkerHealthService - Unit Tests', () => {
 
     it('should return degraded status when failure rate exceeds threshold (>10%)', async () => {
       // Arrange: Moderate failure rate between 10% and 30%
+      await healthService.trackWorkerStart(); // Worker must be online
       vi.mocked(mockQueue.getJobCounts).mockResolvedValue({
         waiting: 0,
         active: 0,
@@ -202,7 +203,7 @@ describe('WorkerHealthService - Unit Tests', () => {
       (healthService as any).lastActivityTimestamp = Date.now() - 6 * 60 * 1000; // 6 minutes ago
 
       vi.mocked(mockQueue.getJobCounts).mockResolvedValue({
-        waiting: 0,
+        waiting: 1, // Inactivity is only unhealthy if jobs are waiting
         active: 0,
         completed: 10,
         failed: 0,
@@ -442,6 +443,7 @@ describe('WorkerHealthService - Unit Tests', () => {
   describe('isHealthy()', () => {
     it('should return true for healthy status', async () => {
       // Arrange
+      await healthService.trackWorkerStart(); // Worker must be online
       vi.mocked(mockQueue.getJobCounts).mockResolvedValue({
         waiting: 0,
         active: 1,
