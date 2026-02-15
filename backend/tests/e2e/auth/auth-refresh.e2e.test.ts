@@ -1,57 +1,28 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import Fastify, { FastifyInstance } from 'fastify';
-import { authRoutes } from '@routes/auth.routes.js';
-import { prisma } from '@config/prisma.js';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { FastifyInstance } from 'fastify';
 import { env } from '@config/env.js';
 import jwt from 'jsonwebtoken';
+import { createTestServer } from '@tests/helpers/test-server.js';
+import { UserMother } from '@tests/helpers/mothers/index.js';
 
 describe('POST /auth/refresh', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    app = Fastify({ logger: false });
-    await app.register(authRoutes);
-    await app.ready();
+    app = await createTestServer();
   });
 
   afterAll(async () => {
     await app.close();
-    await prisma.$disconnect();
-  });
-
-  // Clean up all test users before each test to avoid conflicts
-  beforeEach(async () => {
-    await prisma.user.deleteMany({
-      where: {
-        email: {
-          contains: '-refresh-test-',
-        },
-      },
-    });
   });
 
   describe('Success Cases', () => {
     it('should generate new token pair with valid refresh token', async () => {
-      // Arrange: Register a user to get a valid refresh token
-      // Use random suffix to avoid collisions even if cleanup fails
-      const uniqueEmail = `user-refresh-test-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
+      // ARRANGE: Create user via UserMother
+      const { user, tokens } = await UserMother.teacher(app);
+      const oldRefreshToken = tokens.refreshToken;
 
-      const registerResponse = await app.inject({
-        method: 'POST',
-        url: '/auth/register',
-        payload: {
-          email: uniqueEmail,
-          password: 'RefreshTest123!',
-          firstName: 'Refresh',
-          lastName: 'Test',
-          role: 'TEACHER',
-        },
-      });
-
-      expect(registerResponse.statusCode).toBe(201);
-      const { refreshToken: oldRefreshToken } = JSON.parse(registerResponse.body);
-
-      // Act: Use refresh token to get new tokens (no need to wait, tokens are always different due to iat)
+      // ACT: Use refresh token to get new tokens
       const refreshResponse = await app.inject({
         method: 'POST',
         url: '/auth/refresh',
@@ -60,7 +31,7 @@ describe('POST /auth/refresh', () => {
         },
       });
 
-      // Assert
+      // ASSERT
       expect(refreshResponse.statusCode).toBe(200);
       const refreshBody = JSON.parse(refreshResponse.body);
 
@@ -78,7 +49,7 @@ describe('POST /auth/refresh', () => {
       const decodedOld = jwt.decode(oldRefreshToken) as any;
 
       expect(decodedNew.userId).toBeDefined();
-      expect(decodedNew.email).toBe(uniqueEmail);
+      expect(decodedNew.email).toBe(user.email);
       expect(decodedNew.role).toBe('TEACHER');
 
       // Access token should have newer 'iat' (issued at) timestamp, or at minimum the same
@@ -87,41 +58,27 @@ describe('POST /auth/refresh', () => {
       // Verify new access token is valid by checking with JWT secret
       const verified = jwt.verify(refreshBody.accessToken, env.JWT_SECRET) as any;
       expect(verified.userId).toBeDefined();
-      expect(verified.email).toBe(uniqueEmail);
+      expect(verified.email).toBe(user.email);
       expect(verified.role).toBe('TEACHER');
     });
 
     it('should return user info with new tokens', async () => {
-      // Arrange: Register a user
-      const uniqueEmail = `user-refresh-test-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
+      // ARRANGE: Create student via UserMother
+      const { user, tokens } = await UserMother.student(app);
 
-      const registerResponse = await app.inject({
-        method: 'POST',
-        url: '/auth/register',
-        payload: {
-          email: uniqueEmail,
-          password: 'RefreshUserTest123!',
-          firstName: 'User',
-          lastName: 'Refresh',
-          role: 'STUDENT',
-        },
-      });
-
-      const { refreshToken } = JSON.parse(registerResponse.body);
-
-      // Act: Refresh tokens
+      // ACT: Refresh tokens
       const refreshResponse = await app.inject({
         method: 'POST',
         url: '/auth/refresh',
-        payload: { refreshToken },
+        payload: { refreshToken: tokens.refreshToken },
       });
 
-      // Assert
+      // ASSERT
       expect(refreshResponse.statusCode).toBe(200);
       const body = JSON.parse(refreshResponse.body);
 
       expect(body.user).toBeDefined();
-      expect(body.user.email).toBe(uniqueEmail);
+      expect(body.user.email).toBe(user.email);
       expect(body.user.role).toBe('STUDENT');
       expect(body.user.id).toBeDefined();
     });
@@ -199,33 +156,19 @@ describe('POST /auth/refresh', () => {
     });
 
     it('should return 401 for access token used as refresh token', async () => {
-      // Register user to get access token
-      const uniqueEmail = `user-refresh-test-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
+      // ARRANGE: Create user via UserMother
+      const { tokens } = await UserMother.teacher(app);
 
-      const registerResponse = await app.inject({
-        method: 'POST',
-        url: '/auth/register',
-        payload: {
-          email: uniqueEmail,
-          password: 'WrongToken123!',
-          firstName: 'Wrong',
-          lastName: 'Token',
-          role: 'TEACHER',
-        },
-      });
-
-      const { accessToken } = JSON.parse(registerResponse.body);
-
-      // Try to use access token as refresh token
+      // ACT: Try to use access token as refresh token
       const response = await app.inject({
         method: 'POST',
         url: '/auth/refresh',
         payload: {
-          refreshToken: accessToken, // Wrong token type!
+          refreshToken: tokens.accessToken, // Wrong token type!
         },
       });
 
-      // Should fail because access token uses different secret
+      // ASSERT: Should fail because access token uses different secret
       expect(response.statusCode).toBe(401);
     });
   });

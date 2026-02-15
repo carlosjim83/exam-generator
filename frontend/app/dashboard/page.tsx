@@ -1,5 +1,7 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { DashboardStats } from '@/features/dashboard/components/DashboardStats';
@@ -9,11 +11,37 @@ import { QuickActions } from '@/features/dashboard/components/QuickActions';
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { DashboardProvider } from '@/features/dashboard/context/DashboardContext';
+import { StudentDashboardContent } from '@/features/student-dashboard/components/StudentDashboardContent';
 
 export default function DashboardPage() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const router = useRouter();
 
+  // Redirect students to student dashboard
+  useEffect(() => {
+    if (!isLoading && user && user.role === 'STUDENT') {
+      // Student stays on /dashboard but sees student content
+      // This is optional - we could also redirect to /student/exams
+    }
+  }, [user, isLoading, router]);
+
+  // Show student dashboard for students
+  if (user?.role === 'STUDENT') {
+    return (
+      <ProtectedRoute>
+        <DashboardProvider>
+          <DashboardLayout>
+            <div className="overflow-x-hidden px-8 py-8">
+              <StudentDashboardContent />
+            </div>
+          </DashboardLayout>
+        </DashboardProvider>
+      </ProtectedRoute>
+    );
+  }
+
+  // Teacher dashboard (existing)
   return (
     <ProtectedRoute>
       <DashboardProvider>

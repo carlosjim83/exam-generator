@@ -1,0 +1,104 @@
+{
+  "title": "My Exams",
+  "navigation": {
+    "dashboard": "Control Panel",
+    "myExams": "My Exams"
+  },
+  "welcome": {
+    "greeting": "Welcome back",
+    "subtitle": "Here are your assigned exams"
+  },
+  "dashboard": {
+    "stats": {
+      "pending": "Pending Exams",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "sections": {
+      "pendingExams": "Pending Exams",
+      "inProgressExams": "In Progress",
+      "completedExams": "Completed Exams"
+    },
+    "quickActions": {
+      "title": "Quick Actions",
+      "startExam": "Start Exam",
+      "continueExam": "Continue Exam",
+      "viewResults": "View Results",
+      "viewAll": "View All Exams"
+    },
+    "viewAll": "View all exams →",
+    "noExams": "No exams assigned yet"
+  },
+  "examList": {
+    "title": "Assigned Exams",
+    "noExams": "No exams assigned yet",
+    "errorLoading": "Error Loading Exams",
+    "assigned": "Assigned",
+    "questions": "questions",
+    "answered": "answered",
+    "maxScore": "Max score",
+    "status": {
+      "PENDING": "Pending",
+      "IN_PROGRESS": "In Progress",
+      "SUBMITTED": "Submitted",
+      "GRADED": "Graded"
+    },
+    "actions": {
+      "start": "Start Exam",
+      "continue": "Continue",
+      "viewResults": "View Results",
+      "backToExams": "Back to Exams"
+    }
+  },
+  "examTaking": {
+    "ready": "Ready to Start?",
+    "starting": "Starting Exam",
+    "startButton": "Start Exam",
+    "yourAnswer": "Your Answer",
+    "saveAnswer": "Save Answer",
+    "previousQuestion": "Previous",
+    "nextQuestion": "Next",
+    "question": "Question",
+    "of": "of",
+    "submitExam": "Submit Exam",
+    "confirmSubmit": "Are you sure you want to submit?",
+    "confirmSubmitWarning": "This action cannot be undone.",
+    "cancel": "Cancel",
+    "success": {
+      "title": "Exam Submitted Successfully!",
+      "message": "Your answers have been recorded."
+    },
+    "error": {
+      "title": "Error",
+      "tryAgain": "Try Again"
+    }
+  },
+  "examDetail": {
+    "timeRemaining": "Time Remaining",
+    "questions": "Questions",
+    "submit": "Submit Exam",
+    "confirmSubmit": "Are you sure you want to submit? This action cannot be undone."
+  },
+  "results": {
+    "title": "Exam Results",
+    "score": "Score",
+    "percentage": "Percentage",
+    "passed": "Great job! You passed the exam.",
+    "failed": "Keep practicing! You can improve.",
+    "questionBreakdown": "Question Breakdown",
+    "question": "Question",
+    "yourAnswer": "Your Answer",
+    "correctAnswer": "Correct Answer",
+    "feedback": "Feedback",
+    "correct": "Correct!",
+    "incorrect": "Incorrect.",
+    "noResults": "No Results Found",
+    "errorLoading": "Error Loading Results",
+    "correctCount": "Correct",
+    "incorrectCount": "Incorrect"
+  },
+  "errors": {
+    "retry": "Retry",
+    "noExams": "No Exams Assigned"
+  }
+}

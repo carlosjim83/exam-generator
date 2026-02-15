@@ -286,6 +286,44 @@ pnpm validate
 
 ---
 
+### 9. **IMPORT PATHS - USE PATH ALIASES**
+
+**❌ AVOID relative imports:**
+
+```typescript
+import { ExamAssignment } from '../../../domain/entities/ExamAssignment.js';
+import { IExamRepository } from '../../../domain/repositories/IExamRepository.js';
+import { UserId } from '../../../domain/value-objects/UserId.js';
+```
+
+**✅ USE path aliases:**
+
+```typescript
+import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+```
+
+**Available aliases (backend):**
+
+- `@/*` → `src/*`
+- `@domain/*` → `src/domain/*`
+- `@application/*` → `src/application/*`
+- `@infrastructure/*` → `src/infrastructure/*`
+- `@config/*` → `src/config/*`
+- `@routes/*` → `src/routes/*`
+- `@middleware/*` → `src/middleware/*`
+- `@tests/*` → `tests/*`
+
+**Why?**
+
+- Easier to read and understand imports
+- No need to count `../../../` levels
+- Refactoring-friendly (moving files doesn't break imports)
+- Consistent across the codebase
+
+---
+
 ## 📋 WORKFLOW CHECKLIST
 
 Before starting work:

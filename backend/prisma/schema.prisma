@@ -33,9 +33,11 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
   
   // Relations
-  documents   Document[]
-  exams       Exam[]
-  preferences UserPreferences?
+  documents          Document[]
+  exams              Exam[]
+  preferences        UserPreferences?
+  studentAssignments ExamAssignment[] @relation("StudentAssignments")
+  teacherAssignments ExamAssignment[] @relation("TeacherAssignments")
   
   @@map("users")
 }
@@ -158,9 +160,10 @@ model Exam {
   updatedAt   DateTime   @updatedAt      @map("updated_at")
   
   // Relations
-  userId      String     @map("user_id")
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String           @map("user_id")
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions   Question[]
+  assignments ExamAssignment[]
   
   @@map("exams")
   @@index([userId])
@@ -191,6 +194,7 @@ model Question {
   // Relations
   examId         String             @map("exam_id")
   exam           Exam               @relation(fields: [examId], references: [id], onDelete: Cascade)
+  studentAnswers StudentAnswer[]
   
   @@map("questions")
   @@index([examId])
@@ -206,4 +210,74 @@ enum QuestionDifficulty {
   EASY
   MEDIUM
   HARD
+}
+
+// ============================================================================
+// Student Module - Exam Assignments
+// ============================================================================
+
+model ExamAssignment {
+  id          String               @id @default(uuid())
+  examId      String               @map("exam_id")
+  studentId   String               @map("student_id")
+  teacherId   String               @map("teacher_id")
+  
+  // Status tracking
+  status      ExamAssignmentStatus @default(PENDING)
+  dueDate     DateTime?            @map("due_date")
+  startedAt   DateTime?            @map("started_at")
+  submittedAt DateTime?            @map("submitted_at")
+  
+  // Results
+  score       Float?               // 0-100
+  feedback    String?              @db.Text
+  
+  // Relations
+  exam        Exam                 @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student     User                 @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher     User                 @relation("TeacherAssignments", fields: [teacherId], references: [id], onDelete: Cascade)
+  answers     StudentAnswer[]
+  
+  // Timestamps
+  createdAt   DateTime             @default(now()) @map("created_at")
+  updatedAt   DateTime             @updatedAt @map("updated_at")
+  
+  @@unique([examId, studentId]) // Student can only have one assignment per exam
+  @@map("exam_assignments")
+  @@index([studentId])
+  @@index([teacherId])
+  @@index([status])
+}
+
+enum ExamAssignmentStatus {
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  GRADED
+}
+
+// ============================================================================
+// Student Module - Student Answers
+// ============================================================================
+
+model StudentAnswer {
+  id           String         @id @default(uuid())
+  assignmentId String         @map("assignment_id")
+  questionId   String         @map("question_id")
+  
+  // Answer data
+  answerText   String         @db.Text @map("answer_text")
+  isCorrect    Boolean?       @map("is_correct")
+  
+  // Relations
+  assignment   ExamAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  question     Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  
+  @@unique([assignmentId, questionId]) // One answer per question per assignment
+  @@map("student_answers")
+  @@index([assignmentId])
 }

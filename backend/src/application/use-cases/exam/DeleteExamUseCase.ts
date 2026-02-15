@@ -37,7 +37,7 @@ export class DeleteExamUseCase {
     const userId = UserId.create(input.userId);
 
     // Check if exam exists and get it to verify ownership
-    const exam = await this.examRepository.findById(examId);
+    const exam = await this.examRepository.findById(examId.value);
 
     if (!exam) {
       throw new Error('Exam not found');
@@ -49,7 +49,7 @@ export class DeleteExamUseCase {
     }
 
     // Delete exam (cascade deletes questions)
-    await this.examRepository.delete(examId);
+    await this.examRepository.delete(examId.value);
 
     return {
       success: true,

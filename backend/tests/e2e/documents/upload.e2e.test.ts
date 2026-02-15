@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import FormData from 'form-data';
 import { createTestServer } from '@tests/helpers/test-server.js';
+import { UserMother } from '@tests/helpers/mothers/index.js';
 import { container } from '@config/container.js';
 import { IStorageService } from '@domain/services/IStorageService.js';
 
@@ -11,25 +12,13 @@ describe('Document Upload Route', () => {
   let storageService: IStorageService;
 
   beforeAll(async () => {
-    // Using a (yet to be created) helper to build the server with DI container
     server = await createTestServer();
 
-    // Get services from the container
-    const registerUseCase = container.registerUserUseCase;
-    const loginUseCase = container.loginUserUseCase;
+    // Get storage service from container
     storageService = container.storageService;
 
-    // Create user and get token
-    const userEmail = `upload-test-${Date.now()}@example.com`;
-    await registerUseCase.execute({
-      firstName: 'Upload',
-      lastName: 'User',
-      email: userEmail,
-      password: 'Password123!',
-      role: 'TEACHER',
-    });
-
-    const { tokens } = await loginUseCase.execute({ email: userEmail, password: 'Password123!' });
+    // Create user via UserMother
+    const { tokens } = await UserMother.teacher(server);
     authToken = tokens.accessToken;
   });
 

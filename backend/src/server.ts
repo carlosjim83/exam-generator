@@ -9,6 +9,7 @@ import { authRoutes } from './routes/auth.routes.js';
 import { oauthRoutes } from './routes/oauth.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import { examRoutes } from './routes/exam.routes.js';
+import { studentRoutes } from './routes/student.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
@@ -182,6 +183,7 @@ await fastify.register(oauthRoutes);
 await fastify.register(preferencesRoutes);
 await fastify.register(documentRoutes);
 await fastify.register(examRoutes);
+await fastify.register(studentRoutes);
 await fastify.register(dashboardRoutes);
 await fastify.register(protectedRoutes);
 

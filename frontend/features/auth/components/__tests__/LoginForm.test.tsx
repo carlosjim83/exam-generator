@@ -14,6 +14,30 @@ vi.mock('../../context/AuthContext', () => ({
   }),
 }));
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'auth.welcomeBack': 'Welcome back',
+        'auth.signInToContinue': 'Sign in to your account to continue',
+        email: 'Email',
+        password: 'Password',
+        'auth.signIn': 'Sign in',
+        'auth.signingIn': 'Signing in',
+        'auth.dontHaveAccount': "Don't have an account?",
+        'auth.signUp': 'Create one',
+        'auth.orContinueWith': 'Or continue with',
+        'common.withGoogle': 'with Google',
+        emailPlaceholder: 'professor@university.edu',
+        passwordPlaceholder: 'Enter your password',
+        unexpectedError: 'An unexpected error occurred. Please try again.',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('LoginForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -27,10 +51,10 @@ describe('LoginForm', () => {
       expect(screen.getByText('Sign in to your account to continue')).toBeInTheDocument();
     });
 
-    it('should render ExamGen SaaS logo and title', () => {
+    it('should render ExamForge logo and title', () => {
       render(<LoginForm />);
 
-      expect(screen.getByText('ExamGen SaaS')).toBeInTheDocument();
+      expect(screen.getByText('ExamForge')).toBeInTheDocument();
     });
 
     it('should render email input', () => {

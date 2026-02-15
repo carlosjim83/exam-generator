@@ -13,17 +13,11 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { createTestServer } from '@tests/helpers/test-server.js';
+import { UserMother } from '@tests/helpers/mothers/index.js';
 import { container } from '@config/container.js';
 import { prisma } from '@config/prisma.js';
 import fs from 'fs/promises';
 import path from 'path';
-
-/**
- * Helper to generate unique email for each test
- */
-function uniqueEmail(prefix: string = 'genkit-test'): string {
-  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
-}
 
 describe('Document Processing with Genkit (RAG/Embeddings)', () => {
   let server: FastifyInstance;
@@ -33,20 +27,8 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
   beforeAll(async () => {
     server = await createTestServer();
 
-    // Create user and get token
-    const userEmail = uniqueEmail('doc-genkit');
-    await container.registerUserUseCase.execute({
-      firstName: 'Genkit',
-      lastName: 'Test',
-      email: userEmail,
-      password: 'GenkitPass123!',
-      role: 'TEACHER',
-    });
-
-    const { tokens } = await container.loginUserUseCase.execute({
-      email: userEmail,
-      password: 'GenkitPass123!',
-    });
+    // Create user via UserMother
+    const { tokens } = await UserMother.teacher(server);
     authToken = tokens.accessToken;
   });
 
@@ -118,20 +100,8 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
 
   // SKIPPED: This test depends on infrastructure and has authorization issues
   it.skip("should return 403 when trying to process another user's document", async () => {
-    // Create another user
-    const otherUserEmail = uniqueEmail('other-genkit');
-    await container.registerUserUseCase.execute({
-      firstName: 'Other',
-      lastName: 'User',
-      email: otherUserEmail,
-      password: 'OtherPass123!',
-      role: 'TEACHER',
-    });
-
-    const { user: otherUser } = await container.loginUserUseCase.execute({
-      email: otherUserEmail,
-      password: 'OtherPass123!',
-    });
+    // ARRANGE: Create another user via UserMother
+    const { user: otherUser } = await UserMother.teacher(server);
 
     // Create document for other user
     const otherDoc = await prisma.document.create({
@@ -146,7 +116,7 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
       },
     });
 
-    // Try to process with original user's token
+    // ACT: Try to process with original user's token
     const response = await server.inject({
       method: 'POST',
       url: `/documents/${otherDoc.id}/process`,
@@ -155,6 +125,7 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
       },
     });
 
+    // ASSERT
     expect(response.statusCode).toBe(403);
   });
 });

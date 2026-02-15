@@ -24,6 +24,8 @@ import {
   BullMQMessageBroker, // Added
 } from '../infrastructure/index.js';
 import { PrismaExamRepository } from '../infrastructure/repositories/PrismaExamRepository.js';
+import { PrismaExamAssignmentRepository } from '../infrastructure/repositories/PrismaExamAssignmentRepository.js';
+import { PrismaStudentAnswerRepository } from '../infrastructure/repositories/PrismaStudentAnswerRepository.js';
 import { AzureOpenAIEmbeddingService } from '../infrastructure/ai/AzureOpenAIEmbeddingService.js';
 
 // Application Use Cases
@@ -46,10 +48,19 @@ import {
   DeleteExamUseCase, // Added
 } from '../application/use-cases/index.js';
 
+// Student Use Cases
+import { AssignExamToStudentUseCase } from '../application/use-cases/student/AssignExamToStudentUseCase.js';
+import { GetAssignedExamsUseCase } from '../application/use-cases/student/GetAssignedExamsUseCase.js';
+import { StartExamUseCase } from '../application/use-cases/student/StartExamUseCase.js';
+import { SubmitExamAnswersUseCase } from '../application/use-cases/student/SubmitExamAnswersUseCase.js';
+import { GetExamResultsUseCase } from '../application/use-cases/student/GetExamResultsUseCase.js';
+
 // Domain Interfaces (for type safety)
 import type { IUserRepository } from '../domain/repositories/IUserRepository.js';
 import type { IDocumentRepository } from '../domain/repositories/IDocumentRepository.js';
 import type { IExamRepository } from '../domain/repositories/IExamRepository.js';
+import type { IExamAssignmentRepository } from '../domain/repositories/IExamAssignmentRepository.js';
+import type { IStudentAnswerRepository } from '../domain/repositories/IStudentAnswerRepository.js';
 import type { IPasswordHasher } from '../domain/services/IPasswordHasher.js';
 import type { ITokenService } from '../domain/services/ITokenService.js';
 import type { IStorageService } from '../domain/services/IStorageService.js';
@@ -68,6 +79,8 @@ export class Container {
   private readonly _userRepository: IUserRepository;
   private readonly _documentRepository: IDocumentRepository;
   private readonly _examRepository: IExamRepository;
+  private readonly _examAssignmentRepository: IExamAssignmentRepository;
+  private readonly _studentAnswerRepository: IStudentAnswerRepository;
   private readonly _passwordHasher: IPasswordHasher;
   private readonly _tokenService: ITokenService;
   private readonly _storageService: IStorageService;
@@ -99,6 +112,13 @@ export class Container {
   private readonly _listExamsUseCase: ListExamsUseCase;
   private readonly _deleteExamUseCase: DeleteExamUseCase; // Added
 
+  // Application Layer - Student Use Cases
+  private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
+  private readonly _getAssignedExamsUseCase: GetAssignedExamsUseCase;
+  private readonly _startExamUseCase: StartExamUseCase;
+  private readonly _submitExamAnswersUseCase: SubmitExamAnswersUseCase;
+  private readonly _getExamResultsUseCase: GetExamResultsUseCase;
+
   private constructor() {
     // ========================================
     // INFRASTRUCTURE LAYER
@@ -113,6 +133,8 @@ export class Container {
     this._userRepository = PrismaUserRepository.create(this._prisma);
     this._documentRepository = PrismaDocumentRepository.create(this._prisma);
     this._examRepository = PrismaExamRepository.create(this._prisma);
+    this._examAssignmentRepository = PrismaExamAssignmentRepository.create(this._prisma);
+    this._studentAnswerRepository = PrismaStudentAnswerRepository.create(this._prisma);
 
     // Security Services
     this._passwordHasher = new BcryptPasswordHasher();
@@ -202,6 +224,29 @@ export class Container {
     this._listExamsUseCase = new ListExamsUseCase(this._examRepository);
 
     this._deleteExamUseCase = new DeleteExamUseCase(this._examRepository);
+
+    // Student Use Cases
+    this._assignExamToStudentUseCase = new AssignExamToStudentUseCase(
+      this._examAssignmentRepository,
+      this._examRepository,
+      this._userRepository
+    );
+
+    this._getAssignedExamsUseCase = new GetAssignedExamsUseCase(this._examAssignmentRepository);
+
+    this._startExamUseCase = new StartExamUseCase(this._examAssignmentRepository);
+
+    this._submitExamAnswersUseCase = new SubmitExamAnswersUseCase(
+      this._examAssignmentRepository,
+      this._studentAnswerRepository,
+      this._examRepository
+    );
+
+    this._getExamResultsUseCase = new GetExamResultsUseCase(
+      this._examAssignmentRepository,
+      this._studentAnswerRepository,
+      this._examRepository
+    );
   }
 
   /**
@@ -333,6 +378,28 @@ export class Container {
 
   public get deleteExamUseCase(): DeleteExamUseCase {
     return this._deleteExamUseCase;
+  }
+
+  // Student Use Cases
+
+  public get assignExamToStudentUseCase(): AssignExamToStudentUseCase {
+    return this._assignExamToStudentUseCase;
+  }
+
+  public get getAssignedExamsUseCase(): GetAssignedExamsUseCase {
+    return this._getAssignedExamsUseCase;
+  }
+
+  public get startExamUseCase(): StartExamUseCase {
+    return this._startExamUseCase;
+  }
+
+  public get submitExamAnswersUseCase(): SubmitExamAnswersUseCase {
+    return this._submitExamAnswersUseCase;
+  }
+
+  public get getExamResultsUseCase(): GetExamResultsUseCase {
+    return this._getExamResultsUseCase;
   }
 
   /**

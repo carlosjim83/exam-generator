@@ -60,7 +60,7 @@ const documentService = new ApiDocumentService();
 const examService = new ApiExamService();
 
 export function ExamGenerationWizard() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [documents, setDocuments] = useState<Document[]>([]);
   const [allDocuments, setAllDocuments] = useState<Document[]>([]); // Track all docs for better messaging
@@ -94,7 +94,7 @@ export function ExamGenerationWizard() {
       setDocuments(completedDocs);
     } catch (err) {
       console.error('Failed to load documents:', err);
-      setError('Failed to load documents');
+      setError(t('examGeneration.failedToLoadDocuments'));
     } finally {
       setLoadingDocuments(false);
     }

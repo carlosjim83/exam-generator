@@ -10,6 +10,10 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/config/vitest-global-setup.ts'],
 
+    // File parallelism - run E2E tests sequentially to avoid DB conflicts
+    fileParallelism: false, // Run test files one at a time
+    pool: 'forks', // Use process isolation for better cleanup
+
     // Coverage configuration
     coverage: {
       provider: 'v8',

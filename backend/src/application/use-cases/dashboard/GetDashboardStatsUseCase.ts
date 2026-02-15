@@ -43,7 +43,7 @@ export class GetDashboardStatsUseCase {
     // Get document and exam counts
     const [totalDocuments, totalExams] = await Promise.all([
       this.documentRepository.countByUserId(userId),
-      this.examRepository.countByUserId(userId),
+      this.examRepository.countByUserId(userId.value),
     ]);
 
     // Get most recent document for last activity

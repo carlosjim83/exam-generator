@@ -11,13 +11,10 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import Fastify, { FastifyInstance } from 'fastify';
+import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
-import jwt from 'jsonwebtoken';
-import { authRoutes } from '@routes/auth.routes.js';
-import { documentRoutes } from '@routes/document.routes.js';
-// env imported but not used - keeping for future use
-// import { env } from '@config/env.js';
+import { createTestServer } from '@tests/helpers/test-server.js';
+import { UserMother } from '@tests/helpers/mothers/index.js';
 
 const prisma = new PrismaClient();
 
@@ -27,48 +24,17 @@ describe('Document Processing Integration Tests', () => {
   let userId: string;
 
   beforeAll(async () => {
-    // Create Fastify app
-    app = Fastify({ logger: false });
+    app = await createTestServer();
 
-    // Register routes (no prefix needed - routes define their own paths)
-    await app.register(authRoutes);
-    await app.register(documentRoutes);
-
-    await app.ready();
-
-    // Clean database
-    await prisma.document.deleteMany();
-    await prisma.user.deleteMany();
-
-    // Create test user
-    const registerResponse = await app.inject({
-      method: 'POST',
-      url: '/auth/register',
-      payload: {
-        email: 'process-test@example.com',
-        password: 'TestPass123',
-        firstName: 'Process',
-        lastName: 'Tester',
-        role: 'TEACHER',
-      },
-    });
-
-    expect(registerResponse.statusCode).toBe(201);
-
-    const data = JSON.parse(registerResponse.body);
-    accessToken = data.accessToken; // Changed from data.tokens.accessToken
-
-    // Decode JWT to get userId (without verification for testing)
-    const decoded = jwt.decode(accessToken) as any;
-    userId = decoded.userId;
+    // Create user via UserMother
+    const { user, tokens } = await UserMother.teacher(app);
+    accessToken = tokens.accessToken;
+    userId = user.id;
   });
 
   afterAll(async () => {
-    // Cleanup
-    await prisma.document.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.$disconnect();
     await app.close();
+    await prisma.$disconnect();
   });
 
   beforeEach(async () => {
@@ -135,27 +101,13 @@ describe('Document Processing Integration Tests', () => {
     });
 
     it("should return 403 when trying to process another user's document", async () => {
-      // Create another user
-      const otherUserResponse = await app.inject({
-        method: 'POST',
-        url: '/auth/register',
-        payload: {
-          email: 'other-user@example.com',
-          password: 'TestPass123',
-          firstName: 'Other',
-          lastName: 'User',
-          role: 'TEACHER',
-        },
-      });
-
-      const otherUserData = JSON.parse(otherUserResponse.body);
-      const otherUserDecoded = jwt.decode(otherUserData.accessToken) as any;
-      const otherUserId = otherUserDecoded.userId;
+      // ARRANGE: Create another user via UserMother
+      const { user: otherUser } = await UserMother.teacher(app);
 
       // Create document owned by other user
       const document = await prisma.document.create({
         data: {
-          userId: otherUserId,
+          userId: otherUser.id,
           title: 'Other User Document',
           filename: 'test.pdf',
           fileSize: 1024,
@@ -165,7 +117,7 @@ describe('Document Processing Integration Tests', () => {
         },
       });
 
-      // Try to process with original user's token
+      // ACT: Try to process with original user's token
       const response = await app.inject({
         method: 'POST',
         url: `/documents/${document.id}/process`,
@@ -174,6 +126,7 @@ describe('Document Processing Integration Tests', () => {
         },
       });
 
+      // ASSERT
       expect(response.statusCode).toBe(403);
       expect(JSON.parse(response.body).message).toContain('Access denied');
     });

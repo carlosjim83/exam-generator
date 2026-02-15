@@ -2,6 +2,45 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { RoleSelectionModal } from '../RoleSelectionModal';
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'auth.authenticationFailed': 'Authentication failed. Please try again.',
+        'auth.chooseYourRole': 'Choose Your Role',
+        'auth.signInWithGoogle': 'Sign in with Google as a teacher or student',
+        'auth.teacher': 'Teacher',
+        'auth.teacherDescription': 'Create and manage exams for your students',
+        'auth.student': 'Student',
+        'auth.studentDescription': 'Take exams and track your progress',
+        'auth.orContinueWith': 'Or continue with',
+        'auth.signIn': 'Sign in',
+        'auth.signUp': 'Sign up',
+        'auth.signingIn': 'Signing in',
+        'auth.signingUp': 'Signing up',
+        'auth.authenticating': 'Signing in...',
+        'auth.passwordsDoNotMatch': 'Passwords do not match',
+        'auth.passwordTooShort': 'Password must be at least 8 characters long',
+        'auth.iAmA': 'I am a...',
+        'auth.signingUpAs': 'Signing up as',
+        signingUpAs: 'Signing up as', // Add this for RegisterForm
+        'auth.withGoogle': 'with Google',
+        'auth.with': 'with',
+        cancel: 'Cancel',
+        'common.clickToContinue': 'Click to continue',
+        'common.with': 'with',
+        'common.or': 'or',
+        close: 'Close',
+        success: 'Success',
+        welcome: 'Welcome',
+        loading: 'Loading...',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('RoleSelectionModal', () => {
   const mockOnClose = vi.fn();
   const mockOnSelectRole = vi.fn();

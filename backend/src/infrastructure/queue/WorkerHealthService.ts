@@ -99,6 +99,7 @@ export class WorkerHealthService {
   private processingTimes: number[] = []; // Store recent processing times for average calculation
   private totalJobsProcessed: number = 0;
   private isShutDown: boolean = false;
+  private workerRegistered: boolean = false; // Track if worker has started
 
   constructor(params: { workerQueueName: string; queue: Queue; redisConnection: Redis }) {
     this.queueName = params.workerQueueName;
@@ -137,7 +138,9 @@ export class WorkerHealthService {
       const failureRate = totalAttempted > 0 ? failed / totalAttempted : 0;
 
       // Determine worker online status
-      const isWorkerOnline = activeJobs.length > 0;
+      // Worker is "online" if it has been registered (started) and not shut down
+      // Having active jobs is just a bonus indicator, not a requirement
+      const isWorkerOnline = this.workerRegistered && !this.isShutDown;
 
       // Auto-track activity if we see active jobs
       const now = Date.now();
@@ -243,6 +246,8 @@ export class WorkerHealthService {
    */
   async trackWorkerStart(): Promise<void> {
     this.workerStartTime = Date.now();
+    this.workerRegistered = true;
+    this.lastActivityTimestamp = Date.now(); // Initialize last activity
   }
 
   /**
@@ -300,33 +305,24 @@ export class WorkerHealthService {
     timeSinceLastActivity: number;
     isWorkerOnline: boolean;
   }): WorkerHealthStatus {
-    const {
-      activeJobs: _activeJobs,
-      waitingJobs,
-      failedJobs: _failedJobs,
-      failureRate,
-      timeSinceLastActivity,
-      isWorkerOnline,
-    } = params;
+    const { waitingJobs, failureRate, timeSinceLastActivity, isWorkerOnline } = params;
 
-    // Check for unhealthy conditions (critical)
+    // Unhealthy conditions (priority 1)
+    // An idle worker (no waiting jobs) is healthy, so inactivity is only a problem if jobs are piling up.
     if (
+      !isWorkerOnline ||
       failureRate > HEALTH_CONFIG.CRITICAL_FAILURE_RATE ||
       waitingJobs > HEALTH_CONFIG.CRITICAL_QUEUE_BACKLOG ||
-      (timeSinceLastActivity !== Infinity &&
-        timeSinceLastActivity > HEALTH_CONFIG.MAX_INACTIVITY_MS) ||
-      (!isWorkerOnline && waitingJobs > 0)
+      (waitingJobs > 0 && timeSinceLastActivity > HEALTH_CONFIG.MAX_INACTIVITY_MS)
     ) {
       return 'unhealthy';
     }
 
-    // Check for degraded conditions (warning)
+    // Degraded conditions (priority 2)
     if (
       failureRate > HEALTH_CONFIG.DEGRADED_FAILURE_RATE ||
       waitingJobs > HEALTH_CONFIG.DEGRADED_QUEUE_BACKLOG ||
-      (timeSinceLastActivity !== Infinity &&
-        timeSinceLastActivity > HEALTH_CONFIG.MAX_DEGRADED_INACTIVITY_MS) ||
-      !isWorkerOnline
+      (waitingJobs > 0 && timeSinceLastActivity > HEALTH_CONFIG.MAX_DEGRADED_INACTIVITY_MS)
     ) {
       return 'degraded';
     }

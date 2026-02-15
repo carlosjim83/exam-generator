@@ -104,9 +104,19 @@ beforeAll(async () => {
 
   // Clean the database before test run starts
   // Delete in correct order to respect foreign key constraints:
-  // 1. Delete child tables first (documents reference users)
-  // 2. Delete parent tables last (users)
-  await prisma.$transaction([prisma.document.deleteMany(), prisma.user.deleteMany()]);
+  // 1. Delete child tables first (most dependent)
+  // 2. Delete parent tables last (least dependent)
+  await prisma.$transaction([
+    // Student module tables (most dependent)
+    prisma.studentAnswer.deleteMany(),
+    prisma.examAssignment.deleteMany(),
+    prisma.question.deleteMany(),
+    prisma.exam.deleteMany(),
+    // Document tables
+    prisma.document.deleteMany(),
+    // User table (least dependent - others reference this)
+    prisma.user.deleteMany(),
+  ]);
 });
 
 // Disconnect Prisma after all tests are done

@@ -26,7 +26,7 @@ function ExamCard({ exam }: { exam: Exam }) {
             {t(isDraft ? 'dashboard:recentExams.draft' : 'dashboard:recentExams.published')}
           </Badge>
           <span className="text-xs text-muted-foreground italic">
-            {isDraft ? 'Unpublished' : 'Ready'}
+            {isDraft ? t('dashboard.status.draft') : t('dashboard.status.published')}
           </span>
         </div>
 
@@ -103,10 +103,8 @@ export function RecentExams() {
           <Card className="col-span-2">
             <CardContent className="p-6 text-center">
               <ClipboardCheck className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">No exams yet</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Create your first exam from a document
-              </p>
+              <p className="text-sm text-muted-foreground">{t('noContent.noExams')}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t('dashboard.createFirstExam')}</p>
             </CardContent>
           </Card>
         )}

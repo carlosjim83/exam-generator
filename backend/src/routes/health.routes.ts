@@ -21,12 +21,28 @@ export async function healthRoutes(fastify: FastifyInstance) {
             properties: {
               status: { type: 'string' },
               timestamp: { type: 'string' },
-              worker: { type: 'object' },
+              api: {
+                type: 'object',
+                properties: {
+                  status: { type: 'string' },
+                },
+              },
+              worker: {
+                type: 'object',
+                properties: {
+                  status: { type: 'string' },
+                  isOnline: { type: 'boolean' },
+                  uptime: { type: 'number' },
+                  queueBacklog: { type: 'number' },
+                  failureRate: { type: 'number' },
+                },
+              },
             },
           },
           503: {
             description: 'Service degraded or unhealthy',
             type: 'object',
+            additionalProperties: true,
           },
         },
       },
@@ -86,10 +102,12 @@ export async function healthRoutes(fastify: FastifyInstance) {
           200: {
             description: 'Worker metrics',
             type: 'object',
+            additionalProperties: true, // Allow any properties in response
           },
           503: {
             description: 'Worker unhealthy',
             type: 'object',
+            additionalProperties: true,
           },
         },
       },

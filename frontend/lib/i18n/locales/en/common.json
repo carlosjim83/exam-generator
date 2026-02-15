@@ -1,4 +1,5 @@
 {
+  "appName": "ExamForge",
   "welcome": "Welcome",
   "logout": "Sign out",
   "settings": "Settings",
@@ -8,7 +9,136 @@
   "edit": "Edit",
   "delete": "Delete",
   "search": "Search",
+  "searchPlaceholder": "Search resources...",
   "loading": "Loading...",
   "error": "Error",
-  "success": "Success"
+  "success": "Success",
+  "clickToContinue": "Click to continue",
+  "email": "Email",
+  "password": "Password",
+  "emailPlaceholder": "professor@university.edu",
+  "passwordPlaceholder": "Enter your password",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "confirmPassword": "Confirm Password",
+  "unexpectedError": "An unexpected error occurred. Please try again.",
+  "or": "or",
+  "close": "Close",
+  "auth": {
+    "authenticationFailed": "Authentication failed. Please try again.",
+    "welcomeBack": "Welcome back",
+    "signInToContinue": "Sign in to your account to continue",
+    "createAccount": "Create your account",
+    "getStarted": "Get started with AI-powered exam generation",
+    "chooseYourRole": "Choose Your Role",
+    "signInWithGoogle": "Sign in with Google as a teacher or student",
+    "teacher": "Teacher",
+    "teacherDescription": "Create and manage exams for your students",
+    "student": "Student",
+    "studentDescription": "Take exams and track your progress",
+    "orContinueWith": "Or continue with",
+    "redirecting": "Redirecting in a moment...",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "authenticating": "Signing in...",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 8 characters long",
+    "iAmA": "I am a...",
+    "signingUpAs": "Signing up as",
+    "withGoogle": "with Google",
+    "with": "with"
+  },
+  "examDetails": {
+    "examNotFound": "Exam not found",
+    "created": "Created",
+    "options": "Options",
+    "explanation": "Explanation",
+    "examStatistics": "Exam Statistics",
+    "totalQuestions": "Total Questions",
+    "totalPoints": "Total Points",
+    "easyQuestions": "Easy Questions",
+    "hardQuestions": "Hard Questions",
+    "examDetailsTitle": "Exam Details",
+    "reviewExam": "Review your generated exam"
+  },
+  "noContent": {
+    "noExams": "No exams yet",
+    "noDocuments": "No documents yet"
+  },
+  "dashboard": {
+    "status": {
+      "draft": "Unpublished",
+      "published": "Ready",
+      "pending": "Pending"
+    },
+    "createFirstExam": "Create your first exam from a document",
+    "uploadFirstDocument": "Upload your first document to get started",
+    "modifiedAt": "Modified {date}",
+    "processingFor": "Processing for {minutes}m",
+    "retrying": "Retrying...",
+    "navigation": {
+      "dashboard": "Dashboard",
+      "myLibrary": "My Library",
+      "myExams": "My Exams",
+      "uploadDocument": "Upload Document",
+      "settings": "Settings"
+    }
+  },
+  "examGeneration": {
+    "failedToLoadDocuments": "Failed to load documents",
+    "selectDocuments": "Select Documents",
+    "configureExam": "Configure Exam",
+    "reviewAndGenerate": "Review & Generate",
+    "viewResults": "View Results"
+  },
+  "sidebar": {
+    "guest": "Guest"
+  },
+  "topNav": {
+    "userPlaceholder": "User"
+  },
+  "preferences": {
+    "language": {
+      "label": "Language"
+    }
+  },
+  "upload": {
+    "invalidFileType": "Invalid file type. Only PDF and DOCX files are allowed.",
+    "fileSizeExceeded": "File size exceeds 10MB limit.",
+    "selectDocument": "Select Document",
+    "selectDocumentDescription": "Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB.",
+    "dragDrop": "Drag & drop your document here",
+    "dragDropHere": "Drag & drop your document here",
+    "or": "or",
+    "chooseFile": "Choose File",
+    "uploadingBytes": "{loaded} of {total}",
+    "uploadingProgress": "Uploading... {percentage}%",
+    "uploadSuccess": "Upload Successful!",
+    "uploadSuccessMessage": "Your document is being processed.",
+    "uploadFailed": "Upload failed",
+    "documentDetails": "Document Details",
+    "documentDetailsDescription": "Add a title to help you identify this document",
+    "documentTitle": "Document Title (optional)",
+    "documentTitlePlaceholder": "e.g., Biology Chapter 3",
+    "documentTitleHelper": "If left empty, the filename will be used",
+    "cancel": "Cancel",
+    "uploadButton": "Upload",
+    "startOver": "Start Over",
+    "retryUpload": "Retry Upload",
+    "uploadDocumentDescription": "Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB.",
+    "supportedFormats": "Supported formats: PDF, DOCX • Max size: 10 MB",
+    "uploading": "Uploading",
+    "uploadSuccessful": "Upload successful!",
+    "uploadProcessing": "Your document is being processed.",
+    "titlePlaceholder": "e.g., Biology Chapter 3",
+    "titleHint": "If left empty, the filename will be used",
+    "close": "Close",
+    "retryButton": "Retry",
+    "uploadDocument": "Upload"
+  },
+  "common": {
+    "withGoogle": "with Google"
+  }
 }

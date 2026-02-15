@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ export function UploadDocumentDialog({
   onOpenChange,
   onUploadSuccess,
 }: UploadDocumentDialogProps) {
+  const { t } = useTranslation('common');
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle');
@@ -172,10 +174,8 @@ export function UploadDocumentDialog({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[525px]">
         <DialogHeader>
-          <DialogTitle>Upload Document</DialogTitle>
-          <DialogDescription>
-            Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB.
-          </DialogDescription>
+          <DialogTitle>{t('upload.uploadDocument')}</DialogTitle>
+          <DialogDescription>{t('upload.uploadDocumentDescription')}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
@@ -194,14 +194,12 @@ export function UploadDocumentDialog({
               onClick={() => fileInputRef.current?.click()}
             >
               <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-              <p className="text-sm font-medium mb-1">Drag & drop your document here</p>
-              <p className="text-xs text-muted-foreground mb-4">or</p>
+              <p className="text-sm font-medium mb-1">{t('upload.dragDrop')}</p>
+              <p className="text-xs text-muted-foreground mb-4">{t('common.or')}</p>
               <Button type="button" variant="secondary" size="sm">
-                Choose File
+                {t('upload.chooseFile')}
               </Button>
-              <p className="text-xs text-muted-foreground mt-4">
-                Supported formats: PDF, DOCX • Max size: 10 MB
-              </p>
+              <p className="text-xs text-muted-foreground mt-4">{t('upload.supportedFormats')}</p>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -252,7 +250,7 @@ export function UploadDocumentDialog({
                 </div>
                 <Progress value={uploadProgress.percentage} className="h-2" />
                 <p className="text-xs text-muted-foreground mt-2 text-center">
-                  Uploading... {uploadProgress.percentage}%
+                  {t('upload.uploading')} {uploadProgress.percentage}%
                 </p>
               </div>
             </div>
@@ -262,8 +260,8 @@ export function UploadDocumentDialog({
           {uploadStatus === 'success' && (
             <div className="border border-green-200 bg-green-50 rounded-lg p-4 text-center">
               <CheckCircle2 className="h-12 w-12 mx-auto mb-2 text-green-600" />
-              <p className="font-medium text-sm text-green-900">Upload successful!</p>
-              <p className="text-xs text-green-700 mt-1">Your document is being processed.</p>
+              <p className="font-medium text-sm text-green-900">{t('upload.uploadSuccessful')}</p>
+              <p className="text-xs text-green-700 mt-1">{t('upload.uploadProcessing')}</p>
             </div>
           )}
 
@@ -273,7 +271,7 @@ export function UploadDocumentDialog({
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-medium text-sm text-red-900">Upload failed</p>
+                  <p className="font-medium text-sm text-red-900">{t('upload.uploadFailed')}</p>
                   <p className="text-xs text-red-700 mt-1">{error}</p>
                 </div>
               </div>
@@ -283,16 +281,14 @@ export function UploadDocumentDialog({
           {/* Title Input */}
           {file && uploadStatus === 'idle' && (
             <div className="space-y-2">
-              <Label htmlFor="title">Document Title (optional)</Label>
+              <Label htmlFor="title">{t('upload.documentTitle')}</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g., Biology Chapter 3"
+                placeholder={t('upload.titlePlaceholder')}
               />
-              <p className="text-xs text-muted-foreground">
-                If left empty, the filename will be used
-              </p>
+              <p className="text-xs text-muted-foreground">{t('upload.titleHint')}</p>
             </div>
           )}
 
@@ -311,11 +307,11 @@ export function UploadDocumentDialog({
           {uploadStatus === 'idle' && (
             <>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Cancel
+                {t('cancel')}
               </Button>
               <Button type="button" onClick={handleUpload} disabled={!file || !!error}>
                 <Upload className="h-4 w-4 mr-2" />
-                Upload
+                {t('upload.uploadButton')}
               </Button>
             </>
           )}
@@ -323,10 +319,10 @@ export function UploadDocumentDialog({
           {uploadStatus === 'error' && (
             <>
               <Button type="button" variant="outline" onClick={handleClose}>
-                Close
+                {t('close')}
               </Button>
               <Button type="button" onClick={handleUpload}>
-                Retry
+                {t('upload.retryButton')}
               </Button>
             </>
           )}

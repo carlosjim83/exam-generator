@@ -1,6 +1,5 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import translation files
 import commonEN from './locales/en/common.json';
@@ -17,6 +16,8 @@ import generateEN from './locales/en/generate.json';
 import generateES from './locales/es/generate.json';
 import settingsEN from './locales/en/settings.json';
 import settingsES from './locales/es/settings.json';
+import studentEN from './locales/en/student.json';
+import studentES from './locales/es/student.json';
 
 // Define resources type
 const resources = {
@@ -28,6 +29,7 @@ const resources = {
     upload: uploadEN,
     generate: generateEN,
     settings: settingsEN,
+    student: studentEN,
   },
   es: {
     common: commonES,
@@ -37,26 +39,24 @@ const resources = {
     upload: uploadES,
     generate: generateES,
     settings: settingsES,
+    student: studentES,
   },
 } as const;
 
 i18n
-  // Detect user language (only on client side after hydration)
-  .use(LanguageDetector)
   // Pass the i18n instance to react-i18next
   .use(initReactI18next)
   // Initialize i18next
   .init({
     resources,
-    lng: typeof window === 'undefined' ? 'en' : undefined, // Force English on server
-    fallbackLng: ['en'],
+    lng: 'en', // Force 'en' on both server and client to prevent hydration mismatch
+    fallbackLng: 'en',
     defaultNS: 'common',
-    ns: ['common', 'dashboard', 'exams', 'documents', 'upload', 'generate', 'settings'],
+    ns: ['common', 'dashboard', 'exams', 'documents', 'upload', 'generate', 'settings', 'student'],
 
     detection: {
-      // Order of language detection (only used on client)
-      order: ['localStorage', 'navigator'],
-      // Cache user language selection
+      // Detect from localStorage for manual language changes
+      order: ['localStorage'],
       caches: ['localStorage'],
       lookupLocalStorage: 'i18nextLng',
     },

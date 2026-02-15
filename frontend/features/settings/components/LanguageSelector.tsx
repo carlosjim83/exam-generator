@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 import { preferencesService } from '@/lib/services/api-preferences.service';
@@ -12,20 +13,32 @@ const languages = [
 export function LanguageSelector() {
   const { i18n, t } = useTranslation('settings');
 
-  const handleLanguageChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleLanguageChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newLanguage = event.target.value as 'en' | 'es';
 
     // Update i18n immediately for instant UI feedback
     i18n.changeLanguage(newLanguage);
 
-    // Persist to API in background
-    try {
-      await preferencesService.updatePreferences({ language: newLanguage });
-    } catch (error) {
-      console.error('Failed to persist language preference:', error);
-      // Language is still changed locally even if API fails
-    }
+    // Persist to localStorage immediately
+    localStorage.setItem('i18nextLng', newLanguage);
+
+    // Also persist to API in background (not awaited - fire and forget)
+    preferencesService.updatePreferences({ language: newLanguage }).catch((error) => {
+      console.error('Failed to persist language preference to API:', error);
+    });
   };
+
+  // Listen to storage events to detect changes from other tabs/windows
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'i18nextLng' && event.newValue) {
+        i18n.changeLanguage(event.newValue);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   return (
     <div className="flex items-center gap-3">

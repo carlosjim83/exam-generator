@@ -27,7 +27,7 @@ export class ListExamsUseCase {
   async execute(input: ListExamsInput): Promise<ListExamsOutput> {
     const userId = UserId.create(input.userId);
 
-    const exams = await this.examRepository.findByUserId(userId);
+    const exams = await this.examRepository.findByUserId(userId.value);
 
     return {
       exams: exams.map((exam) => ({

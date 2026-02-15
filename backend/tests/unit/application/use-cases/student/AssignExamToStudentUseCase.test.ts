@@ -1,0 +1,241 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { AssignExamToStudentUseCase } from '@application/use-cases/student/AssignExamToStudentUseCase.js';
+import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import { Exam } from '@domain/entities/Exam.js';
+import { User } from '@domain/entities/User.js';
+
+describe('AssignExamToStudentUseCase', () => {
+  let useCase: AssignExamToStudentUseCase;
+  let mockAssignmentRepo: IExamAssignmentRepository;
+  let mockExamRepo: IExamRepository;
+  let mockUserRepo: IUserRepository;
+
+  const teacherId = '550e8400-e29b-41d4-a716-446655440001';
+  const studentId = '550e8400-e29b-41d4-a716-446655440002';
+  const examId = '550e8400-e29b-41d4-a716-446655440003';
+
+  beforeEach(() => {
+    mockAssignmentRepo = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findByStudent: vi.fn(),
+      findByExamAndStudent: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    } as any;
+
+    mockExamRepo = {
+      findById: vi.fn(),
+      findByIdWithQuestions: vi.fn(),
+      findByUserId: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      countByUserId: vi.fn(),
+    } as any;
+
+    mockUserRepo = {
+      findById: vi.fn(),
+      findByEmail: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    } as any;
+
+    useCase = new AssignExamToStudentUseCase(mockAssignmentRepo, mockExamRepo, mockUserRepo);
+  });
+
+  describe('🔴 RED: Error cases (test first)', () => {
+    it('should throw error if exam does not exist', async () => {
+      // Arrange
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(
+        useCase.execute({
+          examId,
+          studentId,
+          teacherId,
+        })
+      ).rejects.toThrow('Exam not found');
+    });
+
+    it('should throw error if teacher does not own exam', async () => {
+      // Arrange
+      const mockExam = {
+        id: examId,
+        userId: 'different-teacher-id', // Different from teacherId
+        title: 'Test Exam',
+        questionCount: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any;
+
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam);
+
+      // Act & Assert
+      await expect(
+        useCase.execute({
+          examId,
+          studentId,
+          teacherId,
+        })
+      ).rejects.toThrow('You can only assign your own exams');
+    });
+
+    it('should throw error if student does not exist', async () => {
+      // Arrange
+      const mockExam = {
+        id: examId,
+        userId: teacherId,
+        title: 'Test Exam',
+        questionCount: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any;
+
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam);
+      vi.mocked(mockUserRepo.findById).mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(
+        useCase.execute({
+          examId,
+          studentId,
+          teacherId,
+        })
+      ).rejects.toThrow('Student not found');
+    });
+  });
+
+  describe('🟢 GREEN: Success cases', () => {
+    it('should assign exam to student successfully', async () => {
+      // Arrange
+      const mockExam = {
+        id: examId,
+        userId: teacherId,
+        title: 'JavaScript Fundamentals Exam',
+        description: 'Test your JS knowledge',
+        questionCount: 15,
+        createdAt: new Date('2026-02-01T10:00:00Z'),
+        updatedAt: new Date('2026-02-01T10:00:00Z'),
+      } as any;
+
+      const mockStudent = {
+        id: studentId,
+        email: 'student@example.com',
+        role: 'STUDENT',
+        isStudent: () => true,
+      } as any;
+
+      const mockAssignment = ExamAssignment.create({
+        id: AssignmentId.create('assignment-id-1'),
+        examId,
+        studentId: UserId.create(studentId),
+        teacherId: UserId.create(teacherId),
+        status: 'PENDING',
+        dueDate: null,
+        startedAt: null,
+        submittedAt: null,
+        score: null,
+        feedback: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam);
+      vi.mocked(mockUserRepo.findById).mockResolvedValue(mockStudent);
+      vi.mocked(mockAssignmentRepo.findByExamAndStudent).mockResolvedValue(null);
+      vi.mocked(mockAssignmentRepo.create).mockResolvedValue(mockAssignment);
+
+      // Act
+      const result = await useCase.execute({
+        examId,
+        studentId,
+        teacherId,
+      });
+
+      // Assert
+      expect(result).toBeDefined();
+      expect(result.examId).toBe(examId);
+      expect(result.studentId.value).toBe(studentId);
+      expect(result.status).toBe('PENDING');
+
+      expect(mockExamRepo.findById).toHaveBeenCalledWith(examId);
+      expect(mockUserRepo.findById).toHaveBeenCalledWith(
+        expect.objectContaining({ value: studentId })
+      );
+      expect(mockAssignmentRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          examId,
+          studentId: expect.objectContaining({ value: studentId }),
+          teacherId: expect.objectContaining({ value: teacherId }),
+          dueDate: undefined,
+        })
+      );
+    });
+
+    it('should assign with optional due date', async () => {
+      // Arrange
+      const dueDate = new Date('2026-03-01T23:59:59Z');
+
+      const mockExam = {
+        id: examId,
+        userId: teacherId,
+        title: 'Test Exam',
+        questionCount: 10,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as any;
+
+      const mockStudent = {
+        id: studentId,
+        email: 'student@example.com',
+        role: 'STUDENT',
+        isStudent: () => true,
+      } as any;
+
+      const mockAssignment = ExamAssignment.create({
+        id: AssignmentId.create('assignment-id-2'),
+        examId,
+        studentId: UserId.create(studentId),
+        teacherId: UserId.create(teacherId),
+        status: 'PENDING',
+        dueDate,
+        startedAt: null,
+        submittedAt: null,
+        score: null,
+        feedback: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam);
+      vi.mocked(mockUserRepo.findById).mockResolvedValue(mockStudent);
+      vi.mocked(mockAssignmentRepo.findByExamAndStudent).mockResolvedValue(null);
+      vi.mocked(mockAssignmentRepo.create).mockResolvedValue(mockAssignment);
+
+      // Act
+      const result = await useCase.execute({
+        examId,
+        studentId,
+        teacherId,
+        dueDate,
+      });
+
+      // Assert
+      expect(result).toBeDefined();
+      expect(result.dueDate).toEqual(dueDate);
+      expect(mockAssignmentRepo.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          dueDate,
+        })
+      );
+    });
+  });
+});

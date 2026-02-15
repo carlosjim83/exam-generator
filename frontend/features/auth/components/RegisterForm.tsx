@@ -2,15 +2,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
-import { Sparkles, AlertCircle, GraduationCap, BookOpen } from 'lucide-react';
+import { AlertCircle, GraduationCap, BookOpen } from 'lucide-react';
 import { OAuthButtons } from './OAuthButtons';
 
 export function RegisterForm() {
+  const { t } = useTranslation('common');
   const { register } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -29,12 +31,12 @@ export function RegisterForm() {
 
     // Client-side validation
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError(t('auth.passwordTooShort'));
       return;
     }
 
@@ -50,7 +52,7 @@ export function RegisterForm() {
           setError(err.message);
         }
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError(t('unexpectedError'));
       }
     } finally {
       setIsLoading(false);
@@ -87,18 +89,28 @@ export function RegisterForm() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div
-            className={`flex items-center justify-center w-12 h-12 rounded-lg ${currentTheme.accent} transition-colors duration-300`}
-          >
-            <Sparkles className="w-7 h-7 text-white" />
+          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
+            <svg
+              className="w-7 h-7 text-white"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+              />
+            </svg>
           </div>
-          <h1 className="text-3xl font-bold">ExamGen SaaS</h1>
+          <h1 className="text-3xl font-bold">ExamForge</h1>
         </div>
 
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl">Create your account</CardTitle>
-            <CardDescription>Get started with AI-powered exam generation</CardDescription>
+            <CardTitle className="text-2xl">{t('auth.createAccount')}</CardTitle>
+            <CardDescription>{t('auth.getStarted')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -114,7 +126,7 @@ export function RegisterForm() {
 
               {/* Role Toggle Selector */}
               <div className="space-y-3">
-                <label className="text-sm font-medium">I am a...</label>
+                <label className="text-sm font-medium">{t('auth.iAmA')}</label>
                 <div className="relative flex items-center bg-muted/50 rounded-lg p-1.5">
                   {/* Sliding Indicator */}
                   <div
@@ -137,7 +149,7 @@ export function RegisterForm() {
                     }`}
                   >
                     <GraduationCap className="w-4 h-4" />
-                    <span>Teacher</span>
+                    <span>{t('auth.teacher')}</span>
                   </button>
 
                   {/* Student Button */}
@@ -152,7 +164,7 @@ export function RegisterForm() {
                     }`}
                   >
                     <BookOpen className="w-4 h-4" />
-                    <span>Student</span>
+                    <span>{t('auth.student')}</span>
                   </button>
                 </div>
 
@@ -163,7 +175,8 @@ export function RegisterForm() {
                   >
                     <Icon className={`w-3.5 h-3.5 ${currentTheme.accentText}`} />
                     <span className={`text-xs font-medium ${currentTheme.accentText}`}>
-                      Signing up as {role === 'TEACHER' ? 'Teacher' : 'Student'}
+                      {t('auth.signingUpAs')}{' '}
+                      {role === 'TEACHER' ? t('auth.teacher') : t('auth.student')}
                     </span>
                   </div>
                 </div>
@@ -172,7 +185,7 @@ export function RegisterForm() {
               {/* First Name Input */}
               <div className="space-y-2">
                 <label htmlFor="firstName" className="text-sm font-medium">
-                  First Name
+                  {t('firstName')}
                 </label>
                 <Input
                   id="firstName"
@@ -192,7 +205,7 @@ export function RegisterForm() {
               {/* Last Name Input */}
               <div className="space-y-2">
                 <label htmlFor="lastName" className="text-sm font-medium">
-                  Last Name
+                  {t('lastName')}
                 </label>
                 <Input
                   id="lastName"
@@ -212,7 +225,7 @@ export function RegisterForm() {
               {/* Email Input */}
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
-                  Email
+                  {t('email')}
                 </label>
                 <Input
                   id="email"
@@ -234,7 +247,7 @@ export function RegisterForm() {
               {/* Password Input */}
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">
-                  Password
+                  {t('password')}
                 </label>
                 <Input
                   id="password"
@@ -254,7 +267,7 @@ export function RegisterForm() {
               {/* Confirm Password Input */}
               <div className="space-y-2">
                 <label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm Password
+                  {t('confirmPassword')}
                 </label>
                 <Input
                   id="confirmPassword"
@@ -275,17 +288,17 @@ export function RegisterForm() {
                 size="lg"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating account...' : 'Create account'}
+                {isLoading ? t('auth.signingUp') + '...' : t('auth.signUp')}
               </Button>
 
               {/* Login Link */}
               <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <Link
                   href="/login"
                   className={`font-medium ${currentTheme.accentText} hover:underline transition-colors duration-200`}
                 >
-                  Sign in
+                  {t('auth.signIn')}
                 </Link>
               </p>
             </form>
