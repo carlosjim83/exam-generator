@@ -49,6 +49,12 @@ const teacherNavigation: NavItem[] = [
 // Student navigation
 const studentNavigation: NavItem[] = [
   {
+    labelKey: 'student:navigation.dashboard',
+    href: '/dashboard',
+    icon: LayoutDashboard,
+    roles: ['STUDENT'],
+  },
+  {
     labelKey: 'student:navigation.myExams',
     href: '/student/exams',
     icon: GraduationCap,

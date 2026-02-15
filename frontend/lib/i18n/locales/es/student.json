@@ -1,6 +1,7 @@
 {
   "title": "Mis Exámenes",
   "navigation": {
+    "dashboard": "Panel",
     "myExams": "Mis Exámenes"
   },
   "welcome": {
