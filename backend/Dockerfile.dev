@@ -1,0 +1,43 @@
+# ================================
+# Backend Development Dockerfile
+# ================================
+# Hot reload enabled via tsx watch
+# Build context: project root (monorepo)
+FROM node:20-alpine
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+
+# Install development tools
+RUN apk add --no-cache dumb-init
+
+WORKDIR /app
+
+# Copy workspace configuration (monorepo setup)
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY backend/package.json ./backend/
+COPY packages ./packages
+
+# Install dependencies for backend workspace
+RUN pnpm install --frozen-lockfile --filter=@exam-generator/backend...
+
+# Copy Prisma schema
+COPY backend/prisma ./backend/prisma
+
+WORKDIR /app/backend
+
+# Generate Prisma Client
+RUN pnpm prisma generate
+
+# Copy backend source code
+COPY backend ./
+
+# Expose port
+EXPOSE 3001
+
+# Use dumb-init for proper signal handling
+ENTRYPOINT ["dumb-init", "--"]
+
+# Start with hot reload using tsx watch
+# Run migrations then start dev server
+CMD ["sh", "-c", "pnpm prisma migrate deploy && pnpm dev"]

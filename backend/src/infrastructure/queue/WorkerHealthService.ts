@@ -99,6 +99,7 @@ export class WorkerHealthService {
   private processingTimes: number[] = []; // Store recent processing times for average calculation
   private totalJobsProcessed: number = 0;
   private isShutDown: boolean = false;
+  private workerRegistered: boolean = false; // Track if worker has started
 
   constructor(params: { workerQueueName: string; queue: Queue; redisConnection: Redis }) {
     this.queueName = params.workerQueueName;
@@ -137,7 +138,9 @@ export class WorkerHealthService {
       const failureRate = totalAttempted > 0 ? failed / totalAttempted : 0;
 
       // Determine worker online status
-      const isWorkerOnline = activeJobs.length > 0;
+      // Worker is "online" if it has been registered (started) and not shut down
+      // Having active jobs is just a bonus indicator, not a requirement
+      const isWorkerOnline = this.workerRegistered && !this.isShutDown;
 
       // Auto-track activity if we see active jobs
       const now = Date.now();
@@ -243,6 +246,8 @@ export class WorkerHealthService {
    */
   async trackWorkerStart(): Promise<void> {
     this.workerStartTime = Date.now();
+    this.workerRegistered = true;
+    this.lastActivityTimestamp = Date.now(); // Initialize last activity
   }
 
   /**
@@ -309,24 +314,28 @@ export class WorkerHealthService {
       isWorkerOnline,
     } = params;
 
+    // If worker is not online (not started or shut down), it's unhealthy
+    if (!isWorkerOnline) {
+      return 'unhealthy';
+    }
+
     // Check for unhealthy conditions (critical)
     if (
       failureRate > HEALTH_CONFIG.CRITICAL_FAILURE_RATE ||
-      waitingJobs > HEALTH_CONFIG.CRITICAL_QUEUE_BACKLOG ||
-      (timeSinceLastActivity !== Infinity &&
-        timeSinceLastActivity > HEALTH_CONFIG.MAX_INACTIVITY_MS) ||
-      (!isWorkerOnline && waitingJobs > 0)
+      waitingJobs > HEALTH_CONFIG.CRITICAL_QUEUE_BACKLOG
     ) {
       return 'unhealthy';
     }
 
     // Check for degraded conditions (warning)
+    // Note: We only check inactivity if there ARE waiting jobs
+    // An idle worker with no waiting jobs is perfectly healthy
     if (
       failureRate > HEALTH_CONFIG.DEGRADED_FAILURE_RATE ||
       waitingJobs > HEALTH_CONFIG.DEGRADED_QUEUE_BACKLOG ||
-      (timeSinceLastActivity !== Infinity &&
-        timeSinceLastActivity > HEALTH_CONFIG.MAX_DEGRADED_INACTIVITY_MS) ||
-      !isWorkerOnline
+      (waitingJobs > 0 &&
+        timeSinceLastActivity !== Infinity &&
+        timeSinceLastActivity > HEALTH_CONFIG.MAX_DEGRADED_INACTIVITY_MS)
     ) {
       return 'degraded';
     }
