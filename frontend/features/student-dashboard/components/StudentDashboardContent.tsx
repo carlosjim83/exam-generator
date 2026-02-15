@@ -6,6 +6,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { TokenManager } from '@/features/auth/services/api.service';
 import type { StudentExamListItem } from '@/features/student-exams/types';
+import { Button } from '@/components/ui/button';
+import { Play, FileText, TrendingUp, ArrowRight } from 'lucide-react';
 
 export function StudentDashboardContent() {
   const { t } = useTranslation('student');
@@ -118,6 +120,74 @@ export function StudentDashboardContent() {
           {t('welcome.greeting')}, {user?.firstName}!
         </h1>
         <p className="text-muted-foreground mt-1">{t('welcome.subtitle')}</p>
+      </div>
+
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-lg font-semibold mb-4">{t('dashboard.quickActions.title')}</h2>
+        <div className="grid gap-4 md:grid-cols-3">
+          {/* Start Pending Exam */}
+          {pendingExams.length > 0 && (
+            <Button
+              onClick={() => handleExamClick(pendingExams[0])}
+              className="h-auto py-4 justify-start flex-col items-start gap-2"
+              variant="default"
+            >
+              <div className="flex items-center gap-2">
+                <Play className="h-5 w-5" />
+                <span className="font-semibold">{t('dashboard.quickActions.startExam')}</span>
+              </div>
+              <span className="text-sm opacity-90">{pendingExams[0].examTitle}</span>
+            </Button>
+          )}
+
+          {/* Continue In Progress */}
+          {inProgressExams.length > 0 && (
+            <Button
+              onClick={() => handleExamClick(inProgressExams[0])}
+              className="h-auto py-4 justify-start flex-col items-start gap-2"
+              variant="secondary"
+            >
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                <span className="font-semibold">{t('dashboard.quickActions.continueExam')}</span>
+              </div>
+              <span className="text-sm text-muted-foreground">{inProgressExams[0].examTitle}</span>
+            </Button>
+          )}
+
+          {/* View Results */}
+          {completedExams.length > 0 && (
+            <Button
+              onClick={() => handleExamClick(completedExams[0])}
+              className="h-auto py-4 justify-start flex-col items-start gap-2"
+              variant="outline"
+            >
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                <span className="font-semibold">{t('dashboard.quickActions.viewResults')}</span>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                {completedExams[0].score}/{completedExams[0].maxScore}
+              </span>
+            </Button>
+          )}
+
+          {/* View All Exams */}
+          <Button
+            onClick={() => router.push('/student/exams')}
+            className="h-auto py-4 justify-start flex-col items-start gap-2"
+            variant="ghost"
+          >
+            <div className="flex items-center gap-2">
+              <ArrowRight className="h-5 w-5" />
+              <span className="font-semibold">{t('dashboard.quickActions.viewAll')}</span>
+            </div>
+            <span className="text-sm text-muted-foreground">
+              {exams.length} {t('examList.title').toLowerCase()}
+            </span>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}

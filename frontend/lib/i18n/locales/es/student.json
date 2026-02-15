@@ -1,7 +1,7 @@
 {
   "title": "Mis Exámenes",
   "navigation": {
-    "dashboard": "Panel",
+    "dashboard": "Panel de Control",
     "myExams": "Mis Exámenes"
   },
   "welcome": {
@@ -18,6 +18,13 @@
       "pendingExams": "Exámenes Pendientes",
       "inProgressExams": "En Progreso",
       "completedExams": "Exámenes Completados"
+    },
+    "quickActions": {
+      "title": "Acciones Rápidas",
+      "startExam": "Iniciar Examen",
+      "continueExam": "Continuar Examen",
+      "viewResults": "Ver Resultados",
+      "viewAll": "Ver Todos"
     },
     "viewAll": "Ver todos los exámenes →",
     "noExams": "No hay exámenes asignados aún"
