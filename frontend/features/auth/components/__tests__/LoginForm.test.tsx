@@ -14,6 +14,26 @@ vi.mock('../../context/AuthContext', () => ({
   }),
 }));
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'auth.welcomeBack': 'Welcome back',
+        'auth.signInToContinue': 'Sign in to your account to continue',
+        email: 'Email',
+        password: 'Password',
+        'auth.signIn': 'Sign in',
+        'auth.signingIn': 'Signing in',
+        'auth.dontHaveAccount': "Don't have an account?",
+        'auth.signUp': 'Create one',
+        unexpectedError: 'An unexpected error occurred. Please try again.',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('LoginForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();

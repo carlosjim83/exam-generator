@@ -35,7 +35,7 @@
     "signUp": "Sign up",
     "dontHaveAccount": "Don't have an account?",
     "alreadyHaveAccount": "Already have an account?",
-    "authenticating": "Authenticating..."
+    "authenticating": "Signing in..."
   },
   "examDetails": {
     "examNotFound": "Exam not found",

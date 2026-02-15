@@ -117,7 +117,7 @@ export function LoginForm() {
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                {isLoading ? t('auth.signIn') + '...' : t('auth.signIn')}
+                {isLoading ? t('auth.signingIn') + '...' : t('auth.signIn')}
               </Button>
 
               {/* Register Link */}
