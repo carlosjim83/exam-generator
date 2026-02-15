@@ -35,7 +35,11 @@
     "signUp": "Registrarse",
     "dontHaveAccount": "¿No tienes cuenta?",
     "alreadyHaveAccount": "¿Ya tienes cuenta?",
-    "authenticating": "Autenticando..."
+    "authenticating": "Iniciando sesión...",
+    "passwordsDoNotMatch": "Las contraseñas no coinciden",
+    "passwordTooShort": "La contraseña debe tener al menos 8 caracteres",
+    "iAmA": "Soy...",
+    "signingUpAs": "Registrándose como"
   },
   "examDetails": {
     "examNotFound": "Examen no encontrado",

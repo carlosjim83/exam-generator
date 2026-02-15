@@ -15,6 +15,36 @@ vi.mock('../../context/AuthContext', () => ({
   }),
 }));
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'auth.createAccount': 'Create your account',
+        'auth.getStarted': 'Get started with AI-powered exam generation',
+        firstName: 'First Name',
+        lastName: 'Last Name',
+        email: 'Email',
+        password: 'Password',
+        confirmPassword: 'Confirm Password',
+        iAmA: 'I am a...',
+        'auth.teacher': 'Teacher',
+        'auth.student': 'Student',
+        'auth.signUp': 'Create account',
+        'auth.signingUp': 'Creating account',
+        signIn: 'Sign in',
+        signingUpAs: 'Signing up as',
+        'auth.alreadyHaveAccount': 'Already have an account?',
+        'auth.signIn': 'Sign in',
+        unexpectedError: 'An unexpected error occurred. Please try again.',
+        'auth.passwordsDoNotMatch': 'Passwords do not match',
+        'auth.passwordTooShort': 'Password must be at least 8 characters long',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('RegisterForm', () => {
   beforeEach(() => {
     vi.clearAllMocks();

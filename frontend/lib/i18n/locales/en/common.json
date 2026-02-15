@@ -35,7 +35,11 @@
     "signUp": "Sign up",
     "dontHaveAccount": "Don't have an account?",
     "alreadyHaveAccount": "Already have an account?",
-    "authenticating": "Signing in..."
+    "authenticating": "Signing in...",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordTooShort": "Password must be at least 8 characters long",
+    "iAmA": "I am a...",
+    "signingUpAs": "Signing up as"
   },
   "examDetails": {
     "examNotFound": "Exam not found",

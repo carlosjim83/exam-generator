@@ -2,15 +2,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
-import { Sparkles, AlertCircle, GraduationCap, BookOpen } from 'lucide-react';
+import { AlertCircle, GraduationCap, BookOpen } from 'lucide-react';
 import { OAuthButtons } from './OAuthButtons';
 
 export function RegisterForm() {
+  const { t } = useTranslation('common');
   const { register } = useAuth();
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -29,12 +31,12 @@ export function RegisterForm() {
 
     // Client-side validation
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
 
     if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError(t('auth.passwordTooShort'));
       return;
     }
 
@@ -50,7 +52,7 @@ export function RegisterForm() {
           setError(err.message);
         }
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError(t('unexpectedError'));
       }
     } finally {
       setIsLoading(false);
@@ -107,8 +109,8 @@ export function RegisterForm() {
 
         <Card className="shadow-xl">
           <CardHeader>
-            <CardTitle className="text-2xl">Create your account</CardTitle>
-            <CardDescription>Get started with AI-powered exam generation</CardDescription>
+            <CardTitle className="text-2xl">{t('auth.createAccount')}</CardTitle>
+            <CardDescription>{t('auth.getStarted')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -124,7 +126,7 @@ export function RegisterForm() {
 
               {/* Role Toggle Selector */}
               <div className="space-y-3">
-                <label className="text-sm font-medium">I am a...</label>
+                <label className="text-sm font-medium">{t('iAmA')}</label>
                 <div className="relative flex items-center bg-muted/50 rounded-lg p-1.5">
                   {/* Sliding Indicator */}
                   <div
@@ -147,7 +149,7 @@ export function RegisterForm() {
                     }`}
                   >
                     <GraduationCap className="w-4 h-4" />
-                    <span>Teacher</span>
+                    <span>{t('auth.teacher')}</span>
                   </button>
 
                   {/* Student Button */}
@@ -162,7 +164,7 @@ export function RegisterForm() {
                     }`}
                   >
                     <BookOpen className="w-4 h-4" />
-                    <span>Student</span>
+                    <span>{t('auth.student')}</span>
                   </button>
                 </div>
 
@@ -173,7 +175,8 @@ export function RegisterForm() {
                   >
                     <Icon className={`w-3.5 h-3.5 ${currentTheme.accentText}`} />
                     <span className={`text-xs font-medium ${currentTheme.accentText}`}>
-                      Signing up as {role === 'TEACHER' ? 'Teacher' : 'Student'}
+                      {t('signingUpAs')}{' '}
+                      {role === 'TEACHER' ? t('auth.teacher') : t('auth.student')}
                     </span>
                   </div>
                 </div>
@@ -182,7 +185,7 @@ export function RegisterForm() {
               {/* First Name Input */}
               <div className="space-y-2">
                 <label htmlFor="firstName" className="text-sm font-medium">
-                  First Name
+                  {t('firstName')}
                 </label>
                 <Input
                   id="firstName"
@@ -202,7 +205,7 @@ export function RegisterForm() {
               {/* Last Name Input */}
               <div className="space-y-2">
                 <label htmlFor="lastName" className="text-sm font-medium">
-                  Last Name
+                  {t('lastName')}
                 </label>
                 <Input
                   id="lastName"
@@ -222,7 +225,7 @@ export function RegisterForm() {
               {/* Email Input */}
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
-                  Email
+                  {t('email')}
                 </label>
                 <Input
                   id="email"
@@ -244,7 +247,7 @@ export function RegisterForm() {
               {/* Password Input */}
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">
-                  Password
+                  {t('password')}
                 </label>
                 <Input
                   id="password"
@@ -264,7 +267,7 @@ export function RegisterForm() {
               {/* Confirm Password Input */}
               <div className="space-y-2">
                 <label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm Password
+                  {t('confirmPassword')}
                 </label>
                 <Input
                   id="confirmPassword"
@@ -285,17 +288,17 @@ export function RegisterForm() {
                 size="lg"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating account...' : 'Create account'}
+                {isLoading ? t('auth.signingUp') + '...' : t('auth.signUp')}
               </Button>
 
               {/* Login Link */}
               <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{' '}
+                {t('auth.alreadyHaveAccount')}{' '}
                 <Link
                   href="/login"
                   className={`font-medium ${currentTheme.accentText} hover:underline transition-colors duration-200`}
                 >
-                  Sign in
+                  {t('auth.signIn')}
                 </Link>
               </p>
             </form>
