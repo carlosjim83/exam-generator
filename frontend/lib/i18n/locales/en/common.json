@@ -115,5 +115,9 @@
     "language": {
       "label": "Language"
     }
+  },
+  "upload": {
+    "selectDocument": "Select Document",
+    "selectDocumentDescription": "Upload a PDF or DOCX file to generate exams. Maximum file size: 10 MB."
   }
 }

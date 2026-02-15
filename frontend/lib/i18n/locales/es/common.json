@@ -111,6 +111,10 @@
   "topNav": {
     "userPlaceholder": "Usuario"
   },
+  "upload": {
+    "selectDocument": "Seleccionar Documento",
+    "selectDocumentDescription": "Sube un archivo PDF o DOCX para generar exámenes. Tamaño máximo: 10 MB."
+  },
   "preferences": {
     "language": {
       "label": "Idioma"
