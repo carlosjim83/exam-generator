@@ -8,7 +8,58 @@
   "edit": "Edit",
   "delete": "Delete",
   "search": "Search",
+  "searchPlaceholder": "Search resources...",
   "loading": "Loading...",
   "error": "Error",
-  "success": "Success"
+  "success": "Success",
+  "email": "Email",
+  "password": "Password",
+  "firstName": "First Name",
+  "lastName": "Last Name",
+  "confirmPassword": "Confirm Password",
+  "unexpectedError": "An unexpected error occurred. Please try again.",
+  "auth": {
+    "welcomeBack": "Welcome back",
+    "signInToContinue": "Sign in to your account to continue",
+    "createAccount": "Create your account",
+    "getStarted": "Get started with AI-powered exam generation",
+    "chooseYourRole": "Choose Your Role",
+    "signInWithGoogle": "Sign in with Google as a teacher or student",
+    "teacher": "Teacher",
+    "teacherDescription": "Create and manage exams for your students",
+    "student": "Student",
+    "studentDescription": "Take exams and track your progress",
+    "orContinueWith": "Or continue with",
+    "redirecting": "Redirecting in a moment...",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "authenticating": "Authenticating..."
+  },
+  "examDetails": {
+    "examNotFound": "Exam not found",
+    "created": "Created",
+    "options": "Options",
+    "explanation": "Explanation",
+    "examStatistics": "Exam Statistics",
+    "totalQuestions": "Total Questions",
+    "totalPoints": "Total Points",
+    "easyQuestions": "Easy Questions",
+    "hardQuestions": "Hard Questions",
+    "examDetailsTitle": "Exam Details",
+    "reviewExam": "Review your generated exam"
+  },
+  "noContent": {
+    "noExams": "No exams yet",
+    "noDocuments": "No documents yet"
+  },
+  "upload": {
+    "uploadDocument": "Upload Document",
+    "dragDrop": "Drag & drop your document here",
+    "uploadSuccessful": "Upload successful!",
+    "uploadProcessing": "Your document is being processed.",
+    "uploadFailed": "Upload failed",
+    "documentTitle": "Document Title (optional)"
+  }
 }

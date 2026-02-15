@@ -8,7 +8,58 @@
   "edit": "Editar",
   "delete": "Eliminar",
   "search": "Buscar",
+  "searchPlaceholder": "Buscar recursos...",
   "loading": "Cargando...",
   "error": "Error",
-  "success": "Éxito"
+  "success": "Éxito",
+  "email": "Correo electrónico",
+  "password": "Contraseña",
+  "firstName": "Nombre",
+  "lastName": "Apellido",
+  "confirmPassword": "Confirmar contraseña",
+  "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+  "auth": {
+    "welcomeBack": "Bienvenido de nuevo",
+    "signInToContinue": "Inicia sesión en tu cuenta para continuar",
+    "createAccount": "Crea tu cuenta",
+    "getStarted": "Comienza con generación de exámenes potenciada por IA",
+    "chooseYourRole": "Elige tu rol",
+    "signInWithGoogle": "Inicia sesión con Google como profesor o estudiante",
+    "teacher": "Profesor",
+    "teacherDescription": "Crea y gestiona exámenes para tus estudiantes",
+    "student": "Estudiante",
+    "studentDescription": "Realiza exámenes y sigue tu progreso",
+    "orContinueWith": "O continúa con",
+    "redirecting": "Redirigiendo en un momento...",
+    "signIn": "Iniciar sesión",
+    "signUp": "Registrarse",
+    "dontHaveAccount": "¿No tienes cuenta?",
+    "alreadyHaveAccount": "¿Ya tienes cuenta?",
+    "authenticating": "Autenticando..."
+  },
+  "examDetails": {
+    "examNotFound": "Examen no encontrado",
+    "created": "Creado",
+    "options": "Opciones",
+    "explanation": "Explicación",
+    "examStatistics": "Estadísticas del Examen",
+    "totalQuestions": "Total de Preguntas",
+    "totalPoints": "Puntos Totales",
+    "easyQuestions": "Preguntas Fáciles",
+    "hardQuestions": "Preguntas Difíciles",
+    "examDetailsTitle": "Detalles del Examen",
+    "reviewExam": "Revisa tu examen generado"
+  },
+  "noContent": {
+    "noExams": "Aún no hay exámenes",
+    "noDocuments": "Aún no hay documentos"
+  },
+  "upload": {
+    "uploadDocument": "Subir Documento",
+    "dragDrop": "Arrastra y suelta tu documento aquí",
+    "uploadSuccessful": "¡Subida exitosa!",
+    "uploadProcessing": "Tu documento está siendo procesado.",
+    "uploadFailed": "Error al subir",
+    "documentTitle": "Título del documento (opcional)"
+  }
 }

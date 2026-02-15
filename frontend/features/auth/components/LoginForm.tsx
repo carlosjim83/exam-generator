@@ -2,15 +2,17 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
-import { Sparkles, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 import { OAuthButtons } from './OAuthButtons';
 
 export function LoginForm() {
+  const { t } = useTranslation('common');
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +30,7 @@ export function LoginForm() {
       if (err instanceof ApiError) {
         setError(err.message);
       } else {
-        setError('An unexpected error occurred. Please try again.');
+        setError(t('unexpectedError'));
       }
     } finally {
       setIsLoading(false);
@@ -60,8 +62,8 @@ export function LoginForm() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Welcome back</CardTitle>
-            <CardDescription>Sign in to your account to continue</CardDescription>
+            <CardTitle className="text-2xl">{t('auth.welcomeBack')}</CardTitle>
+            <CardDescription>{t('auth.signInToContinue')}</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -78,7 +80,7 @@ export function LoginForm() {
               {/* Email Input */}
               <div className="space-y-2">
                 <label htmlFor="email" className="text-sm font-medium">
-                  Email
+                  {t('email')}
                 </label>
                 <Input
                   id="email"
@@ -97,7 +99,7 @@ export function LoginForm() {
               {/* Password Input */}
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium">
-                  Password
+                  {t('password')}
                 </label>
                 <Input
                   id="password"
@@ -115,14 +117,14 @@ export function LoginForm() {
 
               {/* Submit Button */}
               <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                {isLoading ? t('auth.signIn') + '...' : t('auth.signIn')}
               </Button>
 
               {/* Register Link */}
               <p className="text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{' '}
+                {t('auth.dontHaveAccount')}{' '}
                 <Link href="/register" className="font-medium text-primary hover:underline">
-                  Create one
+                  {t('auth.signUp')}
                 </Link>
               </p>
             </form>
