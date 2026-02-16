@@ -6,9 +6,10 @@
 import { FastifyInstance } from 'fastify';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
-import { GetClassesCommand } from '@application/use-cases/classes/GetClassesUseCase.js';
-import { GetClassByCodeCommand } from '@application/use-cases/classes/GetClassByCodeUseCase.js';
-import { DeleteClassCommand } from '@application/use-cases/classes/DeleteClassUseCase.js';
+import { GetClassStudentsCommand } from '@application/use-cases/classes/GetClassStudentsUseCase.js';
+import { StudentJoinClassCommand } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
+import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
+import { CreateEmailInvitationsCommand } from '@application/use-cases/classes/CreateEmailInvitationsUseCase.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
   // POST /classes - Create a new class
@@ -62,95 +63,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
-      const { name, description, color } = request.body as {
-        name: string;
-        description?: string;
-        color?: string;
-      };
-
-      const command = {
-        teacherId: userId,
-        name,
-        description,
-        color,
-      };
-
-      const classEntity = await container.createClassUseCase.execute(command);
-
-      reply.status(201).send({
-        id: classEntity.id.toString(),
-        name: classEntity.name,
-        code: classEntity.code,
-        description: classEntity.description,
-        color: classEntity.color,
-        teacherId: classEntity.teacherId.toString(),
-        createdAt: classEntity.createdAt.toISOString(),
-      });
-    }
-  );
-
-  // GET /classes - List classes for the current user
-  fastify.get(
-    '/classes',
-    {
-      preHandler: authenticateUser,
-      schema: {
-        tags: ['classes'],
-        summary: 'List all classes for the authenticated teacher',
-        description: 'Paginated list of classes created by the authenticated user',
-        security: [{ bearerAuth: [] }],
-        querystring: {
-          type: 'object',
-          properties: {
-            page: {
-              type: 'integer',
-              minimum: 1,
-              default: 1,
-              description: 'Page number (1-based)',
-            },
-            limit: {
-              type: 'integer',
-              minimum: 1,
-              maximum: 100,
-              default: 20,
-              description: 'Number of items per page',
-            },
-            search: {
-              type: 'string',
-              description: 'Search term for class name or description',
-            },
-          },
-        },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              classes: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    name: { type: 'string' },
-                    code: { type: 'string' },
-                    description: { type: 'string', nullable: true },
-                    color: { type: 'string', nullable: true },
-                    studentCount: { type: 'integer' },
-                    createdAt: { type: 'string', format: 'date-time' },
-                  },
-                },
-              },
-              total: { type: 'integer' },
-              page: { type: 'integer' },
-              limit: { type: 'integer' },
-            },
-          },
-        },
-      },
-    },
-    async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
       const {
         page = 1,
         limit = 20,
@@ -161,19 +74,19 @@ export async function classRoutes(fastify: FastifyInstance) {
         search?: string;
       };
 
-      const command = new GetClassesCommand(userId, page, limit, search);
+      const command = new GetClassStudentsCommand(classId, page, limit, search);
 
-      const result = await container.getClassesUseCase.execute(command);
+      const result = await container.getClassStudentsUseCase.execute(command);
 
-      reply.code(200).send({
-        classes: result.classes.map((c: any) => ({
-          id: c.id.toString(),
-          name: c.name,
-          code: c.code,
-          description: c.description,
-          color: c.color,
-          studentCount: 0,
-          createdAt: c.createdAt.toISOString(),
+      // @ts-ignore - Schema allows 200
+      reply.status(200).send({
+        students: result.students.map((s: any) => ({
+          id: s.id.toString(),
+          email: s.email,
+          firstName: s.firstName,
+          lastName: s.lastName,
+          joinedAt: s.joinedAt.toISOString(),
+          isActive: s.isActive,
         })),
         total: result.total,
         page,
@@ -182,36 +95,29 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /classes/:id - Get class details
-  fastify.get(
-    '/classes/:id',
+  // POST /classes/:classId/join - Student joins class
+  fastify.post(
+    '/classes/:classId/join',
     {
       preHandler: authenticateUser,
       schema: {
         tags: ['classes'],
-        summary: 'Get class details with student count',
-        description: 'Retrieve class information and number of enrolled students',
+        summary: 'Student joins a class',
+        description: 'Student joins a class using class ID',
         security: [{ bearerAuth: [] }],
         params: {
           type: 'object',
           properties: {
-            id: { type: 'string', format: 'uuid' },
+            classId: { type: 'string', format: 'uuid' },
           },
-          required: ['id'],
+          required: ['classId'],
         },
         response: {
-          200: {
+          201: {
             type: 'object',
             properties: {
-              id: { type: 'string', format: 'uuid' },
-              name: { type: 'string' },
-              code: { type: 'string' },
-              description: { type: 'string', nullable: true },
-              color: { type: 'string', nullable: true },
-              teacherId: { type: 'string', format: 'uuid' },
-              teacherName: { type: 'string' },
-              studentCount: { type: 'integer' },
-              createdAt: { type: 'string', format: 'date-time' },
+              classId: { type: 'string', format: 'uuid' },
+              joinedAt: { type: 'string', format: 'date-time' },
             },
           },
         },
@@ -219,108 +125,259 @@ export async function classRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const userId = (request as any).user.userId;
-      const { id } = request.params as { id: string };
+      const { classId } = request.params as { classId: string };
 
-      const command = {
-        classId: id,
-        userId,
-      };
+      const command = new StudentJoinClassCommand(classId, userId);
 
-      const result = await container.getClassDetailsUseCase.execute(command);
+      const result = await container.studentJoinClassUseCase.execute(command);
 
-      reply.code(200).send({
-        id: result.class.id.toString(),
-        name: result.class.name,
-        code: result.class.code,
-        description: result.class.description,
-        color: result.class.color,
-        teacherId: result.class.teacherId.toString(),
-        teacherName: result.teacherName,
-        studentCount: result.studentCount,
-        createdAt: result.class.createdAt.toISOString(),
+      reply.status(201).send({
+        classId: result.classId.toString(),
+        joinedAt: result.joinedAt.toISOString(),
       });
     }
   );
 
-  // GET /classes/code/:code - Get class by code (public endpoint)
-  fastify.get(
-    '/classes/code/:code',
+  // POST /classes/:classId/invitations - Invite students by email
+  fastify.post(
+    '/classes/:classId/invitations',
     {
+      preHandler: authenticateUser,
       schema: {
         tags: ['classes'],
-        summary: 'Get class information by code (public)',
-        description: 'Retrieve class information for student join validation',
+        summary: 'Invite students by email',
+        description: 'Create invitations for students via email',
+        security: [{ bearerAuth: [] }],
         params: {
           type: 'object',
           properties: {
-            code: { type: 'string' },
+            classId: { type: 'string', format: 'uuid' },
           },
-          required: ['code'],
+          required: ['classId'],
+        },
+        body: {
+          type: 'object',
+          required: ['emails'],
+          properties: {
+            emails: {
+              type: 'array',
+              items: { type: 'string', format: 'email' },
+              maxItems: 50,
+            },
+          },
         },
         response: {
           200: {
             type: 'object',
             properties: {
-              id: { type: 'string', format: 'uuid' },
-              name: { type: 'string' },
-              teacherName: { type: 'string' },
+              invitations: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    email: { type: 'string' },
+                    status: { type: 'string', enum: ['PENDING'] },
+                    expiresAt: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
             },
           },
         },
       },
     },
     async (request, reply) => {
-      const { code } = request.params as { code: string };
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+      const { emails } = request.body as { emails: string[] };
 
-      const command = new GetClassByCodeCommand(code);
+      const command = new CreateEmailInvitationsCommand(classId, userId, emails);
 
-      const result = await container.getClassByCodeUseCase.execute(command);
+      const result = await container.createEmailInvitationsUseCase.execute(command);
 
-      if (!result) {
-        throw new Error('Class not found');
-      }
-
-      return reply.status(200).send({
-        id: result.class.id.toString(),
-        name: result.class.name,
-        teacherName: result.teacherName,
+      reply.status(200).send({
+        invitations: result.map((i: any) => ({
+          email: i.email,
+          status: i.status,
+          expiresAt: i.expiresAt.toISOString(),
+        })),
       });
     }
   );
 
-  // DELETE /classes/:id - Delete a class
-  fastify.delete(
-    '/classes/:id',
+  // POST /classes/:classId/invitations/csv - Import students from CSV
+  fastify.post(
+    '/classes/:classId/invitations/csv',
     {
       preHandler: authenticateUser,
       schema: {
         tags: ['classes'],
-        summary: 'Delete a class',
-        description: 'Delete a class created by the authenticated user',
+        summary: 'Import students from CSV file',
+        description: 'Upload CSV file to create invitations for students',
         security: [{ bearerAuth: [] }],
         params: {
           type: 'object',
           properties: {
-            id: { type: 'string', format: 'uuid' },
+            classId: { type: 'string', format: 'uuid' },
           },
-          required: ['id'],
+          required: ['classId'],
+        },
+        body: {
+          type: 'object',
+          properties: {
+            file: { type: 'string', format: 'binary' },
+          },
+          required: ['file'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              imported: { type: 'integer' },
+              failed: { type: 'integer' },
+              errors: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (_request, reply) => {
+      // Note: Not implemented yet - need file upload handling
+      // @ts-ignore
+      reply.status(501).send({
+        error: 'Not Implemented',
+        message: 'CSV import not yet implemented',
+      });
+    }
+  );
+
+  // GET /classes/:classId/invitations - List invitations
+  fastify.get(
+    '/classes/:classId/invitations',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'List all invitations for a class',
+        description: 'Get all invitations for a class with their status',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              invitations: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    email: { type: 'string' },
+                    status: { type: 'string' },
+                    expiresAt: { type: 'string', format: 'date-time' },
+                    acceptedAt: { type: 'string', format: 'date-time', nullable: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (_request, reply) => {
+      // Note: Not implemented yet - need invitation listing
+      // @ts-ignore
+      reply.status(501).send({
+        error: 'Not Implemented',
+        message: 'List invitations not yet implemented',
+      });
+    }
+  );
+
+  // POST /invitations/:token/accept - Accept invitation
+  fastify.post(
+    '/invitations/:token/accept',
+    {
+      schema: {
+        tags: ['invitations'],
+        summary: 'Accept invitation and join class',
+        description: 'Accept invitation using token (public endpoint)',
+        params: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' },
+          },
+          required: ['token'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              classId: { type: 'string', format: 'uuid' },
+              joinedAt: { type: 'string', format: 'date-time' },
+            },
+          },
+          302: {
+            description: 'Redirect to class page',
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { token } = request.params as { token: string };
+      const userId = (request as any).user?.userId;
+
+      const command = new StudentJoinClassWithInvitationCommand(token, userId);
+
+      const result = await container.studentJoinClassWithInvitationUseCase.execute(command);
+
+      reply.status(200).send({
+        classId: result.classId.toString(),
+        joinedAt: result.joinedAt.toISOString(),
+      });
+    }
+  );
+
+  // POST /invitations/:token/resend - Resend invitation
+  fastify.post(
+    '/invitations/:token/resend',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['invitations'],
+        summary: 'Resend invitation email',
+        description: 'Resend invitation email to student',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' },
+          },
+          required: ['token'],
         },
         response: {
           204: {
-            description: 'Class deleted successfully',
+            description: 'Invitation resent successfully',
           },
         },
       },
     },
-    async (request, reply) => {
-      const userId = (request as any).user.userId;
-      const { id } = request.params as { id: string };
-
-      const command = new DeleteClassCommand(id, userId);
-
-      await container.deleteClassUseCase.execute(command);
-
-      reply.code(204).send();
+    async (_request, reply) => {
+      // Note: Not implemented yet - need email sending logic
+      // @ts-ignore
+      reply.status(501).send({
+        error: 'Not Implemented',
+        message: 'Resend invitation not yet implemented',
+      });
     }
   );
 }
