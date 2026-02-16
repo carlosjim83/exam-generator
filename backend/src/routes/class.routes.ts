@@ -86,4 +86,101 @@ export async function classRoutes(fastify: FastifyInstance) {
       });
     }
   );
+
+  // GET /classes - List classes for the current user
+  fastify.get(
+    '/classes',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'List all classes for the authenticated teacher',
+        description: 'Paginated list of classes created by the authenticated user',
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: {
+            page: {
+              type: 'integer',
+              minimum: 1,
+              default: 1,
+              description: 'Page number (1-based)',
+            },
+            limit: {
+              type: 'integer',
+              minimum: 1,
+              maximum: 100,
+              default: 20,
+              description: 'Number of items per page',
+            },
+            search: {
+              type: 'string',
+              description: 'Search term for class name or description',
+            },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              classes: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    name: { type: 'string' },
+                    code: { type: 'string' },
+                    description: { type: 'string', nullable: true },
+                    color: { type: 'string', nullable: true },
+                    studentCount: { type: 'integer' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+              total: { type: 'integer' },
+              page: { type: 'integer' },
+              limit: { type: 'integer' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const {
+        page = 1,
+        limit = 20,
+        search = '',
+      } = request.query as {
+        page?: number;
+        limit?: number;
+        search?: string;
+      };
+
+      const command = {
+        teacherId: userId,
+        page,
+        limit,
+        search,
+      };
+
+      const result = await container.getClassesUseCase.execute(command);
+
+      reply.code(200).send({
+        classes: result.classes.map((c: any) => ({
+          id: c.id.toString(),
+          name: c.name,
+          code: c.code,
+          description: c.description,
+          color: c.color,
+          studentCount: 0, // TODO: Implement countStudents
+          createdAt: c.createdAt.toISOString(),
+        })),
+        total: result.total,
+        page,
+        limit,
+      });
+    }
+  );
 }

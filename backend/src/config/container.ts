@@ -52,6 +52,12 @@ import {
   CreateClassUseCase,
   CreateEmailInvitationsUseCase,
   StudentJoinClassUseCase,
+  GetClassesUseCase,
+  GetClassByCodeUseCase,
+  GetClassDetailsUseCase,
+  StudentJoinClassWithInvitationUseCase,
+  GetClassStudentsUseCase,
+  AcceptInvitationUseCase,
 } from '../application/use-cases/index.js';
 
 // Student Use Cases
@@ -132,6 +138,12 @@ export class Container {
   private readonly _createClassUseCase: CreateClassUseCase;
   private readonly _createEmailInvitationsUseCase: CreateEmailInvitationsUseCase;
   private readonly _studentJoinClassUseCase: StudentJoinClassUseCase;
+  private readonly _getClassesUseCase: GetClassesUseCase;
+  private readonly _getClassByCodeUseCase: GetClassByCodeUseCase;
+  private readonly _getClassDetailsUseCase: GetClassDetailsUseCase;
+  private readonly _studentJoinClassWithInvitationUseCase: StudentJoinClassWithInvitationUseCase;
+  private readonly _getClassStudentsUseCase: GetClassStudentsUseCase;
+  private readonly _acceptInvitationUseCase: AcceptInvitationUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -259,6 +271,24 @@ export class Container {
     this._studentJoinClassUseCase = new StudentJoinClassUseCase(
       this._studentEnrollmentRepository,
       this._classRepository
+    );
+    this._getClassesUseCase = new GetClassesUseCase(this._classRepository);
+    this._getClassByCodeUseCase = new GetClassByCodeUseCase(this._classRepository);
+    this._getClassDetailsUseCase = new GetClassDetailsUseCase(
+      this._classRepository,
+      this._userRepository
+    );
+    this._studentJoinClassWithInvitationUseCase = new StudentJoinClassWithInvitationUseCase(
+      this._invitationRepository,
+      this._studentEnrollmentRepository
+    );
+    this._getClassStudentsUseCase = new GetClassStudentsUseCase(
+      this._studentEnrollmentRepository,
+      this._userRepository
+    );
+    this._acceptInvitationUseCase = new AcceptInvitationUseCase(
+      this._invitationRepository,
+      this._studentEnrollmentRepository
     );
 
     // Student Use Cases
@@ -428,6 +458,30 @@ export class Container {
 
   public get studentJoinClassUseCase(): StudentJoinClassUseCase {
     return this._studentJoinClassUseCase;
+  }
+
+  public get getClassesUseCase(): GetClassesUseCase {
+    return this._getClassesUseCase;
+  }
+
+  public get getClassByCodeUseCase(): GetClassByCodeUseCase {
+    return this._getClassByCodeUseCase;
+  }
+
+  public get getClassDetailsUseCase(): GetClassDetailsUseCase {
+    return this._getClassDetailsUseCase;
+  }
+
+  public get studentJoinClassWithInvitationUseCase(): StudentJoinClassWithInvitationUseCase {
+    return this._studentJoinClassWithInvitationUseCase;
+  }
+
+  public get getClassStudentsUseCase(): GetClassStudentsUseCase {
+    return this._getClassStudentsUseCase;
+  }
+
+  public get acceptInvitationUseCase(): AcceptInvitationUseCase {
+    return this._acceptInvitationUseCase;
   }
 
   // Student Use Cases

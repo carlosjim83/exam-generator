@@ -56,8 +56,20 @@ export type { DeleteExamInput, DeleteExamOutput } from './exam/DeleteExamUseCase
 export { CreateClassUseCase } from './classes/CreateClassUseCase.js';
 export { CreateEmailInvitationsUseCase } from './classes/CreateEmailInvitationsUseCase.js';
 export { StudentJoinClassUseCase } from './classes/StudentJoinClassUseCase.js';
+export { GetClassesUseCase } from './classes/GetClassesUseCase.js';
+export { GetClassByCodeUseCase } from './classes/GetClassByCodeUseCase.js';
+export { GetClassDetailsUseCase } from './classes/GetClassDetailsUseCase.js';
+export { StudentJoinClassWithInvitationUseCase } from './classes/StudentJoinClassWithInvitationUseCase.js';
+export { GetClassStudentsUseCase } from './classes/GetClassStudentsUseCase.js';
+export { AcceptInvitationUseCase } from './classes/AcceptInvitationUseCase.js';
 
 // Export input/output types for classes use cases
 export type { CreateClassCommand } from './classes/CreateClassUseCase.js';
 export type { CreateEmailInvitationsCommand } from './classes/CreateEmailInvitationsUseCase.js';
 export type { StudentJoinClassCommand } from './classes/StudentJoinClassUseCase.js';
+export type { GetClassesCommand, GetClassesOutput } from './classes/GetClassesUseCase.js';
+export type { GetClassByCodeCommand } from './classes/GetClassByCodeUseCase.js';
+export type { GetClassDetailsCommand } from './classes/GetClassDetailsUseCase.js';
+export type { StudentJoinClassWithInvitationCommand } from './classes/StudentJoinClassWithInvitationUseCase.js';
+export type { GetClassStudentsCommand } from './classes/GetClassStudentsUseCase.js';
+export type { AcceptInvitationCommand } from './classes/AcceptInvitationUseCase.js';
