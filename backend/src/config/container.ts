@@ -58,6 +58,7 @@ import {
   StudentJoinClassWithInvitationUseCase,
   GetClassStudentsUseCase,
   AcceptInvitationUseCase,
+  AssignExamToClassUseCase, // Added
 } from '../application/use-cases/index.js';
 
 // Student Use Cases
@@ -144,6 +145,7 @@ export class Container {
   private readonly _studentJoinClassWithInvitationUseCase: StudentJoinClassWithInvitationUseCase;
   private readonly _getClassStudentsUseCase: GetClassStudentsUseCase;
   private readonly _acceptInvitationUseCase: AcceptInvitationUseCase;
+  private readonly _assignExamToClassUseCase: AssignExamToClassUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -289,6 +291,11 @@ export class Container {
     this._acceptInvitationUseCase = new AcceptInvitationUseCase(
       this._invitationRepository,
       this._studentEnrollmentRepository
+    );
+    this._assignExamToClassUseCase = new AssignExamToClassUseCase(
+      this._classRepository,
+      this._studentEnrollmentRepository,
+      this._examAssignmentRepository
     );
 
     // Student Use Cases
@@ -482,6 +489,10 @@ export class Container {
 
   public get acceptInvitationUseCase(): AcceptInvitationUseCase {
     return this._acceptInvitationUseCase;
+  }
+
+  public get assignExamToClassUseCase(): AssignExamToClassUseCase {
+    return this._assignExamToClassUseCase;
   }
 
   // Student Use Cases

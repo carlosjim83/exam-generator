@@ -62,6 +62,7 @@ export { GetClassDetailsUseCase } from './classes/GetClassDetailsUseCase.js';
 export { StudentJoinClassWithInvitationUseCase } from './classes/StudentJoinClassWithInvitationUseCase.js';
 export { GetClassStudentsUseCase } from './classes/GetClassStudentsUseCase.js';
 export { AcceptInvitationUseCase } from './classes/AcceptInvitationUseCase.js';
+export { AssignExamToClassUseCase } from './classes/AssignExamToClassUseCase.js';
 
 // Export input/output types for classes use cases
 export type { CreateClassCommand } from './classes/CreateClassUseCase.js';
