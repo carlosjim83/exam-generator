@@ -59,7 +59,8 @@ import {
   GetClassStudentsUseCase,
   AcceptInvitationUseCase,
   AssignExamToClassUseCase,
-  DeleteClassUseCase, // Added
+  DeleteClassUseCase,
+  ImportStudentsCSVUseCase, // Added
 } from '../application/use-cases/index.js';
 
 // Student Use Cases
@@ -148,6 +149,7 @@ export class Container {
   private readonly _acceptInvitationUseCase: AcceptInvitationUseCase;
   private readonly _assignExamToClassUseCase: AssignExamToClassUseCase;
   private readonly _deleteClassUseCase: DeleteClassUseCase;
+  private readonly _importStudentsCSVUseCase: ImportStudentsCSVUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -303,6 +305,10 @@ export class Container {
       this._examAssignmentRepository
     );
     this._deleteClassUseCase = new DeleteClassUseCase(this._classRepository);
+    this._importStudentsCSVUseCase = new ImportStudentsCSVUseCase(
+      this._invitationRepository,
+      this._classRepository
+    );
 
     // Student Use Cases
     this._assignExamToStudentUseCase = new AssignExamToStudentUseCase(
@@ -503,6 +509,10 @@ export class Container {
 
   public get deleteClassUseCase(): DeleteClassUseCase {
     return this._deleteClassUseCase;
+  }
+
+  public get importStudentsCSVUseCase(): ImportStudentsCSVUseCase {
+    return this._importStudentsCSVUseCase;
   }
 
   // Student Use Cases

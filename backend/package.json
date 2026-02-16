@@ -37,6 +37,7 @@
     "@types/uuid": "^11.0.0",
     "bcrypt": "^5.1.1",
     "bullmq": "^5.67.2",
+    "csv-parse": "^6.1.0",
     "dotenv": "^16.4.5",
     "fastify": "^5.7.2",
     "genkit": "^1.28.0",

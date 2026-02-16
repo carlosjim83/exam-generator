@@ -10,6 +10,7 @@ import { GetClassStudentsCommand } from '@application/use-cases/classes/GetClass
 import { StudentJoinClassCommand } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
 import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
 import { CreateEmailInvitationsCommand } from '@application/use-cases/classes/CreateEmailInvitationsUseCase.js';
+import { ImportStudentsCSVCommand } from '@application/use-cases/classes/ImportStudentsCSVUseCase.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
   // POST /classes - Create a new class
@@ -244,12 +245,19 @@ export async function classRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (_request, reply) => {
-      // Note: Not implemented yet - need file upload handling
-      // @ts-ignore
-      reply.status(501).send({
-        error: 'Not Implemented',
-        message: 'CSV import not yet implemented',
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+      const { csvContent } = request.body as { csvContent: string };
+
+      const command = new ImportStudentsCSVCommand(classId, userId, csvContent);
+
+      const result = await container.importStudentsCSVUseCase.execute(command);
+
+      reply.status(200).send({
+        imported: result.imported,
+        failed: result.failed,
+        errors: result.errors,
       });
     }
   );
