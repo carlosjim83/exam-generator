@@ -51,3 +51,13 @@ export type { GenerateExamInput, GenerateExamOutput } from './exams/GenerateExam
 export type { GetExamInput, GetExamOutput } from './exams/GetExamUseCase.js';
 export type { ListExamsInput, ListExamsOutput } from './exams/ListExamsUseCase.js';
 export type { DeleteExamInput, DeleteExamOutput } from './exam/DeleteExamUseCase.js';
+
+// Application Layer - Classes & Invitations Use Cases
+export { CreateClassUseCase } from './classes/CreateClassUseCase.js';
+export { CreateEmailInvitationsUseCase } from './classes/CreateEmailInvitationsUseCase.js';
+export { StudentJoinClassUseCase } from './classes/StudentJoinClassUseCase.js';
+
+// Export input/output types for classes use cases
+export type { CreateClassCommand } from './classes/CreateClassUseCase.js';
+export type { CreateEmailInvitationsCommand } from './classes/CreateEmailInvitationsUseCase.js';
+export type { StudentJoinClassCommand } from './classes/StudentJoinClassUseCase.js';

@@ -22,6 +22,9 @@ import {
   LocalFileStorageService,
   TextExtractorService,
   BullMQMessageBroker, // Added
+  PrismaClassRepository,
+  PrismaStudentEnrollmentRepository,
+  PrismaInvitationRepository,
 } from '../infrastructure/index.js';
 import { PrismaExamRepository } from '../infrastructure/repositories/PrismaExamRepository.js';
 import { PrismaExamAssignmentRepository } from '../infrastructure/repositories/PrismaExamAssignmentRepository.js';
@@ -46,6 +49,9 @@ import {
   GetExamUseCase,
   ListExamsUseCase,
   DeleteExamUseCase, // Added
+  CreateClassUseCase,
+  CreateEmailInvitationsUseCase,
+  StudentJoinClassUseCase,
 } from '../application/use-cases/index.js';
 
 // Student Use Cases
@@ -67,6 +73,11 @@ import type { IStorageService } from '../domain/services/IStorageService.js';
 import type { ITextExtractor } from '../domain/services/ITextExtractor.js';
 import type { IMessageBroker } from '../application/ports/IMessageBroker.js'; // Added
 
+// Classes & Invitations Repositories
+import type { IClassRepository } from '../domain/repositories/IClassRepository.js';
+import type { IStudentEnrollmentRepository } from '../domain/repositories/IStudentEnrollmentRepository.js';
+import type { IInvitationRepository } from '../domain/repositories/IInvitationRepository.js';
+
 /**
  * Container class - Singleton pattern
  * Manages all application dependencies
@@ -87,6 +98,11 @@ export class Container {
   private readonly _textExtractor: ITextExtractor;
   private readonly _messageBroker: IMessageBroker; // Added
   private readonly _embeddingService: AzureOpenAIEmbeddingService;
+
+  // Classes & Invitations Repositories
+  private readonly _classRepository: IClassRepository;
+  private readonly _studentEnrollmentRepository: IStudentEnrollmentRepository;
+  private readonly _invitationRepository: IInvitationRepository;
 
   // Application Layer - Auth Use Cases
   private readonly _registerUserUseCase: RegisterUserUseCase;
@@ -111,6 +127,11 @@ export class Container {
   private readonly _getExamUseCase: GetExamUseCase;
   private readonly _listExamsUseCase: ListExamsUseCase;
   private readonly _deleteExamUseCase: DeleteExamUseCase; // Added
+
+  // Application Layer - Classes & Invitations Use Cases
+  private readonly _createClassUseCase: CreateClassUseCase;
+  private readonly _createEmailInvitationsUseCase: CreateEmailInvitationsUseCase;
+  private readonly _studentJoinClassUseCase: StudentJoinClassUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -157,6 +178,11 @@ export class Container {
 
     // AI Services
     this._embeddingService = new AzureOpenAIEmbeddingService();
+
+    // Classes & Invitations Repositories
+    this._classRepository = PrismaClassRepository.create(this._prisma);
+    this._studentEnrollmentRepository = PrismaStudentEnrollmentRepository.create(this._prisma);
+    this._invitationRepository = PrismaInvitationRepository.create(this._prisma);
 
     // ========================================
     // APPLICATION LAYER - USE CASES
@@ -224,6 +250,16 @@ export class Container {
     this._listExamsUseCase = new ListExamsUseCase(this._examRepository);
 
     this._deleteExamUseCase = new DeleteExamUseCase(this._examRepository);
+
+    // Classes & Invitations Use Cases
+    this._createClassUseCase = new CreateClassUseCase(this._classRepository);
+    this._createEmailInvitationsUseCase = new CreateEmailInvitationsUseCase(
+      this._invitationRepository
+    );
+    this._studentJoinClassUseCase = new StudentJoinClassUseCase(
+      this._studentEnrollmentRepository,
+      this._classRepository
+    );
 
     // Student Use Cases
     this._assignExamToStudentUseCase = new AssignExamToStudentUseCase(
@@ -378,6 +414,20 @@ export class Container {
 
   public get deleteExamUseCase(): DeleteExamUseCase {
     return this._deleteExamUseCase;
+  }
+
+  // Classes & Invitations Use Cases
+
+  public get createClassUseCase(): CreateClassUseCase {
+    return this._createClassUseCase;
+  }
+
+  public get createEmailInvitationsUseCase(): CreateEmailInvitationsUseCase {
+    return this._createEmailInvitationsUseCase;
+  }
+
+  public get studentJoinClassUseCase(): StudentJoinClassUseCase {
+    return this._studentJoinClassUseCase;
   }
 
   // Student Use Cases
