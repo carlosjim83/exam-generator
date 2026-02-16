@@ -9,11 +9,13 @@ WORKDIR /app
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY backend/package.json ./backend/
 COPY backend/prisma ./backend/prisma
+
+# Install dependencies in workspace root
+RUN pnpm install --frozen-lockfile
+
+# Copy source files after install
 COPY backend/src ./backend/src
 COPY backend/tsconfig.json ./backend/
-
-# Install dependencies
-RUN pnpm install --frozen-lockfile
 
 # Generate Prisma Client
 RUN cd backend && pnpm prisma:generate
