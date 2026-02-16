@@ -1,17 +1,14 @@
+import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
+
 export class EnrollmentId {
   readonly value: string;
 
   constructor(value?: string) {
-    this.value = value || crypto.randomUUID();
+    this.value = value || uuidv4();
 
-    if (value && !this.isValidUUID(value)) {
+    if (value && !uuidValidate(value)) {
       throw new Error('Invalid EnrollmentId: must be a valid UUID');
     }
-  }
-
-  private isValidUUID(uuid: string): boolean {
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    return uuidRegex.test(uuid);
   }
 
   getValue(): string {
@@ -24,5 +21,9 @@ export class EnrollmentId {
 
   toString(): string {
     return this.value;
+  }
+
+  static fromString(value: string): EnrollmentId {
+    return new EnrollmentId(value);
   }
 }

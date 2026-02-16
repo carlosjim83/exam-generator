@@ -11,6 +11,7 @@ export interface IClassRepository {
   ): Promise<{ classes: Class[]; total: number }>;
   save(classEntity: Class): Promise<void>;
   delete(id: ClassId): Promise<void>;
-  existsByCode(code: string): Promise<boolean>;
+  existsByCode(code: string, excludeId?: ClassId): Promise<boolean>;
   countStudents(classId: ClassId): Promise<number>;
+  countByTeacherId(teacherId: UserId): Promise<number>;
 }
