@@ -65,8 +65,13 @@ export { AcceptInvitationUseCase } from './classes/AcceptInvitationUseCase.js';
 export { AssignExamToClassUseCase } from './classes/AssignExamToClassUseCase.js';
 export { DeleteClassUseCase } from './classes/DeleteClassUseCase.js';
 export { ImportStudentsCSVUseCase } from './classes/ImportStudentsCSVUseCase.js';
+export { GetClassInvitationsUseCase } from './classes/GetClassInvitationsUseCase.js';
+export { ResendInvitationUseCase } from './classes/ResendInvitationUseCase.js';
 
 // Export input/output types for classes use cases
+export type { GetClassInvitationsCommand } from './classes/GetClassInvitationsUseCase.js';
+export type { ResendInvitationCommand } from './classes/ResendInvitationUseCase.js';
+export type { ImportStudentsCSVCommand } from './classes/ImportStudentsCSVUseCase.js';
 export type { CreateClassCommand } from './classes/CreateClassUseCase.js';
 export type { CreateEmailInvitationsCommand } from './classes/CreateEmailInvitationsUseCase.js';
 export type { StudentJoinClassCommand } from './classes/StudentJoinClassUseCase.js';

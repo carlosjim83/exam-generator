@@ -60,7 +60,9 @@ import {
   AcceptInvitationUseCase,
   AssignExamToClassUseCase,
   DeleteClassUseCase,
-  ImportStudentsCSVUseCase, // Added
+  ImportStudentsCSVUseCase,
+  GetClassInvitationsUseCase,
+  ResendInvitationUseCase, // Added
 } from '../application/use-cases/index.js';
 
 // Student Use Cases
@@ -150,6 +152,8 @@ export class Container {
   private readonly _assignExamToClassUseCase: AssignExamToClassUseCase;
   private readonly _deleteClassUseCase: DeleteClassUseCase;
   private readonly _importStudentsCSVUseCase: ImportStudentsCSVUseCase;
+  private readonly _getClassInvitationsUseCase: GetClassInvitationsUseCase;
+  private readonly _resendInvitationUseCase: ResendInvitationUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -306,6 +310,14 @@ export class Container {
     );
     this._deleteClassUseCase = new DeleteClassUseCase(this._classRepository);
     this._importStudentsCSVUseCase = new ImportStudentsCSVUseCase(
+      this._invitationRepository,
+      this._classRepository
+    );
+    this._getClassInvitationsUseCase = new GetClassInvitationsUseCase(
+      this._invitationRepository,
+      this._classRepository
+    );
+    this._resendInvitationUseCase = new ResendInvitationUseCase(
       this._invitationRepository,
       this._classRepository
     );
@@ -513,6 +525,20 @@ export class Container {
 
   public get importStudentsCSVUseCase(): ImportStudentsCSVUseCase {
     return this._importStudentsCSVUseCase;
+  }
+
+  public get getClassInvitationsUseCase(): GetClassInvitationsUseCase {
+    return this._getClassInvitationsUseCase;
+  }
+
+  public get resendInvitationUseCase(): ResendInvitationUseCase {
+    return this._resendInvitationUseCase;
+  }
+
+  // Repositories Getters
+
+  public get invitationRepository(): IInvitationRepository {
+    return this._invitationRepository;
   }
 
   // Student Use Cases

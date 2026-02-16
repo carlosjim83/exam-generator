@@ -6,6 +6,7 @@
 import { FastifyInstance } from 'fastify';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
+import { GetClassInvitationsCommand } from '@application/use-cases/classes/GetClassInvitationsUseCase.js';
 import { GetClassStudentsCommand } from '@application/use-cases/classes/GetClassStudentsUseCase.js';
 import { StudentJoinClassCommand } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
 import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
@@ -301,12 +302,16 @@ export async function classRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (_request, reply) => {
-      // Note: Not implemented yet - need invitation listing
-      // @ts-ignore
-      reply.status(501).send({
-        error: 'Not Implemented',
-        message: 'List invitations not yet implemented',
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+
+      const command = new GetClassInvitationsCommand(classId, userId);
+
+      const result = await container.getClassInvitationsUseCase.execute(command);
+
+      reply.status(200).send({
+        invitations: result.invitations,
       });
     }
   );
@@ -379,13 +384,22 @@ export async function classRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (_request, reply) => {
-      // Note: Not implemented yet - need email sending logic
-      // @ts-ignore
-      reply.status(501).send({
-        error: 'Not Implemented',
-        message: 'Resend invitation not yet implemented',
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { token } = request.params as { token: string };
+
+      // Find invitation by token first to get the invitationId
+      const invitation = await container.invitationRepository.findByToken(token);
+      if (!invitation) {
+        return;
+      }
+
+      await container.resendInvitationUseCase.execute({
+        invitationId: invitation.id.toString(),
+        userId,
       });
+
+      reply.status(204).send();
     }
   );
 }
