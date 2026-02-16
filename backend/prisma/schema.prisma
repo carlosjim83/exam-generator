@@ -38,7 +38,10 @@ model User {
   preferences        UserPreferences?
   studentAssignments ExamAssignment[] @relation("StudentAssignments")
   teacherAssignments ExamAssignment[] @relation("TeacherAssignments")
-  
+  taughtClasses      Class[]          @relation("TeacherClasses")
+  joinedClasses      StudentEnrollment[] @relation("StudentEnrollments")
+  createdInvitations Invitation[]     @relation("CreatedInvitations")
+
   @@map("users")
 }
 
@@ -280,4 +283,82 @@ model StudentAnswer {
   @@unique([assignmentId, questionId]) // One answer per question per assignment
   @@map("student_answers")
   @@index([assignmentId])
+}
+
+// ============================================================================
+// Classes & Invitations Module
+// ============================================================================
+
+model Class {
+  id          String   @id @default(uuid())
+  teacherId   String   @map("teacher_id")
+  name        String
+  code        String   @unique
+  description String?  @db.Text
+  color       String?  // Hex color code (#RRGGBB)
+
+  // Timestamps
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  teacher     User                  @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: Cascade)
+  enrollments StudentEnrollment[]
+  invitations Invitation[]
+
+  @@map("classes")
+  @@index([teacherId])
+  @@index([code])
+}
+
+model StudentEnrollment {
+  id        String   @id @default(uuid())
+  classId   String   @map("class_id")
+  studentId String   @map("student_id")
+
+  // Timestamps
+  joinedAt  DateTime @default(now()) @map("joined_at")
+  leftAt    DateTime? @map("left_at")
+  isActive  Boolean  @default(true)
+
+  // Relations
+  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student   User     @relation("StudentEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentId])
+  @@map("student_enrollments")
+  @@index([classId])
+  @@index([studentId])
+  @@index([classId, isActive])
+}
+
+model Invitation {
+  id        String              @id @default(uuid())
+  classId   String              @map("class_id")
+  teacherId String              @map("teacher_id")
+  email     String
+  status    InvitationStatus    @default(PENDING)
+  token     String              @unique
+
+  // Timestamps
+  expiresAt DateTime            @map("expires_at")
+  acceptedAt DateTime?          @map("accepted_at")
+  createdAt DateTime            @default(now()) @map("created_at")
+
+  // Relations
+  class     Class               @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacher   User                @relation("CreatedInvitations", fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@map("invitations")
+  @@index([classId])
+  @@index([token])
+  @@index([status])
+  @@index([email])
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  EXPIRED
+  REVOKED
 }

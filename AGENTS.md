@@ -465,23 +465,201 @@ git push origin feature/proper-branch
 
 ---
 
+## 🏗️ ARCHITECTURE PRINCIPLES
+
+### 10. **ARCHITECTURE DECISION RECORDS (ADRs)**
+
+Before making significant architectural changes, **ALWAYS** consult existing ADRs:
+
+- [ADR 0001: Monorepo Structure](docs/adr/0001-monorepo-structure.md) - pnpm workspaces + Turborepo
+- [ADR 0002: Fastify Backend Framework](docs/adr/0002-backend-framework.md) - Fastify vs Express vs NestJS
+- [ADR 0003: PostgreSQL + pgvector](docs/adr/0003-database-choice.md) - Database and vector embeddings
+- [ADR 0004: Authentication Strategy](docs/adr/0004-authentication-strategy.md) - JWT, OAuth, RBAC
+- [ADR 0005: AI Provider](docs/adr/0005-ai-provider.md) - OpenAI GPT-4o
+- [ADR 0006: File Storage](docs/adr/0006-file-storage.md) - Azure Blob Storage
+- [ADR 0007: RAG Implementation](docs/adr/0007-rag-implementation.md) - Document parsing, embeddings, similarity search
+- [ADR 0008: Redis Migration](docs/adr/0008-redis-migration.md) - BullMQ queue with Redis
+- [ADR 0009: Clean Architecture with DDD](docs/adr/0009-clean-architecture.md) - Domain entities, repositories, use cases
+
+**When implementing features:**
+
+1. Follow Clean Architecture (ADR 0009): Domain → Application → Infrastructure → Routes
+2. Use path aliases (Section 9): `@domain/*`, `@application/*`, `@infrastructure/*`
+3. Create entities with business logic in `@domain/entities/`
+4. Define repository interfaces in `@domain/repositories/`
+5. Implement use cases in `@application/use-cases/`
+6. Implement repositories in `@infrastructure/persistence`
+
+### 11. **DOMAIN-DRIVEN DESIGN PATTERNS**
+
+**Entities:**
+
+- `@domain/entities/` - Rich domain models with business rules
+- Always include validation logic in constructors
+- Use value objects for IDs and domain primitives
+
+**Value Objects:**
+
+- `@domain/value-objects/` - Immutable objects identified by attributes
+- Examples: `UserId`, `ExamId`, `Email`, `Percentage`
+- Always validate in constructor and expose via getters
+
+**Use Cases:**
+
+- `@application/use-cases/` - Application orchestration layer
+- One use case = one business transaction
+- Coordinate domain entities and repositories
+- Return domain entities, not DTOs
+
+**Repositories:**
+
+- Interface in `@domain/repositories/`
+- Implementation in `@infrastructure/persistence/`
+- Use Prisma for PostgreSQL queries
+- Map database records to domain entities
+
+### 12. **SPECS-DRIVEN DEVELOPMENT**
+
+**Workflow for New Features:**
+
+1. **Create Spec Document First**
+   - Write comprehensive spec in `docs/specs/` directory
+   - Define requirements, entities, use cases, API endpoints
+   - Include database schema, UI mockups, testing strategy
+   - Get spec approved before writing code
+
+2. **Create Separate Branches for Backend and Frontend**
+
+   ```
+   backend:  feature/classes-and-invitations-backend
+   frontend: feature/classes-and-invitations-frontend
+   ```
+
+3. **Create Separate Pull Requests**
+   - Backend PR: Only backend changes (domain, application, infrastructure, routes)
+   - Frontend PR: Only frontend changes (components, pages, hooks)
+   - Each PR must be independently reviewable and testable
+
+4. **PR Scope Guidelines**
+   - **Backend PR includes:**
+     - Domain entities and value objects
+     - Repository interfaces and implementations
+     - Use cases
+     - Database schema changes (migrations)
+     - API routes and schemas
+     - Unit tests
+   - **Frontend PR includes:**
+     - Page components
+     - Feature-specific components
+     - API client functions
+     - Type definitions (shared)
+     - E2E tests if applicable
+
+5. **Spec Template** (use for every new feature):
+
+   ```markdown
+   # Spec: [Feature Name]
+
+   ## Overview
+
+   Brief description
+
+   ## Requirements
+
+   - Functional requirements
+   - Non-functional requirements
+
+   ## Domain Model
+
+   - Entities
+   - Value Objects
+   - Relationships
+
+   ## Use Cases
+
+   - Use case 1
+   - Use case 2
+
+   ## API Endpoints
+
+   - GET /endpoint
+   - POST /endpoint
+
+   ## Database Schema
+
+   - Table definitions
+   - Indexes
+   - Migrations
+
+   ## UI Components
+
+   - Page layouts
+   - Component hierarchy
+
+   ## Testing Strategy
+
+   - Unit tests
+   - Integration tests
+   - E2E tests
+
+   ## Acceptance Criteria
+
+   - [ ] Requirement 1 satisfied
+   - [ ] Requirement 2 satisfied
+   ```
+
+6. **No Mixing PRs**
+   - ❌ Never mix backend + frontend in one PR
+   - ❌ Never mix multiple features in one PR
+   - ✅ One PR = One logical feature + One layer (backend OR frontend)
+
+7. **Spec Location**
+   - All specs in `docs/specs/[feature-name].md`
+   - Reference spec in PR description: `[Spec Link](../../docs/specs/feature-name.md)`
+
+---
+
+## 🚫 CRITICAL: NO MONOLITHIC PRs
+
+**When working on features:**
+
+1. ❌ DON'T create one PR with backend + frontend mixed together
+2. ✅ DO create separate branches: `feature/xxx-backend` and `feature/xxx-frontend`
+3. ✅ DO create separate PRs for backend and frontend
+4. ✅ DO reference the spec in both PRs
+5. ✅ DO ensure each PR can be reviewed independently
+
+**Why?**
+
+- Backend PR can be merged before frontend (or vice versa)
+- Smaller, focused PRs are easier to review
+- If backend PR needs changes, doesn't block frontend PR
+- Follows single responsibility principle at PR level
+
+---
+
 ## 📝 NOTES FOR AI AGENTS
 
 ### When asked to make changes:
 
-1. **ALWAYS ask before committing to main**
+1. **CONSULT ADRs FIRST**
+   - Always check existing Architecture Decision Records
+   - Don't reinvent patterns already established
+   - Follow Clean Architecture principles (ADR 0009)
+
+2. **ALWAYS ask before committing to main**
    - "Should I create a feature branch for this?"
    - "What should I name this branch?"
 
-2. **ALWAYS verify the workflow**
+3. **ALWAYS verify the workflow**
    - "I'll create a branch called `feature/xyz`, is that correct?"
    - "Should I create a PR or just push the branch?"
 
-3. **ALWAYS explain what you're doing**
+4. **ALWAYS explain what you're doing**
    - "I'm creating a feature branch for runtime environment variables"
    - "I'm updating the Dockerfile to remove hardcoded URLs"
 
-4. **ALWAYS wait for confirmation before pushing**
+5. **ALWAYS wait for confirmation before pushing**
    - "Ready to push these changes. Should I proceed?"
    - "I've committed locally. Want me to push and create a PR?"
 
@@ -510,5 +688,5 @@ This document should be updated when:
 - Team grows and needs more structure
 - Lessons learned from incidents
 
-**Last Updated:** February 8, 2026  
-**Version:** 1.0.0
+**Last Updated:** February 15, 2026
+**Version:** 1.2.0 (Added Specs-Driven Development: separate branches/PRs for backend/frontend)

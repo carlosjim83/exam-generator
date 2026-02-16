@@ -1,0 +1,405 @@
+/**
+ * Class Routes
+ * API endpoints for class creation and management
+ */
+
+import { FastifyInstance } from 'fastify';
+import { container } from '@config/container.js';
+import { authenticateUser } from '@middleware/auth.middleware.js';
+import { GetClassInvitationsCommand } from '@application/use-cases/classes/GetClassInvitationsUseCase.js';
+import { GetClassStudentsCommand } from '@application/use-cases/classes/GetClassStudentsUseCase.js';
+import { StudentJoinClassCommand } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
+import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
+import { CreateEmailInvitationsCommand } from '@application/use-cases/classes/CreateEmailInvitationsUseCase.js';
+import { ImportStudentsCSVCommand } from '@application/use-cases/classes/ImportStudentsCSVUseCase.js';
+
+export async function classRoutes(fastify: FastifyInstance) {
+  // POST /classes - Create a new class
+  fastify.post(
+    '/classes',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Create a new class',
+        description: 'Create a new class with a unique code that students can join',
+        security: [{ bearerAuth: [] }],
+        body: {
+          type: 'object',
+          required: ['name'],
+          properties: {
+            name: {
+              type: 'string',
+              minLength: 1,
+              maxLength: 255,
+              description: 'Name of the class (e.g., "Mathematics 101")',
+            },
+            description: {
+              type: 'string',
+              maxLength: 5000,
+              nullable: true,
+              description: 'Optional description of the class',
+            },
+            color: {
+              type: 'string',
+              pattern: '^#[0-9A-Fa-f]{6}$',
+              nullable: true,
+              description: 'Hex color code for UI (e.g., "#FF5733")',
+            },
+          },
+        },
+        response: {
+          201: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'string' },
+              code: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              teacherId: { type: 'string', format: 'uuid' },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { classId } = request.params as { classId: string };
+      const {
+        page = 1,
+        limit = 20,
+        search = '',
+      } = request.query as {
+        page?: number;
+        limit?: number;
+        search?: string;
+      };
+
+      const command = new GetClassStudentsCommand(classId, page, limit, search);
+
+      const result = await container.getClassStudentsUseCase.execute(command);
+
+      // @ts-ignore - Schema allows 200
+      reply.status(200).send({
+        students: result.students.map((s: any) => ({
+          id: s.id.toString(),
+          email: s.email,
+          firstName: s.firstName,
+          lastName: s.lastName,
+          joinedAt: s.joinedAt.toISOString(),
+          isActive: s.isActive,
+        })),
+        total: result.total,
+        page,
+        limit,
+      });
+    }
+  );
+
+  // POST /classes/:classId/join - Student joins class
+  fastify.post(
+    '/classes/:classId/join',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Student joins a class',
+        description: 'Student joins a class using class ID',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId'],
+        },
+        response: {
+          201: {
+            type: 'object',
+            properties: {
+              classId: { type: 'string', format: 'uuid' },
+              joinedAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+
+      const command = new StudentJoinClassCommand(classId, userId);
+
+      const result = await container.studentJoinClassUseCase.execute(command);
+
+      reply.status(201).send({
+        classId: result.classId.toString(),
+        joinedAt: result.joinedAt.toISOString(),
+      });
+    }
+  );
+
+  // POST /classes/:classId/invitations - Invite students by email
+  fastify.post(
+    '/classes/:classId/invitations',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Invite students by email',
+        description: 'Create invitations for students via email',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId'],
+        },
+        body: {
+          type: 'object',
+          required: ['emails'],
+          properties: {
+            emails: {
+              type: 'array',
+              items: { type: 'string', format: 'email' },
+              maxItems: 50,
+            },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              invitations: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    email: { type: 'string' },
+                    status: { type: 'string', enum: ['PENDING'] },
+                    expiresAt: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+      const { emails } = request.body as { emails: string[] };
+
+      const command = new CreateEmailInvitationsCommand(classId, userId, emails);
+
+      const result = await container.createEmailInvitationsUseCase.execute(command);
+
+      reply.status(200).send({
+        invitations: result.map((i: any) => ({
+          email: i.email,
+          status: i.status,
+          expiresAt: i.expiresAt.toISOString(),
+        })),
+      });
+    }
+  );
+
+  // POST /classes/:classId/invitations/csv - Import students from CSV
+  fastify.post(
+    '/classes/:classId/invitations/csv',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Import students from CSV file',
+        description: 'Upload CSV file to create invitations for students',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId'],
+        },
+        body: {
+          type: 'object',
+          properties: {
+            file: { type: 'string', format: 'binary' },
+          },
+          required: ['file'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              imported: { type: 'integer' },
+              failed: { type: 'integer' },
+              errors: {
+                type: 'array',
+                items: { type: 'string' },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+      const { csvContent } = request.body as { csvContent: string };
+
+      const command = new ImportStudentsCSVCommand(classId, userId, csvContent);
+
+      const result = await container.importStudentsCSVUseCase.execute(command);
+
+      reply.status(200).send({
+        imported: result.imported,
+        failed: result.failed,
+        errors: result.errors,
+      });
+    }
+  );
+
+  // GET /classes/:classId/invitations - List invitations
+  fastify.get(
+    '/classes/:classId/invitations',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'List all invitations for a class',
+        description: 'Get all invitations for a class with their status',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              invitations: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    email: { type: 'string' },
+                    status: { type: 'string' },
+                    expiresAt: { type: 'string', format: 'date-time' },
+                    acceptedAt: { type: 'string', format: 'date-time', nullable: true },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+
+      const command = new GetClassInvitationsCommand(classId, userId);
+
+      const result = await container.getClassInvitationsUseCase.execute(command);
+
+      reply.status(200).send({
+        invitations: result.invitations,
+      });
+    }
+  );
+
+  // POST /invitations/:token/accept - Accept invitation
+  fastify.post(
+    '/invitations/:token/accept',
+    {
+      schema: {
+        tags: ['invitations'],
+        summary: 'Accept invitation and join class',
+        description: 'Accept invitation using token (public endpoint)',
+        params: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' },
+          },
+          required: ['token'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              classId: { type: 'string', format: 'uuid' },
+              joinedAt: { type: 'string', format: 'date-time' },
+            },
+          },
+          302: {
+            description: 'Redirect to class page',
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { token } = request.params as { token: string };
+      const userId = (request as any).user?.userId;
+
+      const command = new StudentJoinClassWithInvitationCommand(token, userId);
+
+      const result = await container.studentJoinClassWithInvitationUseCase.execute(command);
+
+      reply.status(200).send({
+        classId: result.classId.toString(),
+        joinedAt: result.joinedAt.toISOString(),
+      });
+    }
+  );
+
+  // POST /invitations/:token/resend - Resend invitation
+  fastify.post(
+    '/invitations/:token/resend',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['invitations'],
+        summary: 'Resend invitation email',
+        description: 'Resend invitation email to student',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' },
+          },
+          required: ['token'],
+        },
+        response: {
+          204: {
+            description: 'Invitation resent successfully',
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { token } = request.params as { token: string };
+
+      // Find invitation by token first to get the invitationId
+      const invitation = await container.invitationRepository.findByToken(token);
+      if (!invitation) {
+        return;
+      }
+
+      await container.resendInvitationUseCase.execute({
+        invitationId: invitation.id.toString(),
+        userId,
+      });
+
+      reply.status(204).send();
+    }
+  );
+}
