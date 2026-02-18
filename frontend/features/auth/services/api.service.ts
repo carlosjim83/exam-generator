@@ -43,12 +43,17 @@ export class ApiError extends Error {
 
 // API Client
 class ApiClient {
-  private get baseURL(): string {
+  private async getBaseURL(): Promise<string> {
+    // Wait for config to be initialized before making requests
+    if (!configManager.isInitialized()) {
+      await configManager.initialize();
+    }
     return configManager.getApiUrl();
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+    const baseURL = await this.getBaseURL();
+    const url = `${baseURL}${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
