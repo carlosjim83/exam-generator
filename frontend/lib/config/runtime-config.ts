@@ -47,12 +47,15 @@ export async function getRuntimeConfig(): Promise<RuntimeConfig> {
       return config;
     })
     .catch((error) => {
-      console.error('Failed to load runtime config, using defaults:', error);
+      console.error('[RuntimeConfig] Failed to load runtime config:', error);
       configPromise = null;
 
-      // Fallback to build-time config or defaults
+      // Fallback to build-time config (NEXT_PUBLIC_API_URL) if available
+      // Do NOT use localhost:3001 as fallback - this causes production failures
+      const buildTimeApiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+
       const fallbackConfig: RuntimeConfig = {
-        apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
+        apiUrl: buildTimeApiUrl,
         environment: process.env.NODE_ENV || 'development',
       };
 

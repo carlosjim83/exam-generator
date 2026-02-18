@@ -48,7 +48,11 @@ class ApiClient {
     if (!configManager.isInitialized()) {
       await configManager.initialize();
     }
-    return configManager.getApiUrl();
+    const url = configManager.getApiUrl();
+    if (!url) {
+      throw new ApiError(500, 'API base URL is not configured. Check your environment variables.');
+    }
+    return url;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
