@@ -3,7 +3,7 @@
 # ================================
 FROM node:20-alpine AS deps
 
-# Force rebuild - v2026.02.18.02
+# Force rebuild - v2026.02.18.03
 # Install pnpm (use version from packageManager field)
 RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
@@ -42,7 +42,6 @@ COPY frontend ./frontend
 WORKDIR /app/frontend
 
 # Set build-time environment variables
-# NEXT_PUBLIC_* variables must be set at build time
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
@@ -51,6 +50,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build Next.js application with standalone output
 RUN pnpm build
+
+# Debug: check what's in standalone
+RUN echo "=== Standalone contents ===" && find .next/standalone -type f -name "*.js" | head -20
 
 # ================================
 # Stage 3: Runner (Production)
@@ -70,20 +72,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
-# Copy standalone output - Next.js standalone includes all necessary node_modules
-WORKDIR /app
+# Copy standalone output
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 
-# Debug: show what we got
-RUN echo "=== Standalone structure ===" && find . -maxdepth 3 -type f -name "*.js" | head -20
+# Copy public and static files if they exist
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./public/ || true
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static/ || true
 
-# Verify structure
-RUN echo "=== Checking standalone structure ===" && \
-    ls -la /app/ && \
-    echo "=== Checking for next.js ===" && \
-    find /app -path "*/node_modules/next" -type d | head -5 && \
-    echo "=== Checking server.js ===" && \
-    find /app -name "server.js" -type f
+# Debug: show final structure
+RUN echo "=== Final structure ===" && ls -la && find . -name "server.js" && find . -name "package.json"
 
 # Switch to non-root user
 USER nextjs
@@ -98,5 +95,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start Next.js server
-CMD ["server.js"]
+# CMD with fallback - try multiple locations for server.js
+CMD ["sh", "-c", "node server.js || node ./server.js || node ./frontend/server.js || exit 1"]
