@@ -77,8 +77,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 RUN mkdir -p public
 RUN if [ -d /app/frontend/public ]; then cp -r /app/frontend/public/* ./public/ 2>/dev/null || true; fi
 
-# Copy static files if directory exists
-RUN if [ -d /app/frontend/.next/static ]; then cp -r /app/frontend/.next/static/* ./.next/static/ 2>/dev/null || true; fi
+# Copy static files to the correct location for standalone mode
+# The standalone server looks for files at ./frontend/.next/static/ (relative to WORKDIR /app)
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static/
 
 # Switch to non-root user
 USER nextjs
