@@ -94,4 +94,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start Next.js server
-CMD ["node", "server.js"]
+# The standalone structure may have server.js at different locations depending on monorepo setup
+CMD ["sh", "-c", "if [ -f ./server.js ]; then node ./server.js; elif [ -f ./frontend/server.js ]; then cd /app/frontend && node server.js; else echo 'ERROR: server.js not found' && find /app -name 'server.js' && exit 1; fi"]
