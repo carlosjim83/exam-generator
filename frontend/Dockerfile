@@ -71,12 +71,11 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
 # Copy standalone output - Next.js standalone includes all necessary node_modules
-# The structure depends on monorepo setup
+WORKDIR /app
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 
-# Copy public assets and static files
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./public/
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static 2>/dev/null || true
+# Debug: show what we got
+RUN echo "=== Standalone structure ===" && find . -maxdepth 3 -type f -name "*.js" | head -20
 
 # Verify structure
 RUN echo "=== Checking standalone structure ===" && \
