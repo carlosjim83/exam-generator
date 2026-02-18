@@ -3,7 +3,7 @@
 # ================================
 FROM node:20-alpine AS deps
 
-# Force rebuild - v2026.02.18.03
+# Force rebuild - v2026.02.18.04
 # Install pnpm (use version from packageManager field)
 RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
 
@@ -51,9 +51,6 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Build Next.js application with standalone output
 RUN pnpm build
 
-# Debug: check what's in standalone
-RUN echo "=== Standalone contents ===" && find .next/standalone -type f -name "*.js" | head -20
-
 # ================================
 # Stage 3: Runner (Production)
 # ================================
@@ -75,12 +72,17 @@ RUN addgroup -g 1001 -S nodejs && \
 # Copy standalone output
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 
-# Copy public and static files if they exist
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./public/ || true
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static/ || true
+# Copy public files if directory exists
+RUN mkdir -p public
+RUN if [ -d /app/frontend/public ]; then \
+      cp -r /app/frontend/public/* ./public/ 2>/dev/null || true; \
+    fi
 
-# Debug: show final structure
-RUN echo "=== Final structure ===" && ls -la && find . -name "server.js" && find . -name "package.json"
+# Copy static files if directory exists
+RUN mkdir -p .next/static
+RUN if [ -d /app/frontend/.next/static ]; then \
+      cp -r /app/frontend/.next/static/* ./.next/static/ 2>/dev/null || true; \
+    fi
 
 # Switch to non-root user
 USER nextjs
@@ -95,5 +97,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# CMD with fallback - try multiple locations for server.js
-CMD ["sh", "-c", "node server.js || node ./server.js || node ./frontend/server.js || exit 1"]
+# Start Next.js server
+CMD ["node", "server.js"]
