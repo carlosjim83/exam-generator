@@ -19,7 +19,12 @@ vi.mock('../../services/student-exam-api.service', () => ({
 }));
 
 describe('useStudentExams', () => {
-  const mockToken = 'test-jwt-token';
+  // Mock TokenManager
+  vi.mock('@/lib/api-client', () => ({
+    TokenManager: {
+      getAccessToken: vi.fn().mockReturnValue('test-jwt-token'),
+    },
+  }));
 
   const mockExams: StudentExamListItem[] = [
     {
@@ -65,14 +70,14 @@ describe('useStudentExams', () => {
       .mockImplementation(() => new Promise(() => {}));
 
     // Act
-    const { result } = renderHook(() => useStudentExams(mockToken));
+    const { result } = renderHook(() => useStudentExams());
 
     // Assert
     expect(result.current.exams).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBeNull();
     expect(typeof result.current.refetch).toBe('function');
-    expect(getAssignedExamsMock).toHaveBeenCalledWith(mockToken);
+    expect(getAssignedExamsMock).toHaveBeenCalledWith();
   });
 
   it('should fetch and return exams successfully', async () => {
@@ -82,7 +87,7 @@ describe('useStudentExams', () => {
       .mockResolvedValue(mockExams);
 
     // Act
-    const { result } = renderHook(() => useStudentExams(mockToken));
+    const { result } = renderHook(() => useStudentExams());
 
     // Assert: Initial state
     expect(result.current.loading).toBe(true);
@@ -97,7 +102,7 @@ describe('useStudentExams', () => {
     expect(result.current.exams).toEqual(mockExams);
     expect(result.current.error).toBeNull();
     expect(getAssignedExamsMock).toHaveBeenCalledTimes(1);
-    expect(getAssignedExamsMock).toHaveBeenCalledWith(mockToken);
+    expect(getAssignedExamsMock).toHaveBeenCalledWith();
   });
 
   it('should handle API errors gracefully', async () => {
@@ -108,7 +113,7 @@ describe('useStudentExams', () => {
       .mockRejectedValue(mockError);
 
     // Act
-    const { result } = renderHook(() => useStudentExams(mockToken));
+    const { result } = renderHook(() => useStudentExams());
 
     // Wait for async fetch to complete
     await waitFor(() => {
@@ -128,7 +133,7 @@ describe('useStudentExams', () => {
       .spyOn(studentExamAPI, 'getAssignedExams')
       .mockResolvedValue(mockExams);
 
-    const { result } = renderHook(() => useStudentExams(mockToken));
+    const { result } = renderHook(() => useStudentExams());
 
     // Wait for initial fetch
     await waitFor(() => {
@@ -151,7 +156,7 @@ describe('useStudentExams', () => {
     const getAssignedExamsMock = vi.spyOn(studentExamAPI, 'getAssignedExams').mockResolvedValue([]);
 
     // Act
-    const { result } = renderHook(() => useStudentExams(mockToken));
+    const { result } = renderHook(() => useStudentExams());
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -161,34 +166,6 @@ describe('useStudentExams', () => {
     expect(result.current.exams).toEqual([]);
     expect(result.current.error).toBeNull();
     expect(result.current.loading).toBe(false);
-  });
-
-  it('should refetch when token changes', async () => {
-    // Arrange
-    const getAssignedExamsMock = vi
-      .spyOn(studentExamAPI, 'getAssignedExams')
-      .mockResolvedValue(mockExams);
-
-    const { result, rerender } = renderHook(({ token }) => useStudentExams(token), {
-      initialProps: { token: 'token-1' },
-    });
-
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-    });
-
-    expect(getAssignedExamsMock).toHaveBeenCalledWith('token-1');
-    expect(getAssignedExamsMock).toHaveBeenCalledTimes(1);
-
-    // Act: Change token
-    rerender({ token: 'token-2' });
-
-    // Assert: Should refetch with new token
-    await waitFor(() => {
-      expect(getAssignedExamsMock).toHaveBeenCalledWith('token-2');
-    });
-
-    expect(getAssignedExamsMock).toHaveBeenCalledTimes(2);
   });
 
   it('should successfully refetch and update data', async () => {
@@ -201,7 +178,7 @@ describe('useStudentExams', () => {
       .mockResolvedValueOnce(initialExams) // First call
       .mockResolvedValueOnce(updatedExams); // Second call (refetch)
 
-    const { result } = renderHook(() => useStudentExams(mockToken));
+    const { result } = renderHook(() => useStudentExams());
 
     // Wait for initial fetch
     await waitFor(() => {
