@@ -26,7 +26,7 @@ class PreferencesService {
    * Get user preferences
    */
   async getPreferences(): Promise<UserPreferences> {
-    const response = await apiClient.get<PreferencesResponse>('/preferences');
+    const response = await apiClient.get<PreferencesResponse>('/api/preferences');
     return {
       language: response.language as 'en' | 'es',
       theme: response.theme as 'light' | 'dark',
@@ -37,7 +37,7 @@ class PreferencesService {
    * Update user preferences
    */
   async updatePreferences(data: UpdatePreferencesRequest): Promise<UserPreferences> {
-    const response = await apiClient.patch<UpdatePreferencesResponse>('/preferences', data);
+    const response = await apiClient.patch<UpdatePreferencesResponse>('/api/preferences', data);
     return {
       language: response.language as 'en' | 'es',
       theme: response.theme as 'light' | 'dark',

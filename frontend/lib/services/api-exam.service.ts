@@ -11,6 +11,7 @@
 'use client';
 
 import { configManager } from '@/lib/config/config-manager';
+import { TokenManager } from '@/lib/api-client';
 
 export type QuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER';
 export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD' | 'MIXED';
@@ -77,8 +78,7 @@ export class ApiExamService {
   }
 
   private getAuthToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('access_token');
+    return TokenManager.getAccessToken();
   }
 
   /**
@@ -90,7 +90,7 @@ export class ApiExamService {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${this.API_BASE_URL}/exams/generate`, {
+    const response = await fetch(`${this.API_BASE_URL}/api/exams/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ export class ApiExamService {
     }
 
     try {
-      const response = await fetch(`${this.API_BASE_URL}/exams`, {
+      const response = await fetch(`${this.API_BASE_URL}/api/exams`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -154,7 +154,7 @@ export class ApiExamService {
     }
 
     try {
-      const response = await fetch(`${this.API_BASE_URL}/exams/${id}`, {
+      const response = await fetch(`${this.API_BASE_URL}/api/exams/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -183,7 +183,7 @@ export class ApiExamService {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${this.API_BASE_URL}/exams/${id}`, {
+    const response = await fetch(`${this.API_BASE_URL}/api/exams/${id}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,

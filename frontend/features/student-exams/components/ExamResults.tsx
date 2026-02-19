@@ -20,16 +20,13 @@ import { cn } from '@/lib/utils';
 
 interface ExamResultsProps {
   assignmentId: string;
-  token: string;
   onBack?: () => void;
 }
 
-export function ExamResults({ assignmentId, token, onBack }: ExamResultsProps) {
+export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
   const { t } = useTranslation('student');
-  const { results, loading, error, score, maxScore, percentage, refetch } = useExamResults(
-    assignmentId,
-    token
-  );
+  const { results, loading, error, score, maxScore, percentage, refetch } =
+    useExamResults(assignmentId);
 
   // Calculate statistics
   const stats = useMemo(() => {

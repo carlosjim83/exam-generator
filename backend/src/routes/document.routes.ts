@@ -1,12 +1,12 @@
 import { FastifyInstance } from 'fastify';
-import { container } from '../config/container.js';
-import { authenticateUser } from '../middleware/auth.middleware.js';
-import { queueDocumentProcessing, retryFailedJob } from '../infrastructure/queue/DocumentQueue.js';
+import { container } from '@config/container.js';
+import { authenticateUser } from '@middleware/auth.middleware.js';
+import { queueDocumentProcessing, retryFailedJob } from '@infrastructure/queue/DocumentQueue.js';
 
 export async function documentRoutes(fastify: FastifyInstance) {
-  // POST /documents/upload - Upload a document (PDF or DOCX)
+  // POST /api/documents/upload - Upload a document (PDF or DOCX)
   fastify.post(
-    '/documents/upload',
+    '/api/documents/upload',
     {
       preHandler: authenticateUser, // Require authentication
       schema: {
@@ -155,9 +155,9 @@ export async function documentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /documents - List user's documents
+  // GET /api/documents - List user's documents
   fastify.get(
-    '/documents',
+    '/api/documents',
     {
       preHandler: authenticateUser,
       schema: {
@@ -235,9 +235,9 @@ export async function documentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /documents/:id - Get document details
+  // GET /api/documents/:id - Get document details
   fastify.get(
-    '/documents/:id',
+    '/api/documents/:id',
     {
       preHandler: authenticateUser,
       schema: {
@@ -358,9 +358,9 @@ export async function documentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /documents/:id/process - Process a document with Genkit (extract text, embeddings, RAG)
+  // POST /api/documents/:id/process - Process a document with Genkit (extract text, embeddings, RAG)
   fastify.post(
-    '/documents/:id/process',
+    '/api/documents/:id/process',
     {
       preHandler: authenticateUser,
       schema: {
@@ -505,9 +505,9 @@ export async function documentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /documents/:id/reprocess - Reprocess a failed or completed document
+  // POST /api/documents/:id/reprocess - Reprocess a failed or completed document
   fastify.post(
-    '/documents/:id/reprocess',
+    '/api/documents/:id/reprocess',
     {
       preHandler: authenticateUser,
       schema: {
@@ -641,9 +641,9 @@ export async function documentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /documents/:documentId/query - Query a document using semantic search
+  // POST /api/documents/:documentId/query - Query a document using semantic search
   fastify.post(
-    '/documents/:documentId/query',
+    '/api/documents/:documentId/query',
     {
       preHandler: authenticateUser,
       schema: {
@@ -806,9 +806,9 @@ export async function documentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // DELETE /documents/:id - Delete a document
+  // DELETE /api/documents/:id - Delete a document
   fastify.delete(
-    '/documents/:id',
+    '/api/documents/:id',
     {
       preHandler: authenticateUser,
       schema: {
@@ -916,9 +916,9 @@ export async function documentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /documents/:id/download - Download a document
+  // GET /api/documents/:id/download - Download a document
   fastify.get(
-    '/documents/:id/download',
+    '/api/documents/:id/download',
     {
       preHandler: authenticateUser,
       schema: {

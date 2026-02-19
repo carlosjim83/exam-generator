@@ -138,11 +138,31 @@ await fastify.register(swagger, {
       },
       {
         name: 'documents',
-        description: 'Document upload and management (coming soon)',
+        description: 'Document upload and management',
       },
       {
         name: 'exams',
-        description: 'Exam generation and management (coming soon)',
+        description: 'Exam generation and management',
+      },
+      {
+        name: 'students',
+        description: 'Student exam assignments and submissions',
+      },
+      {
+        name: 'classes',
+        description: 'Class creation and management',
+      },
+      {
+        name: 'invitations',
+        description: 'Class invitations and enrollment',
+      },
+      {
+        name: 'preferences',
+        description: 'User preferences (language, theme)',
+      },
+      {
+        name: 'dashboard',
+        description: 'Dashboard statistics and analytics',
       },
     ],
     components: {
@@ -151,7 +171,8 @@ await fastify.register(swagger, {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'Enter your JWT access token (obtained from /auth/login or /auth/register)',
+          description:
+            'Enter your JWT access token (obtained from /api/auth/login or /api/auth/register)',
         },
       },
     },

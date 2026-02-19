@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { CheckCircle, Loader2, BookOpen, XCircle } from 'lucide-react';
-import { configManager } from '@/lib/config/config-manager';
+import { apiClient } from '@/lib/api-client';
 
 export default function JoinClassPage() {
   const { t } = useTranslation('student');
@@ -28,16 +28,9 @@ export default function JoinClassPage() {
     setError('');
 
     try {
-      const baseURL = configManager.getApiUrl();
-      const response = await fetch(
-        `${baseURL}/api/classes/code/${encodeURIComponent(code.trim())}`
+      const data = await apiClient.publicRequest<{ name: string; teacherName: string }>(
+        `/api/classes/code/${encodeURIComponent(code.trim())}`
       );
-
-      if (!response.ok) {
-        throw new Error(t('joinClass.errors.notFound'));
-      }
-
-      const data = await response.json();
       setClassInfo({
         name: data.name,
         teacher: data.teacherName,
@@ -57,20 +50,7 @@ export default function JoinClassPage() {
     setError('');
 
     try {
-      const baseURL = configManager.getApiUrl();
-      const response = await fetch(`${baseURL}/api/classes/join`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code: code.trim() }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.message || t('joinClass.errors.failed'));
-      }
-
+      await apiClient.post(`/api/classes/${code.trim()}/join`, {});
       setSuccess(true);
       setCode('');
       setClassInfo(null);
@@ -102,9 +82,7 @@ export default function JoinClassPage() {
               </div>
               <div>
                 <CardTitle className="text-2xl mb-2">{t('joinClass.success.title')}</CardTitle>
-                <CardDescription>
-                  {t('joinClass.success.message')}
-                </CardDescription>
+                <CardDescription>{t('joinClass.success.message')}</CardDescription>
               </div>
               <Button onClick={() => (window.location.href = '/dashboard')} className="w-full">
                 {t('joinClass.success.goToDashboard')}
@@ -124,9 +102,7 @@ export default function JoinClassPage() {
             <BookOpen className="h-6 w-6 text-primary" />
           </div>
           <CardTitle className="text-2xl">{t('joinClass.title')}</CardTitle>
-          <CardDescription>
-            {t('joinClass.description')}
-          </CardDescription>
+          <CardDescription>{t('joinClass.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">

@@ -38,11 +38,10 @@ import { cn } from '@/lib/utils';
 
 interface ExamTakingProps {
   assignmentId: string;
-  token: string;
   onComplete?: () => void;
 }
 
-export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps) {
+export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
   const { t } = useTranslation('student');
   const {
     assignment,
@@ -58,7 +57,7 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
     nextQuestion,
     previousQuestion,
     goToQuestion,
-  } = useExamAssignment(assignmentId, token);
+  } = useExamAssignment(assignmentId);
 
   const {
     answers,
@@ -70,7 +69,7 @@ export function ExamTaking({ assignmentId, token, onComplete }: ExamTakingProps)
     submitAnswer,
     submitExam,
     getAnswerForQuestion,
-  } = useExamSubmission(assignmentId, token);
+  } = useExamSubmission(assignmentId);
 
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);

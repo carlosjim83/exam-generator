@@ -7,6 +7,7 @@
 'use client';
 
 import { configManager } from '@/lib/config/config-manager';
+import { TokenManager } from '@/lib/api-client';
 
 export interface WorkerMetrics {
   counts: {
@@ -69,13 +70,13 @@ export interface JobMetrics {
  * Get comprehensive worker metrics
  */
 export async function getWorkerMetrics(): Promise<WorkerMetrics> {
-  const token = localStorage.getItem('token');
+  const token = TokenManager.getAccessToken();
   const API_BASE_URL = configManager.getApiUrl();
 
   const response = await fetch(`${API_BASE_URL}/health/worker`, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: token ? `Bearer ${token}` : '',
     },
   });
 
@@ -92,13 +93,13 @@ export async function getWorkerMetrics(): Promise<WorkerMetrics> {
 export async function getJobMetrics(
   documentId: string
 ): Promise<{ found: boolean; job: JobMetrics | null }> {
-  const token = localStorage.getItem('token');
+  const token = TokenManager.getAccessToken();
   const API_BASE_URL = configManager.getApiUrl();
 
   const response = await fetch(`${API_BASE_URL}/health/worker/job/${documentId}`, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: token ? `Bearer ${token}` : '',
     },
   });
 

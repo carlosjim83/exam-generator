@@ -6,27 +6,19 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { TokenManager } from '@/features/auth/services/api.service';
 import { StudentExamList } from '@/features/student-exams/components/StudentExamList';
 import type { StudentExamListItem } from '@/features/student-exams/types';
 
 export default function StudentExamsPage() {
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // Get token on client side
-    const accessToken = TokenManager.getAccessToken();
-    setToken(accessToken);
-  }, []);
-
-  useEffect(() => {
-    // Redirect if not authenticated or not a student
+    // Redirect if not authenticated
     if (!isLoading && !isAuthenticated) {
       router.push('/login');
     }
@@ -43,7 +35,7 @@ export default function StudentExamsPage() {
     [router]
   );
 
-  if (isLoading || !token) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="px-8 py-8">
@@ -65,7 +57,7 @@ export default function StudentExamsPage() {
             Welcome, {user?.firstName}! Here are your assigned exams.
           </p>
         </div>
-        <StudentExamList token={token} onExamSelect={handleExamSelect} />
+        <StudentExamList onExamSelect={handleExamSelect} />
       </div>
     </DashboardLayout>
   );

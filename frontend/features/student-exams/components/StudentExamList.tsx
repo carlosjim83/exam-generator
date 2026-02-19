@@ -16,7 +16,6 @@ import { useStudentExams } from '../hooks';
 import type { StudentExamListItem, ExamAssignmentStatus } from '../types';
 
 interface StudentExamListProps {
-  token: string;
   onExamSelect?: (exam: StudentExamListItem) => void;
 }
 
@@ -34,9 +33,9 @@ const statusConfig: Record<
   GRADED: { labelKey: 'examList.status.GRADED', variant: 'default', icon: CheckCircle },
 };
 
-export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
+export function StudentExamList({ onExamSelect }: StudentExamListProps) {
   const { t } = useTranslation('student');
-  const { exams, loading, error, refetch } = useStudentExams(token);
+  const { exams, loading, error, refetch } = useStudentExams();
 
   if (loading) {
     return (

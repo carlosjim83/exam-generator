@@ -21,12 +21,11 @@ interface UseStudentExamsResult {
 /**
  * Get all exams assigned to the current student
  *
- * @param token - JWT authentication token
  * @returns Object containing exams array, loading state, error state, and refetch function
  *
  * @example
  * ```tsx
- * const { exams, loading, error, refetch } = useStudentExams(token);
+ * const { exams, loading, error, refetch } = useStudentExams();
  *
  * if (loading) return <Spinner />;
  * if (error) return <ErrorMessage error={error} />;
@@ -40,7 +39,7 @@ interface UseStudentExamsResult {
  * );
  * ```
  */
-export function useStudentExams(token: string): UseStudentExamsResult {
+export function useStudentExams(): UseStudentExamsResult {
   const [exams, setExams] = useState<StudentExamListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -49,7 +48,7 @@ export function useStudentExams(token: string): UseStudentExamsResult {
     try {
       setLoading(true);
       setError(null);
-      const data = await studentExamAPI.getAssignedExams(token);
+      const data = await studentExamAPI.getAssignedExams();
       setExams(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch assigned exams'));
@@ -57,7 +56,7 @@ export function useStudentExams(token: string): UseStudentExamsResult {
     } finally {
       setLoading(false);
     }
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     fetchExams();

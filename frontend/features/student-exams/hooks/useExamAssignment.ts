@@ -31,7 +31,6 @@ interface UseExamAssignmentResult {
  * Hook for managing exam assignment and question navigation
  *
  * @param assignmentId - The exam assignment ID
- * @param token - JWT authentication token
  * @returns Object containing assignment data, navigation functions, and state
  *
  * @example
@@ -44,7 +43,7 @@ interface UseExamAssignmentResult {
  *   startExam,
  *   nextQuestion,
  *   previousQuestion,
- * } = useExamAssignment(assignmentId, token);
+ * } = useExamAssignment(assignmentId);
  *
  * // Start the exam
  * <button onClick={startExam} disabled={isStarting}>
@@ -61,7 +60,7 @@ interface UseExamAssignmentResult {
  * )}
  * ```
  */
-export function useExamAssignment(assignmentId: string, token: string): UseExamAssignmentResult {
+export function useExamAssignment(assignmentId: string): UseExamAssignmentResult {
   const [assignment, setAssignment] = useState<ExamAssignment | null>(null);
   const [exam, setExam] = useState<ExamWithQuestions | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -72,7 +71,7 @@ export function useExamAssignment(assignmentId: string, token: string): UseExamA
     try {
       setIsStarting(true);
       setError(null);
-      const response = await studentExamAPI.startExam(assignmentId, token);
+      const response = await studentExamAPI.startExam(assignmentId);
       setAssignment(response.assignment);
       setExam(response.exam);
       setCurrentQuestionIndex(0); // Reset to first question
@@ -81,7 +80,7 @@ export function useExamAssignment(assignmentId: string, token: string): UseExamA
     } finally {
       setIsStarting(false);
     }
-  }, [assignmentId, token]);
+  }, [assignmentId]);
 
   const nextQuestion = useCallback(() => {
     if (exam && currentQuestionIndex < exam.questions.length - 1) {

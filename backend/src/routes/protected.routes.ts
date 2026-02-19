@@ -1,8 +1,8 @@
 import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
-import { authenticateUser, requireRoles } from '../middleware/auth.middleware.js';
-import { container } from '../config/container.js';
-import { UserId } from '../domain/value-objects/UserId.js';
+import { authenticateUser, requireRoles } from '@middleware/auth.middleware.js';
+import { container } from '@config/container.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 // Response schemas
 const ProfileResponseSchema = Type.Object({

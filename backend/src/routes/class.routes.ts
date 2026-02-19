@@ -20,9 +20,9 @@ import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/cl
 import { RemoveStudentFromClassCommand } from '@application/use-cases/classes/RemoveStudentFromClassUseCase.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
-  // GET /classes - List all classes for authenticated teacher
+  // GET /api/classes - List all classes for authenticated teacher
   fastify.get(
-    '/classes',
+    '/api/classes',
     {
       preHandler: authenticateUser,
       schema: {
@@ -97,9 +97,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /classes/:id - Get class details by ID
+  // GET /api/classes/:id - Get class details by ID
   fastify.get(
-    '/classes/:id',
+    '/api/classes/:id',
     {
       preHandler: authenticateUser,
       schema: {
@@ -160,9 +160,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /classes/code/:code - Get class by code for student join validation
+  // GET /api/classes/code/:code - Get class by code for student join validation
   fastify.get(
-    '/classes/code/:code',
+    '/api/classes/code/:code',
     {
       preHandler: authenticateUser,
       schema: {
@@ -226,9 +226,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /classes - Create a new class
+  // POST /api/classes - Create a new class
   fastify.post(
-    '/classes',
+    '/api/classes',
     {
       preHandler: authenticateUser,
       schema: {
@@ -299,9 +299,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // DELETE /classes/:id - Delete a class
+  // DELETE /api/classes/:id - Delete a class
   fastify.delete(
-    '/classes/:id',
+    '/api/classes/:id',
     {
       preHandler: authenticateUser,
       schema: {
@@ -334,9 +334,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /classes/:classId/students - List students in class
+  // GET /api/classes/:classId/students - List students in class
   fastify.get(
-    '/classes/:classId/students',
+    '/api/classes/:classId/students',
     {
       preHandler: authenticateUser,
       schema: {
@@ -416,9 +416,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // DELETE /classes/:classId/students/:studentId - Remove student from class
+  // DELETE /api/classes/:classId/students/:studentId - Remove student from class
   fastify.delete(
-    '/classes/:classId/students/:studentId',
+    '/api/classes/:classId/students/:studentId',
     {
       preHandler: authenticateUser,
       schema: {
@@ -452,9 +452,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /classes/:classId/join - Student joins class
+  // POST /api/classes/:classId/join - Student joins class
   fastify.post(
-    '/classes/:classId/join',
+    '/api/classes/:classId/join',
     {
       preHandler: authenticateUser,
       schema: {
@@ -495,9 +495,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /classes/:classId/invitations - Invite students by email
+  // POST /api/classes/:classId/invitations - Invite students by email
   fastify.post(
-    '/classes/:classId/invitations',
+    '/api/classes/:classId/invitations',
     {
       preHandler: authenticateUser,
       schema: {
@@ -562,9 +562,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /classes/:classId/invitations/csv - Import students from CSV
+  // POST /api/classes/:classId/invitations/csv - Import students from CSV
   fastify.post(
-    '/classes/:classId/invitations/csv',
+    '/api/classes/:classId/invitations/csv',
     {
       preHandler: authenticateUser,
       schema: {
@@ -618,9 +618,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /classes/:classId/invitations - List invitations
+  // GET /api/classes/:classId/invitations - List invitations
   fastify.get(
-    '/classes/:classId/invitations',
+    '/api/classes/:classId/invitations',
     {
       preHandler: authenticateUser,
       schema: {
@@ -671,9 +671,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /invitations/:token/accept - Accept invitation
+  // POST /api/invitations/:token/accept - Accept invitation
   fastify.post(
-    '/invitations/:token/accept',
+    '/api/invitations/:token/accept',
     {
       schema: {
         tags: ['invitations'],
@@ -715,9 +715,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /invitations/:token/resend - Resend invitation
+  // POST /api/invitations/:token/resend - Resend invitation
   fastify.post(
-    '/invitations/:token/resend',
+    '/api/invitations/:token/resend',
     {
       preHandler: authenticateUser,
       schema: {

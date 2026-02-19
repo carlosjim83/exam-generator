@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
-import { container } from '../config/container.js';
+import { container } from '@config/container.js';
 
 // Request/Response Schemas
 const RegisterRequestSchema = Type.Object(
@@ -98,9 +98,9 @@ const ErrorResponseSchema = Type.Object(
 );
 
 export async function authRoutes(fastify: FastifyInstance) {
-  // POST /auth/register - Register new user
+  // POST /api/auth/register - Register new user
   fastify.post(
-    '/auth/register',
+    '/api/auth/register',
     {
       config: {
         rateLimit: {
@@ -176,9 +176,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /auth/login - Login with email and password
+  // POST /api/auth/login - Login with email and password
   fastify.post(
-    '/auth/login',
+    '/api/auth/login',
     {
       config: {
         rateLimit: {
@@ -250,9 +250,9 @@ export async function authRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /auth/refresh - Refresh access token
+  // POST /api/auth/refresh - Refresh access token
   fastify.post(
-    '/auth/refresh',
+    '/api/auth/refresh',
     {
       config: {
         rateLimit: {

@@ -1,11 +1,11 @@
 import { FastifyInstance } from 'fastify';
 import oauthPlugin from '@fastify/oauth2';
-import { env } from '../config/env.js';
-import { prisma } from '../config/prisma.js';
-import { container } from '../config/container.js';
-import { UserId } from '../domain/value-objects/UserId.js';
-import { Email } from '../domain/value-objects/Email.js';
-import { UserRole, AuthProvider } from '../domain/entities/User.js';
+import { env } from '@config/env.js';
+import { prisma } from '@config/prisma.js';
+import { container } from '@config/container.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import { Email } from '@domain/value-objects/Email.js';
+import { UserRole, AuthProvider } from '@domain/entities/User.js';
 
 export async function oauthRoutes(fastify: FastifyInstance) {
   // Register Google OAuth2 plugin
@@ -19,7 +19,7 @@ export async function oauthRoutes(fastify: FastifyInstance) {
       },
       auth: oauthPlugin.GOOGLE_CONFIGURATION,
     },
-    startRedirectPath: '/auth/google',
+    startRedirectPath: '/api/auth/google',
     callbackUri: env.GOOGLE_CALLBACK_URL,
     // Custom state generation to include role
     generateStateFunction: (request) => {
@@ -31,8 +31,8 @@ export async function oauthRoutes(fastify: FastifyInstance) {
     checkStateFunction: () => true, // We trust our own state
   });
 
-  // GET /auth/google/callback - Handle OAuth callback
-  fastify.get('/auth/google/callback', async (request, reply) => {
+  // GET /api/auth/google/callback - Handle OAuth callback
+  fastify.get('/api/auth/google/callback', async (request, reply) => {
     try {
       // Exchange authorization code for access token
       const { token } = await (fastify as any).googleOAuth.getAccessTokenFromAuthorizationCodeFlow(
@@ -168,8 +168,8 @@ export async function oauthRoutes(fastify: FastifyInstance) {
   if (ENABLE_MOCK) {
     fastify.log.warn('⚠️  OAuth Mock Mode ENABLED - For development only!');
 
-    // GET /auth/google/mock?role=TEACHER|STUDENT
-    fastify.get('/auth/google/mock', async (request, reply) => {
+    // GET /api/auth/google/mock?role=TEACHER|STUDENT
+    fastify.get('/api/auth/google/mock', async (request, reply) => {
       const role = (request.query as any).role || 'TEACHER';
 
       // Validate role

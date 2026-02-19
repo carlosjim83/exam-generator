@@ -6,26 +6,18 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { TokenManager } from '@/features/auth/services/api.service';
 import { ExamTaking } from '@/features/student-exams/components/ExamTaking';
 
 export default function TakeExamPage() {
   const { isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const params = useParams();
-  const [token, setToken] = useState<string | null>(null);
 
   const assignmentId = params.id as string;
-
-  useEffect(() => {
-    // Get token on client side
-    const accessToken = TokenManager.getAccessToken();
-    setToken(accessToken);
-  }, []);
 
   useEffect(() => {
     // Redirect if not authenticated
@@ -39,7 +31,7 @@ export default function TakeExamPage() {
     router.push(`/student/exams/${assignmentId}/results`);
   }, [router, assignmentId]);
 
-  if (isLoading || !token) {
+  if (isLoading) {
     return (
       <DashboardLayout>
         <div className="px-8 py-8">
@@ -55,7 +47,7 @@ export default function TakeExamPage() {
   return (
     <DashboardLayout>
       <div className="px-8 py-8">
-        <ExamTaking assignmentId={assignmentId} token={token} onComplete={handleExamComplete} />
+        <ExamTaking assignmentId={assignmentId} onComplete={handleExamComplete} />
       </div>
     </DashboardLayout>
   );
