@@ -26,7 +26,7 @@ describe('Auth Integration Tests', () => {
       // STEP 2: Login with same credentials (using default password from UserMother)
       const loginResponse = await app.inject({
         method: 'POST',
-        url: '/auth/login',
+        url: '/api/auth/login',
         payload: {
           email: user.email,
           password: 'TestPassword123!', // UserMother default password
@@ -97,7 +97,7 @@ describe('Auth Integration Tests', () => {
       // Try to login with wrong password
       const loginResponse = await app.inject({
         method: 'POST',
-        url: '/auth/login',
+        url: '/api/auth/login',
         payload: {
           email: user.email,
           password: 'WrongPassword123!',
@@ -113,7 +113,7 @@ describe('Auth Integration Tests', () => {
     it('should reject login for non-existent user', async () => {
       const loginResponse = await app.inject({
         method: 'POST',
-        url: '/auth/login',
+        url: '/api/auth/login',
         payload: {
           email: 'nonexistent@example.com',
           password: 'SomePassword123!',
@@ -133,7 +133,7 @@ describe('Auth Integration Tests', () => {
       // First registration (should succeed)
       const firstRegister = await app.inject({
         method: 'POST',
-        url: '/auth/register',
+        url: '/api/auth/register',
         payload: {
           email,
           password: 'Password123!',
@@ -148,7 +148,7 @@ describe('Auth Integration Tests', () => {
       // Second registration with same email (should fail)
       const secondRegister = await app.inject({
         method: 'POST',
-        url: '/auth/register',
+        url: '/api/auth/register',
         payload: {
           email, // Same email
           password: 'Password123!',
@@ -299,7 +299,7 @@ describe('Auth Integration Tests', () => {
     it('should reject registration with invalid email format', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/register',
+        url: '/api/auth/register',
         payload: {
           email: 'invalid-email-format',
           password: 'Password123!',
@@ -317,7 +317,7 @@ describe('Auth Integration Tests', () => {
     it('should reject registration with short password', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/register',
+        url: '/api/auth/register',
         payload: {
           email: 'test@example.com',
           password: 'short',
@@ -335,7 +335,7 @@ describe('Auth Integration Tests', () => {
     it('should reject registration with invalid role', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/register',
+        url: '/api/auth/register',
         payload: {
           email: 'test@example.com',
           password: 'Password123!',

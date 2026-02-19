@@ -17,7 +17,7 @@ describe('Auth Middleware', () => {
 
     // Register a test route that uses the middleware
     app.get(
-      '/protected',
+      '/api/protected',
       { preHandler: authenticateUser },
       async (request: FastifyRequest, _reply: FastifyReply) => {
         return { message: 'Success', user: (request as any).user };
@@ -26,7 +26,7 @@ describe('Auth Middleware', () => {
 
     // Register a test route with role-based authorization
     app.get(
-      '/teacher-only',
+      '/api/teacher-only',
       { preHandler: [authenticateUser, requireRoles(['TEACHER'])] },
       async (_request: FastifyRequest, _reply: FastifyReply) => {
         return { message: 'Teacher area' };
@@ -35,7 +35,7 @@ describe('Auth Middleware', () => {
 
     // Register a test route with multiple allowed roles
     app.get(
-      '/teacher-or-student',
+      '/api/teacher-or-student',
       { preHandler: [authenticateUser, requireRoles(['TEACHER', 'STUDENT'])] },
       async (_request: FastifyRequest, _reply: FastifyReply) => {
         return { message: 'Accessible by both' };
@@ -57,7 +57,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -80,7 +80,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
       });
 
       // Assert
@@ -101,7 +101,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           authorization: token, // Missing "Bearer " prefix
         },
@@ -130,7 +130,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           authorization: `Bearer ${expiredToken}`,
         },
@@ -151,7 +151,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           authorization: `Bearer ${invalidToken}`,
         },
@@ -168,7 +168,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/protected',
+        url: '/api/protected',
         headers: {
           authorization: 'Bearer not-a-valid-jwt',
         },
@@ -194,7 +194,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/teacher-only',
+        url: '/api/teacher-only',
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -217,7 +217,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/teacher-only',
+        url: '/api/teacher-only',
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -241,7 +241,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/teacher-or-student',
+        url: '/api/teacher-or-student',
         headers: {
           authorization: `Bearer ${token}`,
         },
@@ -264,7 +264,7 @@ describe('Auth Middleware', () => {
       // Act
       const response = await app.inject({
         method: 'GET',
-        url: '/teacher-or-student',
+        url: '/api/teacher-or-student',
         headers: {
           authorization: `Bearer ${token}`,
         },

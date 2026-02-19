@@ -49,7 +49,7 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
     // Process the document
     const response = await server.inject({
       method: 'POST',
-      url: `/documents/${documentId}/process`,
+      url: `/api/documents/${documentId}/process`,
       headers: {
         authorization: `Bearer ${authToken}`,
       },
@@ -84,7 +84,7 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
 
     const response = await server.inject({
       method: 'POST',
-      url: `/documents/${fakeId}/process`,
+      url: `/api/documents/${fakeId}/process`,
       headers: {
         authorization: `Bearer ${authToken}`,
       },
@@ -119,7 +119,7 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
     // ACT: Try to process with original user's token
     const response = await server.inject({
       method: 'POST',
-      url: `/documents/${otherDoc.id}/process`,
+      url: `/api/documents/${otherDoc.id}/process`,
       headers: {
         authorization: `Bearer ${authToken}`,
       },

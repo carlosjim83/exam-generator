@@ -56,7 +56,7 @@ describe('Rate Limiting', () => {
       // First request should succeed
       const response1 = await app.inject({
         method: 'POST',
-        url: '/auth/login',
+        url: '/api/auth/login',
         payload: {
           email: 'teacher@example.com',
           password: 'wrong-password',
@@ -74,7 +74,7 @@ describe('Rate Limiting', () => {
       for (let i = 0; i < 5; i++) {
         await app.inject({
           method: 'POST',
-          url: '/auth/login',
+          url: '/api/auth/login',
           payload: {
             email: `rate-test-${i}@example.com`,
             password: 'password',
@@ -85,7 +85,7 @@ describe('Rate Limiting', () => {
       // 6th request should be rate limited
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/login',
+        url: '/api/auth/login',
         payload: {
           email: 'rate-test-blocked@example.com',
           password: 'password',
@@ -106,7 +106,7 @@ describe('Rate Limiting', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/register',
+        url: '/api/auth/register',
         payload: {
           email: uniqueEmail,
           password: 'RateTest123!',
@@ -132,7 +132,7 @@ describe('Rate Limiting', () => {
       // that the config is applied by checking the limit header
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/register',
+        url: '/api/auth/register',
         payload: {
           email: 'test@example.com',
           password: 'Test123!',
@@ -154,7 +154,7 @@ describe('Rate Limiting', () => {
     it('should have moderate limits for token refresh (10 per minute)', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/refresh',
+        url: '/api/auth/refresh',
         payload: {
           refreshToken: 'dummy.token.here',
         },
@@ -173,7 +173,7 @@ describe('Rate Limiting', () => {
     it('should include x-ratelimit-limit header', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/login',
+        url: '/api/auth/login',
         payload: {
           email: 'test@example.com',
           password: 'password',
@@ -187,7 +187,7 @@ describe('Rate Limiting', () => {
     it('should include x-ratelimit-remaining header', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/login',
+        url: '/api/auth/login',
         payload: {
           email: 'test@example.com',
           password: 'password',
@@ -201,7 +201,7 @@ describe('Rate Limiting', () => {
     it('should include x-ratelimit-reset header', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/login',
+        url: '/api/auth/login',
         payload: {
           email: 'test@example.com',
           password: 'password',

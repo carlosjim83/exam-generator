@@ -25,7 +25,7 @@ describe('POST /auth/refresh', () => {
       // ACT: Use refresh token to get new tokens
       const refreshResponse = await app.inject({
         method: 'POST',
-        url: '/auth/refresh',
+        url: '/api/auth/refresh',
         payload: {
           refreshToken: oldRefreshToken,
         },
@@ -69,7 +69,7 @@ describe('POST /auth/refresh', () => {
       // ACT: Refresh tokens
       const refreshResponse = await app.inject({
         method: 'POST',
-        url: '/auth/refresh',
+        url: '/api/auth/refresh',
         payload: { refreshToken: tokens.refreshToken },
       });
 
@@ -88,7 +88,7 @@ describe('POST /auth/refresh', () => {
     it('should return 400 for missing refresh token', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/refresh',
+        url: '/api/auth/refresh',
         payload: {},
       });
 
@@ -100,7 +100,7 @@ describe('POST /auth/refresh', () => {
     it('should return 401 for invalid refresh token', async () => {
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/refresh',
+        url: '/api/auth/refresh',
         payload: {
           refreshToken: 'invalid.token.here',
         },
@@ -122,7 +122,7 @@ describe('POST /auth/refresh', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/refresh',
+        url: '/api/auth/refresh',
         payload: {
           refreshToken: expiredToken,
         },
@@ -143,7 +143,7 @@ describe('POST /auth/refresh', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/refresh',
+        url: '/api/auth/refresh',
         payload: {
           refreshToken: nonExistentToken,
         },
@@ -162,7 +162,7 @@ describe('POST /auth/refresh', () => {
       // ACT: Try to use access token as refresh token
       const response = await app.inject({
         method: 'POST',
-        url: '/auth/refresh',
+        url: '/api/auth/refresh',
         payload: {
           refreshToken: tokens.accessToken, // Wrong token type!
         },

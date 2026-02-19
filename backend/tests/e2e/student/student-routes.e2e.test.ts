@@ -34,7 +34,7 @@ describe('Student Routes E2E Tests', () => {
     // Create teacher account
     const teacherResponse = await app.inject({
       method: 'POST',
-      url: '/auth/register',
+      url: '/api/auth/register',
       payload: {
         email: uniqueEmail('teacher'),
         password: 'TeacherPass123!',
@@ -51,7 +51,7 @@ describe('Student Routes E2E Tests', () => {
     // Create student account
     const studentResponse = await app.inject({
       method: 'POST',
-      url: '/auth/register',
+      url: '/api/auth/register',
       payload: {
         email: uniqueEmail('student'),
         password: 'StudentPass123!',
@@ -78,7 +78,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject assignment without authentication', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           payload: {
             examId: 'some-exam-id',
             studentId: studentId,
@@ -93,7 +93,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject assignment if user is not a teacher', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -111,7 +111,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject assignment with invalid request body', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -128,7 +128,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject assignment if exam does not exist', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -148,7 +148,7 @@ describe('Student Routes E2E Tests', () => {
         // For now this will fail at exam validation
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -169,7 +169,7 @@ describe('Student Routes E2E Tests', () => {
 
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -193,7 +193,7 @@ describe('Student Routes E2E Tests', () => {
 
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -220,7 +220,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject request without authentication', async () => {
         const response = await app.inject({
           method: 'GET',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
         });
 
         expect(response.statusCode).toBe(401);
@@ -231,7 +231,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject request from teacher role', async () => {
         const response = await app.inject({
           method: 'GET',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -251,7 +251,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Fetch assignments for this fresh student
         const response = await app.inject({
           method: 'GET',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${freshStudent.tokens.accessToken}`,
           },
@@ -267,7 +267,7 @@ describe('Student Routes E2E Tests', () => {
       it('should filter assignments by status query parameter', async () => {
         const response = await app.inject({
           method: 'GET',
-          url: '/students/assignments?status=PENDING',
+          url: '/api/students/assignments?status=PENDING',
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -292,7 +292,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Fetch assignments
         const response = await app.inject({
           method: 'GET',
-          url: '/students/assignments',
+          url: '/api/students/assignments',
           headers: {
             authorization: `Bearer ${freshStudent.tokens.accessToken}`,
           },
@@ -318,7 +318,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject request without authentication', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments/some-assignment-id/start',
+          url: '/api/students/assignments/some-assignment-id/start',
         });
 
         expect(response.statusCode).toBe(401);
@@ -329,7 +329,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject request from teacher role', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments/some-assignment-id/start',
+          url: '/api/students/assignments/some-assignment-id/start',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -343,7 +343,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject if assignment does not exist', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments/non-existent-id/start',
+          url: '/api/students/assignments/non-existent-id/start',
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -367,7 +367,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Try to start with original student token
         const response = await app.inject({
           method: 'POST',
-          url: `/students/assignments/${assignment.id}/start`,
+          url: `/api/students/assignments/${assignment.id}/start`,
           headers: {
             authorization: `Bearer ${studentToken}`, // Wrong student
           },
@@ -391,7 +391,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Try to start again
         const response = await app.inject({
           method: 'POST',
-          url: `/students/assignments/${assignment.id}/start`,
+          url: `/api/students/assignments/${assignment.id}/start`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -418,7 +418,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Start the exam
         const response = await app.inject({
           method: 'POST',
-          url: `/students/assignments/${assignment.id}/start`,
+          url: `/api/students/assignments/${assignment.id}/start`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -445,7 +445,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Start the exam
         const response = await app.inject({
           method: 'POST',
-          url: `/students/assignments/${assignment.id}/start`,
+          url: `/api/students/assignments/${assignment.id}/start`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -470,7 +470,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject request without authentication', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments/some-assignment-id/submit',
+          url: '/api/students/assignments/some-assignment-id/submit',
           payload: {
             answers: [],
           },
@@ -484,7 +484,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject request from teacher role', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments/some-assignment-id/submit',
+          url: '/api/students/assignments/some-assignment-id/submit',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -501,7 +501,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject with invalid request body', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments/some-assignment-id/submit',
+          url: '/api/students/assignments/some-assignment-id/submit',
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -518,7 +518,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject if assignment does not exist', async () => {
         const response = await app.inject({
           method: 'POST',
-          url: '/students/assignments/non-existent-id/submit',
+          url: '/api/students/assignments/non-existent-id/submit',
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -544,7 +544,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Try to submit without starting
         const response = await app.inject({
           method: 'POST',
-          url: `/students/assignments/${assignment.id}/submit`,
+          url: `/api/students/assignments/${assignment.id}/submit`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -581,7 +581,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Submit answers
         const response = await app.inject({
           method: 'POST',
-          url: `/students/assignments/${assignment.id}/submit`,
+          url: `/api/students/assignments/${assignment.id}/submit`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -611,7 +611,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Submit answers
         const response = await app.inject({
           method: 'POST',
-          url: `/students/assignments/${assignment.id}/submit`,
+          url: `/api/students/assignments/${assignment.id}/submit`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -639,7 +639,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Submit with no answers
         const response = await app.inject({
           method: 'POST',
-          url: `/students/assignments/${assignment.id}/submit`,
+          url: `/api/students/assignments/${assignment.id}/submit`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -662,7 +662,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject request without authentication', async () => {
         const response = await app.inject({
           method: 'GET',
-          url: '/students/assignments/some-assignment-id/results',
+          url: '/api/students/assignments/some-assignment-id/results',
         });
 
         expect(response.statusCode).toBe(401);
@@ -673,7 +673,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject request from teacher role', async () => {
         const response = await app.inject({
           method: 'GET',
-          url: '/students/assignments/some-assignment-id/results',
+          url: '/api/students/assignments/some-assignment-id/results',
           headers: {
             authorization: `Bearer ${teacherToken}`,
           },
@@ -687,7 +687,7 @@ describe('Student Routes E2E Tests', () => {
       it('should reject if assignment does not exist', async () => {
         const response = await app.inject({
           method: 'GET',
-          url: '/students/assignments/non-existent-id/results',
+          url: '/api/students/assignments/non-existent-id/results',
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -710,7 +710,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Try to get results before grading
         const response = await app.inject({
           method: 'GET',
-          url: `/students/assignments/${assignment.id}/results`,
+          url: `/api/students/assignments/${assignment.id}/results`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -736,7 +736,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Get results
         const response = await app.inject({
           method: 'GET',
-          url: `/students/assignments/${assignment.id}/results`,
+          url: `/api/students/assignments/${assignment.id}/results`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -770,7 +770,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Get results
         const response = await app.inject({
           method: 'GET',
-          url: `/students/assignments/${assignment.id}/results`,
+          url: `/api/students/assignments/${assignment.id}/results`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
@@ -797,7 +797,7 @@ describe('Student Routes E2E Tests', () => {
         // ACT: Get results
         const response = await app.inject({
           method: 'GET',
-          url: `/students/assignments/${assignment.id}/results`,
+          url: `/api/students/assignments/${assignment.id}/results`,
           headers: {
             authorization: `Bearer ${studentToken}`,
           },
