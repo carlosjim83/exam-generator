@@ -1,0 +1,77 @@
+{
+  "title": "Mis Clases",
+  "myClasses": "Mis Clases",
+  "createClass": "Crear Clase",
+  "noClasses": "Aún no hay clases",
+  "noResults": "No se encontraron clases",
+  "noSearchResults": "Ninguna clase coincide con tu búsqueda",
+  "createFirstClassDescription": "Crea tu primera clase para comenzar a organizar estudiantes y exámenes",
+  "searchPlaceholder": "Buscar clases...",
+  "classCard": {
+    "noDescription": "Sin descripción",
+    "students": "estudiantes",
+    "manage": "Gestionar",
+    "code": "Código"
+  },
+  "createClassForm": {
+    "title": "Crear Nueva Clase",
+    "nameLabel": "Nombre de la Clase",
+    "namePlaceholder": "ej., Matemáticas 101 - Grupo A",
+    "nameRequired": "El nombre de la clase es obligatorio",
+    "nameMinLength": "El nombre debe tener al menos 2 caracteres",
+    "nameMaxLength": "El nombre debe tener menos de 100 caracteres",
+    "descriptionLabel": "Descripción",
+    "descriptionPlaceholder": "Descripción opcional de la clase...",
+    "cancel": "Cancelar",
+    "creating": "Creando...",
+    "createButton": "Crear Clase",
+    "error": "Error al crear la clase"
+  },
+  "inviteStudents": {
+    "title": "Invitar Estudiantes",
+    "description": "Envía invitaciones por correo a los estudiantes para unirse a esta clase. Puedes introducir correos manualmente o subir un archivo CSV.",
+    "emailLabel": "Direcciones de Correo",
+    "emailPlaceholder": "estudiante1@ejemplo.com\nestudiante2@ejemplo.com\nestudiante3@ejemplo.com",
+    "emailHint": "Introduce un correo por línea o sepáralos con comas (máx 50)",
+    "or": "O",
+    "csvLabel": "Subir Archivo CSV",
+    "csvHint": "Sube un archivo CSV con direcciones de correo en una columna",
+    "cancel": "Cancelar",
+    "sending": "Enviando...",
+    "sendButton": "Enviar Invitaciones",
+    "errors": {
+      "atLeastOne": "Por favor introduce al menos una dirección de correo",
+      "max50": "Máximo 50 direcciones de correo a la vez",
+      "invalidEmails": "Direcciones de correo inválidas",
+      "failed": "Error al enviar las invitaciones",
+      "csvFormat": "Por favor sube un archivo CSV",
+      "csvFailed": "Error al importar el CSV"
+    },
+    "success": {
+      "invitationsSent": "Invitaciones enviadas a {{count}} estudiante",
+      "invitationsSent_plural": "Invitaciones enviadas a {{count}} estudiantes",
+      "csvImported": "CSV importado correctamente"
+    }
+  },
+  "studentList": {
+    "searchPlaceholder": "Buscar estudiantes...",
+    "noStudents": "No se encontraron estudiantes",
+    "noStudentsYet": "Ningún estudiante se ha unido a esta clase todavía",
+    "noSearchResults": "Prueba con otro término de búsqueda",
+    "name": "Nombre",
+    "email": "Correo",
+    "joinedDate": "Fecha de Unión",
+    "removeStudent": "Eliminar Estudiante",
+    "removeConfirmTitle": "Eliminar Estudiante",
+    "removeConfirmDescription": "¿Estás seguro de que quieres eliminar a {{name}} de esta clase? Perderán acceso a todos los materiales de la clase.",
+    "cancel": "Cancelar",
+    "removing": "Eliminando...",
+    "removeButton": "Eliminar Estudiante",
+    "errors": {
+      "failed": "Error al eliminar el estudiante"
+    },
+    "success": {
+      "removed": "{{name}} eliminado de la clase"
+    }
+  }
+}

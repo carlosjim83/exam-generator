@@ -14,6 +14,7 @@ import { protectedRoutes } from './routes/protected.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
 import { preferencesRoutes } from './routes/preferences.routes.js';
+import { classRoutes } from './routes/class.routes.js';
 import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 
 // Validate environment variables on startup
@@ -186,6 +187,7 @@ await fastify.register(examRoutes);
 await fastify.register(studentRoutes);
 await fastify.register(dashboardRoutes);
 await fastify.register(protectedRoutes);
+await fastify.register(classRoutes);
 
 // Legacy health check endpoint (kept for backwards compatibility)
 fastify.get('/health-legacy', async () => {

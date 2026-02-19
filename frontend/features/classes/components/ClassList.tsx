@@ -21,7 +21,7 @@ interface ClassListProps {
 }
 
 export function ClassList({ classes = [], loading = false, onRefresh }: ClassListProps) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('classes');
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredClasses = classes.filter(

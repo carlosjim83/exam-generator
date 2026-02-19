@@ -86,6 +86,9 @@
       "settings": "Settings"
     }
   },
+  "navigation": {
+    "myClasses": "My Classes"
+  },
   "examGeneration": {
     "failedToLoadDocuments": "Failed to load documents",
     "selectDocuments": "Select Documents",

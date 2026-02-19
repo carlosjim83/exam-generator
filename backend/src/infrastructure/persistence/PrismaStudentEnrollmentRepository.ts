@@ -76,7 +76,7 @@ export class PrismaStudentEnrollmentRepository implements IStudentEnrollmentRepo
       orderBy: { joinedAt: 'desc' },
     });
 
-    return enrollmentRecords.map((record) => this.toDomain(record));
+    return enrollmentRecords.map((record: any) => this.toDomain(record));
   }
 
   async findByClassAndStudent(

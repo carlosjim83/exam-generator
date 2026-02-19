@@ -1,5 +1,29 @@
 {
   "title": "My Exams",
+  "joinClass": {
+    "title": "Join a Class",
+    "description": "Enter the class code provided by your teacher to join their class",
+    "codeLabel": "Class Code",
+    "codePlaceholder": "e.g., ABC123",
+    "validateButton": "Validate Code",
+    "validating": "Validating...",
+    "classFound": "Class found",
+    "teacher": "Teacher",
+    "cancel": "Cancel",
+    "joinButton": "Join Class",
+    "joining": "Joining...",
+    "success": {
+      "title": "Successfully Joined!",
+      "message": "You have been added to the class. You can now access all class materials.",
+      "goToDashboard": "Go to Dashboard"
+    },
+    "errors": {
+      "emptyCode": "Please enter a class code",
+      "invalidCode": "Invalid class code",
+      "notFound": "Class code not found. Please check and try again.",
+      "failed": "Failed to join class. Please try again."
+    }
+  },
   "navigation": {
     "dashboard": "Control Panel",
     "myExams": "My Exams"

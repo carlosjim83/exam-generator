@@ -1,6 +1,6 @@
 'use client';
 
-import { Upload, Wand2 } from 'lucide-react';
+import { Upload, Wand2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 
@@ -13,6 +13,28 @@ export function QuickActions() {
 
       {/* Primary Actions - Compact Stacked Cards */}
       <div className="space-y-3">
+        {/* Manage Classes Card */}
+        <Link href="/dashboard/classes" className="group block">
+          <div className="relative overflow-hidden rounded-xl border-2 border-green-200 bg-gradient-to-br from-green-50 to-green-100 p-4 transition-all duration-300 hover:border-green-400 hover:shadow-lg hover:scale-[1.02]">
+            {/* Background decoration */}
+            <div className="absolute -right-4 -top-4 h-20 w-20 rounded-full bg-green-300/20 blur-2xl" />
+
+            <div className="relative flex items-center gap-3">
+              <div className="flex-shrink-0 rounded-lg bg-gradient-to-br from-green-600 to-green-700 p-2.5 shadow-md transition-transform duration-300 group-hover:scale-110">
+                <Users className="h-5 w-5 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="mb-0.5 text-base font-bold text-green-900 transition-colors group-hover:text-green-700">
+                  {t('dashboard:quickActions.manageClasses.title')}
+                </h3>
+                <p className="text-xs text-green-700">
+                  {t('dashboard:quickActions.manageClasses.description')}
+                </p>
+              </div>
+            </div>
+          </div>
+        </Link>
+
         {/* Upload Document Card */}
         <Link href="/dashboard/upload" className="group block">
           <div className="relative overflow-hidden rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 p-4 transition-all duration-300 hover:border-blue-400 hover:shadow-lg hover:scale-[1.02]">

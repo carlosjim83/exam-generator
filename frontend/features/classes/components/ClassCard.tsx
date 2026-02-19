@@ -5,6 +5,7 @@
 
 'use client';
 
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clipboard, Users, Calendar, Code } from 'lucide-react';
@@ -17,6 +18,8 @@ interface ClassCardProps {
 }
 
 export function ClassCard({ classData }: ClassCardProps) {
+  const { t } = useTranslation('classes');
+
   return (
     <Card className="transition-all duration-200 hover:shadow-lg">
       <CardHeader className="pb-3">
@@ -24,7 +27,7 @@ export function ClassCard({ classData }: ClassCardProps) {
           <div>
             <CardTitle className="text-lg font-semibold">{classData.name}</CardTitle>
             <CardDescription className="mt-1">
-              {classData.description || 'No description'}
+              {classData.description || t('classCard.noDescription')}
             </CardDescription>
           </div>
           {classData.color && (
@@ -39,19 +42,19 @@ export function ClassCard({ classData }: ClassCardProps) {
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Code className="h-4 w-4" />
           <span className="font-mono bg-muted px-2 py-1 rounded">{classData.code}</span>
-          <span className="text-xs">(Code)</span>
+          <span className="text-xs">({t('classCard.code')})</span>
         </div>
 
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Users className="h-4 w-4" />
-          <span>{classData.studentCount} students</span>
+          <span>{classData.studentCount} {t('classCard.students')}</span>
         </div>
 
         <div className="pt-4 flex items-center gap-2">
           <Button asChild variant="outline" className="flex-1">
             <Link href={`/dashboard/classes/${classData.id}`}>
               <Clipboard className="h-4 w-4 mr-2" />
-              Manage
+              {t('classCard.manage')}
             </Link>
           </Button>
         </div>

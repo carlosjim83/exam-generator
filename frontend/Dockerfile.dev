@@ -16,7 +16,10 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY frontend/package.json ./frontend/
 
-# Install dependencies for frontend workspace
+# Install dependencies for frontend ONLY (to handle pnpm monorepo properly)
+RUN cd /app && pnpm install --frozen-lockfile
+
+# Install frontend dependencies at workspace level (to fix symlink issues)
 RUN pnpm install --frozen-lockfile --filter=exam-generator-frontend...
 
 # Copy frontend source code

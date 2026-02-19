@@ -1,5 +1,29 @@
 {
   "title": "Mis Exámenes",
+  "joinClass": {
+    "title": "Unirse a una Clase",
+    "description": "Introduce el código de clase proporcionado por tu profesor para unirte a su clase",
+    "codeLabel": "Código de Clase",
+    "codePlaceholder": "ej., ABC123",
+    "validateButton": "Validar Código",
+    "validating": "Validando...",
+    "classFound": "Clase encontrada",
+    "teacher": "Profesor",
+    "cancel": "Cancelar",
+    "joinButton": "Unirse a la Clase",
+    "joining": "Uniéndose...",
+    "success": {
+      "title": "¡Te has unido correctamente!",
+      "message": "Has sido añadido a la clase. Ahora puedes acceder a todos los materiales.",
+      "goToDashboard": "Ir al Panel"
+    },
+    "errors": {
+      "emptyCode": "Por favor introduce un código de clase",
+      "invalidCode": "Código de clase inválido",
+      "notFound": "Código de clase no encontrado. Por favor verifica e intenta de nuevo.",
+      "failed": "Error al unirse a la clase. Por favor intenta de nuevo."
+    }
+  },
   "navigation": {
     "dashboard": "Panel de Control",
     "myExams": "Mis Exámenes"

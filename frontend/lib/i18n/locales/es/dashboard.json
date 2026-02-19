@@ -13,6 +13,10 @@
   },
   "quickActions": {
     "title": "Acciones Rápidas",
+    "manageClasses": {
+      "title": "Gestionar Clases",
+      "description": "Crear y gestionar tus clases"
+    },
     "uploadDocument": {
       "title": "Subir Documento",
       "description": "Añadir PDF, DOCX o TXT"
