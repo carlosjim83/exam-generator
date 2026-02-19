@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StudentList } from '@/features/classes/components/StudentList';
@@ -21,12 +22,13 @@ import {
 } from '@/features/classes/services/classes-api';
 
 interface ClassDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default function ClassDetailPage({ params }: ClassDetailPageProps) {
+  const { id: classId } = use(params);
   const router = useRouter();
   const [classData, setClassData] = useState<ClassDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,8 +39,8 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
     try {
       setLoading(true);
       const [cls, studentsData] = await Promise.all([
-        getClassById(params.id),
-        listClassStudents(params.id),
+        getClassById(classId),
+        listClassStudents(classId),
       ]);
       setClassData(cls);
       setStudents(studentsData.students);
@@ -53,7 +55,7 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
 
   useEffect(() => {
     loadClassData();
-  }, [params.id]);
+  }, [classId]);
 
   const copyCode = async () => {
     if (!classData) return;
@@ -66,15 +68,15 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
   };
 
   const handleInvite = async (emails: string[]): Promise<CreateInvitationsResponse> => {
-    return createInvitations(params.id, { emails });
+    return createInvitations(classId, { emails });
   };
 
   const handleUploadCsv = async (file: File): Promise<void> => {
-    await importStudentsFromCsv(params.id, file);
+    await importStudentsFromCsv(classId, file);
   };
 
   const handleRemoveStudent = async (studentId: string): Promise<void> => {
-    await removeStudentFromClass(params.id, studentId);
+    await removeStudentFromClass(classId, studentId);
     loadClassData();
   };
 
