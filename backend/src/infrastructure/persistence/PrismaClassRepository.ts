@@ -44,8 +44,6 @@ export class PrismaClassRepository implements IClassRepository {
       where: { id: id.toString() },
     });
 
-    console.log('findById - DB Record:', classRecord);
-
     if (!classRecord) return null;
 
     return this.toDomain(classRecord);
