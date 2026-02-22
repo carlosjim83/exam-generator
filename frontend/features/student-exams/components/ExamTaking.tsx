@@ -135,7 +135,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
             <>
               <Play className="h-16 w-16 text-primary mb-4" />
               <h2 className="text-2xl font-bold mb-2">{t('examTaking.ready')}</h2>
-              <p className="text-gray-600 text-center mb-6">{t('examTaking.ready')}</p>
+              <p className="text-gray-600 text-center mb-6">{t('examTaking.readyDescription')}</p>
               <Button onClick={startExam} disabled={isStarting} size="lg">
                 {isStarting ? (
                   <>
@@ -172,7 +172,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
             </div>
             <div className="text-right">
               <p className="text-sm font-medium text-gray-600">
-                {answeredCount} of {totalQuestions} {t('examList.answered')}
+                {answeredCount} {t('examTaking.of')} {totalQuestions} {t('examList.answered')}
               </p>
             </div>
           </div>
@@ -243,7 +243,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
               {isSubmittingAnswer ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  {t('examTaking.saving')}
                 </>
               ) : (
                 <>
@@ -258,7 +258,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
                 {isSubmittingExam ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
+                    {t('examTaking.submitting')}
                   </>
                 ) : (
                   <>

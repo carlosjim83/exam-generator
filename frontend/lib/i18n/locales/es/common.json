@@ -48,7 +48,8 @@
     "iAmA": "Soy...",
     "signingUpAs": "Registrándose como",
     "withGoogle": "con Google",
-    "with": "con"
+    "with": "con",
+    "termsOfServiceConsent": "Al iniciar sesión, aceptas nuestros Términos de Servicio y Política de Privacidad"
   },
   "examDetails": {
     "examNotFound": "Examen no encontrado",

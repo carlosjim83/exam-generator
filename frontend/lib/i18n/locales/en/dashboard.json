@@ -9,7 +9,8 @@
     "activeNow": "Active Now",
     "justNow": "Just now",
     "minutesAgo": "{{count}} min ago",
-    "minutesAgo_plural": "{{count}} mins ago"
+    "minutesAgo_plural": "{{count}} mins ago",
+    "notApplicable": "N/A"
   },
   "quickActions": {
     "title": "Quick Actions",

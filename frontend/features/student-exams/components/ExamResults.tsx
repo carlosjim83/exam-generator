@@ -220,7 +220,7 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
                       isCorrect ? 'bg-green-50 text-green-900' : 'bg-red-50 text-red-900'
                     )}
                   >
-                    {answer?.answer ?? 'No answer provided'}
+                    {answer?.answer ?? t('results.noAnswerProvided')}
                   </p>
                 </div>
                 {answer?.feedback && (

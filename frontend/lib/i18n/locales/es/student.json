@@ -58,6 +58,7 @@
     "noExams": "No hay exámenes asignados aún",
     "errorLoading": "Error al cargar exámenes",
     "assigned": "Asignado",
+    "answered": "respondidas",
     "questions": "preguntas",
     "maxScore": "Puntaje máximo",
     "status": {
@@ -69,17 +70,24 @@
     "actions": {
       "start": "Iniciar Examen",
       "continue": "Continuar",
-      "viewResults": "Ver Resultados"
+      "continueExam": "Continuar Examen",
+      "viewResults": "Ver Resultados",
+      "backToExams": "Volver a Exámenes"
     }
   },
   "examTaking": {
     "ready": "¿Listo para Comenzar?",
+    "readyDescription": "Haz clic en el botón de abajo para comenzar tu examen. Asegúrate de tener una conexión a internet estable.",
+    "starting": "Iniciando Examen",
     "startButton": "Iniciar Examen",
     "yourAnswer": "Tu Respuesta",
     "saveAnswer": "Guardar Respuesta",
     "previousQuestion": "Anterior",
     "nextQuestion": "Siguiente",
     "question": "Pregunta",
+    "of": "de",
+    "saving": "Guardando...",
+    "submitting": "Enviando...",
     "submitExam": "Enviar Examen",
     "confirmSubmit": "¿Estás seguro de enviar?",
     "confirmSubmitWarning": "Esta acción no se puede deshacer.",
@@ -115,7 +123,8 @@
     "noResults": "No Se Encontraron Resultados",
     "errorLoading": "Error al Cargar Resultados",
     "correctCount": "Correctas",
-    "incorrectCount": "Incorrectas"
+    "incorrectCount": "Incorrectas",
+    "noAnswerProvided": "No proporcionó respuesta"
   },
   "errors": {
     "retry": "Reintentar",

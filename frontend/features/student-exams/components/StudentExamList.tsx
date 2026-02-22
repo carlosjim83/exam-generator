@@ -92,7 +92,7 @@ export function StudentExamList({ onExamSelect }: StudentExamListProps) {
         return (
           <Button onClick={() => onExamSelect?.(exam)} size="sm" variant="secondary">
             <PlayCircle className="h-4 w-4 mr-2" />
-            {t('examList.actions.continue')} Exam
+            {t('examList.actions.continueExam')}
           </Button>
         );
       case 'SUBMITTED':
