@@ -9,8 +9,10 @@ import enClasses from './lib/i18n/locales/en/classes.json';
 import enDashboard from './lib/i18n/locales/en/dashboard.json';
 import enUpload from './lib/i18n/locales/en/upload.json';
 import enSettings from './lib/i18n/locales/en/settings.json';
+import enDocuments from './lib/i18n/locales/en/documents.json';
+import enGenerate from './lib/i18n/locales/en/generate.json';
 
-const allTranslations = {
+const allTranslations: Record<string, any> = {
   common: enCommon,
   exams: enExams,
   student: enStudent,
@@ -18,31 +20,56 @@ const allTranslations = {
   dashboard: enDashboard,
   upload: enUpload,
   settings: enSettings,
+  documents: enDocuments,
+  generate: enGenerate,
 };
 
 function getNestedValue(obj: any, path: string): any {
-  const keys = path.replace(/^classes:/, '').split(':');
+  if (!obj || !path) return undefined;
+  // Split by both : and . to handle both namespace:key and nested.key formats
+  const keys = path.split(/[:.]/).filter(Boolean);
   let result = obj;
   for (const key of keys) {
-    result = result?.[key];
-    if (result === undefined) return undefined;
+    if (result === undefined || result === null) return undefined;
+    result = result[key];
   }
   return result;
 }
 
 function translate(key: string): string {
-  // Try to find the translation
-  for (const [namespace, translations] of Object.entries(allTranslations)) {
-    if (key.startsWith(`${namespace}:`)) {
-      const value = getNestedValue(translations, key.replace(`${namespace}:`, ''));
+  if (!key) return key;
+
+  // Handle namespace:key format (e.g., "common:auth.termsOfServiceConsent" or "classes:classCard.noDescription")
+  const colonIndex = key.indexOf(':');
+  if (colonIndex > 0) {
+    const namespace = key.substring(0, colonIndex);
+    const actualKey = key.substring(colonIndex + 1);
+
+    // First try exact namespace match
+    const translations = allTranslations[namespace];
+    if (translations) {
+      const value = getNestedValue(translations, actualKey);
+      if (value !== undefined) return value;
+    }
+
+    // Then try in common namespace (for nested keys like "auth.termsOfServiceConsent")
+    const commonValue = getNestedValue(enCommon, key);
+    if (commonValue !== undefined) return commonValue;
+  }
+
+  // Handle nested keys without namespace (e.g., "classCard.noDescription" or "auth.termsOfServiceConsent")
+  if (key.includes('.')) {
+    for (const [ns, translations] of Object.entries(allTranslations)) {
+      const value = getNestedValue(translations, key);
       if (value !== undefined) return value;
     }
   }
-  // Try common namespace
+
+  // Try common namespace for simple keys
   const commonValue = getNestedValue(enCommon, key);
   if (commonValue !== undefined) return commonValue;
 
-  // Return key if not found
+  // Return key if not found (so tests can find it)
   return key;
 }
 
@@ -57,7 +84,24 @@ afterEach(() => {
 // Mock i18next with real translations
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => translate(key),
+    t: (key: string, options?: any) => {
+      let value = translate(key);
+
+      // Handle interpolation - replace {{count}} with options.count
+      if (options) {
+        if (options.count !== undefined && typeof options.count === 'number') {
+          value = value.replace(/\{\{count\}\}/g, String(options.count));
+        }
+        // Replace other placeholders
+        Object.entries(options).forEach(([k, v]) => {
+          if (k !== 'count' && v !== undefined) {
+            value = value.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), String(v));
+          }
+        });
+      }
+
+      return value;
+    },
     i18n: {
       language: 'en',
       changeLanguage: vi.fn().mockResolvedValue(undefined),
