@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { use } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StudentList } from '@/features/classes/components/StudentList';
 import { InviteStudentsDialog } from '@/features/classes/components/InviteStudentsDialog';
@@ -30,6 +31,7 @@ interface ClassDetailPageProps {
 export default function ClassDetailPage({ params }: ClassDetailPageProps) {
   const { id: classId } = use(params);
   const router = useRouter();
+  const { t } = useTranslation('classes');
   const [classData, setClassData] = useState<ClassDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<ClassDetails['students']>([]);
@@ -111,7 +113,7 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
           <div className="flex items-center justify-between">
             <Button variant="ghost" onClick={() => router.push('/dashboard/classes')}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Classes
+              {t('classDetails.backToClasses')}
             </Button>
           </div>
 
@@ -127,7 +129,7 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
                 <div className="flex gap-2">
                   <Button variant="outline" onClick={copyCode}>
                     <Copy className="mr-2 h-4 w-4" />
-                    Copy Code
+                    {t('classDetails.copyCode')}
                   </Button>
                   <Badge variant="outline" className="font-mono text-lg px-4 py-1">
                     {classData.code}
@@ -140,11 +142,14 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
                   <span>
-                    {classData.studentCount} student{classData.studentCount !== 1 ? 's' : ''}
+                    {classData.studentCount}{' '}
+                    {t('classCard.students', { count: classData.studentCount })}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span>Created {new Date(classData.createdAt).toLocaleDateString()}</span>
+                  <span>
+                    {t('classDetails.created')} {new Date(classData.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -154,12 +159,12 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Students</CardTitle>
-                  <CardDescription>Manage students in this class</CardDescription>
+                  <CardTitle>{t('classDetails.studentsSection.title')}</CardTitle>
+                  <CardDescription>{t('classDetails.studentsSection.description')}</CardDescription>
                 </div>
                 <Button onClick={() => setInviteDialogOpen(true)}>
                   <UserPlus className="mr-2 h-4 w-4" />
-                  Invite Students
+                  {t('classDetails.inviteStudents')}
                 </Button>
               </div>
             </CardHeader>

@@ -13,6 +13,16 @@
     "manage": "Manage",
     "code": "Code"
   },
+  "classDetails": {
+    "backToClasses": "Back to Classes",
+    "copyCode": "Copy Code",
+    "created": "Created",
+    "studentsSection": {
+      "title": "Students",
+      "description": "Manage students in this class"
+    },
+    "inviteStudents": "Invite Students"
+  },
   "createClassForm": {
     "title": "Create New Class",
     "nameLabel": "Class Name",

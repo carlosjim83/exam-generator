@@ -13,6 +13,16 @@
     "manage": "Gestionar",
     "code": "Código"
   },
+  "classDetails": {
+    "backToClasses": "Volver a Clases",
+    "copyCode": "Copiar Código",
+    "created": "Creada",
+    "studentsSection": {
+      "title": "Estudiantes",
+      "description": "Gestiona los estudiantes de esta clase"
+    },
+    "inviteStudents": "Invitar Estudiantes"
+  },
   "createClassForm": {
     "title": "Crear Nueva Clase",
     "nameLabel": "Nombre de la Clase",
