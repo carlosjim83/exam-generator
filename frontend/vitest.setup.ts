@@ -2,6 +2,49 @@ import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import * as React from 'react';
+import enCommon from './lib/i18n/locales/en/common.json';
+import enExams from './lib/i18n/locales/en/exams.json';
+import enStudent from './lib/i18n/locales/en/student.json';
+import enClasses from './lib/i18n/locales/en/classes.json';
+import enDashboard from './lib/i18n/locales/en/dashboard.json';
+import enUpload from './lib/i18n/locales/en/upload.json';
+import enSettings from './lib/i18n/locales/en/settings.json';
+
+const allTranslations = {
+  common: enCommon,
+  exams: enExams,
+  student: enStudent,
+  classes: enClasses,
+  dashboard: enDashboard,
+  upload: enUpload,
+  settings: enSettings,
+};
+
+function getNestedValue(obj: any, path: string): any {
+  const keys = path.replace(/^classes:/, '').split(':');
+  let result = obj;
+  for (const key of keys) {
+    result = result?.[key];
+    if (result === undefined) return undefined;
+  }
+  return result;
+}
+
+function translate(key: string): string {
+  // Try to find the translation
+  for (const [namespace, translations] of Object.entries(allTranslations)) {
+    if (key.startsWith(`${namespace}:`)) {
+      const value = getNestedValue(translations, key.replace(`${namespace}:`, ''));
+      if (value !== undefined) return value;
+    }
+  }
+  // Try common namespace
+  const commonValue = getNestedValue(enCommon, key);
+  if (commonValue !== undefined) return commonValue;
+
+  // Return key if not found
+  return key;
+}
 
 // Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
@@ -10,6 +53,21 @@ expect.extend(matchers);
 afterEach(() => {
   cleanup();
 });
+
+// Mock i18next with real translations
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => translate(key),
+    i18n: {
+      language: 'en',
+      changeLanguage: vi.fn().mockResolvedValue(undefined),
+    },
+  }),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn(),
+  },
+}));
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
