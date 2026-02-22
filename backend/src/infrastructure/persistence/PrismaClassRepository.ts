@@ -140,7 +140,8 @@ export class PrismaClassRepository implements IClassRepository {
       record.name,
       record.code,
       record.description,
-      record.color
+      record.color,
+      record.createdAt ? new Date(record.createdAt) : new Date()
     );
   }
 }
