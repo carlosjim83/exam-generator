@@ -118,18 +118,14 @@ export async function classRoutes(fastify: FastifyInstance) {
           200: {
             type: 'object',
             properties: {
-              class: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string', format: 'uuid' },
-                  name: { type: 'string' },
-                  code: { type: 'string' },
-                  description: { type: 'string', nullable: true },
-                  color: { type: 'string', nullable: true },
-                  teacherId: { type: 'string', format: 'uuid' },
-                  createdAt: { type: 'string', format: 'date-time' },
-                },
-              },
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'string' },
+              code: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              teacherId: { type: 'string', format: 'uuid' },
+              createdAt: { type: 'string', format: 'date-time' },
+              updatedAt: { type: 'string', format: 'date-time' },
               teacherName: { type: 'string' },
               studentCount: { type: 'number' },
             },
