@@ -170,7 +170,6 @@ export class ApiClient {
       }
 
       const data = await response.json();
-      console.log('API Client Raw Response:', endpoint, data);
 
       if (!response.ok) {
         // Handle validation errors from backend

@@ -52,10 +52,6 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
         getClassById(classId),
         listClassStudents(classId),
       ]);
-      console.log('RAW API Response:', JSON.stringify(cls, null, 2));
-      console.log('Parsed class:', cls);
-      console.log('Code field:', cls.code);
-      console.log('All keys:', Object.keys(cls));
       setClassData(cls);
       setStudents(studentsData.students);
     } catch (error) {
