@@ -52,7 +52,9 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
         getClassById(classId),
         listClassStudents(classId),
       ]);
-      console.log('Class data loaded:', cls);
+      console.log('API Response class:', cls);
+      console.log('Code field:', cls.code);
+      console.log('All keys:', Object.keys(cls));
       setClassData(cls);
       setStudents(studentsData.students);
     } catch (error) {

@@ -144,7 +144,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       const command = new GetClassDetailsCommand(id, userId);
       const result = await container.getClassDetailsUseCase.execute(command);
 
-      reply.status(200).send({
+      const responseData = {
         id: result.class.id.toString(),
         name: result.class.name,
         code: result.class.code,
@@ -155,7 +155,10 @@ export async function classRoutes(fastify: FastifyInstance) {
         updatedAt: result.class.updatedAt.toISOString(),
         teacherName: result.teacherName,
         studentCount: result.studentCount,
-      });
+      };
+
+      console.log('Class details response:', responseData);
+      reply.status(200).send(responseData);
     }
   );
 
