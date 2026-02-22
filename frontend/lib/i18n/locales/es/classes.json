@@ -16,7 +16,10 @@
   "classDetails": {
     "backToClasses": "Volver a Clases",
     "copyCode": "Copiar Código",
+    "copyCodeSuccess": "Código de clase copiado al portapapeles",
+    "copyCodeError": "Error al copiar el código",
     "created": "Creada",
+    "loadError": "Error al cargar la clase",
     "studentsSection": {
       "title": "Estudiantes",
       "description": "Gestiona los estudiantes de esta clase"

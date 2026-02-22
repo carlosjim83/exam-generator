@@ -16,7 +16,10 @@
   "classDetails": {
     "backToClasses": "Back to Classes",
     "copyCode": "Copy Code",
+    "copyCodeSuccess": "Class code copied to clipboard",
+    "copyCodeError": "Failed to copy code",
     "created": "Created",
+    "loadError": "Failed to load class",
     "studentsSection": {
       "title": "Students",
       "description": "Manage students in this class"

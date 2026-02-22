@@ -48,7 +48,7 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
       setStudents(studentsData.students);
     } catch (error) {
       console.error('Failed to load class data:', error);
-      toast.error('Failed to load class');
+      toast.error(t('classDetails.loadError'));
       router.push('/dashboard/classes');
     } finally {
       setLoading(false);
@@ -63,9 +63,9 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
     if (!classData) return;
     try {
       await navigator.clipboard.writeText(classData.code);
-      toast.success('Class code copied to clipboard');
+      toast.success(t('classDetails.copyCodeSuccess'));
     } catch {
-      toast.error('Failed to copy code');
+      toast.error(t('classDetails.copyCodeError'));
     }
   };
 
@@ -148,7 +148,9 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span>
-                    {t('classDetails.created')} {new Date(classData.createdAt).toLocaleDateString()}
+                    {classData.createdAt
+                      ? `${t('classDetails.created')} ${new Date(classData.createdAt).toLocaleDateString()}`
+                      : t('classDetails.created')}
                   </span>
                 </div>
               </div>
