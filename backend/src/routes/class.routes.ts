@@ -145,15 +145,14 @@ export async function classRoutes(fastify: FastifyInstance) {
       const result = await container.getClassDetailsUseCase.execute(command);
 
       reply.status(200).send({
-        class: {
-          id: result.class.id.toString(),
-          name: result.class.name,
-          code: result.class.code,
-          description: result.class.description,
-          color: result.class.color,
-          teacherId: result.class.teacherId.toString(),
-          createdAt: result.class.createdAt.toISOString(),
-        },
+        id: result.class.id.toString(),
+        name: result.class.name,
+        code: result.class.code,
+        description: result.class.description,
+        color: result.class.color,
+        teacherId: result.class.teacherId.toString(),
+        createdAt: result.class.createdAt.toISOString(),
+        updatedAt: result.class.updatedAt.toISOString(),
         teacherName: result.teacherName,
         studentCount: result.studentCount,
       });
