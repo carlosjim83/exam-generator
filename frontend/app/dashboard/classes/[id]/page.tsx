@@ -28,6 +28,14 @@ interface ClassDetailPageProps {
   }>;
 }
 
+// Helper to safely format dates
+function formatDate(dateString: string | undefined): string {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '';
+  return date.toLocaleDateString();
+}
+
 export default function ClassDetailPage({ params }: ClassDetailPageProps) {
   const { id: classId } = use(params);
   const router = useRouter();
@@ -127,12 +135,12 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
                   )}
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={copyCode}>
+                  <Button variant="outline" onClick={copyCode} disabled={!classData?.code}>
                     <Copy className="mr-2 h-4 w-4" />
                     {t('classDetails.copyCode')}
                   </Button>
                   <Badge variant="outline" className="font-mono text-lg px-4 py-1">
-                    {classData.code}
+                    {classData?.code || '------'}
                   </Badge>
                 </div>
               </div>
@@ -148,8 +156,8 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span>
-                    {classData.createdAt
-                      ? `${t('classDetails.created')} ${new Date(classData.createdAt).toLocaleDateString()}`
+                    {formatDate(classData?.createdAt)
+                      ? `${t('classDetails.created')} ${formatDate(classData.createdAt)}`
                       : t('classDetails.created')}
                   </span>
                 </div>
