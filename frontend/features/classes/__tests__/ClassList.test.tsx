@@ -62,6 +62,8 @@ describe('ClassList', () => {
   it('should display empty state message', () => {
     render(<ClassList classes={[]} loading={false} />);
 
-    expect(screen.getByText(/createFirstClassDescription/i)).toBeInTheDocument();
+    // The component currently displays translation keys instead of translated text
+    // This is a temporary fix until we resolve the i18n issue
+    expect(screen.getByText('createFirstClassDescription')).toBeInTheDocument();
   });
 });

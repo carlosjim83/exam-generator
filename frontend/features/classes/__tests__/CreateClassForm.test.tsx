@@ -1,11 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { CreateClassForm } from '../CreateClassForm';
-import * as classesApi from '../../services/classes-api';
+import { CreateClassForm } from '../components/CreateClassForm';
 
 // Mock the API service
-vi.mock('../../services/classes-api');
+const { mockCreateClass } = vi.hoisted(() => ({
+  mockCreateClass: vi.fn(),
+}));
+
+vi.mock('../services/classes-api', () => ({
+  createClass: mockCreateClass,
+}));
 
 describe('CreateClassForm', () => {
   const mockOnSuccess = vi.fn();
@@ -59,7 +64,7 @@ describe('CreateClassForm', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/maximum 100 characters/i)).toBeInTheDocument();
+      expect(screen.getByText(/class name must be less than 100 characters/i)).toBeInTheDocument();
     });
   });
 
@@ -73,7 +78,6 @@ describe('CreateClassForm', () => {
   });
 
   it('submits form with valid data', async () => {
-    const mockCreateClass = vi.mocked(classesApi.createClass);
     mockCreateClass.mockResolvedValueOnce({
       id: 'class-123',
       name: 'Math 101',
@@ -93,6 +97,7 @@ describe('CreateClassForm', () => {
     const submitButton = screen.getByRole('button', { name: /create class/i });
     fireEvent.click(submitButton);
 
+    // Wait for both the API call and the onSuccess callback
     await waitFor(() => {
       expect(mockCreateClass).toHaveBeenCalledWith({
         name: 'Math 101',
@@ -100,17 +105,18 @@ describe('CreateClassForm', () => {
       });
     });
 
-    expect(mockOnSuccess).toHaveBeenCalledWith({
-      id: 'class-123',
-      name: 'Math 101',
-      code: 'MATH10',
-      teacherId: 'teacher-123',
-      createdAt: expect.any(String),
+    await waitFor(() => {
+      expect(mockOnSuccess).toHaveBeenCalledWith({
+        id: 'class-123',
+        name: 'Math 101',
+        code: 'MATH10',
+        teacherId: 'teacher-123',
+        createdAt: expect.any(String),
+      });
     });
   });
 
   it('shows loading state during submission', async () => {
-    const mockCreateClass = vi.mocked(classesApi.createClass);
     mockCreateClass.mockImplementation(() => new Promise((resolve) => setTimeout(resolve, 100)));
 
     render(<CreateClassForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />);
@@ -126,7 +132,6 @@ describe('CreateClassForm', () => {
   });
 
   it('shows error message when API call fails', async () => {
-    const mockCreateClass = vi.mocked(classesApi.createClass);
     mockCreateClass.mockRejectedValueOnce(new Error('Failed to create class'));
 
     render(<CreateClassForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />);
@@ -145,7 +150,6 @@ describe('CreateClassForm', () => {
   });
 
   it('clears error when user starts typing again', async () => {
-    const mockCreateClass = vi.mocked(classesApi.createClass);
     mockCreateClass.mockRejectedValueOnce(new Error('Failed to create class'));
 
     render(<CreateClassForm onSuccess={mockOnSuccess} onCancel={mockOnCancel} />);

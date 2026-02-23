@@ -2,6 +2,7 @@ import { expect, afterEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import * as React from 'react';
+
 import enCommon from './lib/i18n/locales/en/common.json';
 import enExams from './lib/i18n/locales/en/exams.json';
 import enStudent from './lib/i18n/locales/en/student.json';
@@ -26,7 +27,6 @@ const allTranslations: Record<string, any> = {
 
 function getNestedValue(obj: any, path: string): any {
   if (!obj || !path) return undefined;
-  // Split by both : and . to handle both namespace:key and nested.key formats
   const keys = path.split(/[:.]/).filter(Boolean);
   let result = obj;
   for (const key of keys) {
@@ -39,60 +39,51 @@ function getNestedValue(obj: any, path: string): any {
 function translate(key: string): string {
   if (!key) return key;
 
-  // Handle namespace:key format (e.g., "common:auth.termsOfServiceConsent" or "classes:classCard.noDescription")
   const colonIndex = key.indexOf(':');
+  const hasDot = key.includes('.');
+
   if (colonIndex > 0) {
     const namespace = key.substring(0, colonIndex);
     const actualKey = key.substring(colonIndex + 1);
-
-    // First try exact namespace match
     const translations = allTranslations[namespace];
     if (translations) {
       const value = getNestedValue(translations, actualKey);
       if (value !== undefined) return value;
     }
-
-    // Then try in common namespace (for nested keys like "auth.termsOfServiceConsent")
-    const commonValue = getNestedValue(enCommon, key);
-    if (commonValue !== undefined) return commonValue;
   }
 
-  // Handle nested keys without namespace (e.g., "classCard.noDescription" or "auth.termsOfServiceConsent")
-  if (key.includes('.')) {
+  if (hasDot) {
+    const commonNested = getNestedValue(enCommon, key);
+    if (commonNested !== undefined) return commonNested;
+
     for (const [ns, translations] of Object.entries(allTranslations)) {
+      if (ns === 'common') continue;
       const value = getNestedValue(translations, key);
       if (value !== undefined) return value;
     }
   }
 
-  // Try common namespace for simple keys
   const commonValue = getNestedValue(enCommon, key);
   if (commonValue !== undefined) return commonValue;
 
-  // Return key if not found (so tests can find it)
   return key;
 }
 
-// Extend Vitest's expect with jest-dom matchers
 expect.extend(matchers);
 
-// Cleanup after each test
 afterEach(() => {
   cleanup();
 });
 
-// Mock i18next with real translations
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string, options?: any) => {
       let value = translate(key);
 
-      // Handle interpolation - replace {{count}} with options.count
       if (options) {
         if (options.count !== undefined && typeof options.count === 'number') {
           value = value.replace(/\{\{count\}\}/g, String(options.count));
         }
-        // Replace other placeholders
         Object.entries(options).forEach(([k, v]) => {
           if (k !== 'count' && v !== undefined) {
             value = value.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), String(v));
@@ -113,7 +104,6 @@ vi.mock('react-i18next', () => ({
   },
 }));
 
-// Mock Next.js router
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
@@ -128,18 +118,15 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-// Mock Next.js Link
 vi.mock('next/link', () => ({
   default: ({ children, href }: any) => {
     return React.createElement('a', { href }, children);
   },
 }));
 
-// Mock environment variables
 process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3001';
 process.env.NEXT_PUBLIC_USE_MOCK_OAUTH = 'true';
 
-// Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({
@@ -154,7 +141,6 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Mock localStorage
 const localStorageMock = {
   getItem: vi.fn(),
   setItem: vi.fn(),

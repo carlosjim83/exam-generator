@@ -38,7 +38,7 @@ vi.mock('react-i18next', () => ({
         'examList.status.SUBMITTED': 'Submitted',
         'examList.status.GRADED': 'Graded',
         'examList.actions.start': 'Start Exam',
-        'examList.actions.continue': 'Continue',
+        'examList.actions.continueExam': 'Continue Exam',
         'examList.actions.viewResults': 'View Results',
         'examList.questions': 'questions',
         'examList.assigned': 'Assigned',
@@ -110,7 +110,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByTestId('student-exam-list-loading')).toBeInTheDocument();
     });
@@ -125,7 +125,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getAllByText(/no exams assigned/i)).toHaveLength(2);
     });
@@ -140,7 +140,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByText(/failed to fetch exams/i)).toBeInTheDocument();
     });
@@ -154,7 +154,7 @@ describe('StudentExamList', () => {
         refetch: refetchMock,
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       const retryButton = screen.getByRole('button', { name: /retry/i });
       await userEvent.click(retryButton);
@@ -172,7 +172,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByText('Math Final Exam')).toBeInTheDocument();
       expect(screen.getByText('Physics Midterm')).toBeInTheDocument();
@@ -187,7 +187,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByText('Comprehensive math test')).toBeInTheDocument();
       expect(screen.getByText('Chapter 5 quiz')).toBeInTheDocument();
@@ -201,7 +201,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByText(/10 questions/i)).toBeInTheDocument();
       expect(screen.getByText(/20 questions/i)).toBeInTheDocument();
@@ -218,7 +218,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByText('Pending')).toBeInTheDocument();
     });
@@ -231,7 +231,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByText('In Progress')).toBeInTheDocument();
     });
@@ -244,7 +244,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByText('Graded')).toBeInTheDocument();
       expect(screen.getByText(/85\/100/)).toBeInTheDocument();
@@ -260,7 +260,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByRole('button', { name: /start exam/i })).toBeInTheDocument();
     });
@@ -273,9 +273,12 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
-      expect(screen.getByRole('button', { name: /continue exam/i })).toBeInTheDocument();
+      // Find button by its icon (PlayCircle) and verify it exists
+      const buttons = screen.getAllByRole('button');
+      const continueButton = buttons.find((btn) => btn.textContent?.includes('Continue Exam'));
+      expect(continueButton).toBeTruthy();
     });
 
     it('should show "View Results" button for GRADED exams', () => {
@@ -286,7 +289,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} />);
+      render(<StudentExamList />);
 
       expect(screen.getByRole('button', { name: /view results/i })).toBeInTheDocument();
     });
@@ -302,7 +305,7 @@ describe('StudentExamList', () => {
         refetch: vi.fn(),
       });
 
-      render(<StudentExamList token={mockToken} onExamSelect={onExamSelectMock} />);
+      render(<StudentExamList onExamSelect={onExamSelectMock} />);
 
       const startButton = screen.getByRole('button', { name: /start exam/i });
       await userEvent.click(startButton);

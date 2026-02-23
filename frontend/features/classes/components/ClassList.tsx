@@ -49,13 +49,13 @@ export function ClassList({ classes = [], loading = false, onRefresh }: ClassLis
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
         <h2 className="text-2xl font-bold">
-          {t('classes:myClasses')} ({filteredClasses.length})
+          {t('myClasses')} ({filteredClasses.length})
         </h2>
         <div className="flex gap-2">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder={t('classes:searchPlaceholder')}
+              placeholder={t('searchPlaceholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-9"
@@ -73,15 +73,15 @@ export function ClassList({ classes = [], loading = false, onRefresh }: ClassLis
             <Code className="h-8 w-8 text-muted-foreground" />
           </div>
           <h3 className="text-xl font-semibold mb-2">
-            {searchTerm ? t('classes:noResults') : t('classes:noClasses')}
+            {searchTerm ? t('noResults') : t('noClasses')}
           </h3>
           <p className="text-muted-foreground max-w-md mb-6">
-            {searchTerm ? t('classes:noSearchResults') : t('classes:createFirstClassDescription')}
+            {searchTerm ? t('noSearchResults') : t('createFirstClassDescription')}
           </p>
           {!searchTerm && (
             <Button variant="outline">
               <Plus className="h-4 w-4 mr-2" />
-              {t('classes:createClass')}
+              {t('createClass')}
             </Button>
           )}
         </div>
