@@ -249,5 +249,6 @@ export async function resendInvitation(token: string): Promise<void> {
  * Get enrolled classes for current student
  */
 export async function getMyClasses(): Promise<Class[]> {
-  return apiClient.get<Class[]>('/api/student/classes');
+  const response = await apiClient.get<{ classes: Class[] }>('/api/student/classes');
+  return response.classes;
 }
