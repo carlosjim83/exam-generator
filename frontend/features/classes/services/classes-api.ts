@@ -244,3 +244,10 @@ export async function acceptInvitation(token: string): Promise<void> {
 export async function resendInvitation(token: string): Promise<void> {
   await apiClient.post(`/api/invitations/${token}/resend`, {});
 }
+
+/**
+ * Get enrolled classes for current student
+ */
+export async function getMyClasses(): Promise<Class[]> {
+  return apiClient.get<Class[]>('/api/student/classes');
+}

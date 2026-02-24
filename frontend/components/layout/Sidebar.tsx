@@ -61,8 +61,20 @@ const studentNavigation: NavItem[] = [
     roles: ['STUDENT'],
   },
   {
+    labelKey: 'student:navigation.myClasses',
+    href: '/student/classes',
+    icon: Users,
+    roles: ['STUDENT'],
+  },
+  {
     labelKey: 'student:navigation.myExams',
     href: '/student/exams',
+    icon: GraduationCap,
+    roles: ['STUDENT'],
+  },
+  {
+    labelKey: 'student:navigation.joinClass',
+    href: '/student/join',
     icon: GraduationCap,
     roles: ['STUDENT'],
   },

@@ -18,6 +18,7 @@ import { GetClassInvitationsCommand } from '@application/use-cases/classes/GetCl
 import { ImportStudentsCSVCommand } from '@application/use-cases/classes/ImportStudentsCSVUseCase.js';
 import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
 import { RemoveStudentFromClassCommand } from '@application/use-cases/classes/RemoveStudentFromClassUseCase.js';
+import { GetStudentClassesCommand } from '@application/use-cases/classes/GetStudentClassesUseCase.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
   // GET /api/classes - List all classes for authenticated teacher
@@ -750,6 +751,69 @@ export async function classRoutes(fastify: FastifyInstance) {
       });
 
       reply.status(204).send();
+    }
+  );
+
+  // GET /api/student/classes - Get enrolled classes for student
+  fastify.get(
+    '/api/student/classes',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Get my enrolled classes',
+        description: 'Get all classes the current student is enrolled in',
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              classes: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    name: { type: 'string' },
+                    code: { type: 'string' },
+                    description: { type: 'string' },
+                    color: { type: 'string' },
+                    teacherId: { type: 'string', format: 'uuid' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    updatedAt: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const userRole = (request as any).user.role;
+
+      // Only students can access this endpoint
+      if (userRole !== 'STUDENT') {
+        (reply as any).code(403).send({ error: 'Only students can access their enrolled classes' });
+        return;
+      }
+
+      const command = new GetStudentClassesCommand(userId);
+      const result = await container.getStudentClassesUseCase.execute(command);
+
+      reply.status(200).send({
+        classes: result.classes.map((cls: any) => ({
+          id: cls.id.toString(),
+          name: cls.name,
+          code: cls.code.value,
+          description: cls.description,
+          color: cls.color,
+          teacherId: cls.teacherId.toString(),
+          createdAt: cls.createdAt.toISOString(),
+          updatedAt: cls.updatedAt.toISOString(),
+        })),
+      });
     }
   );
 }

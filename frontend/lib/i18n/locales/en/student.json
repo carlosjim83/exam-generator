@@ -26,7 +26,9 @@
   },
   "navigation": {
     "dashboard": "Control Panel",
-    "myExams": "My Exams"
+    "myClasses": "My Classes",
+    "myExams": "My Exams",
+    "joinClass": "Join Class"
   },
   "welcome": {
     "greeting": "Welcome back",
@@ -129,5 +131,16 @@
   "errors": {
     "retry": "Retry",
     "noExams": "No Exams Assigned"
+  },
+  "classes": {
+    "title": "My Classes",
+    "noClasses": "No classes yet",
+    "noClassesDescription": "You haven't joined any classes yet. Ask your teacher for a class code to get started.",
+    "joinClass": "Join a Class",
+    "exams": "Exams",
+    "view": "View",
+    "errors": {
+      "loadFailed": "Failed to load your classes"
+    }
   }
 }

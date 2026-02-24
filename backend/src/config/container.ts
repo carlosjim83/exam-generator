@@ -64,6 +64,7 @@ import {
   GetClassInvitationsUseCase,
   ResendInvitationUseCase, // Added
   RemoveStudentFromClassUseCase, // Added
+  GetStudentClassesUseCase, // Added
 } from '../application/use-cases/index.js';
 
 // Student Use Cases
@@ -156,6 +157,7 @@ export class Container {
   private readonly _getClassInvitationsUseCase: GetClassInvitationsUseCase;
   private readonly _resendInvitationUseCase: ResendInvitationUseCase;
   private readonly _removeStudentFromClassUseCase: RemoveStudentFromClassUseCase;
+  private readonly _getStudentClassesUseCase: GetStudentClassesUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -326,6 +328,10 @@ export class Container {
     this._removeStudentFromClassUseCase = new RemoveStudentFromClassUseCase(
       this._studentEnrollmentRepository,
       this._classRepository
+    );
+    this._getStudentClassesUseCase = new GetStudentClassesUseCase(
+      this._classRepository,
+      this._studentEnrollmentRepository
     );
 
     // Student Use Cases
@@ -571,6 +577,10 @@ export class Container {
 
   public get getExamResultsUseCase(): GetExamResultsUseCase {
     return this._getExamResultsUseCase;
+  }
+
+  public get getStudentClassesUseCase(): GetStudentClassesUseCase {
+    return this._getStudentClassesUseCase;
   }
 
   /**
