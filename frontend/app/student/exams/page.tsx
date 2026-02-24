@@ -10,6 +10,7 @@ import { useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/ui-custom/PageHeader';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { StudentExamList } from '@/features/student-exams/components/StudentExamList';
 import type { StudentExamListItem } from '@/features/student-exams/types';
@@ -41,6 +42,11 @@ export default function StudentExamsPage() {
     return (
       <DashboardLayout>
         <div className="px-8 py-8">
+          <PageHeader
+            title={t('exams.title')}
+            subtitle={t('exams.welcome')}
+            name={user?.firstName}
+          />
           <div className="animate-pulse">
             <div className="h-8 w-64 bg-gray-200 rounded mb-4" />
             <div className="h-4 w-48 bg-gray-200 rounded" />
@@ -53,10 +59,7 @@ export default function StudentExamsPage() {
   return (
     <DashboardLayout>
       <div className="px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight mb-2">{t('exams.title')}</h1>
-          <p className="text-muted-foreground">{t('exams.welcome', { name: user?.firstName })}</p>
-        </div>
+        <PageHeader title={t('exams.title')} subtitle={t('exams.welcome')} name={user?.firstName} />
         <StudentExamList onExamSelect={handleExamSelect} />
       </div>
     </DashboardLayout>
