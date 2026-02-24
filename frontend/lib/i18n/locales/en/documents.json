@@ -1,6 +1,6 @@
 {
   "title": "My Library",
-  "subtitle": "Manage your uploaded documents",
+  "subtitle": "Welcome, {{name}}! Manage your uploaded documents.",
   "uploadNew": "Upload Document",
   "noDocuments": "No documents yet",
   "noDocumentsDescription": "Upload your first document to get started",

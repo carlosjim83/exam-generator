@@ -3,16 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/ui-custom/PageHeader';
 import { ClassList } from '@/features/classes/components/ClassList';
 import { CreateClassForm } from '@/features/classes/components/CreateClassForm';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { listClasses, type Class } from '@/features/classes/services/classes-api';
+import { useAuth } from '@/features/auth/context/AuthContext';
 import type { ClassSummary } from '@/features/classes/types';
 
 export default function ClassesPage() {
   const { t } = useTranslation('classes');
+  const { user } = useAuth();
   const [classes, setClasses] = useState<ClassSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -49,17 +52,18 @@ export default function ClassesPage() {
 
   return (
     <DashboardLayout>
-      <div className="px-8 py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="mb-2 text-3xl font-bold tracking-tight">{t('title')}</h1>
-            <p className="text-muted-foreground">{t('createFirstClassDescription')}</p>
-          </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('createClass')}
-          </Button>
-        </div>
+      <div className="container mx-auto p-6">
+        <PageHeader
+          title={t('title')}
+          subtitle={t('subtitle')}
+          name={user?.firstName}
+          action={
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              {t('createClass')}
+            </Button>
+          }
+        />
 
         <ClassList classes={classes} loading={loading} onRefresh={loadClasses} />
 
