@@ -41,7 +41,7 @@ export default function StudentExamsPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="px-8 py-8">
+        <div className="container mx-auto p-6">
           <PageHeader
             title={t('exams.title')}
             subtitle={t('exams.welcome')}
@@ -58,7 +58,7 @@ export default function StudentExamsPage() {
 
   return (
     <DashboardLayout>
-      <div className="px-8 py-8">
+      <div className="container mx-auto p-6">
         <PageHeader title={t('exams.title')} subtitle={t('exams.welcome')} name={user?.firstName} />
         <StudentExamList onExamSelect={handleExamSelect} />
       </div>
