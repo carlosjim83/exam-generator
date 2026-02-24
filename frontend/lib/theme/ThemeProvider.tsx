@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { preferencesService } from '@/lib/services/api-preferences.service';
+import { configManager } from '@/lib/config/config-manager';
 
 type Theme = 'light' | 'dark';
 
@@ -29,6 +30,17 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       if (localTheme) {
         setThemeState(localTheme);
         applyTheme(localTheme);
+      }
+
+      // Wait for config to be initialized before making API calls
+      if (!configManager.isInitialized()) {
+        try {
+          await configManager.initialize();
+        } catch (error) {
+          console.debug('Config initialization failed, using localStorage only');
+          setIsLoading(false);
+          return;
+        }
       }
 
       // Then try to sync with API (background)
