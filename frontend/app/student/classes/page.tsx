@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { PageHeader } from '@/components/ui-custom/PageHeader';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { toast } from 'sonner';
 import { GraduationCap, Plus, Users, BookOpen, ArrowRight } from 'lucide-react';
@@ -23,7 +24,6 @@ export default function StudentClassesPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Redirect if not authenticated
     if (!authLoading && !isAuthenticated) {
       router.push('/login');
     }
@@ -49,11 +49,15 @@ export default function StudentClassesPage() {
     }
   };
 
-  const renderContent = () => {
-    if (loading) {
-      return (
+  if (loading) {
+    return (
+      <DashboardLayout>
         <div className="container mx-auto p-6">
-          <h1 className="text-2xl font-bold mb-6">{t('classes.title')}</h1>
+          <PageHeader
+            title={t('classes.title')}
+            subtitle={t('classes.subtitle')}
+            name={user?.firstName}
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
               <Card key={i}>
@@ -68,33 +72,45 @@ export default function StudentClassesPage() {
             ))}
           </div>
         </div>
-      );
-    }
+      </DashboardLayout>
+    );
+  }
 
-    if (error) {
-      return (
+  if (error) {
+    return (
+      <DashboardLayout>
         <div className="container mx-auto p-6">
-          <h1 className="text-2xl font-bold mb-6">{t('classes.title')}</h1>
+          <PageHeader
+            title={t('classes.title')}
+            subtitle={t('classes.subtitle')}
+            name={user?.firstName}
+          />
           <Card className="p-6 text-center">
             <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={loadClasses}>{t('errors.retry')}</Button>
           </Card>
         </div>
-      );
-    }
+      </DashboardLayout>
+    );
+  }
 
-    if (classes.length === 0) {
-      return (
+  if (classes.length === 0) {
+    return (
+      <DashboardLayout>
         <div className="container mx-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">{t('classes.title')}</h1>
-            <Link href="/student/join">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {t('classes.joinClass')}
-              </Button>
-            </Link>
-          </div>
+          <PageHeader
+            title={t('classes.title')}
+            subtitle={t('classes.subtitle')}
+            name={user?.firstName}
+            action={
+              <Link href="/student/join">
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('classes.joinClass')}
+                </Button>
+              </Link>
+            }
+          />
           <Card className="p-12 text-center">
             <GraduationCap className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">{t('classes.noClasses')}</h3>
@@ -109,20 +125,26 @@ export default function StudentClassesPage() {
             </Link>
           </Card>
         </div>
-      );
-    }
+      </DashboardLayout>
+    );
+  }
 
-    return (
+  return (
+    <DashboardLayout>
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">{t('classes.title')}</h1>
-          <Link href="/student/join">
-            <Button variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              {t('classes.joinClass')}
-            </Button>
-          </Link>
-        </div>
+        <PageHeader
+          title={t('classes.title')}
+          subtitle={t('classes.subtitle')}
+          name={user?.firstName}
+          action={
+            <Link href="/student/join">
+              <Button variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                {t('classes.joinClass')}
+              </Button>
+            </Link>
+          }
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {classes.map((cls) => (
@@ -172,8 +194,6 @@ export default function StudentClassesPage() {
           ))}
         </div>
       </div>
-    );
-  };
-
-  return <DashboardLayout>{renderContent()}</DashboardLayout>;
+    </DashboardLayout>
+  );
 }

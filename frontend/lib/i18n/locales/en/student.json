@@ -2,6 +2,7 @@
   "title": "My Exams",
   "joinClass": {
     "title": "Join a Class",
+    "subtitle": "Welcome, {{name}}! Enter your class code to get started.",
     "description": "Enter the class code provided by your teacher to join their class",
     "codeLabel": "Class Code",
     "codePlaceholder": "e.g., ABC123",
@@ -134,6 +135,7 @@
   },
   "classes": {
     "title": "My Classes",
+    "subtitle": "Welcome, {{name}}! Here are the classes you're enrolled in.",
     "noClasses": "No classes yet",
     "noClassesDescription": "You haven't joined any classes yet. Ask your teacher for a class code to get started.",
     "joinClass": "Join a Class",

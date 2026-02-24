@@ -2,6 +2,7 @@
   "title": "Mis Exámenes",
   "joinClass": {
     "title": "Unirse a una Clase",
+    "subtitle": "Bienvenido, {{name}}! Introduce el código de tu clase para empezar.",
     "description": "Introduce el código de clase proporcionado por tu profesor para unirte a su clase",
     "codeLabel": "Código de Clase",
     "codePlaceholder": "ej., ABC123",
@@ -138,6 +139,7 @@
   },
   "classes": {
     "title": "Mis Clases",
+    "subtitle": "Bienvenido, {{name}}! Aquí están las clases en las que estás inscrito.",
     "noClasses": "Aún no tienes clases",
     "noClassesDescription": "No te has unido a ninguna clase aún. Pide el código a tu profesor para empezar.",
     "joinClass": "Unirse a una Clase",

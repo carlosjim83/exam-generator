@@ -10,9 +10,11 @@ import { Label } from '@/components/ui/label';
 import { CheckCircle, Loader2, BookOpen, XCircle } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { useAuth } from '@/features/auth/context/AuthContext';
 
 export default function JoinClassPage() {
   const { t } = useTranslation('student');
+  const { user } = useAuth();
   const router = useRouter();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
