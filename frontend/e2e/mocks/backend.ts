@@ -144,8 +144,8 @@ export const setupMockBackend = async (page: Page) => {
       });
     }
 
-    // GET /auth/google/mock (OAuth mock)
-    if (method === 'GET' && url.pathname === '/auth/google/mock') {
+    // GET /api/auth/google/mock (OAuth mock)
+    if (method === 'GET' && url.pathname === '/api/auth/google/mock') {
       const role = url.searchParams.get('role') || 'TEACHER';
 
       // Create OAuth user

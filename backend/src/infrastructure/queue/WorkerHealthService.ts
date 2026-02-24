@@ -13,6 +13,17 @@
 import type { Queue } from 'bullmq';
 import type { Redis } from 'ioredis';
 
+// Type for Redis connection options (not instance)
+export type RedisConnectionOptions = {
+  host: string;
+  port: number;
+  password?: string;
+  maxRetriesPerRequest: null;
+  enableReadyCheck: boolean;
+  retryStrategy: (times: number) => number;
+  tls?: { servername: string };
+};
+
 // ============================================================================
 // Type Definitions
 // ============================================================================
@@ -101,7 +112,11 @@ export class WorkerHealthService {
   private isShutDown: boolean = false;
   private workerRegistered: boolean = false; // Track if worker has started
 
-  constructor(params: { workerQueueName: string; queue: Queue; redisConnection: Redis }) {
+  constructor(params: {
+    workerQueueName: string;
+    queue: Queue;
+    redisConnection: Redis | RedisConnectionOptions;
+  }) {
     this.queueName = params.workerQueueName;
     this.queue = params.queue;
     // redisConnection reserved for future use (direct Redis health checks)

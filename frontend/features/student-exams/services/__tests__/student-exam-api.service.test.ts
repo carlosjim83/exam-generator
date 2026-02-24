@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { StudentExamAPIService } from '../student-exam-api.service';
 import type {
   StudentExamListItem,
@@ -8,16 +8,30 @@ import type {
   ExamResultsData,
 } from '../../types';
 
-// Mock fetch globally
-global.fetch = vi.fn();
+// Mock the api-client module
+vi.mock('@/lib/api-client', () => ({
+  apiClient: {
+    get: vi.fn(),
+    post: vi.fn(),
+  },
+  TokenManager: {
+    getAccessToken: vi.fn(() => 'mock-jwt-token'),
+    isAuthenticated: vi.fn(() => true),
+  },
+}));
+
+import { apiClient } from '@/lib/api-client';
 
 describe('StudentExamAPIService', () => {
   let service: StudentExamAPIService;
-  const mockToken = 'mock-jwt-token';
 
   beforeEach(() => {
     service = new StudentExamAPIService();
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.resetAllMocks();
   });
 
   describe('getAssignedExams', () => {
@@ -39,40 +53,22 @@ describe('StudentExamAPIService', () => {
         },
       ];
 
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ assignments: mockExams }),
-      });
+      vi.mocked(apiClient.get).mockResolvedValueOnce({ assignments: mockExams });
 
       // ACT
-      const result = await service.getAssignedExams(mockToken);
+      const result = await service.getAssignedExams();
 
       // ASSERT
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/students/assignments`,
-        expect.objectContaining({
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${mockToken}`,
-          },
-        })
-      );
+      expect(apiClient.get).toHaveBeenCalledWith('/api/students/assignments');
       expect(result).toEqual(mockExams);
     });
 
     it('should throw error when API request fails', async () => {
       // ARRANGE
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        json: async () => ({ error: 'Unauthorized' }),
-      });
+      vi.mocked(apiClient.get).mockRejectedValueOnce(new Error('Unauthorized'));
 
       // ACT & ASSERT
-      await expect(service.getAssignedExams(mockToken)).rejects.toThrow(
-        'Failed to fetch assigned exams: Unauthorized'
-      );
+      await expect(service.getAssignedExams()).rejects.toThrow('Unauthorized');
     });
   });
 
@@ -109,24 +105,15 @@ describe('StudentExamAPIService', () => {
         },
       };
 
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      });
+      vi.mocked(apiClient.post).mockResolvedValueOnce(mockResponse);
 
       // ACT
-      const result = await service.startExam('assignment-1', mockToken);
+      const result = await service.startExam('assignment-1');
 
       // ASSERT
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/students/assignments/assignment-1/start`,
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${mockToken}`,
-          },
-        })
+      expect(apiClient.post).toHaveBeenCalledWith(
+        '/api/students/assignments/assignment-1/start',
+        {}
       );
       expect(result).toEqual(mockResponse);
     });
@@ -146,28 +133,15 @@ describe('StudentExamAPIService', () => {
         message: 'Answer saved successfully',
       };
 
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      });
+      vi.mocked(apiClient.post).mockResolvedValueOnce(mockResponse);
 
       // ACT
-      const result = await service.submitAnswer('assignment-1', 'q1', '4', mockToken);
+      const result = await service.submitAnswer('assignment-1', 'q1', '4');
 
       // ASSERT
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/students/assignments/assignment-1/submit`,
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${mockToken}`,
-          },
-          body: JSON.stringify({
-            answers: [{ questionId: 'q1', answerText: '4' }],
-          }),
-        })
-      );
+      expect(apiClient.post).toHaveBeenCalledWith('/api/students/assignments/assignment-1/submit', {
+        answers: [{ questionId: 'q1', answerText: '4' }],
+      });
       expect(result).toEqual(mockResponse);
     });
   });
@@ -191,24 +165,15 @@ describe('StudentExamAPIService', () => {
         message: 'Exam submitted successfully',
       };
 
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      });
+      vi.mocked(apiClient.post).mockResolvedValueOnce(mockResponse);
 
       // ACT
-      const result = await service.submitExam('assignment-1', mockToken);
+      const result = await service.submitExam('assignment-1');
 
       // ASSERT
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/students/assignments/assignment-1/submit`,
-        expect.objectContaining({
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${mockToken}`,
-          },
-        })
+      expect(apiClient.post).toHaveBeenCalledWith(
+        '/api/students/assignments/assignment-1/submit',
+        {}
       );
       expect(result).toEqual(mockResponse);
     });
@@ -261,25 +226,13 @@ describe('StudentExamAPIService', () => {
         percentage: 80,
       };
 
-      (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-        ok: true,
-        json: async () => mockResponse,
-      });
+      vi.mocked(apiClient.get).mockResolvedValueOnce(mockResponse);
 
       // ACT
-      const result = await service.getExamResults('assignment-1', mockToken);
+      const result = await service.getExamResults('assignment-1');
 
       // ASSERT
-      expect(global.fetch).toHaveBeenCalledWith(
-        `${service['baseUrl']}/students/assignments/assignment-1/results`,
-        expect.objectContaining({
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${mockToken}`,
-          },
-        })
-      );
+      expect(apiClient.get).toHaveBeenCalledWith('/api/students/assignments/assignment-1/results');
       expect(result).toEqual(mockResponse);
     });
   });

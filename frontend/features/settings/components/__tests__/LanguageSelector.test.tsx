@@ -1,6 +1,17 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
 import { LanguageSelector } from '../LanguageSelector';
 import '@/lib/i18n/config';
+
+// Mock localStorage
+const localStorageMock = {
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+};
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+});
 
 describe('LanguageSelector', () => {
   it('should render language selector', () => {
@@ -23,7 +34,7 @@ describe('LanguageSelector', () => {
     expect(screen.getByRole('option', { name: /español/i })).toBeInTheDocument();
   });
 
-  it('should change language when option is selected', async () => {
+  it('should call localStorage.setItem when language is changed', async () => {
     render(<LanguageSelector />);
 
     const select = screen.getByRole('combobox') as HTMLSelectElement;
@@ -31,26 +42,7 @@ describe('LanguageSelector', () => {
     fireEvent.change(select, { target: { value: 'es' } });
 
     await waitFor(() => {
-      expect(select.value).toBe('es');
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('i18nextLng', 'es');
     });
-  });
-
-  it('should persist language selection', async () => {
-    render(<LanguageSelector />);
-
-    const select = screen.getByRole('combobox') as HTMLSelectElement;
-
-    // Change to Spanish
-    fireEvent.change(select, { target: { value: 'es' } });
-
-    // Wait for the language to change in i18n
-    await waitFor(() => {
-      expect(select.value).toBe('es');
-    });
-
-    // Language should be changed in i18n instance
-    const i18nextLng = localStorage.getItem('i18nextLng');
-    // It might store 'es' or null depending on jsdom setup, but the select value should be 'es'
-    expect(select.value).toBe('es');
   });
 });

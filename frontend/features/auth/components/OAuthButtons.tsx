@@ -19,7 +19,7 @@ export function OAuthButtons({ mode, role, disabled = false }: OAuthButtonsProps
 
   // Check if mock OAuth is enabled via environment variable
   const useMock = process.env.NEXT_PUBLIC_USE_MOCK_OAUTH === 'true';
-  const oauthEndpoint = useMock ? '/auth/google/mock' : '/auth/google';
+  const oauthEndpoint = useMock ? '/api/auth/google/mock' : '/api/auth/google';
 
   const handleGoogleClick = () => {
     // If in register mode with a pre-selected role, use it directly

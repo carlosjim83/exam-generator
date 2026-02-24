@@ -20,16 +20,13 @@ import { cn } from '@/lib/utils';
 
 interface ExamResultsProps {
   assignmentId: string;
-  token: string;
   onBack?: () => void;
 }
 
-export function ExamResults({ assignmentId, token, onBack }: ExamResultsProps) {
+export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
   const { t } = useTranslation('student');
-  const { results, loading, error, score, maxScore, percentage, refetch } = useExamResults(
-    assignmentId,
-    token
-  );
+  const { results, loading, error, score, maxScore, percentage, refetch } =
+    useExamResults(assignmentId);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -223,7 +220,7 @@ export function ExamResults({ assignmentId, token, onBack }: ExamResultsProps) {
                       isCorrect ? 'bg-green-50 text-green-900' : 'bg-red-50 text-red-900'
                     )}
                   >
-                    {answer?.answer ?? 'No answer provided'}
+                    {answer?.answer ?? t('results.noAnswerProvided')}
                   </p>
                 </div>
                 {answer?.feedback && (

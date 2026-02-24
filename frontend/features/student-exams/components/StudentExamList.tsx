@@ -16,7 +16,6 @@ import { useStudentExams } from '../hooks';
 import type { StudentExamListItem, ExamAssignmentStatus } from '../types';
 
 interface StudentExamListProps {
-  token: string;
   onExamSelect?: (exam: StudentExamListItem) => void;
 }
 
@@ -34,9 +33,9 @@ const statusConfig: Record<
   GRADED: { labelKey: 'examList.status.GRADED', variant: 'default', icon: CheckCircle },
 };
 
-export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
+export function StudentExamList({ onExamSelect }: StudentExamListProps) {
   const { t } = useTranslation('student');
-  const { exams, loading, error, refetch } = useStudentExams(token);
+  const { exams, loading, error, refetch } = useStudentExams();
 
   if (loading) {
     return (
@@ -93,7 +92,7 @@ export function StudentExamList({ token, onExamSelect }: StudentExamListProps) {
         return (
           <Button onClick={() => onExamSelect?.(exam)} size="sm" variant="secondary">
             <PlayCircle className="h-4 w-4 mr-2" />
-            {t('examList.actions.continue')} Exam
+            {t('examList.actions.continueExam')}
           </Button>
         );
       case 'SUBMITTED':

@@ -1,13 +1,13 @@
 import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
-import { authenticateUser } from '../middleware/auth.middleware.js';
+import { authenticateUser } from '@middleware/auth.middleware.js';
 
 const prisma = new PrismaClient();
 
 export async function preferencesRoutes(fastify: FastifyInstance) {
-  // GET /preferences - Get user preferences
+  // GET /api/preferences - Get user preferences
   fastify.get(
-    '/preferences',
+    '/api/preferences',
     {
       preHandler: authenticateUser,
       schema: {
@@ -71,9 +71,9 @@ export async function preferencesRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // PATCH /preferences - Update user preferences
+  // PATCH /api/preferences - Update user preferences
   fastify.patch(
-    '/preferences',
+    '/api/preferences',
     {
       preHandler: authenticateUser,
       schema: {

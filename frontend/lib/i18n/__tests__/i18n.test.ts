@@ -59,7 +59,9 @@ describe('i18n Translations', () => {
     it('should translate exams keys', () => {
       expect(i18n.t('exams:title')).toBe('My Exams');
       expect(i18n.t('exams:generateNew')).toBe('Generate New Exam');
-      expect(i18n.t('exams:questions')).toBe('questions');
+      expect(i18n.t('exams:questions', { count: 0 })).toBe('questions');
+      expect(i18n.t('exams:questions', { count: 1 })).toBe('question');
+      expect(i18n.t('exams:questions', { count: 2 })).toBe('questions');
     });
 
     it('should translate documents keys', () => {
@@ -101,7 +103,9 @@ describe('i18n Translations', () => {
     it('should translate exams keys', () => {
       expect(i18n.t('exams:title')).toBe('Mis Exámenes');
       expect(i18n.t('exams:generateNew')).toBe('Generar Nuevo Examen');
-      expect(i18n.t('exams:questions')).toBe('preguntas');
+      expect(i18n.t('exams:questions', { count: 0 })).toBe('preguntas');
+      expect(i18n.t('exams:questions', { count: 1 })).toBe('pregunta');
+      expect(i18n.t('exams:questions', { count: 2 })).toBe('preguntas');
     });
 
     it('should translate documents keys', () => {

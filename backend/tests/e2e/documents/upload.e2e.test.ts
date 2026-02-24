@@ -46,7 +46,7 @@ describe('Document Upload Route', () => {
 
     const response = await server.inject({
       method: 'POST',
-      url: '/documents/upload',
+      url: '/api/documents/upload',
       headers: {
         ...form.getHeaders(),
         authorization: `Bearer ${authToken}`,
@@ -79,7 +79,7 @@ describe('Document Upload Route', () => {
   it('should return 400 if no file is provided', async () => {
     const response = await server.inject({
       method: 'POST',
-      url: '/documents/upload',
+      url: '/api/documents/upload',
       headers: {
         authorization: `Bearer ${authToken}`,
         'content-type': 'multipart/form-data; boundary=---XXX', // Must provide boundary

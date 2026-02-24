@@ -29,7 +29,7 @@ export class PrismaStudentAnswerRepository implements IStudentAnswerRepository {
       orderBy: { createdAt: 'asc' },
     });
 
-    return answers.map((a) => this.toDomain(a));
+    return answers.map((a: any) => this.toDomain(a));
   }
 
   async findByAssignmentAndQuestion(

@@ -39,7 +39,7 @@ describe('ApiDocumentService - Delete & Download', () => {
       await service.deleteDocument('doc-123');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:3001/documents/doc-123',
+        'http://localhost:3001/api/documents/doc-123',
         expect.objectContaining({
           method: 'DELETE',
           headers: expect.objectContaining({
@@ -91,7 +91,7 @@ describe('ApiDocumentService - Delete & Download', () => {
       const blob = await service.downloadDocument('doc-123');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:3001/documents/doc-123/download',
+        'http://localhost:3001/api/documents/doc-123/download',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({

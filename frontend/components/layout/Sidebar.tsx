@@ -13,6 +13,7 @@ import {
   Settings,
   LogOut,
   GraduationCap,
+  Users,
 } from 'lucide-react';
 
 interface NavItem {
@@ -28,6 +29,11 @@ const teacherNavigation: NavItem[] = [
     labelKey: 'dashboard:navigation.dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
+  },
+  {
+    labelKey: 'common:navigation.myClasses',
+    href: '/dashboard/classes',
+    icon: Users,
   },
   {
     labelKey: 'dashboard:navigation.myLibrary',

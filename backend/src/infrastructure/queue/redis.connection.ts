@@ -13,7 +13,8 @@ const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 // Determine if we need TLS (Azure Redis uses port 6380 with TLS)
 const needsTLS = REDIS_PORT === 6380 || REDIS_HOST.includes('redis.cache.windows.net');
 
-export const redisConnection = new Redis({
+// Connection options for BullMQ (not the Redis instance itself)
+export const redisConnection = {
   host: REDIS_HOST,
   port: REDIS_PORT,
   password: REDIS_PASSWORD,
@@ -28,17 +29,35 @@ export const redisConnection = new Redis({
       servername: REDIS_HOST,
     },
   }),
+};
+
+// Redis instance for direct Redis operations (if needed elsewhere)
+export const redis = new Redis({
+  host: REDIS_HOST,
+  port: REDIS_PORT,
+  password: REDIS_PASSWORD,
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
+  retryStrategy: (times: number) => {
+    const delay = Math.min(times * 50, 2000);
+    return delay;
+  },
+  ...(needsTLS && {
+    tls: {
+      servername: REDIS_HOST,
+    },
+  }),
 });
 
 // Log connection events
-redisConnection.on('connect', () => {
+redis.on('connect', () => {
   console.log('✅ Redis connected successfully');
 });
 
-redisConnection.on('error', (err) => {
+redis.on('error', (err) => {
   console.error('❌ Redis connection error:', err);
 });
 
-redisConnection.on('close', () => {
+redis.on('close', () => {
   console.log('⚠️  Redis connection closed');
 });

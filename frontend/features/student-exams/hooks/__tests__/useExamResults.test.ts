@@ -19,8 +19,14 @@ vi.mock('../../services/student-exam-api.service', () => ({
 }));
 
 describe('useExamResults', () => {
-  const mockToken = 'test-jwt-token';
   const mockAssignmentId = 'assignment-123';
+
+  // Mock TokenManager
+  vi.mock('@/lib/api-client', () => ({
+    TokenManager: {
+      getAccessToken: vi.fn().mockReturnValue('test-jwt-token'),
+    },
+  }));
 
   const mockResults: ExamResultsData = {
     assignment: {
@@ -81,7 +87,7 @@ describe('useExamResults', () => {
   it('should return initial state with loading true', () => {
     mockGetExamResults.mockReturnValue(new Promise(() => {})); // Never resolves
 
-    const { result } = renderHook(() => useExamResults(mockAssignmentId, mockToken));
+    const { result } = renderHook(() => useExamResults(mockAssignmentId));
 
     expect(result.current.loading).toBe(true);
     expect(result.current.results).toBeNull();
@@ -91,7 +97,7 @@ describe('useExamResults', () => {
   it('should fetch and return exam results successfully', async () => {
     mockGetExamResults.mockResolvedValue(mockResults);
 
-    const { result } = renderHook(() => useExamResults(mockAssignmentId, mockToken));
+    const { result } = renderHook(() => useExamResults(mockAssignmentId));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -99,13 +105,13 @@ describe('useExamResults', () => {
 
     expect(result.current.results).toEqual(mockResults);
     expect(result.current.error).toBeNull();
-    expect(mockGetExamResults).toHaveBeenCalledWith(mockAssignmentId, mockToken);
+    expect(mockGetExamResults).toHaveBeenCalledWith(mockAssignmentId);
   });
 
   it('should handle API errors gracefully', async () => {
     mockGetExamResults.mockRejectedValue(new Error('Results not available'));
 
-    const { result } = renderHook(() => useExamResults(mockAssignmentId, mockToken));
+    const { result } = renderHook(() => useExamResults(mockAssignmentId));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -116,15 +122,7 @@ describe('useExamResults', () => {
   });
 
   it('should not fetch if assignmentId is empty', () => {
-    const { result } = renderHook(() => useExamResults('', mockToken));
-
-    expect(result.current.loading).toBe(false);
-    expect(result.current.results).toBeNull();
-    expect(mockGetExamResults).not.toHaveBeenCalled();
-  });
-
-  it('should not fetch if token is empty', () => {
-    const { result } = renderHook(() => useExamResults(mockAssignmentId, ''));
+    const { result } = renderHook(() => useExamResults(''));
 
     expect(result.current.loading).toBe(false);
     expect(result.current.results).toBeNull();
@@ -134,7 +132,7 @@ describe('useExamResults', () => {
   it('should provide score, maxScore, and percentage from results', async () => {
     mockGetExamResults.mockResolvedValue(mockResults);
 
-    const { result } = renderHook(() => useExamResults(mockAssignmentId, mockToken));
+    const { result } = renderHook(() => useExamResults(mockAssignmentId));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);
@@ -148,7 +146,7 @@ describe('useExamResults', () => {
   it('should provide refetch function to reload results', async () => {
     mockGetExamResults.mockResolvedValue(mockResults);
 
-    const { result } = renderHook(() => useExamResults(mockAssignmentId, mockToken));
+    const { result } = renderHook(() => useExamResults(mockAssignmentId));
 
     await waitFor(() => {
       expect(result.current.loading).toBe(false);

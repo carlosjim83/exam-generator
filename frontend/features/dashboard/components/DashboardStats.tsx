@@ -11,12 +11,21 @@ interface StatCardProps {
   title: string;
   value: string | number;
   change?: string;
+  notApplicable: string;
   icon: LucideIcon;
   iconColor: string;
   iconBgColor: string;
 }
 
-function StatCard({ title, value, change, icon: Icon, iconColor, iconBgColor }: StatCardProps) {
+function StatCard({
+  title,
+  value,
+  change,
+  notApplicable,
+  icon: Icon,
+  iconColor,
+  iconBgColor,
+}: StatCardProps) {
   return (
     <Card>
       <CardContent className="p-6">
@@ -26,7 +35,7 @@ function StatCard({ title, value, change, icon: Icon, iconColor, iconBgColor }: 
               {title}
             </p>
             <h3 className="mb-2 text-3xl font-bold tracking-tight">{value}</h3>
-            {change && change !== 'N/A' && (
+            {change && change !== notApplicable && (
               <div className="flex items-center gap-1 text-sm">
                 <TrendingUp className="h-3 w-3 text-green-600" />
                 <span className="font-medium text-green-600">{change}</span>
@@ -95,6 +104,7 @@ export function DashboardStats() {
         title={t('dashboard:stats.totalDocuments')}
         value={stats.totalDocuments}
         change={stats.documentsChange}
+        notApplicable={t('dashboard:stats.notApplicable')}
         icon={FileText}
         iconColor="text-blue-600"
         iconBgColor="bg-blue-100"
@@ -103,6 +113,7 @@ export function DashboardStats() {
         title={t('dashboard:stats.totalExams')}
         value={stats.totalExams}
         change={stats.examsChange}
+        notApplicable={t('dashboard:stats.notApplicable')}
         icon={ClipboardCheck}
         iconColor="text-indigo-600"
         iconBgColor="bg-indigo-100"

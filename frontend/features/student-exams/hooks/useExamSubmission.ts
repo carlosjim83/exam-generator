@@ -26,10 +26,9 @@ interface UseExamSubmissionResult {
  * Hook for managing answer submissions and exam finalization
  *
  * @param assignmentId - The exam assignment ID
- * @param token - JWT authentication token
  * @returns Object containing submission state and functions
  */
-export function useExamSubmission(assignmentId: string, token: string): UseExamSubmissionResult {
+export function useExamSubmission(assignmentId: string): UseExamSubmissionResult {
   const [answers, setAnswers] = useState<Record<string, StudentAnswer>>({});
   const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
@@ -41,7 +40,7 @@ export function useExamSubmission(assignmentId: string, token: string): UseExamS
       try {
         setIsSubmittingAnswer(true);
         setSubmissionError(null);
-        const response = await studentExamAPI.submitAnswer(assignmentId, questionId, answer, token);
+        const response = await studentExamAPI.submitAnswer(assignmentId, questionId, answer);
         setAnswers((prev) => ({
           ...prev,
           [questionId]: response.answer,
@@ -52,21 +51,21 @@ export function useExamSubmission(assignmentId: string, token: string): UseExamS
         setIsSubmittingAnswer(false);
       }
     },
-    [assignmentId, token]
+    [assignmentId]
   );
 
   const submitExam = useCallback(async () => {
     try {
       setIsSubmittingExam(true);
       setSubmissionError(null);
-      await studentExamAPI.submitExam(assignmentId, token);
+      await studentExamAPI.submitExam(assignmentId);
       setIsExamSubmitted(true);
     } catch (err) {
       setSubmissionError(err instanceof Error ? err : new Error('Failed to submit exam'));
     } finally {
       setIsSubmittingExam(false);
     }
-  }, [assignmentId, token]);
+  }, [assignmentId]);
 
   const getAnswerForQuestion = useCallback((questionId: string) => answers[questionId], [answers]);
 

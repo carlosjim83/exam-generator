@@ -9,10 +9,15 @@
     "activeNow": "Active Now",
     "justNow": "Just now",
     "minutesAgo": "{{count}} min ago",
-    "minutesAgo_plural": "{{count}} mins ago"
+    "minutesAgo_plural": "{{count}} mins ago",
+    "notApplicable": "N/A"
   },
   "quickActions": {
     "title": "Quick Actions",
+    "manageClasses": {
+      "title": "Manage Classes",
+      "description": "Create and manage your classes"
+    },
     "uploadDocument": {
       "title": "Upload Document",
       "description": "Add PDF, DOCX, or TXT"

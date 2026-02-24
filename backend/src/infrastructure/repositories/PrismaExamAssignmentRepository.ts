@@ -60,7 +60,7 @@ export class PrismaExamAssignmentRepository implements IExamAssignmentRepository
       orderBy: { createdAt: 'desc' },
     });
 
-    return assignments.map((a) => this.toDomain(a));
+    return assignments.map((a: any) => this.toDomain(a));
   }
 
   async create(data: CreateExamAssignmentDTO): Promise<ExamAssignment> {

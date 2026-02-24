@@ -106,7 +106,7 @@ export class UserMother {
 
     const response = await app.inject({
       method: 'POST',
-      url: '/auth/register',
+      url: '/api/auth/register',
       payload: data,
     });
 

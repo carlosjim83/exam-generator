@@ -9,9 +9,9 @@ import { authenticateUser } from '@middleware/auth.middleware.js';
 import { authorizeRoles } from '@middleware/role.middleware.js';
 
 export async function studentRoutes(fastify: FastifyInstance) {
-  // POST /students/assignments - Assign exam to student (teacher only)
+  // POST /api/students/assignments - Assign exam to student (teacher only)
   fastify.post(
-    '/students/assignments',
+    '/api/students/assignments',
     {
       preHandler: [authenticateUser, authorizeRoles(['TEACHER'])],
       schema: {
@@ -164,9 +164,9 @@ export async function studentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /students/assignments - Get assigned exams (student only)
+  // GET /api/students/assignments - Get assigned exams (student only)
   fastify.get(
-    '/students/assignments',
+    '/api/students/assignments',
     {
       preHandler: [authenticateUser, authorizeRoles(['STUDENT'])],
       schema: {
@@ -260,9 +260,9 @@ export async function studentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /students/assignments/:id/start - Start exam (student only)
+  // POST /api/students/assignments/:id/start - Start exam (student only)
   fastify.post(
-    '/students/assignments/:id/start',
+    '/api/students/assignments/:id/start',
     {
       preHandler: [authenticateUser, authorizeRoles(['STUDENT'])],
       schema: {
@@ -390,9 +390,9 @@ export async function studentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /students/assignments/:id/submit - Submit exam answers (student only)
+  // POST /api/students/assignments/:id/submit - Submit exam answers (student only)
   fastify.post(
-    '/students/assignments/:id/submit',
+    '/api/students/assignments/:id/submit',
     {
       preHandler: [authenticateUser, authorizeRoles(['STUDENT'])],
       schema: {
@@ -543,9 +543,9 @@ export async function studentRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /students/assignments/:id/results - Get exam results (student only)
+  // GET /api/students/assignments/:id/results - Get exam results (student only)
   fastify.get(
-    '/students/assignments/:id/results',
+    '/api/students/assignments/:id/results',
     {
       preHandler: [authenticateUser, authorizeRoles(['STUDENT'])],
       schema: {

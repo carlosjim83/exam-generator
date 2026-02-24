@@ -19,8 +19,14 @@ vi.mock('../../services/student-exam-api.service', () => ({
 }));
 
 describe('useExamAssignment', () => {
-  const mockToken = 'test-jwt-token';
   const mockAssignmentId = 'assignment-123';
+
+  // Mock TokenManager
+  vi.mock('@/lib/api-client', () => ({
+    TokenManager: {
+      getAccessToken: vi.fn().mockReturnValue('test-jwt-token'),
+    },
+  }));
 
   const mockAssignment: ExamAssignment = {
     id: mockAssignmentId,
@@ -65,7 +71,7 @@ describe('useExamAssignment', () => {
   describe('Initial State', () => {
     it('should return initial state before starting exam', () => {
       // Arrange & Act
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       // Assert
       expect(result.current.assignment).toBeNull();
@@ -87,7 +93,7 @@ describe('useExamAssignment', () => {
         .spyOn(studentExamAPI, 'startExam')
         .mockResolvedValue(mockStartExamResponse);
 
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       // Act
       await act(async () => {
@@ -102,7 +108,7 @@ describe('useExamAssignment', () => {
       expect(result.current.assignment).toEqual(mockAssignment);
       expect(result.current.exam).toEqual(mockExam);
       expect(result.current.error).toBeNull();
-      expect(startExamMock).toHaveBeenCalledWith(mockAssignmentId, mockToken);
+      expect(startExamMock).toHaveBeenCalledWith(mockAssignmentId);
       expect(startExamMock).toHaveBeenCalledTimes(1);
     });
 
@@ -115,7 +121,7 @@ describe('useExamAssignment', () => {
 
       vi.spyOn(studentExamAPI, 'startExam').mockReturnValue(delayedPromise);
 
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       // Act
       act(() => {
@@ -143,7 +149,7 @@ describe('useExamAssignment', () => {
       const mockError = new Error('Failed to start exam');
       const startExamMock = vi.spyOn(studentExamAPI, 'startExam').mockRejectedValue(mockError);
 
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       // Act
       await act(async () => {
@@ -169,7 +175,7 @@ describe('useExamAssignment', () => {
 
     it('should navigate to next question', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -188,7 +194,7 @@ describe('useExamAssignment', () => {
 
     it('should not navigate past last question', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -212,7 +218,7 @@ describe('useExamAssignment', () => {
 
     it('should navigate to previous question', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -236,7 +242,7 @@ describe('useExamAssignment', () => {
 
     it('should not navigate before first question', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -255,7 +261,7 @@ describe('useExamAssignment', () => {
 
     it('should navigate to specific question', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -272,7 +278,7 @@ describe('useExamAssignment', () => {
 
     it('should handle invalid question index gracefully', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -303,7 +309,7 @@ describe('useExamAssignment', () => {
 
     it('should provide currentQuestion', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -322,7 +328,7 @@ describe('useExamAssignment', () => {
 
     it('should provide totalQuestions', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -334,7 +340,7 @@ describe('useExamAssignment', () => {
 
     it('should provide isLastQuestion', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();
@@ -354,7 +360,7 @@ describe('useExamAssignment', () => {
 
     it('should provide isFirstQuestion', async () => {
       // Arrange
-      const { result } = renderHook(() => useExamAssignment(mockAssignmentId, mockToken));
+      const { result } = renderHook(() => useExamAssignment(mockAssignmentId));
 
       await act(async () => {
         await result.current.startExam();

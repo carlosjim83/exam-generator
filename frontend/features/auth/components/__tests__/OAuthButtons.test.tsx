@@ -138,7 +138,7 @@ describe('OAuthButtons', () => {
       fireEvent.click(teacherCard!);
 
       // Should redirect with role parameter
-      expect(window.location.href).toContain('/auth/google/mock?role=TEACHER');
+      expect(window.location.href).toContain('/api/auth/google/mock?role=TEACHER');
     });
   });
 
@@ -150,7 +150,7 @@ describe('OAuthButtons', () => {
       fireEvent.click(button);
 
       // Should redirect immediately without modal
-      expect(window.location.href).toContain('/auth/google/mock?role=TEACHER');
+      expect(window.location.href).toContain('/api/auth/google/mock?role=TEACHER');
     });
 
     it('should redirect with STUDENT role when provided', () => {
@@ -159,7 +159,7 @@ describe('OAuthButtons', () => {
       const button = screen.getByRole('button', { name: /sign up with google/i });
       fireEvent.click(button);
 
-      expect(window.location.href).toContain('/auth/google/mock?role=STUDENT');
+      expect(window.location.href).toContain('/api/auth/google/mock?role=STUDENT');
     });
 
     it('should open modal if no role is provided in register mode', () => {
@@ -182,7 +182,7 @@ describe('OAuthButtons', () => {
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
-      expect(window.location.href).toContain('/auth/google/mock');
+      expect(window.location.href).toContain('/api/auth/google/mock');
     });
 
     it('should use real OAuth endpoint when NEXT_PUBLIC_USE_MOCK_OAUTH is false', () => {
@@ -193,7 +193,7 @@ describe('OAuthButtons', () => {
       const button = screen.getByRole('button');
       fireEvent.click(button);
 
-      expect(window.location.href).toContain('/auth/google?');
+      expect(window.location.href).toContain('/api/auth/google?');
       expect(window.location.href).not.toContain('/mock');
     });
 

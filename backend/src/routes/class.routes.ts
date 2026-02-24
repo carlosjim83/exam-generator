@@ -6,17 +6,224 @@
 import { FastifyInstance } from 'fastify';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
-import { GetClassInvitationsCommand } from '@application/use-cases/classes/GetClassInvitationsUseCase.js';
+import { CreateClassCommand } from '@application/use-cases/classes/CreateClassUseCase.js';
+import { GetClassesCommand } from '@application/use-cases/classes/GetClassesUseCase.js';
+import { GetClassDetailsCommand } from '@application/use-cases/classes/GetClassDetailsUseCase.js';
+import { GetClassByCodeCommand } from '@application/use-cases/classes/GetClassByCodeUseCase.js';
+import { DeleteClassCommand } from '@application/use-cases/classes/DeleteClassUseCase.js';
 import { GetClassStudentsCommand } from '@application/use-cases/classes/GetClassStudentsUseCase.js';
 import { StudentJoinClassCommand } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
-import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
 import { CreateEmailInvitationsCommand } from '@application/use-cases/classes/CreateEmailInvitationsUseCase.js';
+import { GetClassInvitationsCommand } from '@application/use-cases/classes/GetClassInvitationsUseCase.js';
 import { ImportStudentsCSVCommand } from '@application/use-cases/classes/ImportStudentsCSVUseCase.js';
+import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
+import { RemoveStudentFromClassCommand } from '@application/use-cases/classes/RemoveStudentFromClassUseCase.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
-  // POST /classes - Create a new class
+  // GET /api/classes - List all classes for authenticated teacher
+  fastify.get(
+    '/api/classes',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'List all classes',
+        description: 'List all classes for the authenticated teacher',
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'number', default: 1, minimum: 1 },
+            limit: { type: 'number', default: 20, minimum: 1, maximum: 100 },
+            search: { type: 'string' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              classes: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    name: { type: 'string' },
+                    code: { type: 'string' },
+                    description: { type: 'string', nullable: true },
+                    color: { type: 'string', nullable: true },
+                    teacherId: { type: 'string', format: 'uuid' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+              total: { type: 'number' },
+              page: { type: 'number' },
+              limit: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const {
+        page = 1,
+        limit = 20,
+        search = '',
+      } = request.query as {
+        page?: number;
+        limit?: number;
+        search?: string;
+      };
+
+      const command = new GetClassesCommand(userId, page, limit, search);
+      const result = await container.getClassesUseCase.execute(command);
+
+      reply.status(200).send({
+        classes: result.classes.map((c) => ({
+          id: c.id.toString(),
+          name: c.name,
+          code: c.code,
+          description: c.description,
+          color: c.color,
+          teacherId: c.teacherId.toString(),
+          createdAt: c.createdAt.toISOString(),
+        })),
+        total: result.total,
+        page,
+        limit,
+      });
+    }
+  );
+
+  // GET /api/classes/:id - Get class details by ID
+  fastify.get(
+    '/api/classes/:id',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Get class details',
+        description: 'Get detailed information about a class by ID',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+          },
+          required: ['id'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', format: 'uuid' },
+              name: { type: 'string' },
+              code: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              color: { type: 'string', nullable: true },
+              teacherId: { type: 'string', format: 'uuid' },
+              createdAt: { type: 'string', format: 'date-time' },
+              updatedAt: { type: 'string', format: 'date-time' },
+              teacherName: { type: 'string' },
+              studentCount: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { id } = request.params as { id: string };
+
+      const command = new GetClassDetailsCommand(id, userId);
+      const result = await container.getClassDetailsUseCase.execute(command);
+
+      reply.status(200).send({
+        id: result.class.id.toString(),
+        name: result.class.name,
+        code: result.class.code,
+        description: result.class.description,
+        color: result.class.color,
+        teacherId: result.class.teacherId.toString(),
+        createdAt: result.class.createdAt.toISOString(),
+        updatedAt: result.class.updatedAt.toISOString(),
+        teacherName: result.teacherName,
+        studentCount: result.studentCount,
+      });
+    }
+  );
+
+  // GET /api/classes/code/:code - Get class by code for student join validation
+  fastify.get(
+    '/api/classes/code/:code',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Get class by code',
+        description: 'Get class information by code for student join validation',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            code: { type: 'string' },
+          },
+          required: ['code'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              class: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  name: { type: 'string' },
+                  code: { type: 'string' },
+                  description: { type: 'string', nullable: true },
+                  color: { type: 'string', nullable: true },
+                },
+              },
+              teacherName: { type: 'string' },
+            },
+          },
+          404: {
+            type: 'object',
+            properties: {
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const { code } = request.params as { code: string };
+
+      const command = new GetClassByCodeCommand(code);
+      const result = await container.getClassByCodeUseCase.execute(command);
+
+      if (!result) {
+        return reply.status(404).send({ message: 'Class not found' });
+      }
+
+      reply.status(200).send({
+        class: {
+          id: result.class.id.toString(),
+          name: result.class.name,
+          code: result.class.code,
+          description: result.class.description,
+          color: result.class.color,
+        },
+        teacherName: result.teacherName,
+      });
+    }
+  );
+
+  // POST /api/classes - Create a new class
   fastify.post(
-    '/classes',
+    '/api/classes',
     {
       preHandler: authenticateUser,
       schema: {
@@ -65,6 +272,115 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
+      const teacherId = (request as any).user.userId;
+      const { name, description, color } = request.body as {
+        name: string;
+        description?: string;
+        color?: string;
+      };
+
+      const command = new CreateClassCommand(teacherId, name, description, color);
+      const result = await container.createClassUseCase.execute(command);
+
+      reply.status(201).send({
+        id: result.id.toString(),
+        name: result.name,
+        code: result.code,
+        description: result.description,
+        color: result.color,
+        teacherId: result.teacherId.toString(),
+        createdAt: result.createdAt.toISOString(),
+      });
+    }
+  );
+
+  // DELETE /api/classes/:id - Delete a class
+  fastify.delete(
+    '/api/classes/:id',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Delete a class',
+        description: 'Delete a class (only accessible by the class teacher)',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', format: 'uuid' },
+          },
+          required: ['id'],
+        },
+        response: {
+          204: {
+            description: 'Class deleted successfully',
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { id } = request.params as { id: string };
+
+      const command = new DeleteClassCommand(id, userId);
+      await container.deleteClassUseCase.execute(command);
+
+      reply.status(204).send();
+    }
+  );
+
+  // GET /api/classes/:classId/students - List students in class
+  fastify.get(
+    '/api/classes/:classId/students',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'List students in class',
+        description: 'Get all students enrolled in a class',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId'],
+        },
+        querystring: {
+          type: 'object',
+          properties: {
+            page: { type: 'number', default: 1, minimum: 1 },
+            limit: { type: 'number', default: 20, minimum: 1, maximum: 100 },
+            search: { type: 'string' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              students: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    email: { type: 'string' },
+                    firstName: { type: 'string' },
+                    lastName: { type: 'string' },
+                    joinedAt: { type: 'string', format: 'date-time' },
+                    isActive: { type: 'boolean' },
+                  },
+                },
+              },
+              total: { type: 'number' },
+              page: { type: 'number' },
+              limit: { type: 'number' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
       const { classId } = request.params as { classId: string };
       const {
         page = 1,
@@ -77,10 +393,8 @@ export async function classRoutes(fastify: FastifyInstance) {
       };
 
       const command = new GetClassStudentsCommand(classId, page, limit, search);
-
       const result = await container.getClassStudentsUseCase.execute(command);
 
-      // @ts-ignore - Schema allows 200
       reply.status(200).send({
         students: result.students.map((s: any) => ({
           id: s.id.toString(),
@@ -97,9 +411,45 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /classes/:classId/join - Student joins class
+  // DELETE /api/classes/:classId/students/:studentId - Remove student from class
+  fastify.delete(
+    '/api/classes/:classId/students/:studentId',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Remove student from class',
+        description: 'Remove a student from a class (only accessible by the class teacher)',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+            studentId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId', 'studentId'],
+        },
+        response: {
+          204: {
+            description: 'Student removed successfully',
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId, studentId } = request.params as { classId: string; studentId: string };
+
+      const command = new RemoveStudentFromClassCommand(classId, studentId, userId);
+      await container.removeStudentFromClassUseCase.execute(command);
+
+      reply.status(204).send();
+    }
+  );
+
+  // POST /api/classes/:classId/join - Student joins class
   fastify.post(
-    '/classes/:classId/join',
+    '/api/classes/:classId/join',
     {
       preHandler: authenticateUser,
       schema: {
@@ -140,9 +490,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /classes/:classId/invitations - Invite students by email
+  // POST /api/classes/:classId/invitations - Invite students by email
   fastify.post(
-    '/classes/:classId/invitations',
+    '/api/classes/:classId/invitations',
     {
       preHandler: authenticateUser,
       schema: {
@@ -207,9 +557,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /classes/:classId/invitations/csv - Import students from CSV
+  // POST /api/classes/:classId/invitations/csv - Import students from CSV
   fastify.post(
-    '/classes/:classId/invitations/csv',
+    '/api/classes/:classId/invitations/csv',
     {
       preHandler: authenticateUser,
       schema: {
@@ -263,9 +613,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /classes/:classId/invitations - List invitations
+  // GET /api/classes/:classId/invitations - List invitations
   fastify.get(
-    '/classes/:classId/invitations',
+    '/api/classes/:classId/invitations',
     {
       preHandler: authenticateUser,
       schema: {
@@ -316,9 +666,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /invitations/:token/accept - Accept invitation
+  // POST /api/invitations/:token/accept - Accept invitation
   fastify.post(
-    '/invitations/:token/accept',
+    '/api/invitations/:token/accept',
     {
       schema: {
         tags: ['invitations'],
@@ -360,9 +710,9 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // POST /invitations/:token/resend - Resend invitation
+  // POST /api/invitations/:token/resend - Resend invitation
   fastify.post(
-    '/invitations/:token/resend',
+    '/api/invitations/:token/resend',
     {
       preHandler: authenticateUser,
       schema: {

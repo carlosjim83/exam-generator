@@ -24,36 +24,35 @@ interface UseExamResultsReturn {
  * Hook for fetching exam results
  *
  * @param assignmentId - The exam assignment ID
- * @param token - JWT authentication token
  * @returns Object containing results data, loading state, and error
  */
-export function useExamResults(assignmentId: string, token: string): UseExamResultsReturn {
+export function useExamResults(assignmentId: string): UseExamResultsReturn {
   const [results, setResults] = useState<ExamResultsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchResults = useCallback(async () => {
-    if (!assignmentId || !token) {
+    if (!assignmentId) {
       return;
     }
 
     try {
       setLoading(true);
       setError(null);
-      const data = await studentExamAPI.getExamResults(assignmentId, token);
+      const data = await studentExamAPI.getExamResults(assignmentId);
       setResults(data);
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch exam results'));
     } finally {
       setLoading(false);
     }
-  }, [assignmentId, token]);
+  }, [assignmentId]);
 
   useEffect(() => {
-    if (assignmentId && token) {
+    if (assignmentId) {
       fetchResults();
     }
-  }, [assignmentId, token, fetchResults]);
+  }, [assignmentId, fetchResults]);
 
   // Derived values
   const score = results?.score ?? null;

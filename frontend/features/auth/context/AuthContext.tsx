@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const user = await apiClient.get<User>('/api/profile');
         setAuthState({
-          user,
+          user: user as User,
           isAuthenticated: true,
           isLoading: false,
         });
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           await apiClient.refreshAccessToken();
           const user = await apiClient.get<User>('/api/profile');
           setAuthState({
-            user,
+            user: user as User,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -80,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const response = await apiClient.login(email, password);
         setAuthState({
-          user: response.user,
+          user: response.user as User,
           isAuthenticated: true,
           isLoading: false,
         });
@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         const response = await apiClient.register(email, password, firstName, lastName, role);
         setAuthState({
-          user: response.user,
+          user: response.user as User,
           isAuthenticated: true,
           isLoading: false,
         });

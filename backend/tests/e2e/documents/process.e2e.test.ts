@@ -63,7 +63,7 @@ describe('Document Processing Integration Tests', () => {
       // Try to process (will fail because Azure is not configured)
       const response = await app.inject({
         method: 'POST',
-        url: `/documents/${document.id}/process`,
+        url: `/api/documents/${document.id}/process`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -88,7 +88,7 @@ describe('Document Processing Integration Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/documents/${fakeId}/process`,
+        url: `/api/documents/${fakeId}/process`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -120,7 +120,7 @@ describe('Document Processing Integration Tests', () => {
       // ACT: Try to process with original user's token
       const response = await app.inject({
         method: 'POST',
-        url: `/documents/${document.id}/process`,
+        url: `/api/documents/${document.id}/process`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -146,7 +146,7 @@ describe('Document Processing Integration Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/documents/${document.id}/process`,
+        url: `/api/documents/${document.id}/process`,
         // No Authorization header
       });
 
@@ -173,7 +173,7 @@ describe('Document Processing Integration Tests', () => {
       // Try to process again - should return existing metadata without reprocessing
       const response = await app.inject({
         method: 'POST',
-        url: `/documents/${document.id}/process`,
+        url: `/api/documents/${document.id}/process`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
@@ -192,7 +192,7 @@ describe('Document Processing Integration Tests', () => {
 
       const response = await app.inject({
         method: 'POST',
-        url: `/documents/${invalidId}/process`,
+        url: `/api/documents/${invalidId}/process`,
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },

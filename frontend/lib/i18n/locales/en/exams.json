@@ -5,7 +5,8 @@
   "generateFirst": "Generate Your First Exam",
   "noExams": "No exams yet",
   "noExamsDescription": "Start by generating your first exam from your documents",
-  "questions": "questions",
+  "questions": "question",
+  "questions_other": "questions",
   "document": "document",
   "document_other": "documents",
   "deleteConfirm": "Are you sure you want to delete this exam?",
@@ -17,5 +18,23 @@
   "deleteSuccess": "Exam deleted successfully",
   "deleteFailed": "Failed to delete exam",
   "cancel": "Cancel",
-  "createdAt": "Created"
+  "createdAt": "Created",
+  "examDetails": {
+    "notFound": "Exam not found",
+    "notFoundDescription": "The exam you're looking for doesn't exist or you don't have access to it.",
+    "print": "Print",
+    "exportJson": "Export JSON",
+    "options": "Options:",
+    "correctAnswer": "Correct Answer:",
+    "sampleAnswer": "Sample Answer:",
+    "explanation": "Explanation:",
+    "statistics": "Exam Statistics",
+    "totalQuestions": "Total Questions",
+    "totalPoints": "Total Points",
+    "easyQuestions": "Easy Questions",
+    "hardQuestions": "Hard Questions",
+    "created": "Created",
+    "point": "point",
+    "point_other": "points"
+  }
 }

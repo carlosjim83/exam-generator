@@ -138,7 +138,7 @@ export function LoginForm() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground mt-6">
-          By signing in, you agree to our Terms of Service and Privacy Policy
+          {t('auth.termsOfServiceConsent')}
         </p>
       </div>
     </div>

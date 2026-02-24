@@ -1,0 +1,44 @@
+import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
+import { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import { ClassId } from '@domain/value-objects/ClassId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+
+export class RemoveStudentFromClassCommand {
+  constructor(
+    public classId: string,
+    public studentId: string,
+    public teacherId: string
+  ) {}
+}
+
+export class RemoveStudentFromClassUseCase {
+  constructor(
+    private studentEnrollmentRepository: IStudentEnrollmentRepository,
+    private classRepository: IClassRepository
+  ) {}
+
+  async execute(command: RemoveStudentFromClassCommand): Promise<void> {
+    const classId = new ClassId(command.classId);
+    const studentId = UserId.create(command.studentId);
+    const teacherId = command.teacherId;
+
+    const classEntity = await this.classRepository.findById(classId);
+    if (!classEntity) {
+      throw new Error('Class not found');
+    }
+
+    if (classEntity.teacherId.toString() !== teacherId) {
+      throw new Error('You do not have permission to remove students from this class');
+    }
+
+    const enrollment = await this.studentEnrollmentRepository.findByClassAndStudent(
+      classId,
+      studentId
+    );
+    if (!enrollment) {
+      throw new Error('Student not enrolled in this class');
+    }
+
+    await this.studentEnrollmentRepository.delete(enrollment.id);
+  }
+}

@@ -4,13 +4,13 @@
  */
 
 import { FastifyInstance } from 'fastify';
-import { container } from '../config/container.js';
-import { authenticateUser } from '../middleware/auth.middleware.js';
+import { container } from '@config/container.js';
+import { authenticateUser } from '@middleware/auth.middleware.js';
 
 export async function examRoutes(fastify: FastifyInstance) {
-  // POST /exams/generate - Generate exam from documents
+  // POST /api/exams/generate - Generate exam from documents
   fastify.post(
-    '/exams/generate',
+    '/api/exams/generate',
     {
       preHandler: authenticateUser,
       schema: {
@@ -222,9 +222,9 @@ export async function examRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /exams - List all exams
+  // GET /api/exams - List all exams
   fastify.get(
-    '/exams',
+    '/api/exams',
     {
       preHandler: authenticateUser,
       schema: {
@@ -285,9 +285,9 @@ export async function examRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /exams/:id - Get exam details
+  // GET /api/exams/:id - Get exam details
   fastify.get(
-    '/exams/:id',
+    '/api/exams/:id',
     {
       preHandler: authenticateUser,
       schema: {
@@ -406,9 +406,9 @@ export async function examRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // DELETE /exams/:id - Delete exam
+  // DELETE /api/exams/:id - Delete exam
   fastify.delete(
-    '/exams/:id',
+    '/api/exams/:id',
     {
       preHandler: authenticateUser,
       schema: {

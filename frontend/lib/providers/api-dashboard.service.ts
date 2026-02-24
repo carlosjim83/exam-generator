@@ -7,18 +7,7 @@
 
 import type { Document, Exam, DashboardStats } from '../types/dashboard.types';
 import { configManager } from '@/lib/config/config-manager';
-
-/**
- * Token Manager (same as auth service)
- */
-class TokenManager {
-  private static ACCESS_TOKEN_KEY = 'access_token';
-
-  static getAccessToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
-  }
-}
+import { TokenManager } from '@/lib/api-client';
 
 export class ApiDashboardService {
   private get baseUrl(): string {
@@ -65,7 +54,7 @@ export class ApiDashboardService {
    * Check if user is authenticated
    */
   private isAuthenticated(): boolean {
-    return TokenManager.getAccessToken() !== null;
+    return TokenManager.isAuthenticated();
   }
 
   async getStats(): Promise<DashboardStats> {
@@ -85,7 +74,7 @@ export class ApiDashboardService {
     }
 
     try {
-      // Try to call the real endpoint (when implemented: GET /api/dashboard/stats)
+      // Try to call the real endpoint: GET /api/dashboard/stats
       const response = await this.fetchWithAuth<{
         totalDocuments: number;
         totalExams: number;
@@ -165,7 +154,7 @@ export class ApiDashboardService {
 
     try {
       // Call the existing /api/documents endpoint
-      const response = await this.fetchWithAuth<{ documents: any[] }>('/documents');
+      const response = await this.fetchWithAuth<{ documents: any[] }>('/api/documents');
 
       // If no response, return empty array
       if (!response) {
@@ -205,8 +194,8 @@ export class ApiDashboardService {
     }
 
     try {
-      // Call /exams endpoint
-      const response = await this.fetchWithAuth<{ exams: any[] }>('/exams');
+      // Call /api/exams endpoint
+      const response = await this.fetchWithAuth<{ exams: any[] }>('/api/exams');
 
       // If no response, return empty array
       if (!response) {
