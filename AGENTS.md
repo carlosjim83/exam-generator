@@ -44,140 +44,87 @@ gh pr create --title "Descriptive PR title" --body "Description"
 
 **Why?**
 
-- Direct commits to `main` bypass CI/CD checks
-- No code review opportunity
-- Harder to revert if something breaks
-- Breaks team collaboration patterns
+- Easier to read and understand imports
+- No need to count `../../../` levels
+- Refactoring-friendly (moving files doesn't break imports)
+- Consistent across the codebase
 
 ---
 
-### 2. **BRANCH NAMING CONVENTIONS**
+### 10. **I18N TRANSLATIONS - MANDATORY FOR ALL UI TEXT**
 
-Use semantic branch names:
+**❌ PROHIBITED:**
 
-- `feature/short-description` - New features
-- `fix/bug-description` - Bug fixes
-- `chore/task-description` - Maintenance tasks (deps, configs, etc.)
-- `docs/what-changed` - Documentation updates
-- `refactor/what-changed` - Code refactoring
-- `test/what-added` - Test additions/improvements
-
-**Examples:**
-
-```bash
-feature/runtime-env-vars
-fix/google-oauth-redirect
-chore/update-husky-config
-docs/add-deployment-guide
-refactor/extract-api-service
-test/add-e2e-auth-tests
+```typescript
+// Hardcoded strings in components
+<button>Submit</button>
+<h1>My Classes</h1>
+<p>No exams found</p>
 ```
+
+**✅ REQUIRED:**
+
+```typescript
+// Use translation keys with namespaces
+import { useTranslation } from 'react-i18next';
+
+const { t } = useTranslation('common');
+
+<button>{t('common:actions.submit')}</button>
+<h1>{t('student:classes.title')}</h1>
+<p>{t('student:exams.noExams')}</p>
+```
+
+**Translation File Structure:**
+
+```
+frontend/lib/i18n/locales/
+├── en/
+│   ├── common.json      # Shared translations
+│   ├── dashboard.json   # Dashboard specific
+│   ├── student.json     # Student features
+│   └── classes.json     # Classes feature
+└── es/
+    ├── common.json
+    ├── dashboard.json
+    ├── student.json
+    └── classes.json
+```
+
+**Rules:**
+
+1. **ALWAYS add both EN and ES translations** for every new text
+2. **Use namespaces**: `common:`, `dashboard:`, `student:`, `classes:`, etc.
+3. **Organize hierarchically**:
+   ```json
+   {
+     "navigation": {
+       "myClasses": "My Classes",
+       "joinClass": "Join Class"
+     },
+     "classes": {
+       "title": "My Classes",
+       "noClasses": "No classes yet",
+       "actions": {
+         "join": "Join",
+         "leave": "Leave"
+       }
+     }
+   }
+   ```
+4. **NEVER use raw strings** in JSX - always use `t('key')`
+5. **Test both languages** before committing
+
+**Why?**
+
+- App must be fully bilingual (EN/ES)
+- Hardcoded text breaks user experience for Spanish users
+- No way to fix without code changes and redeployment
+- Violates i18n best practices
 
 ---
 
-### 3. **COMMIT MESSAGE STANDARDS**
-
-Follow **Conventional Commits** format:
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-**Types:**
-
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `chore:` - Maintenance (no production code change)
-- `docs:` - Documentation only
-- `style:` - Formatting, missing semicolons, etc. (no code change)
-- `refactor:` - Code restructuring (no behavior change)
-- `test:` - Adding or fixing tests
-- `perf:` - Performance improvements
-- `ci:` - CI/CD configuration changes
-- `build:` - Build system or dependencies changes
-- `revert:` - Revert a previous commit
-
-**Good examples:**
-
-```
-feat(auth): add Google OAuth SSO support
-
-fix(frontend): correct backend API URL in production build
-
-chore(deps): update Next.js to 15.1.0
-
-docs(deployment): add GHCR deployment instructions
-```
-
-**Bad examples:**
-
-```
-fixed stuff
-WIP
-updates
-changes
-asdf
-```
-
----
-
-### 4. **PULL REQUEST REQUIREMENTS**
-
-Every PR must include:
-
-1. **Clear title** following commit conventions
-2. **Description** explaining:
-   - What changed
-   - Why it changed
-   - How to test it
-3. **Link to related issue** (if applicable)
-4. **Screenshots** (for UI changes)
-5. **Breaking changes** clearly marked
-
-**PR Template** (use this format):
-
-```markdown
-## Summary
-
-Brief description of what this PR does.
-
-## Changes
-
-- Change 1
-- Change 2
-- Change 3
-
-## Testing
-
-How to test these changes:
-
-1. Step 1
-2. Step 2
-3. Expected result
-
-## Related Issues
-
-Closes #123
-Related to #456
-
-## Checklist
-
-- [ ] Code follows project style guidelines
-- [ ] Tests added/updated
-- [ ] Documentation updated
-- [ ] CI checks passing
-- [ ] No breaking changes (or clearly documented)
-```
-
----
-
-## 🔧 TECHNICAL BEST PRACTICES
-
-### 5. **ENVIRONMENT VARIABLES - RUNTIME vs BUILD TIME**
+### 11. **ENVIRONMENT VARIABLES - RUNTIME vs BUILD TIME**
 
 **Problem we had:**
 
