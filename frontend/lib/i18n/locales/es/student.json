@@ -145,6 +145,7 @@
     "joinClass": "Unirse a una Clase",
     "exams": "Exámenes",
     "view": "Ver",
+    "code": "Código",
     "errors": {
       "loadFailed": "Error al cargar tus clases"
     }

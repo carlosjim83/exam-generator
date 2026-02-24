@@ -141,6 +141,7 @@
     "joinClass": "Join a Class",
     "exams": "Exams",
     "view": "View",
+    "code": "Code",
     "errors": {
       "loadFailed": "Failed to load your classes"
     }

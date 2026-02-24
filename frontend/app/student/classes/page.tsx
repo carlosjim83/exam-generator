@@ -154,7 +154,7 @@ export default function StudentClassesPage() {
                   <div>
                     <CardTitle className="text-lg">{cls.name}</CardTitle>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Code: <Badge variant="secondary">{cls.code}</Badge>
+                      {t('classes.code')}: <Badge variant="secondary">{cls.code}</Badge>
                     </p>
                   </div>
                   <div
