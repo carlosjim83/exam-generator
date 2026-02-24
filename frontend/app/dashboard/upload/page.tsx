@@ -1,7 +1,5 @@
 'use client';
 
-'use client';
-
 import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { PageHeader } from '@/components/ui-custom/PageHeader';
