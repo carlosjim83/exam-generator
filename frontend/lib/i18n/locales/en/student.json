@@ -142,5 +142,9 @@
     "errors": {
       "loadFailed": "Failed to load your classes"
     }
+  },
+  "exams": {
+    "title": "My Exams",
+    "welcome": "Welcome, {{name}}! Here are your assigned exams."
   }
 }

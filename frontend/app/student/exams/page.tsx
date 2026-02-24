@@ -8,12 +8,14 @@
 
 import { useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { StudentExamList } from '@/features/student-exams/components/StudentExamList';
 import type { StudentExamListItem } from '@/features/student-exams/types';
 
 export default function StudentExamsPage() {
+  const { t } = useTranslation('student');
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
 
@@ -52,10 +54,8 @@ export default function StudentExamsPage() {
     <DashboardLayout>
       <div className="px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">My Exams</h1>
-          <p className="text-muted-foreground">
-            Welcome, {user?.firstName}! Here are your assigned exams.
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight mb-2">{t('exams.title')}</h1>
+          <p className="text-muted-foreground">{t('exams.welcome', { name: user?.firstName })}</p>
         </div>
         <StudentExamList onExamSelect={handleExamSelect} />
       </div>
