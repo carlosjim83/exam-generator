@@ -11,7 +11,7 @@ import { getRuntimeConfig } from './runtime-config';
 
 class ConfigManager {
   private static instance: ConfigManager;
-  private apiUrl: string = 'http://localhost:3001'; // Default fallback
+  private apiUrl: string = '';
   private initialized: boolean = false;
   private initPromise: Promise<void> | null = null;
 
@@ -55,13 +55,16 @@ class ConfigManager {
 
   /**
    * Get API base URL (synchronous).
-   * Returns fallback if not yet initialized.
+   * Returns empty string if not yet initialized.
    */
   public getApiUrl(): string {
     if (!this.initialized) {
-      console.warn(
-        '[ConfigManager] Accessed before initialization, returning fallback. Call initialize() early in your app.'
+      console.error(
+        '[ConfigManager] Accessed before initialization. Call initialize() early in your app.'
       );
+    }
+    if (!this.apiUrl) {
+      console.error('[ConfigManager] API URL is not configured. Check your environment variables.');
     }
     return this.apiUrl;
   }

@@ -59,13 +59,12 @@ RUN addgroup -g 1001 -S nodejs && \
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY frontend/package.json ./frontend/
 
-# Copy Next.js build output from builder
+# Copy Next.js standalone build output (includes server.js and minimal node_modules)
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static
 
-# Copy node_modules from builder (includes all dependencies)
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/node_modules ./frontend/node_modules
+# Copy static files that standalone mode doesn't include automatically
+# These are served at /_next/static/* by the Next.js server
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static/
 
 # Switch to non-root user
 USER nextjs
