@@ -1,4 +1,4 @@
-import { apiClient } from '@/features/auth/services/api.service';
+import { apiClient } from '@/lib/api-client';
 
 export interface UserPreferences {
   language: 'en' | 'es';

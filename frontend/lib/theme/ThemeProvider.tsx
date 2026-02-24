@@ -21,20 +21,26 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>('light');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load theme from API on mount
+  // Load theme from localStorage first, then try API
   useEffect(() => {
     const loadTheme = async () => {
+      // First, apply theme from localStorage immediately (no flash)
+      const localTheme = localStorage.getItem('theme') as Theme | null;
+      if (localTheme) {
+        setThemeState(localTheme);
+        applyTheme(localTheme);
+      }
+
+      // Then try to sync with API (background)
       try {
         const preferences = await preferencesService.getPreferences();
-        setThemeState(preferences.theme);
-        applyTheme(preferences.theme);
-      } catch (error) {
-        // If API fails, check localStorage as fallback
-        const localTheme = localStorage.getItem('theme') as Theme | null;
-        if (localTheme) {
-          setThemeState(localTheme);
-          applyTheme(localTheme);
+        if (preferences.theme !== localTheme) {
+          setThemeState(preferences.theme);
+          applyTheme(preferences.theme);
         }
+      } catch (error) {
+        // API call failed, localStorage theme is already applied
+        console.debug('Theme sync with API failed, using localStorage');
       } finally {
         setIsLoading(false);
       }
