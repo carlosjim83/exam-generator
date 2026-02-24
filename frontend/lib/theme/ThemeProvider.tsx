@@ -1,8 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { preferencesService } from '@/lib/services/api-preferences.service';
-import { configManager } from '@/lib/config/config-manager';
 
 type Theme = 'light' | 'dark';
 
@@ -22,40 +20,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>('light');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load theme from localStorage first, then try API
+  // Load theme from localStorage only (no API dependency)
   useEffect(() => {
-    const loadTheme = async () => {
-      // First, apply theme from localStorage immediately (no flash)
+    const loadTheme = () => {
       const localTheme = localStorage.getItem('theme') as Theme | null;
       if (localTheme) {
         setThemeState(localTheme);
         applyTheme(localTheme);
       }
-
-      // Wait for config to be initialized before making API calls
-      if (!configManager.isInitialized()) {
-        try {
-          await configManager.initialize();
-        } catch (error) {
-          console.debug('Config initialization failed, using localStorage only');
-          setIsLoading(false);
-          return;
-        }
-      }
-
-      // Then try to sync with API (background)
-      try {
-        const preferences = await preferencesService.getPreferences();
-        if (preferences.theme !== localTheme) {
-          setThemeState(preferences.theme);
-          applyTheme(preferences.theme);
-        }
-      } catch (error) {
-        // API call failed, localStorage theme is already applied
-        console.debug('Theme sync with API failed, using localStorage');
-      } finally {
-        setIsLoading(false);
-      }
+      setIsLoading(false);
     };
 
     loadTheme();
@@ -72,18 +45,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     localStorage.setItem('theme', newTheme);
   };
 
-  // Set theme and persist to API
+  // Set theme and persist to localStorage (API sync removed to prevent auth issues)
   const setTheme = async (newTheme: Theme) => {
     setThemeState(newTheme);
     applyTheme(newTheme);
-
-    // Persist to API in background
-    try {
-      await preferencesService.updatePreferences({ theme: newTheme });
-    } catch (error) {
-      console.error('Failed to persist theme preference:', error);
-      // Theme is still applied locally even if API fails
-    }
+    // Note: Theme is only persisted to localStorage, not API
+    // This avoids initialization race conditions with ConfigManager
   };
 
   return (
