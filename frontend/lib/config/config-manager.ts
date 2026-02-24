@@ -55,16 +55,17 @@ class ConfigManager {
 
   /**
    * Get API base URL (synchronous).
-   * Returns empty string if not yet initialized.
+   * Returns fallback URL if not yet initialized.
    */
   public getApiUrl(): string {
     if (!this.initialized) {
-      console.error(
-        '[ConfigManager] Accessed before initialization. Call initialize() early in your app.'
-      );
+      // Return fallback instead of error to prevent app crashes
+      // The app will retry with correct config after initialization
+      return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     }
     if (!this.apiUrl) {
       console.error('[ConfigManager] API URL is not configured. Check your environment variables.');
+      return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
     }
     return this.apiUrl;
   }
