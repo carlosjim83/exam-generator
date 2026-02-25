@@ -42,7 +42,7 @@ export default function StudentClassDetailPage({ params }: StudentClassDetailPag
   const loadClassData = async () => {
     try {
       setLoading(true);
-      const data = await apiClient.get<ClassDetails>(`/api/student/classes/${classId}`);
+      const data = await apiClient.get<ClassDetails>(`/api/classes/${classId}`);
       setClassData(data);
     } catch (error) {
       console.error('Failed to load class data:', error);
