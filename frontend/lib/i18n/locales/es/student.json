@@ -130,12 +130,12 @@
     "noAnswerProvided": "No proporcionó respuesta"
   },
   "exams": {
-    "title": "Mis Ex\u00e1menes",
-    "welcome": "Bienvenido, {{name}}! Aqu\u00ed est\u00e1n tus ex\u00e1menes asignados."
+    "title": "Mis Exámenes",
+    "welcome": "Bienvenido, {{name}}! Aquí están tus exámenes asignados."
   },
   "errors": {
     "retry": "Reintentar",
-    "noExams": "No Hay Ex\u00e1menes Asignados"
+    "noExams": "No Hay Exámenes Asignados"
   },
   "classes": {
     "title": "Mis Clases",

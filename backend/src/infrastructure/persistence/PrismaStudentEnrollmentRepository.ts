@@ -138,9 +138,9 @@ export class PrismaStudentEnrollmentRepository implements IStudentEnrollmentRepo
       new EnrollmentId(record.id),
       ClassId.create(record.classId),
       UserId.create(record.studentId),
-      record.isActive,
       record.joinedAt,
-      record.leftAt
+      record.leftAt,
+      record.isActive
     );
   }
 }

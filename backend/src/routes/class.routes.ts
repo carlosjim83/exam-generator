@@ -400,7 +400,10 @@ export async function classRoutes(fastify: FastifyInstance) {
           email: s.email,
           firstName: s.firstName,
           lastName: s.lastName,
-          joinedAt: s.joinedAt.toISOString(),
+          joinedAt:
+            s.joinedAt instanceof Date
+              ? s.joinedAt.toISOString()
+              : new Date(s.joinedAt).toISOString(),
           isActive: s.isActive,
         })),
         total: result.total,
