@@ -3,7 +3,8 @@
 # ================================
 # Backend Deployment Script
 # ================================
-# Deploys the latest backend image from GHCR to Azure Container Apps
+# Deploys the backend image from GHCR to Azure Container Apps
+# Uses unique revision suffix to force new deployment and avoid cache issues
 
 set -e  # Exit on error
 
@@ -45,11 +46,16 @@ ACCOUNT=$(az account show --query name -o tsv)
 echo -e "${GREEN}✅ Logged in as: $ACCOUNT${NC}"
 echo ""
 
-# Get image tag (default to latest)
+# Get image tag (use provided or default to latest)
 IMAGE_TAG="${1:-latest}"
 FULL_IMAGE="${REGISTRY}/${GITHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo -e "${BLUE}📦 Image to deploy: ${YELLOW}${FULL_IMAGE}${NC}"
+echo ""
+
+# Generate unique revision suffix to force new deployment (avoids cache issues)
+REVISION_SUFFIX="rev-$(date +%s)-${IMAGE_TAG}"
+echo -e "${BLUE}🔖 Revision suffix: ${YELLOW}${REVISION_SUFFIX}${NC}"
 echo ""
 
 # Note: We skip image verification for GHCR since it requires authentication
@@ -75,12 +81,14 @@ echo ""
 echo -e "${BLUE}🚀 Deploying to Azure Container Apps...${NC}"
 echo -e "${YELLOW}Container App: ${CONTAINER_APP_NAME}${NC}"
 echo -e "${YELLOW}Resource Group: ${RESOURCE_GROUP}${NC}"
+echo -e "${YELLOW}Revision: ${REVISION_SUFFIX}${NC}"
 echo ""
 
 az containerapp update \
     --name $CONTAINER_APP_NAME \
     --resource-group $RESOURCE_GROUP \
     --image $FULL_IMAGE \
+    --revision-suffix "${REVISION_SUFFIX}" \
     --output none
 
 if [ $? -eq 0 ]; then
