@@ -5,9 +5,12 @@
  * Provides health status for monitoring and alerting in production.
  *
  * Health Statuses:
- * - healthy: Worker is processing, acceptable failure rate (<10%), no significant queue backlog
- * - degraded: Warning signs (failure rate 10-30%, moderate backlog, no recent activity)
- * - unhealthy: Critical issues (failure rate >30%, queue blocked, worker offline)
+ * - healthy: Worker is running and functional
+ * - degraded: Worker is running but with issues (queue backlog)
+ * - unhealthy: Worker is broken (offline, queue unreachable, jobs blocked)
+ *
+ * Note: Failure rate is informational and does NOT affect health status.
+ * A high failure rate indicates past job failures, not current worker health.
  */
 
 import type { Queue } from 'bullmq';
@@ -81,15 +84,12 @@ export interface JobProcessedEvent {
 // ============================================================================
 
 const HEALTH_CONFIG = {
-  // Thresholds for health status determination
-  CRITICAL_FAILURE_RATE: 0.3, // 30%
-  DEGRADED_FAILURE_RATE: 0.1, // 10%
-
-  // Maximum acceptable waiting jobs before unhealthy
+  // Maximum acceptable waiting jobs before unhealthy (jobs piling up uncontrollably)
   CRITICAL_QUEUE_BACKLOG: 50,
   DEGRADED_QUEUE_BACKLOG: 20,
 
   // Maximum time without activity before unhealthy (milliseconds)
+  // Only matters when jobs are waiting (blocked queue)
   MAX_INACTIVITY_MS: 5 * 60 * 1000, // 5 minutes
 
   // Maximum time without activity before degraded (milliseconds)
@@ -311,6 +311,10 @@ export class WorkerHealthService {
 
   /**
    * Determine health status based on metrics
+   *
+   * Unhealthy = worker is broken (offline, queue unreachable, jobs blocked)
+   * Degraded = worker is running but with issues (high failure rate, backlog)
+   * Healthy = worker is functioning normally
    */
   private determineHealthStatus(params: {
     activeJobs: number;
@@ -320,22 +324,23 @@ export class WorkerHealthService {
     timeSinceLastActivity: number;
     isWorkerOnline: boolean;
   }): WorkerHealthStatus {
-    const { waitingJobs, failureRate, timeSinceLastActivity, isWorkerOnline } = params;
+    const { waitingJobs, timeSinceLastActivity, isWorkerOnline } = params;
 
-    // Unhealthy conditions (priority 1)
-    // An idle worker (no waiting jobs) is healthy, so inactivity is only a problem if jobs are piling up.
+    // Unhealthy conditions (priority 1) - Worker is BROKEN
+    // - Worker offline (not registered)
+    // - Queue blocked: jobs waiting but no activity for too long
+    // - Critical queue backlog (jobs piling up uncontrollably)
     if (
       !isWorkerOnline ||
-      failureRate > HEALTH_CONFIG.CRITICAL_FAILURE_RATE ||
       waitingJobs > HEALTH_CONFIG.CRITICAL_QUEUE_BACKLOG ||
       (waitingJobs > 0 && timeSinceLastActivity > HEALTH_CONFIG.MAX_INACTIVITY_MS)
     ) {
       return 'unhealthy';
     }
 
-    // Degraded conditions (priority 2)
+    // Degraded conditions (priority 2) - Worker is running but with issues
+    // Failure rate is informational - doesn't mean worker is broken
     if (
-      failureRate > HEALTH_CONFIG.DEGRADED_FAILURE_RATE ||
       waitingJobs > HEALTH_CONFIG.DEGRADED_QUEUE_BACKLOG ||
       (waitingJobs > 0 && timeSinceLastActivity > HEALTH_CONFIG.MAX_DEGRADED_INACTIVITY_MS)
     ) {
