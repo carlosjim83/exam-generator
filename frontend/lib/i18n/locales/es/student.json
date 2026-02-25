@@ -149,5 +149,21 @@
     "errors": {
       "loadFailed": "Error al cargar tus clases"
     }
+  },
+  "classDetails": {
+    "title": "Detalles de la Clase",
+    "subtitle": "Ver información y materiales de la clase",
+    "teacher": "Profesor",
+    "code": "Código",
+    "students": "estudiantes",
+    "upcomingExams": "Próximos Exámenes",
+    "noExams": "No hay exámenes próximos",
+    "materials": "Materiales",
+    "noMaterials": "No hay materiales disponibles",
+    "backToClasses": "Volver a Clases",
+    "notFound": "Clase no encontrada",
+    "errors": {
+      "loadFailed": "Error al cargar los detalles de la clase"
+    }
   }
 }
