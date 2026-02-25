@@ -56,10 +56,11 @@ export class ProcessDocumentUseCase {
   async execute(input: ProcessDocumentInput): Promise<ProcessDocumentOutput> {
     const startTime = Date.now();
     let tempFilePath: string | null = null;
+    let documentId: DocumentId | null = null;
 
     try {
       // 1. Validate input
-      const documentId = DocumentId.create(input.documentId);
+      documentId = DocumentId.create(input.documentId);
       const userId = UserId.create(input.userId);
 
       // 2. Find document and verify ownership
@@ -155,11 +156,12 @@ export class ProcessDocumentUseCase {
 
       // For other errors, update status to FAILED
       try {
-        const documentId = DocumentId.create(input.documentId);
-        await this.documentRepository.updateStatus(documentId, {
-          status: DocumentStatus.FAILED,
-          errorMessage,
-        });
+        if (documentId) {
+          await this.documentRepository.updateStatus(documentId, {
+            status: DocumentStatus.FAILED,
+            errorMessage,
+          });
+        }
       } catch (updateError) {
         // If update fails, ignore (document might have been deleted)
         console.error('Failed to update document status:', updateError);
