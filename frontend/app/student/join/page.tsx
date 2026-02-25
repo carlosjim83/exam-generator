@@ -20,7 +20,9 @@ export default function JoinClassPage() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
-  const [classInfo, setClassInfo] = useState<{ name: string; teacher: string } | null>(null);
+  const [classInfo, setClassInfo] = useState<{ id: string; name: string; teacher: string } | null>(
+    null
+  );
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -34,10 +36,11 @@ export default function JoinClassPage() {
     setError('');
 
     try {
-      const data = await apiClient.publicRequest<{ name: string; teacherName: string }>(
+      const data = await apiClient.publicRequest<{ id: string; name: string; teacherName: string }>(
         `/api/classes/code/${encodeURIComponent(code.trim())}`
       );
       setClassInfo({
+        id: data.id,
         name: data.name,
         teacher: data.teacherName,
       });
@@ -56,7 +59,7 @@ export default function JoinClassPage() {
     setError('');
 
     try {
-      await apiClient.post(`/api/classes/${code.trim()}/join`, {});
+      await apiClient.post(`/api/classes/${classInfo.id}/join`, {});
       setSuccess(true);
       setCode('');
       setClassInfo(null);
