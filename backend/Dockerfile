@@ -1,73 +1,71 @@
-# ================================
-# Stage 1: Dependencies
-# ================================
-FROM node:20-alpine AS deps
-
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
-
-# Set working directory
-WORKDIR /app
-
-# Copy package files
-COPY package.json pnpm-lock.yaml ./
-
-# Install dependencies (production + dev for build)
-RUN pnpm install --frozen-lockfile
+# Backend Dockerfile for GitHub Actions CI/CD
+# Multi-stage build with native module compilation for cross-platform support
+# This Dockerfile is designed to be built from the monorepo root context
 
 # ================================
-# Stage 2: Builder
+# Stage 1: Builder (compiles TypeScript)
 # ================================
 FROM node:20-alpine AS builder
 
-# Install pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
+# Copy package files for workspace
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY backend/package.json ./backend/
+
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
 
 # Copy source code
 COPY . .
 
-# Generate Prisma Client
-RUN pnpm prisma generate
+WORKDIR /app/backend
 
-# Build TypeScript
+# Generate Prisma Client and build TypeScript
+RUN pnpm prisma generate
 RUN pnpm build
 
-# Install production dependencies only
-RUN pnpm install --prod --frozen-lockfile
-
 # ================================
-# Stage 3: Runner (Production)
+# Stage 2: Runner (Production)
 # ================================
 FROM node:20-alpine AS runner
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Install pnpm, dumb-init and build tools for native modules (bcrypt needs python, make, g++)
+RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN apk add --no-cache dumb-init python3 make g++ openssl
 
 # Create app user (non-root for security)
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
 
 WORKDIR /app
 
-# Copy production dependencies
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
+# Copy only package files needed for install
+COPY --from=builder --chown=nodejs:nodejs /app/package.json ./
+COPY --from=builder --chown=nodejs:nodejs /app/pnpm-lock.yaml ./
+COPY --from=builder --chown=nodejs:nodejs /app/pnpm-workspace.yaml ./
+COPY --from=builder --chown=nodejs:nodejs /app/backend/package.json ./backend/
 
-# Copy Prisma schema and generated client
-COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
+# Install ALL dependencies (including dev for prisma CLI)
+# This ensures native modules are compiled for the target platform
+RUN pnpm install --frozen-lockfile
 
-# Copy built application
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
+# Copy prisma schema for client generation
+COPY --from=builder --chown=nodejs:nodejs /app/backend/prisma ./backend/prisma
 
-# Copy package.json for scripts
-COPY --chown=nodejs:nodejs package.json ./
+# Generate Prisma Client in the target platform (AMD64 compatible)
+RUN cd backend && pnpm prisma generate
+
+# Copy built application files
+COPY --from=builder --chown=nodejs:nodejs /app/backend/dist ./backend/dist
+
+# Prune dev dependencies - this keeps only production deps
+# Native modules are already compiled for the target platform
+RUN pnpm prune --prod
 
 # Create uploads directory with proper permissions
-RUN mkdir -p ./uploads && chown -R nodejs:nodejs ./uploads
+RUN mkdir -p ./backend/uploads && chown -R nodejs:nodejs ./backend
 
 # Switch to non-root user
 USER nodejs
@@ -83,4 +81,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start application
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "cd backend && node dist/server.js"]
