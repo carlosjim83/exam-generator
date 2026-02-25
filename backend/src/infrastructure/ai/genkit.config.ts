@@ -41,3 +41,14 @@ export const chunkingConfig = {
  */
 export const EMBEDDING_MODEL = 'text-embedding-ada-002';
 export const EMBEDDING_DIMENSION = 1536; // Azure OpenAI text-embedding-ada-002
+
+/**
+ * Rate Limiting Configuration
+ * Azure OpenAI has limits on requests per minute (RPM) and tokens per minute (TPM)
+ *
+ * Default limits for text-embedding-3-small:
+ * - Standard tier: 3500 RPM, 350,000 TPM
+ * - We batch chunks to minimize API calls and stay within limits
+ */
+export const EMBEDDING_BATCH_SIZE = 16; // Number of texts per API call
+export const EMBEDDING_BATCH_DELAY_MS = 500; // Delay between batches (ms)
