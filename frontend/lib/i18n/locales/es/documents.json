@@ -1,6 +1,6 @@
 {
   "title": "Mi Biblioteca",
-  "subtitle": "Administrar documentos subidos",
+  "subtitle": "¡Bienvenido, {{name}}! Administra tus documentos subidos.",
   "uploadNew": "Subir Documento",
   "noDocuments": "Aún no hay documentos",
   "noDocumentsDescription": "Sube tu primer documento para comenzar",

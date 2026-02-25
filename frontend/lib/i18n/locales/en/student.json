@@ -2,6 +2,7 @@
   "title": "My Exams",
   "joinClass": {
     "title": "Join a Class",
+    "subtitle": "Welcome, {{name}}! Enter your class code to get started.",
     "description": "Enter the class code provided by your teacher to join their class",
     "codeLabel": "Class Code",
     "codePlaceholder": "e.g., ABC123",
@@ -26,7 +27,9 @@
   },
   "navigation": {
     "dashboard": "Control Panel",
-    "myExams": "My Exams"
+    "myClasses": "My Classes",
+    "myExams": "My Exams",
+    "joinClass": "Join Class"
   },
   "welcome": {
     "greeting": "Welcome back",
@@ -129,5 +132,22 @@
   "errors": {
     "retry": "Retry",
     "noExams": "No Exams Assigned"
+  },
+  "classes": {
+    "title": "My Classes",
+    "subtitle": "Welcome, {{name}}! Here are the classes you're enrolled in.",
+    "noClasses": "No classes yet",
+    "noClassesDescription": "You haven't joined any classes yet. Ask your teacher for a class code to get started.",
+    "joinClass": "Join a Class",
+    "exams": "Exams",
+    "view": "View",
+    "code": "Code",
+    "errors": {
+      "loadFailed": "Failed to load your classes"
+    }
+  },
+  "exams": {
+    "title": "My Exams",
+    "welcome": "Welcome, {{name}}! Here are your assigned exams."
   }
 }

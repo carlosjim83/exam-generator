@@ -1,7 +1,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { preferencesService } from '@/lib/services/api-preferences.service';
 
 type Theme = 'light' | 'dark';
 
@@ -21,23 +20,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>('light');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load theme from API on mount
+  // Load theme from localStorage only (no API dependency)
   useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const preferences = await preferencesService.getPreferences();
-        setThemeState(preferences.theme);
-        applyTheme(preferences.theme);
-      } catch (error) {
-        // If API fails, check localStorage as fallback
-        const localTheme = localStorage.getItem('theme') as Theme | null;
-        if (localTheme) {
-          setThemeState(localTheme);
-          applyTheme(localTheme);
-        }
-      } finally {
-        setIsLoading(false);
+    const loadTheme = () => {
+      const localTheme = localStorage.getItem('theme') as Theme | null;
+      if (localTheme) {
+        setThemeState(localTheme);
+        applyTheme(localTheme);
       }
+      setIsLoading(false);
     };
 
     loadTheme();
@@ -54,18 +45,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     localStorage.setItem('theme', newTheme);
   };
 
-  // Set theme and persist to API
+  // Set theme and persist to localStorage (API sync removed to prevent auth issues)
   const setTheme = async (newTheme: Theme) => {
     setThemeState(newTheme);
     applyTheme(newTheme);
-
-    // Persist to API in background
-    try {
-      await preferencesService.updatePreferences({ theme: newTheme });
-    } catch (error) {
-      console.error('Failed to persist theme preference:', error);
-      // Theme is still applied locally even if API fails
-    }
+    // Note: Theme is only persisted to localStorage, not API
+    // This avoids initialization race conditions with ConfigManager
   };
 
   return (

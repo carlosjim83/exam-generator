@@ -1,6 +1,6 @@
 {
   "title": "My Exams",
-  "subtitle": "View and manage all your generated exams",
+  "subtitle": "Welcome, {{name}}! View and manage all your generated exams.",
   "generateNew": "Generate New Exam",
   "generateFirst": "Generate Your First Exam",
   "noExams": "No exams yet",

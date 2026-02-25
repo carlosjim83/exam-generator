@@ -55,14 +55,26 @@ const teacherNavigation: NavItem[] = [
 // Student navigation
 const studentNavigation: NavItem[] = [
   {
-    labelKey: 'student:navigation.dashboard',
+    labelKey: 'common:navigation.dashboard',
     href: '/dashboard',
     icon: LayoutDashboard,
     roles: ['STUDENT'],
   },
   {
-    labelKey: 'student:navigation.myExams',
+    labelKey: 'common:navigation.myClasses',
+    href: '/student/classes',
+    icon: Users,
+    roles: ['STUDENT'],
+  },
+  {
+    labelKey: 'common:navigation.myExams',
     href: '/student/exams',
+    icon: GraduationCap,
+    roles: ['STUDENT'],
+  },
+  {
+    labelKey: 'common:navigation.joinClass',
+    href: '/student/join',
     icon: GraduationCap,
     roles: ['STUDENT'],
   },
@@ -78,7 +90,7 @@ const secondaryNavigation: NavItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { t } = useTranslation('common');
+  const { t } = useTranslation(['common', 'student']);
   const { user, logout } = useAuth();
 
   // Get navigation based on user role

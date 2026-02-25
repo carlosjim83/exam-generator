@@ -1,5 +1,6 @@
 {
   "title": "My Classes",
+  "subtitle": "Welcome, {{name}}! Manage your classes and students here.",
   "myClasses": "My Classes",
   "createClass": "Create Class",
   "noClasses": "No classes yet",

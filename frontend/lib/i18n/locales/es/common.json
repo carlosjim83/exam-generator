@@ -88,7 +88,10 @@
     }
   },
   "navigation": {
-    "myClasses": "Mis Clases"
+    "myClasses": "Mis Clases",
+    "joinClass": "Unirse a Clase",
+    "myExams": "Mis Exámenes",
+    "dashboard": "Panel"
   },
   "examGeneration": {
     "failedToLoadDocuments": "Error al cargar los documentos",
