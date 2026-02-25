@@ -35,11 +35,27 @@ export class ReprocessDocumentUseCase {
       throw new Error('Unauthorized: Document does not belong to user');
     }
 
-    // Only allow reprocessing for documents that are FAILED or COMPLETED (if re-indexing is needed)
-    if (document.status !== DocumentStatus.FAILED && document.status !== DocumentStatus.COMPLETED) {
-      throw new Error(
-        `Document cannot be reprocessed. Current status: ${document.status}. Must be FAILED or COMPLETED.`
-      );
+    // Allow reprocessing for documents that are:
+    // - FAILED: errored during processing
+    // - COMPLETED: want to re-index
+    // - PENDING: stuck in queue without processing
+    // - PROCESSING: got stuck during processing (e.g., worker crash, quota error)
+    if (document.status === DocumentStatus.PROCESSING) {
+      // Check if the document has been processing for too long (stuck)
+      // A document stuck in PROCESSING for more than 10 minutes is considered stalled
+      // (normal processing takes seconds to a few minutes)
+      const processingTimeoutMs = 10 * 60 * 1000; // 10 minutes
+      const timeSinceUpdate = Date.now() - new Date(document.updatedAt).getTime();
+      const isStuck = timeSinceUpdate > processingTimeoutMs;
+
+      if (!isStuck) {
+        const minutesLeft = Math.ceil((processingTimeoutMs - timeSinceUpdate) / 60000);
+        throw new Error(
+          `Document is currently being processed. Please wait ~${minutesLeft} minute(s) or try again later.`
+        );
+      }
+      // If stuck, allow reprocessing (fall through to reprocess logic)
+      console.log(`Document ${documentId.value} is stuck in PROCESSING state, allowing reprocess`);
     }
 
     // Update document status to PENDING
