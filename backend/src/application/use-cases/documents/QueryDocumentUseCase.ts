@@ -13,10 +13,10 @@
 import type {
   IDocumentRepository,
   QueryDocumentResult,
-} from '../../../domain/repositories/IDocumentRepository.js';
-import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
-import { AzureOpenAIEmbeddingService } from '../../../infrastructure/ai/AzureOpenAIEmbeddingService.js';
+} from '@domain/repositories/IDocumentRepository.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 
 export interface QueryDocumentInput {
   documentId: string;

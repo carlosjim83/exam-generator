@@ -1,5 +1,5 @@
-import { container } from '../../../config/container.js';
-import type { DocumentUploadedEvent } from '../../../domain/events/DocumentEvents.js';
+import { container } from '@config/container.js';
+import type { DocumentUploadedEvent } from '@domain/events/DocumentEvents.js';
 
 /**
  * DocumentUploadedEventHandler

@@ -1,15 +1,15 @@
 import type { PrismaClient } from '@prisma/client';
 
-import { Document, DocumentStatus } from '../../domain/entities/Document.js';
+import { Document, DocumentStatus } from '@domain/entities/Document.js';
 import type {
   IDocumentRepository,
   CreateDocumentDTO,
   UpdateDocumentStatusDTO,
   UpdateDocumentMetadataDTO,
   QueryDocumentResult, // Added this import
-} from '../../domain/repositories/IDocumentRepository.js';
-import { DocumentId } from '../../domain/value-objects/DocumentId.js';
-import { UserId } from '../../domain/value-objects/UserId.js';
+} from '@domain/repositories/IDocumentRepository.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * PrismaDocumentRepository

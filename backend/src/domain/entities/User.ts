@@ -1,5 +1,5 @@
-import type { Email } from '../value-objects/Email.js';
-import type { UserId } from '../value-objects/UserId.js';
+import type { Email } from '@domain/value-objects/Email.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export enum UserRole {
   TEACHER = 'TEACHER',

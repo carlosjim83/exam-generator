@@ -3,9 +3,9 @@
  * Retrieves an exam with all its questions
  */
 
-import type { IExamRepository } from '../../../domain/repositories/IExamRepository.js';
-import { ExamId } from '../../../domain/value-objects/ExamId.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import { ExamId } from '@domain/value-objects/ExamId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface GetExamInput {
   examId: string;

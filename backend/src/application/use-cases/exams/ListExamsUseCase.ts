@@ -3,8 +3,8 @@
  * Lists all exams for a user
  */
 
-import type { IExamRepository } from '../../../domain/repositories/IExamRepository.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface ListExamsInput {
   userId: string;

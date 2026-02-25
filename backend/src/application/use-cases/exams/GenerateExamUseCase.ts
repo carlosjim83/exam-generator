@@ -13,16 +13,13 @@
  * - Multi-document exams (up to 10 documents)
  */
 
-import type { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
-import type {
-  IExamRepository,
-  CreateQuestionDTO,
-} from '../../../domain/repositories/IExamRepository.js';
-import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
-import { ExamId } from '../../../domain/value-objects/ExamId.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
-import type { AzureOpenAIEmbeddingService } from '../../../infrastructure/ai/AzureOpenAIEmbeddingService.js';
-import { generateExamFlow } from '../../../infrastructure/ai/flows/generateExam.flow.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IExamRepository, CreateQuestionDTO } from '@domain/repositories/IExamRepository.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { ExamId } from '@domain/value-objects/ExamId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import type { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
+import { generateExamFlow } from '@infrastructure/ai/flows/generateExam.flow.js';
 
 export interface GenerateExamInput {
   userId: string;

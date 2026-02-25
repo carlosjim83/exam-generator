@@ -1,16 +1,16 @@
 import jwt from 'jsonwebtoken';
 
-import { env } from '../../config/env.js';
-import type { UserRole } from '../../domain/entities/User.js';
+import { env } from '@config/env.js';
+import type { UserRole } from '@domain/entities/User.js';
 import type {
   ITokenService,
   TokenPair,
   DecodedToken,
   DecodedRefreshToken,
   TokenPayload,
-} from '../../domain/services/ITokenService.js';
-import type { Email } from '../../domain/value-objects/Email.js';
-import type { UserId } from '../../domain/value-objects/UserId.js';
+} from '@domain/services/ITokenService.js';
+import type { Email } from '@domain/value-objects/Email.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * JWTTokenService

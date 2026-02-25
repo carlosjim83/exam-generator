@@ -3,8 +3,8 @@
  * Represents an exam with multiple questions
  */
 
-import type { ExamId } from '../value-objects/ExamId.js';
-import type { UserId } from '../value-objects/UserId.js';
+import type { ExamId } from '@domain/value-objects/ExamId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 import type { Question } from './Question.js';
 

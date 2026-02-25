@@ -8,7 +8,7 @@ import {
   isStorableDifficulty,
 } from '@domain/entities/ExamTypes.js';
 
-import { ai } from '../genkit.config.js';
+import { ai } from '@infrastructure/ai/genkit.config.js';
 
 // Re-export for convenience
 export { QuestionType, QuestionDifficulty } from '@domain/entities/ExamTypes.js';

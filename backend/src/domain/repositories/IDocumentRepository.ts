@@ -1,6 +1,6 @@
-import type { Document, DocumentStatus } from '../entities/Document.js';
-import type { DocumentId } from '../value-objects/DocumentId.js';
-import type { UserId } from '../value-objects/UserId.js';
+import type { Document, DocumentStatus } from '@domain/entities/Document.js';
+import type { DocumentId } from '@domain/value-objects/DocumentId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * CreateDocumentDTO

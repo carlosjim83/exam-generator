@@ -1,6 +1,6 @@
-import type { IUserRepository } from '../../../domain/repositories/IUserRepository.js';
-import type { ITokenService, TokenPair } from '../../../domain/services/ITokenService.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
+import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import type { ITokenService, TokenPair } from '@domain/services/ITokenService.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * RefreshTokenUseCase

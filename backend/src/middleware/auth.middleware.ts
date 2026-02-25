@@ -1,6 +1,6 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 
-import { container } from '../config/container.js';
+import { container } from '@config/container.js';
 
 /**
  * Middleware to authenticate users via JWT

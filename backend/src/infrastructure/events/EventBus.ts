@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 
-import type { DomainEvent } from '../../domain/events/DocumentEvents.js';
+import type { DomainEvent } from '@domain/events/DocumentEvents.js';
 
 /**
  * EventBus

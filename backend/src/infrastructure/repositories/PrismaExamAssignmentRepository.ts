@@ -1,13 +1,13 @@
 import type { PrismaClient } from '@prisma/client';
 
-import { ExamAssignment, ExamAssignmentStatus } from '../../domain/entities/ExamAssignment.js';
+import { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
 import type {
   IExamAssignmentRepository,
   CreateExamAssignmentDTO,
   FindAssignmentsFilters,
-} from '../../domain/repositories/IExamAssignmentRepository.js';
-import { AssignmentId } from '../../domain/value-objects/AssignmentId.js';
-import { UserId } from '../../domain/value-objects/UserId.js';
+} from '@domain/repositories/IExamAssignmentRepository.js';
+import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 export class PrismaExamAssignmentRepository implements IExamAssignmentRepository {
   private constructor(private prisma: PrismaClient) {}

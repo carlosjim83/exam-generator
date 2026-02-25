@@ -2,7 +2,7 @@ import JSZip from 'jszip';
 import mammoth from 'mammoth';
 import * as pdfParseModule from 'pdf-parse';
 
-import type { ITextExtractor } from '../../domain/services/ITextExtractor.js';
+import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
 
 import { OCRService } from './OCRService.js';
 

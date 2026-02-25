@@ -1,6 +1,6 @@
-import type { User, UserRole, AuthProvider } from '../entities/User.js';
-import type { Email } from '../value-objects/Email.js';
-import type { UserId } from '../value-objects/UserId.js';
+import type { User, UserRole, AuthProvider } from '@domain/entities/User.js';
+import type { Email } from '@domain/value-objects/Email.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export interface CreateUserDTO {
   email: Email;

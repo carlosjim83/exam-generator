@@ -78,7 +78,7 @@ vi.mock('openai', () => {
 });
 
 // Mock AzureOpenAIEmbeddingService to prevent env var checks
-vi.mock('../infrastructure/ai/AzureOpenAIEmbeddingService.js', () => {
+vi.mock('@infrastructure/ai/AzureOpenAIEmbeddingService.js', () => {
   return {
     AzureOpenAIEmbeddingService: class MockAzureOpenAIEmbeddingService {
       async generateEmbedding(_text: string): Promise<number[]> {

@@ -2,12 +2,12 @@ import { randomUUID } from 'node:crypto';
 import { writeFile, unlink, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
-import { DocumentStatus } from '../../../domain/entities/Document.js';
-import type { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
-import type { IStorageService } from '../../../domain/services/IStorageService.js';
-import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
-import { processDocumentFlow } from '../../../infrastructure/ai/flows/processDocument.flow.js';
+import { DocumentStatus } from '@domain/entities/Document.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IStorageService } from '@domain/services/IStorageService.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import { processDocumentFlow } from '@infrastructure/ai/flows/processDocument.flow.js';
 
 /**
  * ProcessDocumentUseCase
@@ -75,8 +75,7 @@ export class ProcessDocumentUseCase {
       // 3. Check if already processed (idempotent)
       if (document.isCompleted()) {
         // Count existing chunks
-        const { getChunkCount } =
-          await import('../../../infrastructure/ai/indexers/pgvector.indexer.js');
+        const { getChunkCount } = await import('@infrastructure/ai/indexers/pgvector.indexer.js');
         const chunksCreated = await getChunkCount(documentId.value);
 
         return {

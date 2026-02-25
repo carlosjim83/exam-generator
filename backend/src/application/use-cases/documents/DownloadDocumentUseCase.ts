@@ -1,7 +1,7 @@
-import type { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
-import type { IStorageService } from '../../../domain/services/IStorageService.js';
-import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IStorageService } from '@domain/services/IStorageService.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 interface DownloadDocumentInput {
   documentId: string;

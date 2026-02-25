@@ -3,10 +3,10 @@
  * Defines contract for exam persistence operations
  */
 
-import type { Exam } from '../entities/Exam.js';
-import type { QuestionType, StorableDifficulty } from '../entities/ExamTypes.js';
-import type { ExamId } from '../value-objects/ExamId.js';
-import type { UserId } from '../value-objects/UserId.js';
+import type { Exam } from '@domain/entities/Exam.js';
+import type { QuestionType, StorableDifficulty } from '@domain/entities/ExamTypes.js';
+import type { ExamId } from '@domain/value-objects/ExamId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export interface CreateExamDTO {
   userId: UserId;

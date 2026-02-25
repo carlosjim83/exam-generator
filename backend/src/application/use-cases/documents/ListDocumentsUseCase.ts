@@ -1,5 +1,5 @@
-import type { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * ListDocumentsUseCase

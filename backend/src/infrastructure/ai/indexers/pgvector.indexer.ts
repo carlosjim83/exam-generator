@@ -1,8 +1,8 @@
 import { toSql } from 'pgvector';
 import postgres from 'postgres';
 
-import { env } from '../../../config/env.js';
-import { prisma } from '../../../config/prisma.js';
+import { env } from '@config/env.js';
+import { prisma } from '@config/prisma.js';
 
 /**
  * PgVector Indexer for Genkit

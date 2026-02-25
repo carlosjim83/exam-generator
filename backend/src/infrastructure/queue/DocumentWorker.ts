@@ -14,11 +14,11 @@
 import type { Job } from 'bullmq';
 import { Worker } from 'bullmq';
 
-import { ProcessDocumentUseCase } from '../../application/use-cases/documents/ProcessDocumentUseCase.js';
-import { prisma } from '../../config/prisma.js';
-import { PrismaDocumentRepository } from '../repositories/PrismaDocumentRepository.js';
-import { AzureBlobStorageService } from '../storage/AzureBlobStorageService.js';
-import { LocalFileStorageService } from '../storage/LocalFileStorageService.js';
+import { ProcessDocumentUseCase } from '@application/use-cases/documents/ProcessDocumentUseCase.js';
+import { prisma } from '@config/prisma.js';
+import { PrismaDocumentRepository } from '@infrastructure/repositories/PrismaDocumentRepository.js';
+import { AzureBlobStorageService } from '@infrastructure/storage/AzureBlobStorageService.js';
+import { LocalFileStorageService } from '@infrastructure/storage/LocalFileStorageService.js';
 
 import type { DocumentJobData } from './DocumentQueue.js';
 import { documentQueue } from './DocumentQueue.js';

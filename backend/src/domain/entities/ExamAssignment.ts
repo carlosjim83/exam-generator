@@ -1,5 +1,5 @@
-import type { AssignmentId } from '../value-objects/AssignmentId.js';
-import type { UserId } from '../value-objects/UserId.js';
+import type { AssignmentId } from '@domain/value-objects/AssignmentId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export enum ExamAssignmentStatus {
   PENDING = 'PENDING',
