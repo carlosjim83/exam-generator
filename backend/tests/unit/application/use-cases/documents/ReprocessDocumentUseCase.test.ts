@@ -158,22 +158,89 @@ describe('ReprocessDocumentUseCase', () => {
     expect(mockMessageBroker.publish).not.toHaveBeenCalled();
   });
 
-  it('should throw an error if document status is not FAILED or COMPLETED', async () => {
-    // Arrange
+  it('should throw an error if document is currently PROCESSING (not stuck)', async () => {
+    // Arrange - create a document that was updated recently (not stuck)
     const processingDocument = createMockDocument(DocumentStatus.PROCESSING);
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(processingDocument);
 
-    // Act & Assert
+    // Act & Assert - should throw because document is actively processing
     await expect(
       reprocessDocumentUseCase.execute({
         documentId: mockDocumentId.value,
         userId: mockUserId.value,
       })
-    ).rejects.toThrow(
-      `Document cannot be reprocessed. Current status: ${DocumentStatus.PROCESSING}. Must be FAILED or COMPLETED.`
-    );
+    ).rejects.toThrow('Document is currently being processed');
     expect(mockDocumentRepository.updateStatus).not.toHaveBeenCalled();
     expect(mockDocumentRepository.deleteChunksByDocumentId).not.toHaveBeenCalled();
     expect(mockMessageBroker.publish).not.toHaveBeenCalled();
+  });
+
+  it('should allow re-processing for a PROCESSING document that is stuck (>10 minutes)', async () => {
+    // Arrange - create a document that has been processing for more than 10 minutes
+    const stuckDocument = Document.create({
+      id: mockDocumentId,
+      userId: mockUserId,
+      title: 'Stuck Document',
+      filename: 'stuck-doc.pdf',
+      fileSize: 1024,
+      mimeType: 'application/pdf',
+      blobUrl: 'https://storage.example.com/stuck-doc.pdf',
+      status: DocumentStatus.PROCESSING,
+      pageCount: null,
+      wordCount: null,
+      errorMessage: null,
+      uploadedAt: new Date(Date.now() - 20 * 60 * 1000), // Uploaded 20 minutes ago
+      processedAt: null,
+      updatedAt: new Date(Date.now() - 15 * 60 * 1000), // Updated 15 minutes ago (stuck)
+    });
+    vi.mocked(mockDocumentRepository.findById).mockResolvedValue(stuckDocument);
+    vi.mocked(mockDocumentRepository.updateStatus).mockResolvedValue(
+      createMockDocument(DocumentStatus.PENDING)
+    );
+    vi.mocked(mockDocumentRepository.deleteChunksByDocumentId).mockResolvedValue(undefined);
+
+    // Act
+    const result = await reprocessDocumentUseCase.execute({
+      documentId: mockDocumentId.value,
+      userId: mockUserId.value,
+    });
+
+    // Assert
+    expect(mockDocumentRepository.updateStatus).toHaveBeenCalledWith(mockDocumentId, {
+      status: DocumentStatus.PENDING,
+      errorMessage: null,
+      pageCount: null,
+      wordCount: null,
+      processedAt: null,
+    });
+    expect(result.status).toBe(DocumentStatus.PENDING);
+    expect(result.message).toBe('Document re-processing initiated successfully.');
+  });
+
+  it('should allow re-processing for a PENDING document (stuck in queue)', async () => {
+    // Arrange
+    const pendingDocument = createMockDocument(DocumentStatus.PENDING);
+    vi.mocked(mockDocumentRepository.findById).mockResolvedValue(pendingDocument);
+    vi.mocked(mockDocumentRepository.updateStatus).mockResolvedValue(
+      createMockDocument(DocumentStatus.PENDING)
+    );
+    vi.mocked(mockDocumentRepository.deleteChunksByDocumentId).mockResolvedValue(undefined);
+
+    // Act
+    const result = await reprocessDocumentUseCase.execute({
+      documentId: mockDocumentId.value,
+      userId: mockUserId.value,
+    });
+
+    // Assert
+    expect(mockDocumentRepository.updateStatus).toHaveBeenCalledWith(mockDocumentId, {
+      status: DocumentStatus.PENDING,
+      errorMessage: null,
+      pageCount: null,
+      wordCount: null,
+      processedAt: null,
+    });
+    expect(result.status).toBe(DocumentStatus.PENDING);
+    expect(result.message).toBe('Document re-processing initiated successfully.');
   });
 });
