@@ -181,18 +181,20 @@ export const processDocumentFlow = ai.defineFlow(
         wordCount,
         pageCount,
       };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
       console.error('[processDocumentFlow] Error:', {
         documentId,
-        error: error.message,
-        stack: error.stack,
+        error: errorMessage,
+        stack: errorStack,
       });
       return {
         success: false,
         chunksCreated: 0,
         wordCount: 0,
         pageCount: 0,
-        error: error.message || 'Unknown error during document processing',
+        error: errorMessage || 'Unknown error during document processing',
       };
     }
   }

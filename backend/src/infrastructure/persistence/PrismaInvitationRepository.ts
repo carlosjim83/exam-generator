@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 
 import type { InvitationStatus } from '@domain/entities/Invitation.js';
 import { Invitation } from '@domain/entities/Invitation.js';
@@ -59,7 +59,7 @@ export class PrismaInvitationRepository implements IInvitationRepository {
     };
 
     if (options?.status) {
-      (where as any).status = options.status;
+      (where as Prisma.InvitationWhereInput).status = options.status;
     }
 
     const total = await this.prisma.invitation.count({ where });

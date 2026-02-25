@@ -1,4 +1,4 @@
-import type { PrismaClient } from '@prisma/client';
+import type { Prisma, PrismaClient } from '@prisma/client';
 
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
@@ -35,7 +35,7 @@ export class PrismaStudentEnrollmentRepository implements IStudentEnrollmentRepo
     const limit = options?.limit || 10;
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.StudentEnrollmentWhereInput = {
       classId: classId.toString(),
     };
 

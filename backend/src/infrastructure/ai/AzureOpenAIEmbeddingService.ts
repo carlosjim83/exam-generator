@@ -120,12 +120,18 @@ export class AzureOpenAIEmbeddingService {
         }
 
         return embeddings;
-      } catch (error: any) {
-        lastError = error;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+
+        // Extract error properties for retry logic
+        const errorStatus = (error as { status?: number }).status;
+        const errorCode = (error as { code?: string }).code;
 
         // Check if it's a rate limit error (429)
-        if (error.status === 429 || error.code === 'rate_limit_exceeded') {
-          const retryAfterMs = this.getRetryAfterMs(error);
+        if (errorStatus === 429 || errorCode === 'rate_limit_exceeded') {
+          const retryAfterMs = this.getRetryAfterMs(
+            error as { headers?: { 'retry-after'?: string } }
+          );
 
           if (attempt < this.maxRetries) {
             const delayMs = retryAfterMs || this.initialRetryDelayMs * Math.pow(2, attempt - 1);
@@ -138,7 +144,7 @@ export class AzureOpenAIEmbeddingService {
         }
 
         // Check if it's a transient error (5xx)
-        if (error.status >= 500 && attempt < this.maxRetries) {
+        if (errorStatus !== undefined && errorStatus >= 500 && attempt < this.maxRetries) {
           const delayMs = this.initialRetryDelayMs * Math.pow(2, attempt - 1);
           console.warn(
             `[Azure OpenAI] ⚠️ Server error (attempt ${attempt}/${this.maxRetries}). Waiting ${delayMs}ms before retry...`

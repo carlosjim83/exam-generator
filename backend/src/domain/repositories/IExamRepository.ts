@@ -64,4 +64,9 @@ export interface IExamRepository {
    * Count exams by user ID
    */
   countByUserId(userId: string): Promise<number>;
+
+  /**
+   * Create an exam with questions in a transaction
+   */
+  createWithQuestions(examData: CreateExamDTO, questionsData: CreateQuestionDTO[]): Promise<Exam>;
 }

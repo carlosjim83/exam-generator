@@ -66,7 +66,7 @@ export class GetExamResultsUseCase {
     const studentAnswers = await this.answerRepo.findByAssignment(assignment.id);
 
     // Build results
-    const results: QuestionResult[] = exam.questions.map((question: any) => {
+    const results: QuestionResult[] = exam.questions.map((question) => {
       const studentAnswer = studentAnswers.find((a) => a.questionId === question.id);
 
       return {

@@ -369,7 +369,7 @@ export class Container {
     if (Container.instance) {
       Container.instance._prisma.$disconnect();
     }
-    // @ts-ignore - Force reset for testing
+    // @ts-expect-error - Force reset for testing
     Container.instance = undefined;
   }
 
