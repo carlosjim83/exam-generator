@@ -36,12 +36,23 @@ export default function JoinClassPage() {
     setError('');
 
     try {
-      const data = await apiClient.publicRequest<{ id: string; name: string; teacherName: string }>(
+      interface ClassValidationResponse {
+        class: {
+          id: string;
+          name: string;
+          code: string;
+          description: string | null;
+          color: string | null;
+        };
+        teacherName: string;
+      }
+
+      const data = await apiClient.get<ClassValidationResponse>(
         `/api/classes/code/${encodeURIComponent(code.trim())}`
       );
       setClassInfo({
-        id: data.id,
-        name: data.name,
+        id: data.class.id,
+        name: data.class.name,
         teacher: data.teacherName,
       });
     } catch (err) {

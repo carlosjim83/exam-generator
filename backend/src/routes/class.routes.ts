@@ -160,12 +160,10 @@ export async function classRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/classes/code/:code',
     {
-      preHandler: authenticateUser,
       schema: {
         tags: ['classes'],
         summary: 'Get class by code',
         description: 'Get class information by code for student join validation',
-        security: [{ bearerAuth: [] }],
         params: {
           type: 'object',
           properties: {
