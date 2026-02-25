@@ -1,6 +1,6 @@
-import { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { InvitationId } from '@domain/value-objects/InvitationId.js';
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export class ResendInvitationCommand {
@@ -12,8 +12,8 @@ export class ResendInvitationCommand {
 
 export class ResendInvitationUseCase {
   constructor(
-    private invitationRepository: IInvitationRepository,
-    private classRepository: IClassRepository
+    private readonly invitationRepository: IInvitationRepository,
+    private readonly classRepository: IClassRepository
   ) {}
 
   async execute(command: ResendInvitationCommand): Promise<void> {

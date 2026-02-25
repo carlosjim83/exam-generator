@@ -1,4 +1,4 @@
-import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
+import type { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
 import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
 import { UserId } from '../../../domain/value-objects/UserId.js';
 
@@ -8,7 +8,7 @@ interface DeleteDocumentInput {
 }
 
 export class DeleteDocumentUseCase {
-  constructor(private documentRepository: IDocumentRepository) {}
+  constructor(private readonly documentRepository: IDocumentRepository) {}
 
   async execute(input: DeleteDocumentInput): Promise<{ message: string }> {
     // Validate UUIDs

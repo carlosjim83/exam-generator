@@ -1,12 +1,14 @@
 import { z } from 'genkit';
-import { ai } from '../genkit.config.js';
 import { AzureOpenAI } from 'openai';
+
 import { env } from '@config/env.js';
 import {
   QuestionType,
   QuestionDifficulty,
   isStorableDifficulty,
 } from '@domain/entities/ExamTypes.js';
+
+import { ai } from '../genkit.config.js';
 
 // Re-export for convenience
 export { QuestionType, QuestionDifficulty } from '@domain/entities/ExamTypes.js';

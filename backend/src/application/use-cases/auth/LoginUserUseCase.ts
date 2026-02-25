@@ -1,14 +1,14 @@
+import type { UserRole } from '../../../domain/entities/User.js';
+import type { IUserRepository } from '../../../domain/repositories/IUserRepository.js';
+import type { IPasswordHasher } from '../../../domain/services/IPasswordHasher.js';
+import type { ITokenService, TokenPair } from '../../../domain/services/ITokenService.js';
 import { Email } from '../../../domain/value-objects/Email.js';
 import { Password } from '../../../domain/value-objects/Password.js';
-import { IUserRepository } from '../../../domain/repositories/IUserRepository.js';
-import { IPasswordHasher } from '../../../domain/services/IPasswordHasher.js';
-import { ITokenService, TokenPair } from '../../../domain/services/ITokenService.js';
-import { UserRole } from '../../../domain/entities/User.js';
 
 /**
  * LoginUserUseCase
  * Application use case for user login
- * 
+ *
  * Responsibilities:
  * - Validate input credentials
  * - Find user by email
@@ -65,21 +65,14 @@ export class LoginUserUseCase {
     }
 
     // 4. Verify password
-    const isPasswordValid = await this.passwordHasher.compare(
-      password,
-      user.password
-    );
+    const isPasswordValid = await this.passwordHasher.compare(password, user.password);
 
     if (!isPasswordValid) {
       throw new Error('Invalid credentials');
     }
 
     // 5. Generate JWT tokens
-    const tokens = this.tokenService.generateTokenPair(
-      user.id,
-      user.email,
-      user.role
-    );
+    const tokens = this.tokenService.generateTokenPair(user.id, user.email, user.role);
 
     // 6. Return DTO (Data Transfer Object)
     return {

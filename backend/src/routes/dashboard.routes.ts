@@ -1,4 +1,5 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 

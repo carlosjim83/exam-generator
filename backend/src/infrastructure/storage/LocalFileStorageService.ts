@@ -1,9 +1,10 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { 
-  IStorageService, 
-  FileValidationResult, 
-  FileMetadata 
+
+import type {
+  IStorageService,
+  FileValidationResult,
+  FileMetadata,
 } from '../../domain/services/IStorageService.js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -15,14 +16,14 @@ const ALLOWED_MIMETYPES = [
 /**
  * LocalFileStorageService
  * Infrastructure implementation of IStorageService using local filesystem
- * 
+ *
  * Stores files in a local directory (e.g., ./uploads)
  * Useful for development and testing without cloud dependencies
  */
 export class LocalFileStorageService implements IStorageService {
   private readonly storageDir: string;
 
-  constructor(storageDir: string = './uploads') {
+  constructor(storageDir = './uploads') {
     this.storageDir = path.resolve(storageDir);
   }
 

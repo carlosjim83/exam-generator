@@ -1,12 +1,13 @@
-import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
-import { IStorageService } from '../../../domain/services/IStorageService.js';
-import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
+import { randomUUID } from 'node:crypto';
+import { writeFile, unlink, mkdir } from 'node:fs/promises';
+import path from 'node:path';
+
 import { DocumentStatus } from '../../../domain/entities/Document.js';
+import type { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
+import type { IStorageService } from '../../../domain/services/IStorageService.js';
+import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
 import { UserId } from '../../../domain/value-objects/UserId.js';
 import { processDocumentFlow } from '../../../infrastructure/ai/flows/processDocument.flow.js';
-import { writeFile, unlink, mkdir } from 'fs/promises';
-import path from 'path';
-import { randomUUID } from 'crypto';
 
 /**
  * ProcessDocumentUseCase

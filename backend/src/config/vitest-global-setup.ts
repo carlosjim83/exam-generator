@@ -1,7 +1,8 @@
 import { beforeAll, afterAll, vi } from 'vitest';
+
 import './env'; // Load environment variables FIRST (triggers dotenv.config())
-import { prisma } from './prisma'; // Import prisma for cleanup/reset
 import { Container } from './container'; // Ensure container can be reset
+import { prisma } from './prisma'; // Import prisma for cleanup/reset
 
 /**
  * Global Vitest setup file.

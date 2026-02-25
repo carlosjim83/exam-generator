@@ -1,6 +1,6 @@
-import { UserId } from '../value-objects/UserId.js';
-import { Email } from '../value-objects/Email.js';
-import { UserRole } from '../entities/User.js';
+import type { UserRole } from '../entities/User.js';
+import type { Email } from '../value-objects/Email.js';
+import type { UserId } from '../value-objects/UserId.js';
 
 export interface TokenPayload {
   userId: string;

@@ -1,8 +1,10 @@
-import { IUserRepository, CreateUserDTO } from '../../domain/repositories/IUserRepository.js';
-import { User, UserRole, AuthProvider } from '../../domain/entities/User.js';
-import { UserId } from '../../domain/value-objects/UserId.js';
+import type { PrismaClient } from '@prisma/client';
+
+import type { UserRole, AuthProvider } from '../../domain/entities/User.js';
+import { User } from '../../domain/entities/User.js';
+import type { IUserRepository, CreateUserDTO } from '../../domain/repositories/IUserRepository.js';
 import { Email } from '../../domain/value-objects/Email.js';
-import { PrismaClient } from '@prisma/client';
+import { UserId } from '../../domain/value-objects/UserId.js';
 
 /**
  * PrismaUserRepository

@@ -1,9 +1,9 @@
-import { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
-import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
+import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
-import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 export class AcceptInvitationCommand {
   constructor(
@@ -14,8 +14,8 @@ export class AcceptInvitationCommand {
 
 export class AcceptInvitationUseCase {
   constructor(
-    private invitationRepository: IInvitationRepository,
-    private enrollmentRepository: IStudentEnrollmentRepository
+    private readonly invitationRepository: IInvitationRepository,
+    private readonly enrollmentRepository: IStudentEnrollmentRepository
   ) {}
 
   async execute(command: AcceptInvitationCommand): Promise<StudentEnrollment> {

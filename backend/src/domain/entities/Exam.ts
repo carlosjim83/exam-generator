@@ -3,9 +3,10 @@
  * Represents an exam with multiple questions
  */
 
-import { ExamId } from '../value-objects/ExamId.js';
-import { UserId } from '../value-objects/UserId.js';
-import { Question } from './Question.js';
+import type { ExamId } from '../value-objects/ExamId.js';
+import type { UserId } from '../value-objects/UserId.js';
+
+import type { Question } from './Question.js';
 
 export interface ExamProps {
   id: ExamId;

@@ -1,9 +1,10 @@
-import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
+import type { PrismaClient } from '@prisma/client';
+
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
-import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
+import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { PrismaClient } from '@prisma/client';
 
 /**
  * PrismaStudentEnrollmentRepository

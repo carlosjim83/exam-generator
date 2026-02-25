@@ -1,7 +1,7 @@
-import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
-import { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
-import { IExamRepository } from '@domain/repositories/IExamRepository.js';
-import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
 import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 
 export interface SubmitExamAnswersInput {
@@ -15,9 +15,9 @@ export interface SubmitExamAnswersInput {
 
 export class SubmitExamAnswersUseCase {
   constructor(
-    private assignmentRepo: IExamAssignmentRepository,
-    private answerRepo: IStudentAnswerRepository,
-    private examRepo: IExamRepository
+    private readonly assignmentRepo: IExamAssignmentRepository,
+    private readonly answerRepo: IStudentAnswerRepository,
+    private readonly examRepo: IExamRepository
   ) {}
 
   async execute(input: SubmitExamAnswersInput): Promise<ExamAssignment> {

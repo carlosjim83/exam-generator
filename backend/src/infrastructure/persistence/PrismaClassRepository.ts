@@ -1,8 +1,9 @@
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { PrismaClient } from '@prisma/client';
+
 import { Class } from '@domain/entities/Class.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { PrismaClient } from '@prisma/client';
 
 /**
  * PrismaClassRepository

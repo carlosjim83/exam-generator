@@ -1,6 +1,6 @@
-import { Class } from '@domain/entities/Class.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import type { Class } from '@domain/entities/Class.js';
+import type { ClassId } from '@domain/value-objects/ClassId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export interface IClassRepository {
   findById(id: ClassId): Promise<Class | null>;

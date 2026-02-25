@@ -1,7 +1,7 @@
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import type { Class } from '@domain/entities/Class.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
-import { Class } from '@domain/entities/Class.js';
 
 export class GetClassDetailsCommand {
   constructor(
@@ -12,8 +12,8 @@ export class GetClassDetailsCommand {
 
 export class GetClassDetailsUseCase {
   constructor(
-    private classRepository: IClassRepository,
-    private userRepository: IUserRepository
+    private readonly classRepository: IClassRepository,
+    private readonly userRepository: IUserRepository
   ) {}
 
   async execute(command: GetClassDetailsCommand): Promise<{

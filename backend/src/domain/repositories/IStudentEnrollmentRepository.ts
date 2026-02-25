@@ -1,7 +1,7 @@
-import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
-import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import type { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
+import type { ClassId } from '@domain/value-objects/ClassId.js';
+import type { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export interface IStudentEnrollmentRepository {
   findById(id: EnrollmentId): Promise<StudentEnrollment | null>;

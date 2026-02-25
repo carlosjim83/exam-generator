@@ -1,7 +1,7 @@
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import { Class } from '@domain/entities/Class.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { Class } from '@domain/entities/Class.js';
 
 export class CreateClassCommand {
   constructor(
@@ -13,7 +13,7 @@ export class CreateClassCommand {
 }
 
 export class CreateClassUseCase {
-  constructor(private classRepository: IClassRepository) {}
+  constructor(private readonly classRepository: IClassRepository) {}
 
   async execute(command: CreateClassCommand): Promise<Class> {
     // Generate unique class code

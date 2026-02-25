@@ -1,6 +1,6 @@
-import { ExamAssignment, ExamAssignmentStatus } from '../entities/ExamAssignment.js';
-import { AssignmentId } from '../value-objects/AssignmentId.js';
-import { UserId } from '../value-objects/UserId.js';
+import type { ExamAssignment, ExamAssignmentStatus } from '../entities/ExamAssignment.js';
+import type { AssignmentId } from '../value-objects/AssignmentId.js';
+import type { UserId } from '../value-objects/UserId.js';
 
 export interface CreateExamAssignmentDTO {
   examId: string;

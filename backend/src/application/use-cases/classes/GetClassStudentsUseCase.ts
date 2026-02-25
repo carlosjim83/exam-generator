@@ -1,20 +1,20 @@
-import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
+import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 
 export class GetClassStudentsCommand {
   constructor(
     public classId: string,
-    public page: number = 1,
-    public limit: number = 20,
+    public page = 1,
+    public limit = 20,
     public search?: string
   ) {}
 }
 
 export class GetClassStudentsUseCase {
   constructor(
-    private enrollmentRepository: IStudentEnrollmentRepository,
-    private userRepository: IUserRepository
+    private readonly enrollmentRepository: IStudentEnrollmentRepository,
+    private readonly userRepository: IUserRepository
   ) {}
 
   async execute(command: GetClassStudentsCommand): Promise<{

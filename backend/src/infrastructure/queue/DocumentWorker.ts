@@ -11,17 +11,20 @@
  * - Graceful shutdown on SIGTERM/SIGINT
  */
 
-import { Worker, Job } from 'bullmq';
-import { redisConnection } from './redis.connection.js';
-import type { DocumentJobData } from './DocumentQueue.js';
-import { documentQueue } from './DocumentQueue.js';
+import type { Job } from 'bullmq';
+import { Worker } from 'bullmq';
+
 import { ProcessDocumentUseCase } from '../../application/use-cases/documents/ProcessDocumentUseCase.js';
+import { prisma } from '../../config/prisma.js';
 import { PrismaDocumentRepository } from '../repositories/PrismaDocumentRepository.js';
 import { AzureBlobStorageService } from '../storage/AzureBlobStorageService.js';
 import { LocalFileStorageService } from '../storage/LocalFileStorageService.js';
-import { prisma } from '../../config/prisma.js';
-import { workerLogger } from './WorkerLogger.js';
+
+import type { DocumentJobData } from './DocumentQueue.js';
+import { documentQueue } from './DocumentQueue.js';
+import { redisConnection } from './redis.connection.js';
 import { WorkerHealthService } from './WorkerHealthService.js';
+import { workerLogger } from './WorkerLogger.js';
 
 // Initialize dependencies
 const documentRepository = PrismaDocumentRepository.create(prisma);

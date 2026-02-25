@@ -108,9 +108,9 @@ export class WorkerHealthService {
   private workerStartTime?: number;
   private lastActivityTimestamp?: number;
   private processingTimes: number[] = []; // Store recent processing times for average calculation
-  private totalJobsProcessed: number = 0;
-  private isShutDown: boolean = false;
-  private workerRegistered: boolean = false; // Track if worker has started
+  private totalJobsProcessed = 0;
+  private isShutDown = false;
+  private workerRegistered = false; // Track if worker has started
 
   constructor(params: {
     workerQueueName: string;

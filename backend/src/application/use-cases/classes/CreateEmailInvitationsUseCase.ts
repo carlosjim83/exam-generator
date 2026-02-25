@@ -1,9 +1,10 @@
-import { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
-import { Invitation } from '@domain/entities/Invitation.js';
-import { InvitationId } from '@domain/value-objects/InvitationId.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
 import { v4 as uuidv4 } from 'uuid';
+
+import { Invitation } from '@domain/entities/Invitation.js';
+import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
+import { ClassId } from '@domain/value-objects/ClassId.js';
+import { InvitationId } from '@domain/value-objects/InvitationId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 export class CreateEmailInvitationsCommand {
   constructor(
@@ -14,7 +15,7 @@ export class CreateEmailInvitationsCommand {
 }
 
 export class CreateEmailInvitationsUseCase {
-  constructor(private invitationRepository: IInvitationRepository) {}
+  constructor(private readonly invitationRepository: IInvitationRepository) {}
 
   async execute(command: CreateEmailInvitationsCommand): Promise<Invitation[]> {
     const maxEmails = 50;

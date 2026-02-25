@@ -1,6 +1,7 @@
+import type { DocumentUploadedEvent } from '../../domain/events/DocumentEvents.js';
+
 import { eventBus } from './EventBus.js';
 import { createDocumentUploadedEventHandler } from './handlers/DocumentUploadedEventHandler.js';
-import type { DocumentUploadedEvent } from '../../domain/events/DocumentEvents.js';
 
 /**
  * Bootstrap Event Handlers

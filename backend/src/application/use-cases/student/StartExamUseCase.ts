@@ -1,5 +1,5 @@
-import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
-import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 
 export interface StartExamInput {
@@ -8,7 +8,7 @@ export interface StartExamInput {
 }
 
 export class StartExamUseCase {
-  constructor(private assignmentRepo: IExamAssignmentRepository) {}
+  constructor(private readonly assignmentRepo: IExamAssignmentRepository) {}
 
   async execute(input: StartExamInput): Promise<ExamAssignment> {
     const assignment = await this.assignmentRepo.findById(AssignmentId.create(input.assignmentId));

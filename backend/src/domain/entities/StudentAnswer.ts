@@ -1,4 +1,4 @@
-import { AssignmentId } from '../value-objects/AssignmentId.js';
+import type { AssignmentId } from '../value-objects/AssignmentId.js';
 
 export interface StudentAnswerProps {
   id: string;

@@ -1,5 +1,6 @@
-import { FastifyInstance } from 'fastify';
 import { Type } from '@sinclair/typebox';
+import type { FastifyInstance } from 'fastify';
+
 import { container } from '@config/container.js';
 
 // Request/Response Schemas

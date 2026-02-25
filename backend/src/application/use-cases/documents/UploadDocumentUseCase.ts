@@ -1,8 +1,8 @@
-import { UserId } from '../../../domain/value-objects/UserId.js';
-import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
-import { IStorageService } from '../../../domain/services/IStorageService.js';
-import { eventBus } from '../../../infrastructure/events/EventBus.js';
 import type { DocumentUploadedEvent } from '../../../domain/events/DocumentEvents.js';
+import type { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
+import type { IStorageService } from '../../../domain/services/IStorageService.js';
+import { UserId } from '../../../domain/value-objects/UserId.js';
+import { eventBus } from '../../../infrastructure/events/EventBus.js';
 
 /**
  * UploadDocumentUseCase

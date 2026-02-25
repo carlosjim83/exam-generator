@@ -1,6 +1,6 @@
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
@@ -16,9 +16,9 @@ export class AssignExamToClassCommand {
 
 export class AssignExamToClassUseCase {
   constructor(
-    private classRepository: IClassRepository,
-    private enrollmentRepository: IStudentEnrollmentRepository,
-    private assignmentRepository: IExamAssignmentRepository
+    private readonly classRepository: IClassRepository,
+    private readonly enrollmentRepository: IStudentEnrollmentRepository,
+    private readonly assignmentRepository: IExamAssignmentRepository
   ) {}
 
   async execute(
@@ -47,7 +47,12 @@ export class AssignExamToClassUseCase {
     const alreadyAssigned = new Set<string>();
 
     // Create assignments for each student (excluding if specified)
-    const assignments: any[] = [];
+    const assignments: {
+      examId: string;
+      studentId: UserId;
+      teacherId: UserId;
+      dueDate?: Date;
+    }[] = [];
     for (const enrollment of result.enrollments) {
       // Skip if student is excluded
       if (excludeStudentIds.includes(enrollment.studentId.toString())) {

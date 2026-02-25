@@ -1,5 +1,6 @@
-import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
+import type { FastifyInstance } from 'fastify';
+
 import { authenticateUser } from '@middleware/auth.middleware.js';
 
 const prisma = new PrismaClient();

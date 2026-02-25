@@ -1,10 +1,13 @@
-import { z } from 'genkit';
-import { ai, chunkingConfig } from '../genkit.config.js';
-import { chunk } from 'llm-chunk';
 import { readFile } from 'fs/promises';
-import { indexChunks, ChunkWithEmbedding } from '../indexers/pgvector.indexer.js';
+
+import { z } from 'genkit';
+import { chunk } from 'llm-chunk';
+
 import { TextExtractorService } from '../../text-extraction/TextExtractorService.js';
 import { AzureOpenAIEmbeddingService } from '../AzureOpenAIEmbeddingService.js';
+import { ai, chunkingConfig } from '../genkit.config.js';
+import { indexChunks } from '../indexers/pgvector.indexer.js';
+import type { ChunkWithEmbedding } from '../indexers/pgvector.indexer.js';
 
 /**
  * Process Document Flow with Genkit + Azure OpenAI

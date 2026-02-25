@@ -5,8 +5,9 @@
  * Used for monitoring, alerting, and observability dashboards.
  */
 
+import type { Job } from 'bullmq';
+
 import { documentQueue } from './DocumentQueue.js';
-import { Job } from 'bullmq';
 
 export interface WorkerMetrics {
   // Queue counts

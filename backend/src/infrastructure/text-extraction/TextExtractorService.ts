@@ -1,7 +1,9 @@
-import * as pdfParseModule from 'pdf-parse';
-import mammoth from 'mammoth';
 import JSZip from 'jszip';
-import { ITextExtractor } from '../../domain/services/ITextExtractor.js';
+import mammoth from 'mammoth';
+import * as pdfParseModule from 'pdf-parse';
+
+import type { ITextExtractor } from '../../domain/services/ITextExtractor.js';
+
 import { OCRService } from './OCRService.js';
 
 // pdf-parse uses CommonJS exports, handle both CJS and ESM

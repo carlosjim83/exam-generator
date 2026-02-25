@@ -3,15 +3,17 @@
  * Implements IExamRepository using Prisma ORM
  */
 
-import { PrismaClient } from '@prisma/client';
-import {
+import type { PrismaClient } from '@prisma/client';
+
+import { Exam } from '../../domain/entities/Exam.js';
+import type { StorableDifficulty } from '../../domain/entities/ExamTypes.js';
+import type { QuestionType } from '../../domain/entities/Question.js';
+import { Question } from '../../domain/entities/Question.js';
+import type {
   IExamRepository,
   CreateExamDTO,
   CreateQuestionDTO,
 } from '../../domain/repositories/IExamRepository.js';
-import { Exam } from '../../domain/entities/Exam.js';
-import { Question, QuestionType } from '../../domain/entities/Question.js';
-import { StorableDifficulty } from '../../domain/entities/ExamTypes.js';
 import { ExamId } from '../../domain/value-objects/ExamId.js';
 import { QuestionId } from '../../domain/value-objects/QuestionId.js';
 import { UserId } from '../../domain/value-objects/UserId.js';

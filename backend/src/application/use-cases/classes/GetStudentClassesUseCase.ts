@@ -1,6 +1,6 @@
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import { Class } from '@domain/entities/Class.js';
+import type { Class } from '@domain/entities/Class.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface GetStudentClassesOutput {
@@ -13,8 +13,8 @@ export class GetStudentClassesCommand {
 
 export class GetStudentClassesUseCase {
   constructor(
-    private classRepository: IClassRepository,
-    private enrollmentRepository: IStudentEnrollmentRepository
+    private readonly classRepository: IClassRepository,
+    private readonly enrollmentRepository: IStudentEnrollmentRepository
   ) {}
 
   async execute(command: GetStudentClassesCommand): Promise<GetStudentClassesOutput> {

@@ -10,7 +10,7 @@
  * 4. Return top K most relevant chunks with similarity scores
  */
 
-import {
+import type {
   IDocumentRepository,
   QueryDocumentResult,
 } from '../../../domain/repositories/IDocumentRepository.js';
@@ -44,7 +44,7 @@ export class QueryDocumentUseCase {
     // 1. Validate input
     const documentId = DocumentId.create(input.documentId);
     const userId = UserId.create(input.userId);
-    const topK = input.topK !== undefined ? input.topK : 5;
+    const topK = input.topK ?? 5;
 
     if (!input.query || input.query.trim().length === 0) {
       throw new Error('Query cannot be empty');

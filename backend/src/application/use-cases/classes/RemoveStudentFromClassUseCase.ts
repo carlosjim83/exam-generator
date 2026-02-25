@@ -1,5 +1,5 @@
-import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
@@ -13,8 +13,8 @@ export class RemoveStudentFromClassCommand {
 
 export class RemoveStudentFromClassUseCase {
   constructor(
-    private studentEnrollmentRepository: IStudentEnrollmentRepository,
-    private classRepository: IClassRepository
+    private readonly studentEnrollmentRepository: IStudentEnrollmentRepository,
+    private readonly classRepository: IClassRepository
   ) {}
 
   async execute(command: RemoveStudentFromClassCommand): Promise<void> {
