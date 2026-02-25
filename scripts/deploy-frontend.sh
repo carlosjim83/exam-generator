@@ -45,11 +45,16 @@ ACCOUNT=$(az account show --query name -o tsv)
 echo -e "${GREEN}✅ Logged in as: $ACCOUNT${NC}"
 echo ""
 
-# Get image tag (default to latest)
+# Get image tag (use provided or default to latest)
 IMAGE_TAG="${1:-latest}"
 FULL_IMAGE="${REGISTRY}/${GITHUB_USERNAME}/${IMAGE_NAME}:${IMAGE_TAG}"
 
 echo -e "${BLUE}📦 Image to deploy: ${YELLOW}${FULL_IMAGE}${NC}"
+echo ""
+
+# Generate unique revision suffix to force new deployment (avoids cache issues)
+REVISION_SUFFIX="rev-$(date +%s)-${IMAGE_TAG}"
+echo -e "${BLUE}🔖 Revision suffix: ${YELLOW}${REVISION_SUFFIX}${NC}"
 echo ""
 
 # Note: We skip image verification for GHCR since it requires authentication
@@ -81,6 +86,7 @@ az containerapp update \
     --name $CONTAINER_APP_NAME \
     --resource-group $RESOURCE_GROUP \
     --image $FULL_IMAGE \
+    --revision-suffix "${REVISION_SUFFIX}" \
     --output none
 
 if [ $? -eq 0 ]; then

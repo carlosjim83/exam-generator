@@ -1,59 +1,53 @@
-# ================================
-# Stage 1: Dependencies
-# ================================
-FROM node:20-alpine AS deps
+# Frontend Dockerfile for GitHub Actions CI/CD
+# Multi-stage build for Next.js standalone output
+# This Dockerfile is designed to be built from the monorepo root context
 
-# Force rebuild - v2026.02.18.05
-# Install pnpm (use version from packageManager field)
-RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
+# ================================
+# Stage 1: Builder
+# ================================
+FROM node:20-alpine AS builder
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # Install libc6-compat for compatibility
 RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-# Copy workspace configuration (monorepo setup)
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+# Copy monorepo workspace files
+COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY frontend/package.json ./frontend/
 
-# Install dependencies for frontend workspace only
-RUN pnpm install --frozen-lockfile --filter=exam-generator-frontend...
+# Copy shared packages
+COPY packages ./packages
 
-# ================================
-# Stage 2: Builder
-# ================================
-FROM node:20-alpine AS builder
+# Install all dependencies
+RUN pnpm install --frozen-lockfile
 
-# Install pnpm (use version from packageManager field)
-RUN corepack enable && corepack prepare pnpm@8.15.0 --activate
-
-WORKDIR /app
-
-# Copy workspace configuration
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
-
-# Copy dependencies from deps stage
-COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/frontend ./frontend
-
-# Copy frontend source code
+# Copy frontend source
 COPY frontend ./frontend
 
 WORKDIR /app/frontend
 
 # Set build-time environment variables
+# NEXT_PUBLIC_* variables must be set at build time
+# Default to production backend URL if not specified
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://exam-generator-backend.delightfulforest-a488ef6b.swedencentral.azurecontainerapps.io}
+
+# Control OAuth mock behavior (default: false for production)
+ARG NEXT_PUBLIC_ENABLE_OAUTH_MOCK
+ENV NEXT_PUBLIC_ENABLE_OAUTH_MOCK=${NEXT_PUBLIC_ENABLE_OAUTH_MOCK:-false}
 
 # Disable Next.js telemetry
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build Next.js application with standalone output
-# outputFileTracingRoot in next.config.ts ensures all monorepo deps are included
 RUN pnpm build
 
 # ================================
-# Stage 3: Runner (Production)
+# Stage 2: Runner (Production)
 # ================================
 FROM node:20-alpine AS runner
 
@@ -70,15 +64,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001
 
-# Copy standalone output - with outputFileTracingRoot, this includes all necessary dependencies
+# Copy Next.js standalone build output (includes server.js and minimal node_modules)
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 
-# Copy public assets if directory exists
-RUN mkdir -p public
-RUN if [ -d /app/frontend/public ]; then cp -r /app/frontend/public/* ./public/ 2>/dev/null || true; fi
-
-# Copy static files to the correct location for standalone mode
-# The standalone server looks for files at ./frontend/.next/static/ (relative to WORKDIR /app)
+# Copy static files that standalone mode doesn't include automatically
+# These are served at /_next/static/* by the Next.js server
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static/
 
 # Switch to non-root user
@@ -89,11 +79,10 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+  CMD node -e "require('http').get('http://localhost:3000', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
 # Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start Next.js server
-# The standalone structure may have server.js at different locations depending on monorepo setup
-CMD ["sh", "-c", "if [ -f ./server.js ]; then node ./server.js; elif [ -f ./frontend/server.js ]; then cd /app/frontend && node server.js; else echo 'ERROR: server.js not found' && find /app -name 'server.js' && exit 1; fi"]
+# Start Next.js server (standalone mode puts server.js in frontend/)
+CMD ["node", "frontend/server.js"]
