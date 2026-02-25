@@ -48,31 +48,25 @@ import {
   RemoveStudentFromClassUseCase, // Added
   GetStudentClassesUseCase, // Added
 } from '@application/use-cases/index.js';
-
 // Application Use Cases
-
 // Student Use Cases
 import { AssignExamToStudentUseCase } from '@application/use-cases/student/AssignExamToStudentUseCase.js';
 import { GetAssignedExamsUseCase } from '@application/use-cases/student/GetAssignedExamsUseCase.js';
 import { GetExamResultsUseCase } from '@application/use-cases/student/GetExamResultsUseCase.js';
 import { StartExamUseCase } from '@application/use-cases/student/StartExamUseCase.js';
 import { SubmitExamAnswersUseCase } from '@application/use-cases/student/SubmitExamAnswersUseCase.js';
-
-// Domain Interfaces (for type safety)
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
-import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
+import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
-import type { ITokenService } from '@domain/services/ITokenService.js';
 import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
-
-// Classes & Invitations Repositories
-import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
+import type { ITokenService } from '@domain/services/ITokenService.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 import {
   PrismaUserRepository,
