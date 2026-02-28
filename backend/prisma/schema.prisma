@@ -17,30 +17,30 @@ datasource db {
 // ============================================================================
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String       @id @default(uuid())
+  email     String       @unique
   password  String? // Nullable for OAuth-only users
-  firstName String   @map("first_name")
-  lastName  String   @map("last_name")
-  role      UserRole @default(TEACHER)
+  firstName String       @map("first_name")
+  lastName  String       @map("last_name")
+  role      UserRole     @default(TEACHER)
   provider  AuthProvider @default(LOCAL)
-  
+
   // OAuth fields
   providerId String? @map("provider_id") // ID from OAuth provider
-  
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
+
   // Relations
   documents          Document[]
   exams              Exam[]
   preferences        UserPreferences?
-  studentAssignments ExamAssignment[] @relation("StudentAssignments")
-  teacherAssignments ExamAssignment[] @relation("TeacherAssignments")
-  taughtClasses      Class[]          @relation("TeacherClasses")
+  studentAssignments ExamAssignment[]    @relation("StudentAssignments")
+  teacherAssignments ExamAssignment[]    @relation("TeacherAssignments")
+  taughtClasses      Class[]             @relation("TeacherClasses")
   joinedClasses      StudentEnrollment[] @relation("StudentEnrollments")
-  createdInvitations Invitation[]     @relation("CreatedInvitations")
+  createdInvitations Invitation[]        @relation("CreatedInvitations")
 
   @@map("users")
 }
@@ -62,18 +62,18 @@ enum AuthProvider {
 // ============================================================================
 
 model UserPreferences {
-  id       String @id @default(uuid())
-  userId   String @unique @map("user_id")
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Preferences
   language String @default("en") // User's preferred language (en, es)
   theme    String @default("light") // User's preferred theme (light, dark)
-  
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
+
   @@map("user_preferences")
 }
 
@@ -82,36 +82,37 @@ model UserPreferences {
 // ============================================================================
 
 model Document {
-  id          String         @id @default(uuid())
-  title       String
-  filename    String
-  fileSize    Int            @map("file_size") // bytes
-  mimeType    String         @map("mime_type") // application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document
-  status      DocumentStatus @default(PENDING)
-  
+  id       String         @id @default(uuid())
+  title    String
+  filename String
+  fileSize Int            @map("file_size") // bytes
+  mimeType String         @map("mime_type") // application/pdf, application/vnd.openxmlformats-officedocument.wordprocessingml.document
+  status   DocumentStatus @default(PENDING)
+
   // Azure Blob Storage reference
-  blobUrl     String         @map("blob_url")
-  
+  blobUrl String @map("blob_url")
+
   // Processing metadata
-  pageCount   Int?           @map("page_count")
-  wordCount   Int?           @map("word_count")
-  
+  pageCount Int? @map("page_count")
+  wordCount Int? @map("word_count")
+
   // Error tracking
-  errorMessage String?       @map("error_message")
-  
+  errorMessage String? @map("error_message")
+
   // Timestamps
-  uploadedAt  DateTime       @default(now()) @map("uploaded_at")
-  processedAt DateTime?      @map("processed_at")
-  updatedAt   DateTime       @default(now()) @updatedAt @map("updated_at")
-  
+  uploadedAt  DateTime  @default(now()) @map("uploaded_at")
+  processedAt DateTime? @map("processed_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
   // Relations
-  userId      String         @map("user_id")
-  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  chunks      DocumentChunk[]
-  
-  @@map("documents")
+  userId         String          @map("user_id")
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chunks         DocumentChunk[]
+  classDocuments ClassDocument[]
+
   @@index([userId])
   @@index([status])
+  @@map("documents")
 }
 
 enum DocumentStatus {
@@ -126,23 +127,23 @@ enum DocumentStatus {
 // ============================================================================
 
 model DocumentChunk {
-  id         String                   @id @default(uuid())
-  content    String                   @db.Text // Chunk text content
-  chunkIndex Int                      @map("chunk_index") // Order in document
-  
+  id         String @id @default(uuid())
+  content    String @db.Text // Chunk text content
+  chunkIndex Int    @map("chunk_index") // Order in document
+
   // Vector embedding (pgvector)
-  embedding  Unsupported("vector(1536)") // Azure OpenAI text-embedding-ada-002 dimension
-  
+  embedding Unsupported("vector(1536)") // Azure OpenAI text-embedding-ada-002 dimension
+
   // Metadata
-  pageNumber Int?                     @map("page_number")
-  wordCount  Int                      @map("word_count")
-  
+  pageNumber Int? @map("page_number")
+  wordCount  Int  @map("word_count")
+
   // Relations
-  documentId String                   @map("document_id")
-  document   Document                 @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  
-  @@map("document_chunks")
+  documentId String   @map("document_id")
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
   @@index([documentId])
+  @@map("document_chunks")
 }
 
 // ============================================================================
@@ -150,26 +151,26 @@ model DocumentChunk {
 // ============================================================================
 
 model Exam {
-  id          String     @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
-  description String?    @db.Text
-  
+  description String? @db.Text
+
   // Generation metadata
   generatedFrom String[] @default([]) @map("generated_from") // Document IDs used
-  promptUsed    String?  @db.Text    @map("prompt_used")
-  
+  promptUsed    String?  @map("prompt_used") @db.Text
+
   // Timestamps
-  createdAt   DateTime   @default(now()) @map("created_at")
-  updatedAt   DateTime   @updatedAt      @map("updated_at")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   // Relations
   userId      String           @map("user_id")
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions   Question[]
   assignments ExamAssignment[]
-  
-  @@map("exams")
+
   @@index([userId])
+  @@map("exams")
 }
 
 // ============================================================================
@@ -177,30 +178,30 @@ model Exam {
 // ============================================================================
 
 model Question {
-  id             String             @id @default(uuid())
-  type           QuestionType
-  difficulty     QuestionDifficulty
-  questionText   String             @db.Text @map("question_text")
-  
+  id           String             @id @default(uuid())
+  type         QuestionType
+  difficulty   QuestionDifficulty
+  questionText String             @map("question_text") @db.Text
+
   // Options (for multiple choice)
-  options        String[]           @default([])
-  correctAnswer  String             @db.Text @map("correct_answer")
-  
+  options       String[] @default([])
+  correctAnswer String   @map("correct_answer") @db.Text
+
   // Metadata
-  explanation    String?            @db.Text
-  points         Int                @default(1)
-  orderIndex     Int                @map("order_index")
-  
+  explanation String? @db.Text
+  points      Int     @default(1)
+  orderIndex  Int     @map("order_index")
+
   // Source tracking
-  sourceChunkIds String[]          @default([]) @map("source_chunk_ids")
-  
+  sourceChunkIds String[] @default([]) @map("source_chunk_ids")
+
   // Relations
-  examId         String             @map("exam_id")
-  exam           Exam               @relation(fields: [examId], references: [id], onDelete: Cascade)
+  examId         String          @map("exam_id")
+  exam           Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
   studentAnswers StudentAnswer[]
-  
-  @@map("questions")
+
   @@index([examId])
+  @@map("questions")
 }
 
 enum QuestionType {
@@ -220,36 +221,36 @@ enum QuestionDifficulty {
 // ============================================================================
 
 model ExamAssignment {
-  id          String               @id @default(uuid())
-  examId      String               @map("exam_id")
-  studentId   String               @map("student_id")
-  teacherId   String               @map("teacher_id")
-  
+  id        String @id @default(uuid())
+  examId    String @map("exam_id")
+  studentId String @map("student_id")
+  teacherId String @map("teacher_id")
+
   // Status tracking
   status      ExamAssignmentStatus @default(PENDING)
   dueDate     DateTime?            @map("due_date")
   startedAt   DateTime?            @map("started_at")
   submittedAt DateTime?            @map("submitted_at")
-  
+
   // Results
-  score       Float?               // 0-100
-  feedback    String?              @db.Text
-  
+  score    Float? // 0-100
+  feedback String? @db.Text
+
   // Relations
-  exam        Exam                 @relation(fields: [examId], references: [id], onDelete: Cascade)
-  student     User                 @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
-  teacher     User                 @relation("TeacherAssignments", fields: [teacherId], references: [id], onDelete: Cascade)
-  answers     StudentAnswer[]
-  
+  exam    Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student User            @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher User            @relation("TeacherAssignments", fields: [teacherId], references: [id], onDelete: Cascade)
+  answers StudentAnswer[]
+
   // Timestamps
-  createdAt   DateTime             @default(now()) @map("created_at")
-  updatedAt   DateTime             @updatedAt @map("updated_at")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@unique([examId, studentId]) // Student can only have one assignment per exam
-  @@map("exam_assignments")
   @@index([studentId])
   @@index([teacherId])
   @@index([status])
+  @@map("exam_assignments")
 }
 
 enum ExamAssignmentStatus {
@@ -264,25 +265,25 @@ enum ExamAssignmentStatus {
 // ============================================================================
 
 model StudentAnswer {
-  id           String         @id @default(uuid())
-  assignmentId String         @map("assignment_id")
-  questionId   String         @map("question_id")
-  
+  id           String @id @default(uuid())
+  assignmentId String @map("assignment_id")
+  questionId   String @map("question_id")
+
   // Answer data
-  answerText   String         @db.Text @map("answer_text")
-  isCorrect    Boolean?       @map("is_correct")
-  
+  answerText String   @map("answer_text") @db.Text
+  isCorrect  Boolean? @map("is_correct")
+
   // Relations
-  assignment   ExamAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  question     Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  
+  assignment ExamAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  question   Question       @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
   // Timestamps
-  createdAt    DateTime       @default(now()) @map("created_at")
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@unique([assignmentId, questionId]) // One answer per question per assignment
-  @@map("student_answers")
   @@index([assignmentId])
+  @@map("student_answers")
 }
 
 // ============================================================================
@@ -290,70 +291,71 @@ model StudentAnswer {
 // ============================================================================
 
 model Class {
-  id          String   @id @default(uuid())
-  teacherId   String   @map("teacher_id")
+  id          String  @id @default(uuid())
+  teacherId   String  @map("teacher_id")
   name        String
-  code        String   @unique
-  description String?  @db.Text
-  color       String?  // Hex color code (#RRGGBB)
+  code        String  @unique
+  description String? @db.Text
+  color       String? // Hex color code (#RRGGBB)
 
   // Timestamps
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  teacher     User                  @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: Cascade)
+  teacher     User                @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: Cascade)
   enrollments StudentEnrollment[]
   invitations Invitation[]
+  documents   ClassDocument[]
 
-  @@map("classes")
   @@index([teacherId])
   @@index([code])
+  @@map("classes")
 }
 
 model StudentEnrollment {
-  id        String   @id @default(uuid())
-  classId   String   @map("class_id")
-  studentId String   @map("student_id")
+  id        String @id @default(uuid())
+  classId   String @map("class_id")
+  studentId String @map("student_id")
 
   // Timestamps
-  joinedAt  DateTime @default(now()) @map("joined_at")
-  leftAt    DateTime? @map("left_at")
-  isActive  Boolean  @default(true)
+  joinedAt DateTime  @default(now()) @map("joined_at")
+  leftAt   DateTime? @map("left_at")
+  isActive Boolean   @default(true)
 
   // Relations
-  class     Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  student   User     @relation("StudentEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
+  class   Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student User  @relation("StudentEnrollments", fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([classId, studentId])
-  @@map("student_enrollments")
   @@index([classId])
   @@index([studentId])
   @@index([classId, isActive])
+  @@map("student_enrollments")
 }
 
 model Invitation {
-  id        String              @id @default(uuid())
-  classId   String              @map("class_id")
-  teacherId String              @map("teacher_id")
+  id        String           @id @default(uuid())
+  classId   String           @map("class_id")
+  teacherId String           @map("teacher_id")
   email     String
-  status    InvitationStatus    @default(PENDING)
-  token     String              @unique
+  status    InvitationStatus @default(PENDING)
+  token     String           @unique
 
   // Timestamps
-  expiresAt DateTime            @map("expires_at")
-  acceptedAt DateTime?          @map("accepted_at")
-  createdAt DateTime            @default(now()) @map("created_at")
+  expiresAt  DateTime  @map("expires_at")
+  acceptedAt DateTime? @map("accepted_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
 
   // Relations
-  class     Class               @relation(fields: [classId], references: [id], onDelete: Cascade)
-  teacher   User                @relation("CreatedInvitations", fields: [teacherId], references: [id], onDelete: Cascade)
+  class   Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  teacher User  @relation("CreatedInvitations", fields: [teacherId], references: [id], onDelete: Cascade)
 
-  @@map("invitations")
   @@index([classId])
   @@index([token])
   @@index([status])
   @@index([email])
+  @@map("invitations")
 }
 
 enum InvitationStatus {
@@ -361,4 +363,36 @@ enum InvitationStatus {
   ACCEPTED
   EXPIRED
   REVOKED
+}
+
+// ============================================================================
+// Class Documents (Resource Sharing)
+// ============================================================================
+
+model ClassDocument {
+  id         String @id @default(uuid())
+  classId    String @map("class_id")
+  documentId String @map("document_id")
+
+  // Visibility control
+  isVisible   Boolean   @default(false) @map("is_visible")
+  publishedAt DateTime? @map("published_at")
+
+  // Ordering
+  orderIndex Int @default(0) @map("order_index")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  class    Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  // Constraints
+  @@unique([classId, documentId]) // One entry per class-document pair
+  @@index([classId])
+  @@index([documentId])
+  @@index([classId, isVisible])
+  @@map("class_documents")
 }
