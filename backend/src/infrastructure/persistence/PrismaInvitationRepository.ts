@@ -134,6 +134,12 @@ export class PrismaInvitationRepository implements IInvitationRepository {
     });
   }
 
+  async deleteByClassId(classId: ClassId): Promise<void> {
+    await this.prisma.invitation.deleteMany({
+      where: { classId: classId.toString() },
+    });
+  }
+
   private toDomain(record: InvitationRecord): Invitation {
     return new Invitation(
       new InvitationId(record.id),

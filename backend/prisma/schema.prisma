@@ -386,8 +386,8 @@ model ClassDocument {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  class    Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  class    Class    @relation(fields: [classId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  document Document @relation(fields: [documentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   // Constraints
   @@unique([classId, documentId]) // One entry per class-document pair

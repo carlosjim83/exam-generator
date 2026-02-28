@@ -13,4 +13,5 @@ export interface IInvitationRepository {
   save(invitation: Invitation): Promise<void>;
   saveMany(invitations: Invitation[]): Promise<void>;
   delete(id: InvitationId): Promise<void>;
+  deleteByClassId(classId: ClassId): Promise<void>;
 }

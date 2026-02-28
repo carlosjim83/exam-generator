@@ -119,6 +119,12 @@ export class PrismaStudentEnrollmentRepository implements IStudentEnrollmentRepo
     });
   }
 
+  async deleteByClassId(classId: ClassId): Promise<void> {
+    await this.prisma.studentEnrollment.deleteMany({
+      where: { classId: classId.toString() },
+    });
+  }
+
   async isStudentEnrolled(classId: ClassId, studentId: UserId): Promise<boolean> {
     const count = await this.prisma.studentEnrollment.count({
       where: {

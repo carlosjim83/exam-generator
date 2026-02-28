@@ -1,6 +1,13 @@
-import type { DocumentUploadedEvent } from '@domain/events/DocumentEvents.js';
+import { container } from '@config/container.js';
+import type {
+  ClassDeletedEvent,
+  DocumentDeletedEvent,
+  DocumentUploadedEvent,
+} from '@domain/events/DocumentEvents.js';
 
 import { eventBus } from './EventBus.js';
+import { createClassDeletedEventHandler } from './handlers/ClassDeletedEventHandler.js';
+import { createDocumentDeletedEventHandler } from './handlers/DocumentDeletedEventHandler.js';
 import { createDocumentUploadedEventHandler } from './handlers/DocumentUploadedEventHandler.js';
 
 /**
@@ -21,6 +28,26 @@ export function bootstrapEventHandlers(): void {
   const documentUploadedHandler = createDocumentUploadedEventHandler();
   eventBus.subscribe<DocumentUploadedEvent>('document.uploaded', (event) =>
     documentUploadedHandler.handle(event)
+  );
+
+  // Register DocumentDeletedEventHandler
+  const documentDeletedHandler = createDocumentDeletedEventHandler(
+    container.documentRepository,
+    container.classDocumentRepository,
+    container.storageService
+  );
+  eventBus.subscribe<DocumentDeletedEvent>('document.deleted', (event) =>
+    documentDeletedHandler.handle(event)
+  );
+
+  // Register ClassDeletedEventHandler
+  const classDeletedHandler = createClassDeletedEventHandler(
+    container.classDocumentRepository,
+    container.studentEnrollmentRepository,
+    container.invitationRepository
+  );
+  eventBus.subscribe<ClassDeletedEvent>('class.deleted', (event) =>
+    classDeletedHandler.handle(event)
   );
 
   console.log('✅ Event handlers registered');

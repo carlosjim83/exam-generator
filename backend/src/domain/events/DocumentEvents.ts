@@ -61,3 +61,36 @@ export interface DocumentProcessingFailedEvent extends DomainEvent {
     error: string;
   };
 }
+
+/**
+ * DocumentDeletedEvent
+ *
+ * Emitted when a document is deleted.
+ * Triggers cleanup of related entities (chunks, class documents, blob storage).
+ */
+export interface DocumentDeletedEvent extends DomainEvent {
+  eventName: 'document.deleted';
+  aggregateId: string; // documentId
+  payload: {
+    documentId: string;
+    userId: string;
+    filename: string;
+    blobUrl: string;
+  };
+}
+
+/**
+ * ClassDeletedEvent
+ *
+ * Emitted when a class is deleted.
+ * Triggers cleanup of related entities (enrollments, invitations, class documents).
+ */
+export interface ClassDeletedEvent extends DomainEvent {
+  eventName: 'class.deleted';
+  aggregateId: string; // classId
+  payload: {
+    classId: string;
+    teacherId: string;
+    className: string;
+  };
+}

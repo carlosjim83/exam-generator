@@ -589,6 +589,14 @@ export class Container {
     return this._invitationRepository;
   }
 
+  public get classDocumentRepository(): IClassDocumentRepository {
+    return this._classDocumentRepository;
+  }
+
+  public get studentEnrollmentRepository(): IStudentEnrollmentRepository {
+    return this._studentEnrollmentRepository;
+  }
+
   // Student Use Cases
 
   public get assignExamToStudentUseCase(): AssignExamToStudentUseCase {

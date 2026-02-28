@@ -16,5 +16,6 @@ export interface IStudentEnrollmentRepository {
   findByClassAndStudent(classId: ClassId, studentId: UserId): Promise<StudentEnrollment | null>;
   save(enrollment: StudentEnrollment): Promise<void>;
   delete(id: EnrollmentId): Promise<void>;
+  deleteByClassId(classId: ClassId): Promise<void>;
   isStudentEnrolled(classId: ClassId, studentId: UserId): Promise<boolean>;
 }
