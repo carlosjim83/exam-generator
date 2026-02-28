@@ -8,6 +8,7 @@ export { PrismaDocumentRepository } from './repositories/PrismaDocumentRepositor
 export { PrismaClassRepository } from './persistence/PrismaClassRepository.js';
 export { PrismaStudentEnrollmentRepository } from './persistence/PrismaStudentEnrollmentRepository.js';
 export { PrismaInvitationRepository } from './persistence/PrismaInvitationRepository.js';
+export { PrismaClassDocumentRepository } from './persistence/PrismaClassDocumentRepository.js';
 
 // Infrastructure Layer - Storage Services
 export { AzureBlobStorageService } from './storage/AzureBlobStorageService.js';

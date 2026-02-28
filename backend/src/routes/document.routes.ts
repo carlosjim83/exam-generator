@@ -1029,4 +1029,296 @@ export async function documentRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  // POST /api/documents/:documentId/share - Share a document with classes
+  fastify.post(
+    '/api/documents/:documentId/share',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Share a document with one or more classes',
+        description: 'Teacher shares a document with their classes. Document must be completed.',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            documentId: { type: 'string', format: 'uuid' },
+          },
+          required: ['documentId'],
+        },
+        body: {
+          type: 'object',
+          properties: {
+            classIds: {
+              type: 'array',
+              items: { type: 'string', format: 'uuid' },
+              minItems: 1,
+            },
+            isVisible: { type: 'boolean', default: false },
+          },
+          required: ['classIds'],
+        },
+        response: {
+          200: {
+            description: 'Document shared successfully',
+            type: 'object',
+            properties: {
+              documentId: { type: 'string' },
+              sharedWith: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    classId: { type: 'string' },
+                    isVisible: { type: 'boolean' },
+                    publishedAt: { type: 'string', nullable: true },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: 'Bad request',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          401: {
+            description: 'Unauthorized',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          409: {
+            description: 'Conflict - Document already shared',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { documentId } = request.params as { documentId: string };
+        const body = request.body as { classIds: string[]; isVisible?: boolean };
+        const userId = (request as any).user.userId;
+
+        const results = [];
+        for (const classId of body.classIds) {
+          const result = await container.shareDocumentWithClassUseCase.execute({
+            documentId,
+            classId,
+            userId,
+            isVisible: body.isVisible ?? false,
+          });
+          results.push({
+            classId: result.classId,
+            isVisible: result.isVisible,
+            publishedAt: result.publishedAt?.toISOString() ?? null,
+          });
+        }
+
+        return reply.status(200).send({
+          documentId,
+          sharedWith: results,
+        });
+      } catch (error: any) {
+        if (error.message === 'Document not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Document not found',
+          });
+        }
+        if (error.message === 'Class not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Class not found',
+          });
+        }
+        if (error.message.includes('permission')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('already shared')) {
+          return reply.status(409).send({
+            statusCode: 409,
+            error: 'Conflict',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('processed before sharing')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: error.message,
+          });
+        }
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to share document',
+        });
+      }
+    }
+  );
+
+  // DELETE /api/documents/:documentId/share/:classId - Unshare document from class
+  fastify.delete(
+    '/api/documents/:documentId/share/:classId',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Unshare a document from a class',
+        description: 'Teacher removes document sharing from a class.',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            documentId: { type: 'string', format: 'uuid' },
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['documentId', 'classId'],
+        },
+        response: {
+          204: {
+            description: 'Document unshared successfully',
+            type: 'null',
+          },
+          400: {
+            description: 'Bad request',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          401: {
+            description: 'Unauthorized',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { documentId, classId } = request.params as {
+          documentId: string;
+          classId: string;
+        };
+        const userId = (request as any).user.userId;
+
+        await container.unshareDocumentUseCase.execute({
+          documentId,
+          classId,
+          userId,
+        });
+
+        return reply.status(204).send();
+      } catch (error: any) {
+        if (error.message === 'Document not found' || error.message === 'Class not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('permission')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('not shared')) {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: error.message,
+          });
+        }
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to unshare document',
+        });
+      }
+    }
+  );
 }

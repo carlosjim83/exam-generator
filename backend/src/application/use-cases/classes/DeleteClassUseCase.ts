@@ -1,5 +1,7 @@
+import type { ClassDeletedEvent } from '@domain/events/DocumentEvents.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
+import { eventBus } from '@infrastructure/events/EventBus.js';
 
 export class DeleteClassCommand {
   constructor(
@@ -25,7 +27,23 @@ export class DeleteClassUseCase {
       throw new Error('You do not have permission to delete this class');
     }
 
+    // Store metadata before deletion for the event
+    const classMetadata = {
+      classId: classEntity.id.value,
+      teacherId: classEntity.teacherId.value,
+      className: classEntity.name,
+    };
+
     // Delete the class
     await this.classRepository.delete(classId);
+
+    // Emit domain event for cleanup of related entities
+    const event: ClassDeletedEvent = {
+      eventName: 'class.deleted',
+      aggregateId: classMetadata.classId,
+      occurredAt: new Date(),
+      payload: classMetadata,
+    };
+    eventBus.publish(event);
   }
 }
