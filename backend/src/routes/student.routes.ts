@@ -3,7 +3,8 @@
  * API endpoints for student exam management
  */
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 import { authorizeRoles } from '@middleware/role.middleware.js';

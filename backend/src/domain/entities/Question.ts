@@ -3,9 +3,10 @@
  * Represents a single exam question
  */
 
-import { QuestionId } from '../value-objects/QuestionId.js';
-import { ExamId } from '../value-objects/ExamId.js';
-import { QuestionType, StorableDifficulty } from './ExamTypes.js';
+import type { ExamId } from '@domain/value-objects/ExamId.js';
+import type { QuestionId } from '@domain/value-objects/QuestionId.js';
+
+import type { QuestionType, StorableDifficulty } from './ExamTypes.js';
 
 // Re-export for convenience
 export { QuestionType, QuestionDifficulty } from './ExamTypes.js';

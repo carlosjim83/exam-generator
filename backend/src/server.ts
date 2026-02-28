@@ -1,21 +1,22 @@
-import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
+import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
-import rateLimit from '@fastify/rate-limit';
-import multipart from '@fastify/multipart';
+import Fastify from 'fastify';
+
 import { env, validateEnv } from './config/env.js';
+import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 import { authRoutes } from './routes/auth.routes.js';
-import { oauthRoutes } from './routes/oauth.routes.js';
+import { classRoutes } from './routes/class.routes.js';
+import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import { examRoutes } from './routes/exam.routes.js';
-import { studentRoutes } from './routes/student.routes.js';
-import { protectedRoutes } from './routes/protected.routes.js';
-import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { healthRoutes } from './routes/health.routes.js';
+import { oauthRoutes } from './routes/oauth.routes.js';
 import { preferencesRoutes } from './routes/preferences.routes.js';
-import { classRoutes } from './routes/class.routes.js';
-import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
+import { protectedRoutes } from './routes/protected.routes.js';
+import { studentRoutes } from './routes/student.routes.js';
 
 // Validate environment variables on startup
 try {

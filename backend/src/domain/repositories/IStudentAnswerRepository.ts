@@ -1,5 +1,5 @@
-import { StudentAnswer } from '../entities/StudentAnswer.js';
-import { AssignmentId } from '../value-objects/AssignmentId.js';
+import type { StudentAnswer } from '@domain/entities/StudentAnswer.js';
+import type { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 
 export interface CreateStudentAnswerDTO {
   assignmentId: AssignmentId;

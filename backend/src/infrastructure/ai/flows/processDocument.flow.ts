@@ -1,10 +1,13 @@
+import { readFile } from 'node:fs/promises';
+
 import { z } from 'genkit';
-import { ai, chunkingConfig } from '../genkit.config.js';
 import { chunk } from 'llm-chunk';
-import { readFile } from 'fs/promises';
-import { indexChunks, ChunkWithEmbedding } from '../indexers/pgvector.indexer.js';
-import { TextExtractorService } from '../../text-extraction/TextExtractorService.js';
-import { AzureOpenAIEmbeddingService } from '../AzureOpenAIEmbeddingService.js';
+
+import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
+import { ai, chunkingConfig } from '@infrastructure/ai/genkit.config.js';
+import { indexChunks } from '@infrastructure/ai/indexers/pgvector.indexer.js';
+import type { ChunkWithEmbedding } from '@infrastructure/ai/indexers/pgvector.indexer.js';
+import { TextExtractorService } from '@infrastructure/text-extraction/TextExtractorService.js';
 
 /**
  * Process Document Flow with Genkit + Azure OpenAI
@@ -178,18 +181,20 @@ export const processDocumentFlow = ai.defineFlow(
         wordCount,
         pageCount,
       };
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : undefined;
       console.error('[processDocumentFlow] Error:', {
         documentId,
-        error: error.message,
-        stack: error.stack,
+        error: errorMessage,
+        stack: errorStack,
       });
       return {
         success: false,
         chunksCreated: 0,
         wordCount: 0,
         pageCount: 0,
-        error: error.message || 'Unknown error during document processing',
+        error: errorMessage || 'Unknown error during document processing',
       };
     }
   }

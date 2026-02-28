@@ -1,5 +1,6 @@
-import { EventEmitter } from 'events';
-import type { DomainEvent } from '../../domain/events/DocumentEvents.js';
+import { EventEmitter } from 'node:events';
+
+import type { DomainEvent } from '@domain/events/DocumentEvents.js';
 
 /**
  * EventBus
@@ -79,8 +80,11 @@ export class EventBus {
   /**
    * Unsubscribe from an event
    */
-  public unsubscribe(eventName: string, handler: Function): void {
-    this.emitter.off(eventName, handler as any);
+  public unsubscribe(
+    eventName: string,
+    handler: (event: DomainEvent) => Promise<void> | void
+  ): void {
+    this.emitter.off(eventName, handler);
   }
 
   /**
@@ -96,7 +100,7 @@ export class EventBus {
   public static reset(): void {
     if (EventBus.instance) {
       EventBus.instance.clear();
-      EventBus.instance = null as any;
+      EventBus.instance = null as unknown as EventBus;
     }
   }
 }

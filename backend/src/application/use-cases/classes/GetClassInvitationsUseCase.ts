@@ -1,5 +1,5 @@
-import { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
@@ -12,8 +12,8 @@ export class GetClassInvitationsCommand {
 
 export class GetClassInvitationsUseCase {
   constructor(
-    private invitationRepository: IInvitationRepository,
-    private classRepository: IClassRepository
+    private readonly invitationRepository: IInvitationRepository,
+    private readonly classRepository: IClassRepository
   ) {}
 
   async execute(command: GetClassInvitationsCommand): Promise<{

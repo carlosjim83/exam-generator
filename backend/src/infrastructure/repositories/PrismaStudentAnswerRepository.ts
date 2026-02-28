@@ -1,10 +1,11 @@
-import { PrismaClient } from '@prisma/client';
-import {
+import type { PrismaClient } from '@prisma/client';
+
+import { StudentAnswer } from '@domain/entities/StudentAnswer.js';
+import type {
   IStudentAnswerRepository,
   CreateStudentAnswerDTO,
-} from '../../domain/repositories/IStudentAnswerRepository.js';
-import { StudentAnswer } from '../../domain/entities/StudentAnswer.js';
-import { AssignmentId } from '../../domain/value-objects/AssignmentId.js';
+} from '@domain/repositories/IStudentAnswerRepository.js';
+import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 
 export class PrismaStudentAnswerRepository implements IStudentAnswerRepository {
   private constructor(private prisma: PrismaClient) {}

@@ -3,22 +3,23 @@
  * API endpoints for class creation and management
  */
 
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+
+import { CreateClassCommand } from '@application/use-cases/classes/CreateClassUseCase.js';
+import { CreateEmailInvitationsCommand } from '@application/use-cases/classes/CreateEmailInvitationsUseCase.js';
+import { DeleteClassCommand } from '@application/use-cases/classes/DeleteClassUseCase.js';
+import { GetClassByCodeCommand } from '@application/use-cases/classes/GetClassByCodeUseCase.js';
+import { GetClassDetailsCommand } from '@application/use-cases/classes/GetClassDetailsUseCase.js';
+import { GetClassesCommand } from '@application/use-cases/classes/GetClassesUseCase.js';
+import { GetClassInvitationsCommand } from '@application/use-cases/classes/GetClassInvitationsUseCase.js';
+import { GetClassStudentsCommand } from '@application/use-cases/classes/GetClassStudentsUseCase.js';
+import { GetStudentClassesCommand } from '@application/use-cases/classes/GetStudentClassesUseCase.js';
+import { ImportStudentsCSVCommand } from '@application/use-cases/classes/ImportStudentsCSVUseCase.js';
+import { RemoveStudentFromClassCommand } from '@application/use-cases/classes/RemoveStudentFromClassUseCase.js';
+import { StudentJoinClassCommand } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
+import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
-import { CreateClassCommand } from '@application/use-cases/classes/CreateClassUseCase.js';
-import { GetClassesCommand } from '@application/use-cases/classes/GetClassesUseCase.js';
-import { GetClassDetailsCommand } from '@application/use-cases/classes/GetClassDetailsUseCase.js';
-import { GetClassByCodeCommand } from '@application/use-cases/classes/GetClassByCodeUseCase.js';
-import { DeleteClassCommand } from '@application/use-cases/classes/DeleteClassUseCase.js';
-import { GetClassStudentsCommand } from '@application/use-cases/classes/GetClassStudentsUseCase.js';
-import { StudentJoinClassCommand } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
-import { CreateEmailInvitationsCommand } from '@application/use-cases/classes/CreateEmailInvitationsUseCase.js';
-import { GetClassInvitationsCommand } from '@application/use-cases/classes/GetClassInvitationsUseCase.js';
-import { ImportStudentsCSVCommand } from '@application/use-cases/classes/ImportStudentsCSVUseCase.js';
-import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
-import { RemoveStudentFromClassCommand } from '@application/use-cases/classes/RemoveStudentFromClassUseCase.js';
-import { GetStudentClassesCommand } from '@application/use-cases/classes/GetStudentClassesUseCase.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
   // GET /api/classes - List all classes for authenticated teacher
@@ -160,12 +161,10 @@ export async function classRoutes(fastify: FastifyInstance) {
   fastify.get(
     '/api/classes/code/:code',
     {
-      preHandler: authenticateUser,
       schema: {
         tags: ['classes'],
         summary: 'Get class by code',
         description: 'Get class information by code for student join validation',
-        security: [{ bearerAuth: [] }],
         params: {
           type: 'object',
           properties: {
@@ -402,7 +401,10 @@ export async function classRoutes(fastify: FastifyInstance) {
           email: s.email,
           firstName: s.firstName,
           lastName: s.lastName,
-          joinedAt: s.joinedAt.toISOString(),
+          joinedAt:
+            s.joinedAt instanceof Date
+              ? s.joinedAt.toISOString()
+              : new Date(s.joinedAt).toISOString(),
           isActive: s.isActive,
         })),
         total: result.total,

@@ -1,11 +1,13 @@
-import { FastifyInstance } from 'fastify';
 import oauthPlugin from '@fastify/oauth2';
+import type { FastifyInstance } from 'fastify';
+
+import { container } from '@config/container.js';
 import { env } from '@config/env.js';
 import { prisma } from '@config/prisma.js';
-import { container } from '@config/container.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import type { UserRole } from '@domain/entities/User.js';
+import { AuthProvider } from '@domain/entities/User.js';
 import { Email } from '@domain/value-objects/Email.js';
-import { UserRole, AuthProvider } from '@domain/entities/User.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 export async function oauthRoutes(fastify: FastifyInstance) {
   // Register Google OAuth2 plugin

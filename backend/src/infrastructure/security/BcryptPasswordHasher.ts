@@ -1,11 +1,12 @@
 import bcrypt from 'bcrypt';
-import { IPasswordHasher } from '../../domain/services/IPasswordHasher.js';
-import { Password } from '../../domain/value-objects/Password.js';
+
+import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
+import type { Password } from '@domain/value-objects/Password.js';
 
 /**
  * BcryptPasswordHasher
  * Infrastructure implementation of IPasswordHasher using bcrypt
- * 
+ *
  * @implements {IPasswordHasher}
  */
 export class BcryptPasswordHasher implements IPasswordHasher {

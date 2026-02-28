@@ -1,7 +1,8 @@
 import { Queue } from 'bullmq';
-import { IMessageBroker } from '@application/ports/IMessageBroker.js';
-import { DomainEvent } from '@domain/events/DomainEvent.js';
+
+import type { IMessageBroker } from '@application/ports/IMessageBroker.js';
 import { env } from '@config/env.js';
+import type { DomainEvent } from '@domain/events/DomainEvent.js';
 
 /**
  * BullMQMessageBroker

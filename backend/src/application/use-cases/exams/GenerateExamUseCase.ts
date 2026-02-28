@@ -13,16 +13,14 @@
  * - Multi-document exams (up to 10 documents)
  */
 
-import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
-import {
-  IExamRepository,
-  CreateQuestionDTO,
-} from '../../../domain/repositories/IExamRepository.js';
-import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
-import { ExamId } from '../../../domain/value-objects/ExamId.js';
-import { AzureOpenAIEmbeddingService } from '../../../infrastructure/ai/AzureOpenAIEmbeddingService.js';
-import { generateExamFlow } from '../../../infrastructure/ai/flows/generateExam.flow.js';
+import { QuestionType, QuestionDifficulty } from '@domain/entities/ExamTypes.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IExamRepository, CreateQuestionDTO } from '@domain/repositories/IExamRepository.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { ExamId } from '@domain/value-objects/ExamId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import type { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
+import { generateExamFlow } from '@infrastructure/ai/flows/generateExam.flow.js';
 
 export interface GenerateExamInput {
   userId: string;
@@ -61,9 +59,9 @@ export class GenerateExamUseCase {
   private static readonly MAX_CHUNKS_PER_DOCUMENT = 20; // Chunks per document for balanced context
 
   constructor(
-    private documentRepository: IDocumentRepository,
-    private examRepository: IExamRepository,
-    private embeddingService: AzureOpenAIEmbeddingService
+    private readonly documentRepository: IDocumentRepository,
+    private readonly examRepository: IExamRepository,
+    private readonly embeddingService: AzureOpenAIEmbeddingService
   ) {}
 
   async execute(input: GenerateExamInput): Promise<GenerateExamOutput> {
@@ -85,11 +83,27 @@ export class GenerateExamUseCase {
 
     // Step 3: Generate questions using GPT-4o (via Genkit flow)
     console.log(`[GenerateExam] Generating ${input.numQuestions} questions with GPT-4o...`);
+    // Map string types to enum types for the flow
+    const difficultyMap: Record<string, QuestionDifficulty> = {
+      EASY: QuestionDifficulty.EASY,
+      MEDIUM: QuestionDifficulty.MEDIUM,
+      HARD: QuestionDifficulty.HARD,
+      MIXED: QuestionDifficulty.MIXED,
+    };
+
+    const questionTypeMap: Record<string, QuestionType> = {
+      MULTIPLE_CHOICE: QuestionType.MULTIPLE_CHOICE,
+      TRUE_FALSE: QuestionType.TRUE_FALSE,
+      SHORT_ANSWER: QuestionType.SHORT_ANSWER,
+    };
+
     const generatedQuestions = await generateExamFlow({
       context,
       numQuestions: input.numQuestions,
-      difficulty: input.difficulty as any,
-      questionTypes: input.questionTypes as any,
+      difficulty: difficultyMap[input.difficulty] || QuestionDifficulty.MEDIUM,
+      questionTypes: input.questionTypes
+        .map((t) => questionTypeMap[t])
+        .filter((t): t is QuestionType => Boolean(t)),
     });
 
     // Step 4: Store exam + questions in database
@@ -107,7 +121,7 @@ export class GenerateExamUseCase {
       sourceChunkIds: [], // TODO: Track which chunks were used
     }));
 
-    const exam = await (this.examRepository as any).createWithQuestions(
+    const exam = await this.examRepository.createWithQuestions(
       {
         userId,
         title: input.title,
@@ -132,7 +146,7 @@ export class GenerateExamUseCase {
         documentCount: input.documentIds.length,
         createdAt: exam.createdAt,
       },
-      questions: (exam.questions || []).map((q: any) => ({
+      questions: (exam.questions || []).map((q) => ({
         id: q.id,
         type: q.type,
         difficulty: q.difficulty,

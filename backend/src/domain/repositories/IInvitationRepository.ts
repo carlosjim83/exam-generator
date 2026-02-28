@@ -1,6 +1,6 @@
-import { Invitation } from '@domain/entities/Invitation.js';
-import { InvitationId } from '@domain/value-objects/InvitationId.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
+import type { Invitation } from '@domain/entities/Invitation.js';
+import type { ClassId } from '@domain/value-objects/ClassId.js';
+import type { InvitationId } from '@domain/value-objects/InvitationId.js';
 
 export interface IInvitationRepository {
   findById(id: InvitationId): Promise<Invitation | null>;

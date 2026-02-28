@@ -11,17 +11,20 @@
  * - Graceful shutdown on SIGTERM/SIGINT
  */
 
-import { Worker, Job } from 'bullmq';
-import { redisConnection } from './redis.connection.js';
+import type { Job } from 'bullmq';
+import { Worker } from 'bullmq';
+
+import { ProcessDocumentUseCase } from '@application/use-cases/documents/ProcessDocumentUseCase.js';
+import { prisma } from '@config/prisma.js';
+import { PrismaDocumentRepository } from '@infrastructure/repositories/PrismaDocumentRepository.js';
+import { AzureBlobStorageService } from '@infrastructure/storage/AzureBlobStorageService.js';
+import { LocalFileStorageService } from '@infrastructure/storage/LocalFileStorageService.js';
+
 import type { DocumentJobData } from './DocumentQueue.js';
 import { documentQueue } from './DocumentQueue.js';
-import { ProcessDocumentUseCase } from '../../application/use-cases/documents/ProcessDocumentUseCase.js';
-import { PrismaDocumentRepository } from '../repositories/PrismaDocumentRepository.js';
-import { AzureBlobStorageService } from '../storage/AzureBlobStorageService.js';
-import { LocalFileStorageService } from '../storage/LocalFileStorageService.js';
-import { prisma } from '../../config/prisma.js';
-import { workerLogger } from './WorkerLogger.js';
+import { redisConnection } from './redis.connection.js';
 import { WorkerHealthService } from './WorkerHealthService.js';
+import { workerLogger } from './WorkerLogger.js';
 
 // Initialize dependencies
 const documentRepository = PrismaDocumentRepository.create(prisma);
@@ -56,25 +59,27 @@ async function processWithTimeout(
   documentId: string,
   userId: string,
   timeoutMs: number = 10 * 60 * 1000 // 10 minutes default
-): Promise<any> {
-  return new Promise(async (resolve, reject) => {
+): Promise<unknown> {
+  return new Promise((resolve, reject) => {
     const timeoutId = setTimeout(() => {
       reject(
         new Error(`Processing timeout: Document ${documentId} exceeded ${timeoutMs / 1000}s limit`)
       );
     }, timeoutMs);
 
-    try {
-      const result = await processDocumentUseCase.execute({
+    processDocumentUseCase
+      .execute({
         documentId,
         userId,
+      })
+      .then((result) => {
+        clearTimeout(timeoutId);
+        resolve(result);
+      })
+      .catch((error) => {
+        clearTimeout(timeoutId);
+        reject(error);
       });
-      clearTimeout(timeoutId);
-      resolve(result);
-    } catch (error) {
-      clearTimeout(timeoutId);
-      reject(error);
-    }
   });
 }
 
@@ -103,13 +108,18 @@ export const documentWorker = new Worker<DocumentJobData>(
 
       const processingTime = Date.now() - startTime;
 
+      // Type assertion for result
+      const processedResult = result as {
+        document: { chunksCreated: number; wordCount: number; pageCount: number };
+      };
+
       workerLogger.jobCompleted(
         job.id!,
         documentId,
         processingTime,
-        result.document.chunksCreated,
-        result.document.wordCount,
-        result.document.pageCount
+        processedResult.document.chunksCreated,
+        processedResult.document.wordCount,
+        processedResult.document.pageCount
       );
 
       return result;
@@ -162,12 +172,18 @@ export const documentWorker = new Worker<DocumentJobData>(
 );
 
 // Event handlers for monitoring
-documentWorker.on('completed', (job: Job<DocumentJobData, any, string>) => {
-  const result = job.returnvalue;
+documentWorker.on('completed', (job: Job<DocumentJobData, unknown, string>) => {
+  const result = job.returnvalue as
+    | { processingTimeMs?: number; document?: { chunksCreated?: number } }
+    | undefined;
   const processingTime = result?.processingTimeMs || 0;
 
   // Track job completion in health service
-  workerHealthService.trackJobProcessed(processingTime);
+  workerHealthService.trackJobProcessed({
+    documentId: job.data.documentId,
+    processingTimeMs: processingTime,
+    success: true,
+  });
 
   workerLogger.debug('Job event: completed', {
     event: 'job.event.completed',
@@ -178,25 +194,28 @@ documentWorker.on('completed', (job: Job<DocumentJobData, any, string>) => {
   });
 });
 
-documentWorker.on('failed', (job: Job<DocumentJobData, any, string> | undefined, error: Error) => {
-  if (!job) {
-    workerLogger.error('Job failed with no job data', {
-      event: 'job.event.failed_no_data',
-      errorMessage: error.message,
-      errorStack: error.stack,
-    });
-    return;
-  }
+documentWorker.on(
+  'failed',
+  (job: Job<DocumentJobData, unknown, string> | undefined, error: Error) => {
+    if (!job) {
+      workerLogger.error('Job failed with no job data', {
+        event: 'job.event.failed_no_data',
+        errorMessage: error.message,
+        errorStack: error.stack,
+      });
+      return;
+    }
 
-  workerLogger.error('Job failed permanently', {
-    event: 'job.event.failed_permanent',
-    jobId: job.id,
-    documentId: job.data.documentId,
-    attemptsMade: job.attemptsMade,
-    maxAttempts: job.opts.attempts,
-    errorMessage: error.message,
-  });
-});
+    workerLogger.error('Job failed permanently', {
+      event: 'job.event.failed_permanent',
+      jobId: job.id,
+      documentId: job.data.documentId,
+      attemptsMade: job.attemptsMade,
+      maxAttempts: job.opts.attempts,
+      errorMessage: error.message,
+    });
+  }
+);
 
 documentWorker.on('active', (job: Job<DocumentJobData>) => {
   const waitTime = Date.now() - job.timestamp;

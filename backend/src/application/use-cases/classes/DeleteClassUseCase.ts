@@ -1,4 +1,4 @@
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 
 export class DeleteClassCommand {
@@ -9,7 +9,7 @@ export class DeleteClassCommand {
 }
 
 export class DeleteClassUseCase {
-  constructor(private classRepository: IClassRepository) {}
+  constructor(private readonly classRepository: IClassRepository) {}
 
   async execute(command: DeleteClassCommand): Promise<void> {
     const classId = new ClassId(command.classId);

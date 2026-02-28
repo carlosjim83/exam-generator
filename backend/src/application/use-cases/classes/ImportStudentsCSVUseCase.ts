@@ -1,11 +1,12 @@
-import { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import { Invitation } from '@domain/entities/Invitation.js';
-import { InvitationId } from '@domain/value-objects/InvitationId.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import { v4 as uuidv4 } from 'uuid';
 import * as CSV from 'csv-parse/sync';
+import { v4 as uuidv4 } from 'uuid';
+
+import { Invitation } from '@domain/entities/Invitation.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
+import { ClassId } from '@domain/value-objects/ClassId.js';
+import { InvitationId } from '@domain/value-objects/InvitationId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 export class ImportStudentsCSVCommand {
   constructor(
@@ -25,8 +26,8 @@ export class CSVImportResult {
 
 export class ImportStudentsCSVUseCase {
   constructor(
-    private invitationRepository: IInvitationRepository,
-    private classRepository: IClassRepository
+    private readonly invitationRepository: IInvitationRepository,
+    private readonly classRepository: IClassRepository
   ) {}
 
   async execute(command: ImportStudentsCSVCommand): Promise<CSVImportResult> {

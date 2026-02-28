@@ -1,14 +1,12 @@
-import { FastifyRequest, FastifyReply } from 'fastify';
-import { container } from '../config/container.js';
+import type { FastifyRequest, FastifyReply } from 'fastify';
+
+import { container } from '@config/container.js';
 
 /**
  * Middleware to authenticate users via JWT
  * Extracts token from Authorization header, validates it, and attaches user to request
  */
-export async function authenticateUser(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function authenticateUser(request: FastifyRequest, reply: FastifyReply) {
   try {
     // Extract Authorization header
     const authHeader = request.headers.authorization;

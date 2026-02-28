@@ -1,8 +1,9 @@
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { Prisma, PrismaClient } from '@prisma/client';
+
 import { Class } from '@domain/entities/Class.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { PrismaClient } from '@prisma/client';
 
 /**
  * PrismaClassRepository
@@ -67,8 +68,8 @@ export class PrismaClassRepository implements IClassRepository {
     const limit = options?.limit || 10;
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: any = {
+    // Build where clause with proper Prisma types
+    const where: Prisma.ClassWhereInput = {
       teacherId: teacherId.toString(),
     };
 
@@ -104,7 +105,7 @@ export class PrismaClassRepository implements IClassRepository {
   }
 
   async existsByCode(code: string, excludeId?: ClassId): Promise<boolean> {
-    const where: any = { code };
+    const where: Prisma.ClassWhereInput = { code };
 
     if (excludeId) {
       where.id = { not: excludeId.toString() };
@@ -133,7 +134,15 @@ export class PrismaClassRepository implements IClassRepository {
   /**
    * Maps Prisma Class record to domain Class entity
    */
-  private toDomain(record: any): Class {
+  private toDomain(record: {
+    id: string;
+    teacherId: string;
+    name: string;
+    code: string;
+    description: string | null;
+    color: string | null;
+    createdAt: Date;
+  }): Class {
     return new Class(
       new ClassId(record.id),
       UserId.create(record.teacherId),

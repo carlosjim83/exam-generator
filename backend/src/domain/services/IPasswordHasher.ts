@@ -1,4 +1,4 @@
-import { Password } from '../value-objects/Password.js';
+import type { Password } from '@domain/value-objects/Password.js';
 
 /**
  * IPasswordHasher Interface (Port)

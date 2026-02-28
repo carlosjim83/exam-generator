@@ -3,10 +3,10 @@
  * Defines contract for exam persistence operations
  */
 
-import { Exam } from '../entities/Exam.js';
-import { ExamId } from '../value-objects/ExamId.js';
-import { UserId } from '../value-objects/UserId.js';
-import { QuestionType, StorableDifficulty } from '../entities/ExamTypes.js';
+import type { Exam } from '@domain/entities/Exam.js';
+import type { QuestionType, StorableDifficulty } from '@domain/entities/ExamTypes.js';
+import type { ExamId } from '@domain/value-objects/ExamId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export interface CreateExamDTO {
   userId: UserId;
@@ -64,4 +64,9 @@ export interface IExamRepository {
    * Count exams by user ID
    */
   countByUserId(userId: string): Promise<number>;
+
+  /**
+   * Create an exam with questions in a transaction
+   */
+  createWithQuestions(examData: CreateExamDTO, questionsData: CreateQuestionDTO[]): Promise<Exam>;
 }

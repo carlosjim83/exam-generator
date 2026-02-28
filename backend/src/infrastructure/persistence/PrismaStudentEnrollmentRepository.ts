@@ -1,9 +1,10 @@
-import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
+import type { Prisma, PrismaClient } from '@prisma/client';
+
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
-import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
+import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { PrismaClient } from '@prisma/client';
 
 /**
  * PrismaStudentEnrollmentRepository
@@ -34,7 +35,7 @@ export class PrismaStudentEnrollmentRepository implements IStudentEnrollmentRepo
     const limit = options?.limit || 10;
     const skip = (page - 1) * limit;
 
-    const where: any = {
+    const where: Prisma.StudentEnrollmentWhereInput = {
       classId: classId.toString(),
     };
 
@@ -138,9 +139,9 @@ export class PrismaStudentEnrollmentRepository implements IStudentEnrollmentRepo
       new EnrollmentId(record.id),
       ClassId.create(record.classId),
       UserId.create(record.studentId),
-      record.isActive,
       record.joinedAt,
-      record.leftAt
+      record.leftAt,
+      record.isActive
     );
   }
 }

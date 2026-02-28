@@ -1,5 +1,5 @@
-import { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface GetDashboardStatsInput {

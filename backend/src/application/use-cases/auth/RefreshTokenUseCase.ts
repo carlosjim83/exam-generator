@@ -1,11 +1,11 @@
-import { UserId } from '../../../domain/value-objects/UserId.js';
-import { IUserRepository } from '../../../domain/repositories/IUserRepository.js';
-import { ITokenService, TokenPair } from '../../../domain/services/ITokenService.js';
+import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import type { ITokenService, TokenPair } from '@domain/services/ITokenService.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * RefreshTokenUseCase
  * Application use case for refreshing JWT access tokens
- * 
+ *
  * Responsibilities:
  * - Validate refresh token
  * - Find user by ID
@@ -40,7 +40,7 @@ export class RefreshTokenUseCase {
     let userId: UserId;
     try {
       userId = UserId.create(decoded.userId);
-    } catch (error) {
+    } catch {
       throw new Error('User not found');
     }
 
@@ -51,11 +51,7 @@ export class RefreshTokenUseCase {
     }
 
     // 4. Generate new token pair
-    const tokens = this.tokenService.generateTokenPair(
-      user.id,
-      user.email,
-      user.role
-    );
+    const tokens = this.tokenService.generateTokenPair(user.id, user.email, user.role);
 
     // 5. Return new tokens
     return { tokens };

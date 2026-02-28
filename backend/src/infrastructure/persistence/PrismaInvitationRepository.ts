@@ -1,10 +1,11 @@
-import { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
+import type { Prisma, PrismaClient } from '@prisma/client';
+
 import type { InvitationStatus } from '@domain/entities/Invitation.js';
 import { Invitation } from '@domain/entities/Invitation.js';
-import { InvitationId } from '@domain/value-objects/InvitationId.js';
+import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
+import { InvitationId } from '@domain/value-objects/InvitationId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { PrismaClient } from '@prisma/client';
 
 type InvitationRecord = {
   id: string;
@@ -58,7 +59,7 @@ export class PrismaInvitationRepository implements IInvitationRepository {
     };
 
     if (options?.status) {
-      (where as any).status = options.status;
+      (where as Prisma.InvitationWhereInput).status = options.status;
     }
 
     const total = await this.prisma.invitation.count({ where });

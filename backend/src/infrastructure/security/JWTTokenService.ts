@@ -1,20 +1,21 @@
 import jwt from 'jsonwebtoken';
-import { 
-  ITokenService, 
-  TokenPair, 
-  DecodedToken, 
+
+import { env } from '@config/env.js';
+import type { UserRole } from '@domain/entities/User.js';
+import type {
+  ITokenService,
+  TokenPair,
+  DecodedToken,
   DecodedRefreshToken,
-  TokenPayload 
-} from '../../domain/services/ITokenService.js';
-import { UserId } from '../../domain/value-objects/UserId.js';
-import { Email } from '../../domain/value-objects/Email.js';
-import { UserRole } from '../../domain/entities/User.js';
-import { env } from '../../config/env.js';
+  TokenPayload,
+} from '@domain/services/ITokenService.js';
+import type { Email } from '@domain/value-objects/Email.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * JWTTokenService
  * Infrastructure implementation of ITokenService using jsonwebtoken
- * 
+ *
  * @implements {ITokenService}
  */
 export class JWTTokenService implements ITokenService {
@@ -53,18 +54,14 @@ export class JWTTokenService implements ITokenService {
     };
 
     // Generate access token (short-lived, contains user info)
-    const accessToken = jwt.sign(
-      payload,
-      this.accessTokenSecret,
-      { expiresIn: this.accessTokenExpiresIn as any }
-    );
+    const accessToken = jwt.sign(payload, this.accessTokenSecret, {
+      expiresIn: this.accessTokenExpiresIn as any,
+    });
 
     // Generate refresh token (long-lived, minimal info)
-    const refreshToken = jwt.sign(
-      { userId: userId.value },
-      this.refreshTokenSecret,
-      { expiresIn: this.refreshTokenExpiresIn as any }
-    );
+    const refreshToken = jwt.sign({ userId: userId.value }, this.refreshTokenSecret, {
+      expiresIn: this.refreshTokenExpiresIn as any,
+    });
 
     return { accessToken, refreshToken };
   }
@@ -78,7 +75,7 @@ export class JWTTokenService implements ITokenService {
   verifyAccessToken(token: string): DecodedToken {
     try {
       const decoded = jwt.verify(token, this.accessTokenSecret) as DecodedToken;
-      
+
       // Validate required fields exist
       if (!decoded.userId || !decoded.email || !decoded.role) {
         throw new Error('Invalid token payload: missing required fields');
@@ -106,7 +103,7 @@ export class JWTTokenService implements ITokenService {
   verifyRefreshToken(token: string): DecodedRefreshToken {
     try {
       const decoded = jwt.verify(token, this.refreshTokenSecret) as DecodedRefreshToken;
-      
+
       // Validate required fields exist
       if (!decoded.userId) {
         throw new Error('Invalid refresh token payload: missing userId');

@@ -13,25 +13,7 @@
 import { PrismaClient } from '@prisma/client';
 
 // Infrastructure
-import {
-  PrismaUserRepository,
-  PrismaDocumentRepository,
-  BcryptPasswordHasher,
-  JWTTokenService,
-  AzureBlobStorageService,
-  LocalFileStorageService,
-  TextExtractorService,
-  BullMQMessageBroker, // Added
-  PrismaClassRepository,
-  PrismaStudentEnrollmentRepository,
-  PrismaInvitationRepository,
-} from '../infrastructure/index.js';
-import { PrismaExamRepository } from '../infrastructure/repositories/PrismaExamRepository.js';
-import { PrismaExamAssignmentRepository } from '../infrastructure/repositories/PrismaExamAssignmentRepository.js';
-import { PrismaStudentAnswerRepository } from '../infrastructure/repositories/PrismaStudentAnswerRepository.js';
-import { AzureOpenAIEmbeddingService } from '../infrastructure/ai/AzureOpenAIEmbeddingService.js';
-
-// Application Use Cases
+import type { IMessageBroker } from '@application/ports/IMessageBroker.js'; // Added
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
@@ -65,31 +47,43 @@ import {
   ResendInvitationUseCase, // Added
   RemoveStudentFromClassUseCase, // Added
   GetStudentClassesUseCase, // Added
-} from '../application/use-cases/index.js';
-
+} from '@application/use-cases/index.js';
+// Application Use Cases
 // Student Use Cases
-import { AssignExamToStudentUseCase } from '../application/use-cases/student/AssignExamToStudentUseCase.js';
-import { GetAssignedExamsUseCase } from '../application/use-cases/student/GetAssignedExamsUseCase.js';
-import { StartExamUseCase } from '../application/use-cases/student/StartExamUseCase.js';
-import { SubmitExamAnswersUseCase } from '../application/use-cases/student/SubmitExamAnswersUseCase.js';
-import { GetExamResultsUseCase } from '../application/use-cases/student/GetExamResultsUseCase.js';
-
-// Domain Interfaces (for type safety)
-import type { IUserRepository } from '../domain/repositories/IUserRepository.js';
-import type { IDocumentRepository } from '../domain/repositories/IDocumentRepository.js';
-import type { IExamRepository } from '../domain/repositories/IExamRepository.js';
-import type { IExamAssignmentRepository } from '../domain/repositories/IExamAssignmentRepository.js';
-import type { IStudentAnswerRepository } from '../domain/repositories/IStudentAnswerRepository.js';
-import type { IPasswordHasher } from '../domain/services/IPasswordHasher.js';
-import type { ITokenService } from '../domain/services/ITokenService.js';
-import type { IStorageService } from '../domain/services/IStorageService.js';
-import type { ITextExtractor } from '../domain/services/ITextExtractor.js';
-import type { IMessageBroker } from '../application/ports/IMessageBroker.js'; // Added
-
-// Classes & Invitations Repositories
-import type { IClassRepository } from '../domain/repositories/IClassRepository.js';
-import type { IStudentEnrollmentRepository } from '../domain/repositories/IStudentEnrollmentRepository.js';
-import type { IInvitationRepository } from '../domain/repositories/IInvitationRepository.js';
+import { AssignExamToStudentUseCase } from '@application/use-cases/student/AssignExamToStudentUseCase.js';
+import { GetAssignedExamsUseCase } from '@application/use-cases/student/GetAssignedExamsUseCase.js';
+import { GetExamResultsUseCase } from '@application/use-cases/student/GetExamResultsUseCase.js';
+import { StartExamUseCase } from '@application/use-cases/student/StartExamUseCase.js';
+import { SubmitExamAnswersUseCase } from '@application/use-cases/student/SubmitExamAnswersUseCase.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
+import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
+import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
+import type { IStorageService } from '@domain/services/IStorageService.js';
+import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
+import type { ITokenService } from '@domain/services/ITokenService.js';
+import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
+import {
+  PrismaUserRepository,
+  PrismaDocumentRepository,
+  BcryptPasswordHasher,
+  JWTTokenService,
+  AzureBlobStorageService,
+  LocalFileStorageService,
+  TextExtractorService,
+  BullMQMessageBroker, // Added
+  PrismaClassRepository,
+  PrismaStudentEnrollmentRepository,
+  PrismaInvitationRepository,
+} from '@infrastructure/index.js';
+import { PrismaExamAssignmentRepository } from '@infrastructure/repositories/PrismaExamAssignmentRepository.js';
+import { PrismaExamRepository } from '@infrastructure/repositories/PrismaExamRepository.js';
+import { PrismaStudentAnswerRepository } from '@infrastructure/repositories/PrismaStudentAnswerRepository.js';
 
 /**
  * Container class - Singleton pattern
@@ -375,7 +369,7 @@ export class Container {
     if (Container.instance) {
       Container.instance._prisma.$disconnect();
     }
-    // @ts-ignore - Force reset for testing
+    // @ts-expect-error - Force reset for testing
     Container.instance = undefined;
   }
 

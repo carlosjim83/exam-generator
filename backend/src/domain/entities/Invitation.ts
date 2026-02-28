@@ -1,6 +1,6 @@
-import { InvitationId } from '@domain/value-objects/InvitationId.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import type { ClassId } from '@domain/value-objects/ClassId.js';
+import type { InvitationId } from '@domain/value-objects/InvitationId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export type InvitationStatus = 'PENDING' | 'ACCEPTED' | 'EXPIRED' | 'REVOKED';
 

@@ -1,6 +1,6 @@
-import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import type { ClassId } from '@domain/value-objects/ClassId.js';
+import type { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
+import type { UserId } from '@domain/value-objects/UserId.js';
 
 export class StudentEnrollment {
   readonly id: EnrollmentId;
@@ -16,7 +16,7 @@ export class StudentEnrollment {
     studentId: UserId,
     joinedAt: Date = new Date(),
     leftAt: Date | null = null,
-    isActive: boolean = true
+    isActive = true
   ) {
     this.id = id;
     this.classId = classId;

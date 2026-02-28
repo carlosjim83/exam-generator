@@ -1,8 +1,8 @@
-import {
+import type { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
+import type {
   IExamAssignmentRepository,
   FindAssignmentsFilters,
 } from '@domain/repositories/IExamAssignmentRepository.js';
-import { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface GetAssignedExamsInput {
@@ -16,7 +16,7 @@ export interface GetAssignedExamsOutput {
 }
 
 export class GetAssignedExamsUseCase {
-  constructor(private assignmentRepo: IExamAssignmentRepository) {}
+  constructor(private readonly assignmentRepo: IExamAssignmentRepository) {}
 
   async execute(input: GetAssignedExamsInput): Promise<GetAssignedExamsOutput> {
     // Validate studentId

@@ -1,7 +1,8 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+
 import { container } from '@config/container.js';
-import { authenticateUser } from '@middleware/auth.middleware.js';
 import { queueDocumentProcessing, retryFailedJob } from '@infrastructure/queue/DocumentQueue.js';
+import { authenticateUser } from '@middleware/auth.middleware.js';
 
 export async function documentRoutes(fastify: FastifyInstance) {
   // POST /api/documents/upload - Upload a document (PDF or DOCX)

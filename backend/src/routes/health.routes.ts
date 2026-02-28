@@ -1,6 +1,7 @@
-import { FastifyInstance } from 'fastify';
-import { getWorkerMetrics, getJobMetrics } from '@infrastructure/queue/WorkerMetrics.js';
+import type { FastifyInstance } from 'fastify';
+
 import { workerHealthService } from '@infrastructure/queue/DocumentWorker.js';
+import { getWorkerMetrics, getJobMetrics } from '@infrastructure/queue/WorkerMetrics.js';
 
 /**
  * Health check routes for monitoring system status

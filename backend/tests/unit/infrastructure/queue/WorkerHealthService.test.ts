@@ -119,9 +119,10 @@ describe('WorkerHealthService - Unit Tests', () => {
       expect(health.uptime).toBeGreaterThan(0);
     });
 
-    it('should return degraded status when failure rate exceeds threshold (>10%)', async () => {
-      // Arrange: Moderate failure rate between 10% and 30%
+    it('should return healthy status with moderate failure rate if worker is online (failure rate is informational)', async () => {
+      // Arrange: Moderate failure rate but worker is registered
       await healthService.trackWorkerStart(); // Worker must be online
+
       vi.mocked(mockQueue.getJobCounts).mockResolvedValue({
         waiting: 0,
         active: 0,
@@ -137,10 +138,11 @@ describe('WorkerHealthService - Unit Tests', () => {
       // Act
       const health = await healthService.getHealth();
 
-      // Assert
-      expect(health.status).toBe('degraded');
+      // Assert: Worker is healthy because it's online
+      // Failure rate reported for informational purposes
+      expect(health.status).toBe('healthy');
       expect(health.failedJobs).toBe(20);
-      expect(health.failureRate).toBeCloseTo(0.2, 2); // 20/(80+20) = 20% (between 10% and 30%)
+      expect(health.failureRate).toBeCloseTo(0.2, 2); // 20/(80+20) = 20%
     });
 
     it('should return unhealthy status when no active jobs and high waiting count (>50)', async () => {
@@ -167,26 +169,32 @@ describe('WorkerHealthService - Unit Tests', () => {
       expect(health.isWorkerOnline).toBe(false); // No active processing
     });
 
-    it('should return unhealthy status when failure rate is critical (>30%)', async () => {
-      // Arrange: Critical failure rate
+    it('should return healthy status with high failure rate if worker is online (failure rate is informational)', async () => {
+      // Arrange: High failure rate but worker is registered
+      await healthService.trackWorkerStart(); // Worker is online
+
       vi.mocked(mockQueue.getJobCounts).mockResolvedValue({
         waiting: 0,
-        active: 0,
-        completed: 10,
-        failed: 10,
+        active: 1,
+        completed: 1,
+        failed: 14,
         delayed: 0,
         paused: 0,
       });
 
-      vi.mocked(mockQueue.getActive).mockResolvedValue([]);
-      vi.mocked(mockQueue.getFailed).mockResolvedValue(Array(10).fill({} as any));
+      vi.mocked(mockQueue.getActive).mockResolvedValue([
+        { id: 'job-1', data: { documentId: 'doc-1' } } as any,
+      ]);
+      vi.mocked(mockQueue.getFailed).mockResolvedValue(Array(14).fill({} as any));
 
       // Act
       const health = await healthService.getHealth();
 
-      // Assert
-      expect(health.status).toBe('unhealthy');
-      expect(health.failureRate).toBeCloseTo(0.5, 2); // 10/(10+10) = 50%
+      // Assert: Worker is healthy because it's online and processing
+      // Failure rate is informational, not a health indicator
+      expect(health.status).toBe('healthy');
+      expect(health.failureRate).toBeCloseTo(0.9333, 2); // 14/(1+14) = 93%
+      expect(health.isWorkerOnline).toBe(true);
     });
 
     it('should return unhealthy status when no recent activity (>5 minutes)', async () => {
@@ -471,18 +479,20 @@ describe('WorkerHealthService - Unit Tests', () => {
     });
 
     it('should return false for degraded status', async () => {
-      // Arrange
+      // Arrange: Moderate queue backlog causes degraded
+      await healthService.trackWorkerStart(); // Worker must be online to potentially be degraded
+
       vi.mocked(mockQueue.getJobCounts).mockResolvedValue({
-        waiting: 0,
+        waiting: 25, // > DEGRADED_QUEUE_BACKLOG (20) but < CRITICAL (50)
         active: 0,
         completed: 10,
-        failed: 5,
+        failed: 0,
         delayed: 0,
         paused: 0,
       });
 
       vi.mocked(mockQueue.getActive).mockResolvedValue([]);
-      vi.mocked(mockQueue.getFailed).mockResolvedValue(Array(5).fill({} as any));
+      vi.mocked(mockQueue.getFailed).mockResolvedValue([]);
 
       // Act
       const isHealthy = await healthService.isHealthy();

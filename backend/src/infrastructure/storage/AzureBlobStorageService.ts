@@ -1,10 +1,11 @@
 import { BlobServiceClient } from '@azure/storage-blob';
-import {
+
+import { env } from '@config/env.js';
+import type {
   IStorageService,
   FileValidationResult,
   FileMetadata,
-} from '../../domain/services/IStorageService.js';
-import { env } from '../../config/env.js';
+} from '@domain/services/IStorageService.js';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIMETYPES = [

@@ -20,7 +20,9 @@ export default function JoinClassPage() {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [validating, setValidating] = useState(false);
-  const [classInfo, setClassInfo] = useState<{ name: string; teacher: string } | null>(null);
+  const [classInfo, setClassInfo] = useState<{ id: string; name: string; teacher: string } | null>(
+    null
+  );
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -34,11 +36,23 @@ export default function JoinClassPage() {
     setError('');
 
     try {
-      const data = await apiClient.publicRequest<{ name: string; teacherName: string }>(
+      interface ClassValidationResponse {
+        class: {
+          id: string;
+          name: string;
+          code: string;
+          description: string | null;
+          color: string | null;
+        };
+        teacherName: string;
+      }
+
+      const data = await apiClient.get<ClassValidationResponse>(
         `/api/classes/code/${encodeURIComponent(code.trim())}`
       );
       setClassInfo({
-        name: data.name,
+        id: data.class.id,
+        name: data.class.name,
         teacher: data.teacherName,
       });
     } catch (err) {
@@ -56,7 +70,7 @@ export default function JoinClassPage() {
     setError('');
 
     try {
-      await apiClient.post(`/api/classes/${code.trim()}/join`, {});
+      await apiClient.post(`/api/classes/${classInfo.id}/join`, {});
       setSuccess(true);
       setCode('');
       setClassInfo(null);

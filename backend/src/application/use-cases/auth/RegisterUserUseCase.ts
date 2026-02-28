@@ -1,14 +1,15 @@
-import { UserRole, AuthProvider } from '../../../domain/entities/User.js';
-import { Email } from '../../../domain/value-objects/Email.js';
-import { Password } from '../../../domain/value-objects/Password.js';
-import { IUserRepository } from '../../../domain/repositories/IUserRepository.js';
-import { IPasswordHasher } from '../../../domain/services/IPasswordHasher.js';
-import { ITokenService, TokenPair } from '../../../domain/services/ITokenService.js';
+import type { UserRole } from '@domain/entities/User.js';
+import { AuthProvider } from '@domain/entities/User.js';
+import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
+import type { ITokenService, TokenPair } from '@domain/services/ITokenService.js';
+import { Email } from '@domain/value-objects/Email.js';
+import { Password } from '@domain/value-objects/Password.js';
 
 /**
  * RegisterUserUseCase
  * Application use case for user registration
- * 
+ *
  * Responsibilities:
  * - Validate input data (via value objects)
  * - Check if email already exists

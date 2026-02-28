@@ -1,12 +1,13 @@
-import { IDocumentRepository } from '../../../domain/repositories/IDocumentRepository.js';
-import { IStorageService } from '../../../domain/services/IStorageService.js';
-import { DocumentId } from '../../../domain/value-objects/DocumentId.js';
-import { DocumentStatus } from '../../../domain/entities/Document.js';
-import { UserId } from '../../../domain/value-objects/UserId.js';
-import { processDocumentFlow } from '../../../infrastructure/ai/flows/processDocument.flow.js';
-import { writeFile, unlink, mkdir } from 'fs/promises';
-import path from 'path';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
+import { writeFile, unlink, mkdir } from 'node:fs/promises';
+import path from 'node:path';
+
+import { DocumentStatus } from '@domain/entities/Document.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IStorageService } from '@domain/services/IStorageService.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import { processDocumentFlow } from '@infrastructure/ai/flows/processDocument.flow.js';
 
 /**
  * ProcessDocumentUseCase
@@ -55,10 +56,11 @@ export class ProcessDocumentUseCase {
   async execute(input: ProcessDocumentInput): Promise<ProcessDocumentOutput> {
     const startTime = Date.now();
     let tempFilePath: string | null = null;
+    let documentId: DocumentId | null = null;
 
     try {
       // 1. Validate input
-      const documentId = DocumentId.create(input.documentId);
+      documentId = DocumentId.create(input.documentId);
       const userId = UserId.create(input.userId);
 
       // 2. Find document and verify ownership
@@ -74,8 +76,7 @@ export class ProcessDocumentUseCase {
       // 3. Check if already processed (idempotent)
       if (document.isCompleted()) {
         // Count existing chunks
-        const { getChunkCount } =
-          await import('../../../infrastructure/ai/indexers/pgvector.indexer.js');
+        const { getChunkCount } = await import('@infrastructure/ai/indexers/pgvector.indexer.js');
         const chunksCreated = await getChunkCount(documentId.value);
 
         return {
@@ -155,11 +156,12 @@ export class ProcessDocumentUseCase {
 
       // For other errors, update status to FAILED
       try {
-        const documentId = DocumentId.create(input.documentId);
-        await this.documentRepository.updateStatus(documentId, {
-          status: DocumentStatus.FAILED,
-          errorMessage,
-        });
+        if (documentId) {
+          await this.documentRepository.updateStatus(documentId, {
+            status: DocumentStatus.FAILED,
+            errorMessage,
+          });
+        }
       } catch (updateError) {
         // If update fails, ignore (document might have been deleted)
         console.error('Failed to update document status:', updateError);

@@ -153,9 +153,9 @@ export default function StudentClassesPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="text-lg">{cls.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <div className="text-sm text-muted-foreground mt-1">
                       {t('classes.code')}: <Badge variant="secondary">{cls.code}</Badge>
-                    </p>
+                    </div>
                   </div>
                   <div
                     className="h-10 w-10 rounded-full flex items-center justify-center text-sm font-bold"
