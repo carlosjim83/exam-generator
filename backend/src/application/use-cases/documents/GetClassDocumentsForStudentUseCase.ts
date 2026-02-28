@@ -1,7 +1,7 @@
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
-import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 

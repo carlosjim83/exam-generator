@@ -1,8 +1,8 @@
-import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
-import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { ClassDocument } from '@domain/entities/ClassDocument.js';
 import { DocumentStatus } from '@domain/entities/Document.js';
+import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import { ClassDocumentId } from '@domain/value-objects/ClassDocumentId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';

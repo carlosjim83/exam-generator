@@ -1,9 +1,9 @@
+import { DocumentStatus } from '@domain/entities/Document.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { DocumentStatus } from '@domain/entities/Document.js';
 
 export interface GetDocumentDownloadUrlInput {
   documentId: string;

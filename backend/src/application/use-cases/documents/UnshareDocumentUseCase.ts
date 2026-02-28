@@ -1,6 +1,6 @@
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
-import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';

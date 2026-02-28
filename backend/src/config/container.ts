@@ -14,6 +14,10 @@ import { PrismaClient } from '@prisma/client';
 
 // Infrastructure
 import type { IMessageBroker } from '@application/ports/IMessageBroker.js'; // Added
+import { GetClassDocumentsForStudentUseCase } from '@application/use-cases/documents/GetClassDocumentsForStudentUseCase.js';
+import { GetDocumentDownloadUrlUseCase } from '@application/use-cases/documents/GetDocumentDownloadUrlUseCase.js';
+import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/ShareDocumentWithClassUseCase.js';
+import { UnshareDocumentUseCase } from '@application/use-cases/documents/UnshareDocumentUseCase.js';
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
@@ -49,10 +53,6 @@ import {
   GetStudentClassesUseCase, // Added
 } from '@application/use-cases/index.js';
 // Class Document Use Cases
-import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/ShareDocumentWithClassUseCase.js';
-import { UnshareDocumentUseCase } from '@application/use-cases/documents/UnshareDocumentUseCase.js';
-import { GetClassDocumentsForStudentUseCase } from '@application/use-cases/documents/GetClassDocumentsForStudentUseCase.js';
-import { GetDocumentDownloadUrlUseCase } from '@application/use-cases/documents/GetDocumentDownloadUrlUseCase.js';
 // Application Use Cases
 // Student Use Cases
 import { AssignExamToStudentUseCase } from '@application/use-cases/student/AssignExamToStudentUseCase.js';
@@ -60,6 +60,7 @@ import { GetAssignedExamsUseCase } from '@application/use-cases/student/GetAssig
 import { GetExamResultsUseCase } from '@application/use-cases/student/GetExamResultsUseCase.js';
 import { StartExamUseCase } from '@application/use-cases/student/StartExamUseCase.js';
 import { SubmitExamAnswersUseCase } from '@application/use-cases/student/SubmitExamAnswersUseCase.js';
+import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
@@ -68,7 +69,6 @@ import type { IInvitationRepository } from '@domain/repositories/IInvitationRepo
 import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
-import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
 import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
