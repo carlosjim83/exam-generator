@@ -9,6 +9,7 @@ import { env, validateEnv } from './config/env.js';
 import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { classRoutes } from './routes/class.routes.js';
+import { classExamRoutes } from './routes/class-exam.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import { examRoutes } from './routes/exam.routes.js';
@@ -154,6 +155,14 @@ await fastify.register(swagger, {
         description: 'Class creation and management',
       },
       {
+        name: 'class-exams',
+        description: 'Class exam management and student assignments',
+      },
+      {
+        name: 'class-documents',
+        description: 'Document sharing with classes',
+      },
+      {
         name: 'invitations',
         description: 'Class invitations and enrollment',
       },
@@ -210,6 +219,7 @@ await fastify.register(studentRoutes);
 await fastify.register(dashboardRoutes);
 await fastify.register(protectedRoutes);
 await fastify.register(classRoutes);
+await fastify.register(classExamRoutes);
 
 // Legacy health check endpoint (kept for backwards compatibility)
 fastify.get('/health-legacy', async () => {
