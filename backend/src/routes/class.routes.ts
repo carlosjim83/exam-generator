@@ -756,6 +756,117 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
+  // GET /api/classes/:classId/documents - Get documents shared with a class (for students)
+  fastify.get(
+    '/api/classes/:classId/documents',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['classes'],
+        summary: 'Get class documents',
+        description: 'Get all documents shared with a class (students only see visible documents)',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              class: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  name: { type: 'string' },
+                  description: { type: 'string', nullable: true },
+                },
+              },
+              documents: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    documentId: { type: 'string', format: 'uuid' },
+                    title: { type: 'string' },
+                    filename: { type: 'string' },
+                    fileSize: { type: 'number' },
+                    mimeType: { type: 'string' },
+                    isVisible: { type: 'boolean' },
+                    publishedAt: { type: 'string', format: 'date-time', nullable: true },
+                    orderIndex: { type: 'number' },
+                  },
+                },
+              },
+            },
+          },
+          403: {
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+
+      try {
+        const result = await container.getClassDocumentsForStudentUseCase.execute({
+          classId,
+          studentId: userId,
+        });
+
+        reply.status(200).send({
+          class: result.class,
+          documents: result.documents.map((doc) => ({
+            id: doc.id,
+            documentId: doc.documentId,
+            title: doc.title,
+            filename: doc.filename,
+            fileSize: doc.fileSize,
+            mimeType: doc.mimeType,
+            isVisible: doc.isVisible,
+            publishedAt: doc.publishedAt?.toISOString() ?? null,
+            orderIndex: doc.orderIndex,
+          })),
+        });
+      } catch (error: any) {
+        if (error.message === 'Class not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Class not found',
+          });
+        }
+        if (error.message.includes('not enrolled')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: 'You are not enrolled in this class',
+          });
+        }
+        throw error;
+      }
+    }
+  );
+
   // GET /api/student/classes - Get enrolled classes for student
   fastify.get(
     '/api/student/classes',

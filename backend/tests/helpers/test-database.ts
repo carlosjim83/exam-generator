@@ -6,9 +6,16 @@ import { randomUUID } from 'crypto';
  * Provides utilities for managing test database state
  */
 
+// Use TEST_DATABASE_URL for tests, fallback to DATABASE_URL
+const testDatabaseUrl = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
+
+if (!testDatabaseUrl) {
+  throw new Error('TEST_DATABASE_URL or DATABASE_URL must be set for tests');
+}
+
 // Create a separate Prisma client for tests
 export const testDb = new PrismaClient({
-  datasourceUrl: process.env.DATABASE_URL, // Uses TEST database in CI/local
+  datasourceUrl: testDatabaseUrl,
   log: process.env.DEBUG_TESTS === 'true' ? ['query', 'error'] : ['error'],
 });
 

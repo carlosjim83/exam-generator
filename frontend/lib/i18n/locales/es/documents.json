@@ -32,5 +32,24 @@
   "totalDocuments": "Total de Documentos",
   "noDocumentsFound": "No se encontraron documentos",
   "adjustSearch": "Intenta ajustar tu búsqueda",
-  "processingFor": "Procesando por {{minutes}}m"
+  "processingFor": "Procesando por {{minutes}}m",
+  "share": {
+    "title": "Compartir Documento",
+    "description": "Compartir \"{{title}}\" con tus clases",
+    "shareButton": "Compartir con {{count}} clase",
+    "shareButton_other": "Compartir con {{count}} clases",
+    "makeVisible": "Hacer visible para estudiantes inmediatamente",
+    "visibleHint": "Si no está marcado, los estudiantes no verán el documento hasta que lo publiques",
+    "cancel": "Cancelar",
+    "alreadyShared": "Ya compartido",
+    "students": "estudiantes",
+    "noClasses": "Aún no tienes clases. Crea una clase primero para compartir documentos.",
+    "success": "Documento compartido con {{count}} clase exitosamente",
+    "success_other": "Documento compartido con {{count}} clases exitosamente",
+    "errors": {
+      "loadClassesFailed": "Error al cargar las clases",
+      "noClassesSelected": "Por favor selecciona al menos una clase",
+      "shareFailed": "Error al compartir el documento"
+    }
+  }
 }

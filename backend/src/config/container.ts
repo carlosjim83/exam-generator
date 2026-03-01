@@ -16,6 +16,7 @@ import { PrismaClient } from '@prisma/client';
 import type { IMessageBroker } from '@application/ports/IMessageBroker.js'; // Added
 import { GetClassDocumentsForStudentUseCase } from '@application/use-cases/documents/GetClassDocumentsForStudentUseCase.js';
 import { GetDocumentDownloadUrlUseCase } from '@application/use-cases/documents/GetDocumentDownloadUrlUseCase.js';
+import { GetDocumentSharesUseCase } from '@application/use-cases/documents/GetDocumentSharesUseCase.js';
 import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/ShareDocumentWithClassUseCase.js';
 import { UnshareDocumentUseCase } from '@application/use-cases/documents/UnshareDocumentUseCase.js';
 import {
@@ -166,6 +167,7 @@ export class Container {
   private readonly _unshareDocumentUseCase: UnshareDocumentUseCase;
   private readonly _getClassDocumentsForStudentUseCase: GetClassDocumentsForStudentUseCase;
   private readonly _getDocumentDownloadUrlUseCase: GetDocumentDownloadUrlUseCase;
+  private readonly _getDocumentSharesUseCase: GetDocumentSharesUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -364,6 +366,11 @@ export class Container {
       this._documentRepository,
       this._classDocumentRepository,
       this._studentEnrollmentRepository
+    );
+    this._getDocumentSharesUseCase = new GetDocumentSharesUseCase(
+      this._classDocumentRepository,
+      this._documentRepository,
+      this._classRepository
     );
 
     // Student Use Cases
@@ -639,6 +646,10 @@ export class Container {
 
   public get getDocumentDownloadUrlUseCase(): GetDocumentDownloadUrlUseCase {
     return this._getDocumentDownloadUrlUseCase;
+  }
+
+  public get getDocumentSharesUseCase(): GetDocumentSharesUseCase {
+    return this._getDocumentSharesUseCase;
   }
 
   /**

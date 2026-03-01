@@ -32,5 +32,24 @@
   "totalDocuments": "Total Documents",
   "noDocumentsFound": "No documents found",
   "adjustSearch": "Try adjusting your search query",
-  "processingFor": "Processing for {{minutes}}m"
+  "processingFor": "Processing for {{minutes}}m",
+  "share": {
+    "title": "Share Document",
+    "description": "Share \"{{title}}\" with your classes",
+    "shareButton": "Share with {{count}} class",
+    "shareButton_other": "Share with {{count}} classes",
+    "makeVisible": "Make visible to students immediately",
+    "visibleHint": "If unchecked, students won't see the document until you publish it",
+    "cancel": "Cancel",
+    "alreadyShared": "Already shared",
+    "students": "students",
+    "noClasses": "You don't have any classes yet. Create a class first to share documents.",
+    "success": "Document shared with {{count}} class successfully",
+    "success_other": "Document shared with {{count}} classes successfully",
+    "errors": {
+      "loadClassesFailed": "Failed to load classes",
+      "noClassesSelected": "Please select at least one class",
+      "shareFailed": "Failed to share document"
+    }
+  }
 }

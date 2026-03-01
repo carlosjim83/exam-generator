@@ -10,6 +10,7 @@ import { ArrowLeft, Users, BookOpen, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
+import { ClassDocuments } from '@/features/classes/components/ClassDocuments';
 
 interface StudentClassDetailPageProps {
   params: Promise<{
@@ -172,9 +173,7 @@ export default function StudentClassDetailPage({ params }: StudentClassDetailPag
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  {t('classDetails.noMaterials')}
-                </p>
+                <ClassDocuments classId={classId} />
               </CardContent>
             </Card>
           </div>

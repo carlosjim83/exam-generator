@@ -1,10 +1,23 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
+import dotenv from 'dotenv';
+import { existsSync } from 'fs';
+
+// Load .env.test FIRST (it overrides DATABASE_URL for tests)
+// Then load .env for other variables that .env.test doesn't define
+const envTestPath = path.resolve(__dirname, '.env.test');
+if (existsSync(envTestPath)) {
+  dotenv.config({ path: envTestPath, override: true });
+}
+dotenv.config({ path: path.resolve(__dirname, '.env'), override: false });
 
 export default defineConfig({
   test: {
     // Test environment
     environment: 'node',
+
+    // Global setup - runs ONCE before all tests to setup database
+    globalSetup: ['./tests/global-setup.ts'],
 
     // Global setup and teardown
     globals: true,

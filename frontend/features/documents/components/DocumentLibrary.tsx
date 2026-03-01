@@ -19,11 +19,17 @@ import {
   XCircle,
   Clock,
   RefreshCw,
+  Share2,
 } from 'lucide-react';
 import { ApiDocumentService } from '@/lib/services/api-document.service';
+import {
+  getDocumentShares,
+  type DocumentSharedWith,
+} from '@/lib/services/api-class-documents.service';
 import type { Document } from '@/lib/types/dashboard.types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { DeleteDocumentDialog } from './DeleteDocumentDialog';
+import { ShareDocumentModal } from './ShareDocumentModal';
 
 function DocumentIcon({ mimeType }: { mimeType: string }) {
   if (mimeType === 'application/pdf') {
@@ -97,16 +103,48 @@ export function DocumentLibrary() {
   // Download loading state
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
 
+  // Share modal state
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [documentToShare, setDocumentToShare] = useState<{ id: string; title: string } | null>(
+    null
+  );
+  const [documentShares, setDocumentShares] = useState<Map<string, DocumentSharedWith[]>>(
+    new Map()
+  );
+
   const fetchDocuments = async () => {
     try {
       setLoading(true);
       const docs = await documentService.listDocuments();
       setDocuments(docs);
+      // Load shares for completed documents
+      loadDocumentShares(docs);
     } catch (error) {
       console.error('Failed to fetch documents:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadDocumentShares = async (docs: Document[]) => {
+    // Only load shares for completed documents
+    const completedDocs = docs.filter((doc) => doc.status === 'COMPLETED');
+    const sharesMap = new Map<string, DocumentSharedWith[]>();
+
+    await Promise.all(
+      completedDocs.map(async (doc) => {
+        try {
+          const result = await getDocumentShares(doc.id);
+          if (result) {
+            sharesMap.set(doc.id, result.sharedWith);
+          }
+        } catch {
+          // Ignore errors - shares just won't be loaded
+        }
+      })
+    );
+
+    setDocumentShares(sharesMap);
   };
 
   useEffect(() => {
@@ -172,6 +210,16 @@ export function DocumentLibrary() {
         return newSet;
       });
     }
+  };
+
+  const handleShare = async (documentId: string, title: string) => {
+    setDocumentToShare({ id: documentId, title });
+    setShareModalOpen(true);
+  };
+
+  const handleShareSuccess = async () => {
+    // Refresh documents to update share counts
+    await fetchDocuments();
   };
 
   const filteredDocuments = documents.filter((doc) =>
@@ -322,6 +370,29 @@ export function DocumentLibrary() {
                           {t('documents:retry')}
                         </Button>
                       )}
+                      {doc.status === 'COMPLETED' && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleShare(doc.id, doc.title)}
+                              >
+                                <Share2 className="mr-2 h-4 w-4" />
+                                {documentShares.get(doc.id)?.length ? (
+                                  <Badge variant="secondary" className="ml-1 px-1.5 py-0 text-xs">
+                                    {documentShares.get(doc.id)?.length}
+                                  </Badge>
+                                ) : null}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{t('documents:share.title')}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                       <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -363,9 +434,6 @@ export function DocumentLibrary() {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
-                      <Button variant="ghost" size="icon">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -383,6 +451,18 @@ export function DocumentLibrary() {
         documentTitle={documentToDelete?.title || ''}
         isDeleting={isDeleting}
       />
+
+      {/* Share Document Modal */}
+      {documentToShare && (
+        <ShareDocumentModal
+          open={shareModalOpen}
+          onOpenChange={setShareModalOpen}
+          documentId={documentToShare.id}
+          documentTitle={documentToShare.title}
+          alreadySharedWith={documentShares.get(documentToShare.id)?.map((s) => s.classId) || []}
+          onSuccess={handleShareSuccess}
+        />
+      )}
     </div>
   );
 }

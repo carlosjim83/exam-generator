@@ -989,8 +989,10 @@ export async function documentRoutes(fastify: FastifyInstance) {
         });
 
         // Set headers for file download
+        // Encode filename for proper Content-Disposition header (RFC 5987)
+        const encodedFilename = encodeURIComponent(result.filename);
         reply.header('Content-Type', result.mimeType);
-        reply.header('Content-Disposition', `attachment; filename="${result.filename}"`);
+        reply.header('Content-Disposition', `attachment; filename*=UTF-8''${encodedFilename}`);
         reply.header('Content-Length', result.buffer.length);
 
         return reply.status(200).send(result.buffer);
@@ -1317,6 +1319,125 @@ export async function documentRoutes(fastify: FastifyInstance) {
           statusCode: 500,
           error: 'Internal Server Error',
           message: error.message || 'Failed to unshare document',
+        });
+      }
+    }
+  );
+
+  // GET /api/documents/:documentId/shares - Get classes a document is shared with
+  fastify.get(
+    '/api/documents/:documentId/shares',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Get classes a document is shared with',
+        description: 'Teacher gets all classes their document is shared with.',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            documentId: { type: 'string', format: 'uuid' },
+          },
+          required: ['documentId'],
+        },
+        response: {
+          200: {
+            description: 'Document shares retrieved successfully',
+            type: 'object',
+            properties: {
+              documentId: { type: 'string' },
+              sharedWith: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    classId: { type: 'string' },
+                    className: { type: 'string' },
+                    isVisible: { type: 'boolean' },
+                    publishedAt: { type: 'string', nullable: true },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Unauthorized',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { documentId } = request.params as { documentId: string };
+        const userId = (request as any).user.userId;
+
+        const result = await container.getDocumentSharesUseCase.execute({
+          documentId,
+          userId,
+        });
+
+        return reply.status(200).send({
+          documentId: result.documentId,
+          sharedWith: result.sharedWith.map((share) => ({
+            classId: share.classId,
+            className: share.className,
+            isVisible: share.isVisible,
+            publishedAt: share.publishedAt?.toISOString() ?? null,
+          })),
+        });
+      } catch (error: any) {
+        if (error.message === 'Document not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Document not found',
+          });
+        }
+        if (error.message.includes('permission')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: error.message,
+          });
+        }
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to get document shares',
         });
       }
     }

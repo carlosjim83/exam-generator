@@ -87,6 +87,8 @@ services:
       # Mount source code for hot reload
       - ./backend/src:/app/backend/src:ro
       - ./backend/prisma:/app/backend/prisma:ro
+      # Persist uploaded files
+      - backend_uploads:/app/backend/uploads
       # Don't mount node_modules (use container's)
       - /app/node_modules
       - /app/backend/node_modules
@@ -131,6 +133,8 @@ volumes:
   postgres_dev_data:
     driver: local
   redis_dev_data:
+    driver: local
+  backend_uploads:
     driver: local
 
 networks:

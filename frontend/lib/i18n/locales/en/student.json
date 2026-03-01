@@ -158,24 +158,13 @@
     "noMaterials": "No materials available",
     "backToClasses": "Back to Classes",
     "notFound": "Class not found",
+    "published": "Published",
+    "publishedOn": "Published",
+    "downloadSuccess": "Document downloaded successfully",
+    "downloadFailed": "Failed to download document",
     "errors": {
-      "loadFailed": "Failed to load class details"
-    }
-  },
-  "classDetails": {
-    "title": "Class Details",
-    "subtitle": "View class information and materials",
-    "teacher": "Teacher",
-    "code": "Code",
-    "students": "students",
-    "upcomingExams": "Upcoming Exams",
-    "noExams": "No upcoming exams",
-    "materials": "Materials",
-    "noMaterials": "No materials available",
-    "backToClasses": "Back to Classes",
-    "notFound": "Class not found",
-    "errors": {
-      "loadFailed": "Failed to load class details"
+      "loadFailed": "Failed to load class details",
+      "loadDocumentsFailed": "Failed to load class materials"
     }
   },
   "exams": {
