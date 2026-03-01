@@ -377,12 +377,14 @@ export class Container {
     this._getTeacherClassesWithStatsUseCase = new GetTeacherClassesWithStatsUseCase(
       this._classRepository,
       this._studentEnrollmentRepository,
-      this._classDocumentRepository
+      this._classDocumentRepository,
+      this._classExamRepository
     );
     this._getStudentClassesWithStatsUseCase = new GetStudentClassesWithStatsUseCase(
       this._classRepository,
       this._studentEnrollmentRepository,
-      this._classDocumentRepository
+      this._classDocumentRepository,
+      this._classExamRepository
     );
 
     // Class Exam Use Cases

@@ -1,4 +1,5 @@
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
+import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -30,14 +31,14 @@ export interface GetTeacherClassesWithStatsOutput {
 /**
  * GetTeacherClassesWithStatsUseCase
  *
- * Gets all classes for a teacher with statistics (students, documents).
- * Note: examCount is always 0 for now (exams are assigned to students, not classes).
+ * Gets all classes for a teacher with statistics (students, documents, exams).
  */
 export class GetTeacherClassesWithStatsUseCase {
   constructor(
     private readonly classRepository: IClassRepository,
     private readonly enrollmentRepository: IStudentEnrollmentRepository,
-    private readonly classDocumentRepository: IClassDocumentRepository
+    private readonly classDocumentRepository: IClassDocumentRepository,
+    private readonly classExamRepository: IClassExamRepository
   ) {}
 
   async execute(input: GetTeacherClassesWithStatsInput): Promise<GetTeacherClassesWithStatsOutput> {
@@ -56,21 +57,21 @@ export class GetTeacherClassesWithStatsUseCase {
     // Get stats for each class in parallel
     const classesWithStats = await Promise.all(
       result.classes.map(async (cls) => {
-        // cls.id is already a ClassId, no need to create a new one
-        const [studentCount, documentCount] = await Promise.all([
+        const [studentCount, documentCount, examCount] = await Promise.all([
           this.enrollmentRepository.countByClassId(cls.id),
           this.classDocumentRepository.countByClassId(cls.id),
+          this.classExamRepository.countByClassId(cls.id),
         ]);
 
         return {
           id: cls.id.toString(),
           name: cls.name,
-          code: cls.code, // code is a string, not a value object
+          code: cls.code,
           description: cls.description,
           color: cls.color,
           studentCount,
           documentCount,
-          examCount: 0, // TODO: Implement exam count when exams are linked to classes
+          examCount,
           createdAt: cls.createdAt,
         };
       })
