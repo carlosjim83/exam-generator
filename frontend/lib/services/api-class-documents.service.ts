@@ -98,3 +98,30 @@ export async function getDocumentShares(
     return null;
   }
 }
+
+/**
+ * Update document visibility for a specific class
+ * Teacher can publish/unpublish a shared document for students
+ * @param documentId - The document ID
+ * @param classId - The class ID
+ * @param isVisible - Whether the document should be visible to students
+ */
+export async function updateDocumentVisibility(
+  documentId: string,
+  classId: string,
+  isVisible: boolean
+): Promise<{
+  id: string;
+  classId: string;
+  documentId: string;
+  isVisible: boolean;
+  publishedAt: string | null;
+}> {
+  return apiClient.patch<{
+    id: string;
+    classId: string;
+    documentId: string;
+    isVisible: boolean;
+    publishedAt: string | null;
+  }>(`/api/documents/${documentId}/share/${classId}`, { isVisible });
+}

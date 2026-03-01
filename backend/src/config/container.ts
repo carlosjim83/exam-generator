@@ -19,6 +19,7 @@ import { GetDocumentDownloadUrlUseCase } from '@application/use-cases/documents/
 import { GetDocumentSharesUseCase } from '@application/use-cases/documents/GetDocumentSharesUseCase.js';
 import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/ShareDocumentWithClassUseCase.js';
 import { UnshareDocumentUseCase } from '@application/use-cases/documents/UnshareDocumentUseCase.js';
+import { UpdateDocumentVisibilityUseCase } from '@application/use-cases/documents/UpdateDocumentVisibilityUseCase.js';
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
@@ -168,6 +169,7 @@ export class Container {
   private readonly _getClassDocumentsForStudentUseCase: GetClassDocumentsForStudentUseCase;
   private readonly _getDocumentDownloadUrlUseCase: GetDocumentDownloadUrlUseCase;
   private readonly _getDocumentSharesUseCase: GetDocumentSharesUseCase;
+  private readonly _updateDocumentVisibilityUseCase: UpdateDocumentVisibilityUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -368,6 +370,11 @@ export class Container {
       this._studentEnrollmentRepository
     );
     this._getDocumentSharesUseCase = new GetDocumentSharesUseCase(
+      this._classDocumentRepository,
+      this._documentRepository,
+      this._classRepository
+    );
+    this._updateDocumentVisibilityUseCase = new UpdateDocumentVisibilityUseCase(
       this._classDocumentRepository,
       this._documentRepository,
       this._classRepository
@@ -650,6 +657,10 @@ export class Container {
 
   public get getDocumentSharesUseCase(): GetDocumentSharesUseCase {
     return this._getDocumentSharesUseCase;
+  }
+
+  public get updateDocumentVisibilityUseCase(): UpdateDocumentVisibilityUseCase {
+    return this._updateDocumentVisibilityUseCase;
   }
 
   /**

@@ -1442,4 +1442,143 @@ export async function documentRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  // PATCH /api/documents/:documentId/share/:classId - Update document visibility
+  fastify.patch(
+    '/api/documents/:documentId/share/:classId',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['documents'],
+        summary: 'Update document visibility for a class',
+        description: 'Teacher updates whether a shared document is visible to students.',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            documentId: { type: 'string', format: 'uuid' },
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['documentId', 'classId'],
+        },
+        body: {
+          type: 'object',
+          properties: {
+            isVisible: { type: 'boolean' },
+          },
+          required: ['isVisible'],
+        },
+        response: {
+          200: {
+            description: 'Visibility updated successfully',
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              classId: { type: 'string' },
+              documentId: { type: 'string' },
+              isVisible: { type: 'boolean' },
+              publishedAt: { type: 'string', nullable: true },
+            },
+          },
+          400: {
+            description: 'Bad request',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          401: {
+            description: 'Unauthorized',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { documentId, classId } = request.params as {
+          documentId: string;
+          classId: string;
+        };
+        const { isVisible } = request.body as { isVisible: boolean };
+        const userId = (request as any).user.userId;
+
+        const result = await container.updateDocumentVisibilityUseCase.execute({
+          documentId,
+          classId,
+          userId,
+          isVisible,
+        });
+
+        return reply.status(200).send({
+          id: result.id,
+          classId: result.classId,
+          documentId: result.documentId,
+          isVisible: result.isVisible,
+          publishedAt: result.publishedAt?.toISOString() ?? null,
+        });
+      } catch (error: any) {
+        if (error.message === 'Document not found' || error.message === 'Class not found') {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('permission')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: error.message,
+          });
+        }
+        if (error.message.includes('not shared')) {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Document is not shared with this class',
+          });
+        }
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to update visibility',
+        });
+      }
+    }
+  );
 }
