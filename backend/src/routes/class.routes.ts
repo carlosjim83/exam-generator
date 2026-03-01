@@ -10,27 +10,28 @@ import { CreateEmailInvitationsCommand } from '@application/use-cases/classes/Cr
 import { DeleteClassCommand } from '@application/use-cases/classes/DeleteClassUseCase.js';
 import { GetClassByCodeCommand } from '@application/use-cases/classes/GetClassByCodeUseCase.js';
 import { GetClassDetailsCommand } from '@application/use-cases/classes/GetClassDetailsUseCase.js';
-import { GetClassesCommand } from '@application/use-cases/classes/GetClassesUseCase.js';
 import { GetClassInvitationsCommand } from '@application/use-cases/classes/GetClassInvitationsUseCase.js';
 import { GetClassStudentsCommand } from '@application/use-cases/classes/GetClassStudentsUseCase.js';
-import { GetStudentClassesCommand } from '@application/use-cases/classes/GetStudentClassesUseCase.js';
+import type { GetStudentClassesWithStatsInput } from '@application/use-cases/classes/GetStudentClassesWithStatsUseCase.js';
 import { ImportStudentsCSVCommand } from '@application/use-cases/classes/ImportStudentsCSVUseCase.js';
 import { RemoveStudentFromClassCommand } from '@application/use-cases/classes/RemoveStudentFromClassUseCase.js';
 import { StudentJoinClassCommand } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
 import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/classes/StudentJoinClassWithInvitationUseCase.js';
+import type { GetTeacherClassesWithStatsInput } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
-  // GET /api/classes - List all classes for authenticated teacher
+  // GET /api/classes - List all classes for authenticated teacher (with stats)
   fastify.get(
     '/api/classes',
     {
       preHandler: authenticateUser,
       schema: {
         tags: ['classes'],
-        summary: 'List all classes',
-        description: 'List all classes for the authenticated teacher',
+        summary: 'List all classes with stats',
+        description:
+          'List all classes for the authenticated teacher with student and document counts',
         security: [{ bearerAuth: [] }],
         querystring: {
           type: 'object',
@@ -54,7 +55,9 @@ export async function classRoutes(fastify: FastifyInstance) {
                     code: { type: 'string' },
                     description: { type: 'string', nullable: true },
                     color: { type: 'string', nullable: true },
-                    teacherId: { type: 'string', format: 'uuid' },
+                    studentCount: { type: 'number' },
+                    documentCount: { type: 'number' },
+                    examCount: { type: 'number' },
                     createdAt: { type: 'string', format: 'date-time' },
                   },
                 },
@@ -79,17 +82,25 @@ export async function classRoutes(fastify: FastifyInstance) {
         search?: string;
       };
 
-      const command = new GetClassesCommand(userId, page, limit, search);
-      const result = await container.getClassesUseCase.execute(command);
+      const input: GetTeacherClassesWithStatsInput = {
+        teacherId: userId,
+        page,
+        limit,
+        search,
+      };
+
+      const result = await container.getTeacherClassesWithStatsUseCase.execute(input);
 
       reply.status(200).send({
         classes: result.classes.map((c) => ({
-          id: c.id.toString(),
+          id: c.id,
           name: c.name,
           code: c.code,
           description: c.description,
           color: c.color,
-          teacherId: c.teacherId.toString(),
+          studentCount: c.studentCount,
+          documentCount: c.documentCount,
+          examCount: c.examCount,
           createdAt: c.createdAt.toISOString(),
         })),
         total: result.total,
@@ -981,15 +992,16 @@ export async function classRoutes(fastify: FastifyInstance) {
     }
   );
 
-  // GET /api/student/classes - Get enrolled classes for student
+  // GET /api/student/classes - Get enrolled classes for student (with stats)
   fastify.get(
     '/api/student/classes',
     {
       preHandler: authenticateUser,
       schema: {
         tags: ['classes'],
-        summary: 'Get my enrolled classes',
-        description: 'Get all classes the current student is enrolled in',
+        summary: 'Get my enrolled classes with stats',
+        description:
+          'Get all classes the current student is enrolled in with student and document counts',
         security: [{ bearerAuth: [] }],
         response: {
           200: {
@@ -1003,11 +1015,12 @@ export async function classRoutes(fastify: FastifyInstance) {
                     id: { type: 'string', format: 'uuid' },
                     name: { type: 'string' },
                     code: { type: 'string' },
-                    description: { type: 'string' },
-                    color: { type: 'string' },
-                    teacherId: { type: 'string', format: 'uuid' },
+                    description: { type: 'string', nullable: true },
+                    color: { type: 'string', nullable: true },
+                    studentCount: { type: 'number' },
+                    documentCount: { type: 'number' },
+                    examCount: { type: 'number' },
                     createdAt: { type: 'string', format: 'date-time' },
-                    updatedAt: { type: 'string', format: 'date-time' },
                   },
                 },
               },
@@ -1026,19 +1039,23 @@ export async function classRoutes(fastify: FastifyInstance) {
         return;
       }
 
-      const command = new GetStudentClassesCommand(userId);
-      const result = await container.getStudentClassesUseCase.execute(command);
+      const input: GetStudentClassesWithStatsInput = {
+        studentId: userId,
+      };
+
+      const result = await container.getStudentClassesWithStatsUseCase.execute(input);
 
       reply.status(200).send({
-        classes: result.classes.map((cls: any) => ({
-          id: cls.id.toString(),
-          name: cls.name,
-          code: cls.code.value,
-          description: cls.description,
-          color: cls.color,
-          teacherId: cls.teacherId.toString(),
-          createdAt: cls.createdAt.toISOString(),
-          updatedAt: cls.updatedAt.toISOString(),
+        classes: result.classes.map((c) => ({
+          id: c.id,
+          name: c.name,
+          code: c.code,
+          description: c.description,
+          color: c.color,
+          studentCount: c.studentCount,
+          documentCount: c.documentCount,
+          examCount: c.examCount,
+          createdAt: c.createdAt.toISOString(),
         })),
       });
     }

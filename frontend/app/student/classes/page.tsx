@@ -42,11 +42,10 @@ export default function StudentClassesPage() {
         name: cls.name,
         code: cls.code,
         description: cls.description ?? null,
-        studentCount: cls.studentCount || 0,
+        studentCount: cls.studentCount,
+        documentCount: cls.documentCount,
+        examCount: cls.examCount,
         color: cls.color ?? null,
-        // TODO: Add documentCount and examCount from backend
-        documentCount: 0,
-        examCount: 0,
       }));
       setClasses(transformedClasses);
     } catch (err) {

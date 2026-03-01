@@ -55,6 +55,8 @@ import {
   RemoveStudentFromClassUseCase, // Added
   GetStudentClassesUseCase, // Added
 } from '@application/use-cases/index.js';
+import { GetTeacherClassesWithStatsUseCase } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
+import { GetStudentClassesWithStatsUseCase } from '@application/use-cases/classes/GetStudentClassesWithStatsUseCase.js';
 // Class Document Use Cases
 // Application Use Cases
 // Student Use Cases
@@ -163,6 +165,8 @@ export class Container {
   private readonly _resendInvitationUseCase: ResendInvitationUseCase;
   private readonly _removeStudentFromClassUseCase: RemoveStudentFromClassUseCase;
   private readonly _getStudentClassesUseCase: GetStudentClassesUseCase;
+  private readonly _getTeacherClassesWithStatsUseCase: GetTeacherClassesWithStatsUseCase;
+  private readonly _getStudentClassesWithStatsUseCase: GetStudentClassesWithStatsUseCase;
 
   // Application Layer - Class Document Use Cases
   private readonly _shareDocumentWithClassUseCase: ShareDocumentWithClassUseCase;
@@ -349,6 +353,16 @@ export class Container {
     this._getStudentClassesUseCase = new GetStudentClassesUseCase(
       this._classRepository,
       this._studentEnrollmentRepository
+    );
+    this._getTeacherClassesWithStatsUseCase = new GetTeacherClassesWithStatsUseCase(
+      this._classRepository,
+      this._studentEnrollmentRepository,
+      this._classDocumentRepository
+    );
+    this._getStudentClassesWithStatsUseCase = new GetStudentClassesWithStatsUseCase(
+      this._classRepository,
+      this._studentEnrollmentRepository,
+      this._classDocumentRepository
     );
 
     // Class Document Use Cases
@@ -644,6 +658,14 @@ export class Container {
 
   public get getStudentClassesUseCase(): GetStudentClassesUseCase {
     return this._getStudentClassesUseCase;
+  }
+
+  public get getTeacherClassesWithStatsUseCase(): GetTeacherClassesWithStatsUseCase {
+    return this._getTeacherClassesWithStatsUseCase;
+  }
+
+  public get getStudentClassesWithStatsUseCase(): GetStudentClassesWithStatsUseCase {
+    return this._getStudentClassesWithStatsUseCase;
   }
 
   // Class Document Use Cases
