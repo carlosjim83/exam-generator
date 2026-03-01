@@ -39,55 +39,53 @@ export function ClassCard({ classData, href, actionLabel, role }: ClassCardProps
   const bgColor = classData.color || '#6366f1';
 
   return (
-    <Card className="group transition-all duration-200 hover:shadow-lg hover:border-primary/20">
-      <CardContent className="p-0">
+    <Card className="group transition-all duration-200 hover:shadow-lg hover:border-primary/20 h-full flex flex-col">
+      <CardContent className="p-0 flex flex-col flex-1">
         {/* Header with avatar and name */}
-        <div className="flex items-start gap-4 p-5">
+        <div className="flex items-start gap-4 p-5 pb-4">
           <div
-            className="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-sm"
+            className="flex-shrink-0 w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-sm"
             style={{ backgroundColor: bgColor }}
           >
             {initials}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0">
-                <h3 className="font-semibold text-base truncate">{classData.name}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <Badge variant="secondary" className="font-mono text-xs">
-                    {classData.code}
-                  </Badge>
-                </div>
-              </div>
-            </div>
-            {classData.description && (
-              <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
-                {classData.description}
-              </p>
-            )}
+            <h3 className="font-semibold text-lg leading-tight truncate">{classData.name}</h3>
+            <Badge variant="secondary" className="font-mono text-xs mt-1.5">
+              {classData.code}
+            </Badge>
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="flex items-center gap-6 px-5 py-3 bg-muted/30 border-t border-b">
+        {/* Description */}
+        {classData.description && (
+          <div className="px-5 pb-4">
+            <p className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5rem]">
+              {classData.description}
+            </p>
+          </div>
+        )}
+
+        {/* Stats - wrapped layout for better responsiveness */}
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-2 px-5 py-3 bg-muted/30 border-t border-b mt-auto">
           <div className="flex items-center gap-1.5 text-sm">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{classData.studentCount}</span>
-            <span className="text-muted-foreground text-xs">
+            <Users className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="font-semibold">{classData.studentCount}</span>
+            <span className="text-muted-foreground">
               {t('classCard.students', { count: classData.studentCount })}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
-            <FileText className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{classData.documentCount ?? 0}</span>
-            <span className="text-muted-foreground text-xs">
+            <FileText className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="font-semibold">{classData.documentCount ?? 0}</span>
+            <span className="text-muted-foreground">
               {t('classCard.documents', { count: classData.documentCount ?? 0 })}
             </span>
           </div>
           <div className="flex items-center gap-1.5 text-sm">
-            <ClipboardList className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{classData.examCount ?? 0}</span>
-            <span className="text-muted-foreground text-xs">
+            <ClipboardList className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+            <span className="font-semibold">{classData.examCount ?? 0}</span>
+            <span className="text-muted-foreground">
               {t('classCard.exams', { count: classData.examCount ?? 0 })}
             </span>
           </div>
@@ -95,7 +93,7 @@ export function ClassCard({ classData, href, actionLabel, role }: ClassCardProps
 
         {/* Action */}
         <div className="p-4">
-          <Button asChild className="w-full group-hover:bg-primary/90">
+          <Button asChild className="w-full">
             <Link href={href}>
               {actionLabel}
               <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-0.5" />
