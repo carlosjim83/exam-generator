@@ -21,13 +21,39 @@
     "copyCodeError": "Failed to copy code",
     "created": "Created",
     "loadError": "Failed to load class",
+    "tabs": {
+      "students": "Students",
+      "documents": "Documents"
+    },
     "studentsSection": {
       "title": "Students",
       "description": "Manage students in this class"
     },
-    "inviteStudents": "Invite Students"
+    "documentsSection": {
+      "title": "Shared Documents",
+      "description": "Manage documents shared with this class"
+    },
+    "inviteStudents": "Invite Students",
+    "noDocuments": "No documents shared yet",
+    "noDocumentsHint": "Share documents from your library to make them available to students",
+    "publishedOn": "Published",
+    "downloadSuccess": "Document downloaded successfully",
+    "downloadFailed": "Failed to download document",
+    "documentRemoved": "Document removed from class",
+    "removeDocumentConfirm": "Remove \"{{title}}\" from this class? Students will lose access immediately.",
+    "visibility": {
+      "published": "Published",
+      "draft": "Draft",
+      "publishedHint": "Visible to students",
+      "draftHint": "Not visible to students"
+    },
+    "errors": {
+      "loadDocumentsFailed": "Failed to load documents",
+      "visibilityFailed": "Failed to update visibility",
+      "removeDocumentFailed": "Failed to remove document"
+    }
   },
-  "createClassForm": {
+  "createForm": {
     "title": "Create New Class",
     "nameLabel": "Class Name",
     "namePlaceholder": "e.g., Math 101 - Group A",

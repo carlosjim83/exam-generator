@@ -293,16 +293,20 @@ DocumentShareState:
 - [x] Backend: Update visibility use case
 - [x] Backend: Tests for visibility update
 - [x] Backend: PATCH endpoint
-- [ ] Frontend: API service function
+- [x] Frontend: API service function
 
-### Phase 2: Share Modal Enhancement (Next)
+### Phase 2: Share Modal Enhancement ✅ (Done)
 
-- [ ] ShareModal: Show already-shared classes with visibility status
-- [ ] ShareModal: Add visibility toggle for each shared class
-- [ ] ShareModal: Add "Remove" button for each shared class
-- [ ] ShareModal: Unshare confirmation dialog
+- [x] ShareModal: Load shares via `getDocumentShares` API
+- [x] ShareModal: Show already-shared classes with visibility status (Published/Draft)
+- [x] ShareModal: Add visibility toggle (Switch component) for each shared class
+- [x] ShareModal: Add "Remove" button for each shared class
+- [x] ShareModal: Unshare confirmation dialog (AlertDialog)
+- [x] Frontend: Created Switch UI component
+- [x] Frontend: Added i18n translations EN/ES
+- [x] Removed `alreadySharedWith` prop (modal now fetches its own data)
 
-### Phase 3: Teacher Class Resources Page
+### Phase 3: Teacher Class Resources Page (Next)
 
 - [ ] New page: `/teacher/classes/[id]/resources`
 - [ ] List all documents shared with this class

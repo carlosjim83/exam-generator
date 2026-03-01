@@ -6,10 +6,12 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StudentList } from '@/features/classes/components/StudentList';
+import { TeacherClassDocuments } from '@/features/classes/components/TeacherClassDocuments';
 import { InviteStudentsDialog } from '@/features/classes/components/InviteStudentsDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Copy, ArrowLeft, Users, FileText, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -44,6 +46,7 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<ClassDetails['students']>([]);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('students');
 
   const loadClassData = async () => {
     try {
@@ -165,23 +168,54 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>{t('classDetails.studentsSection.title')}</CardTitle>
-                  <CardDescription>{t('classDetails.studentsSection.description')}</CardDescription>
-                </div>
-                <Button onClick={() => setInviteDialogOpen(true)}>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  {t('classDetails.inviteStudents')}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <StudentList students={students} onRemoveStudent={handleRemoveStudent} />
-            </CardContent>
-          </Card>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="students" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                {t('classDetails.tabs.students')}
+              </TabsTrigger>
+              <TabsTrigger value="documents" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                {t('classDetails.tabs.documents')}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="students" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>{t('classDetails.studentsSection.title')}</CardTitle>
+                      <CardDescription>
+                        {t('classDetails.studentsSection.description')}
+                      </CardDescription>
+                    </div>
+                    <Button onClick={() => setInviteDialogOpen(true)}>
+                      <UserPlus className="mr-2 h-4 w-4" />
+                      {t('classDetails.inviteStudents')}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <StudentList students={students} onRemoveStudent={handleRemoveStudent} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="documents" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('classDetails.documentsSection.title')}</CardTitle>
+                  <CardDescription>
+                    {t('classDetails.documentsSection.description')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <TeacherClassDocuments classId={classId} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
 
           <InviteStudentsDialog
             open={inviteDialogOpen}

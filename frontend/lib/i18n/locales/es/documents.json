@@ -38,6 +38,7 @@
     "description": "Compartir \"{{title}}\" con tus clases",
     "shareButton": "Compartir con {{count}} clase",
     "shareButton_other": "Compartir con {{count}} clases",
+    "saveChanges": "Guardar Cambios",
     "makeVisible": "Hacer visible para estudiantes inmediatamente",
     "visibleHint": "Si no está marcado, los estudiantes no verán el documento hasta que lo publiques",
     "cancel": "Cancelar",
@@ -46,10 +47,39 @@
     "noClasses": "Aún no tienes clases. Crea una clase primero para compartir documentos.",
     "success": "Documento compartido con {{count}} clase exitosamente",
     "success_other": "Documento compartido con {{count}} clases exitosamente",
+    "updateSuccess": "Actualización de compartir documento exitosa",
+    "removeSuccess": "Documento removido de la clase",
+    "visibilitySuccess": "Visibilidad del documento actualizada",
+    "status": {
+      "published": "Publicado",
+      "draft": "Borrador",
+      "publishedOn": "Publicado {{date}}",
+      "notVisible": "No visible para estudiantes"
+    },
+    "actions": {
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "remove": "Remover",
+      "removeConfirmTitle": "Remover Documento de la Clase",
+      "removeConfirmDescription": "¿Remover \"{{title}}\" de \"{{className}}\"? Los estudiantes perderán acceso inmediatamente.",
+      "removeConfirmWarning": "Siempre puedes compartirlo de nuevo más tarde.",
+      "removeButton": "Remover de la Clase",
+      "removing": "Removiendo..."
+    },
+    "sections": {
+      "sharedClasses": "Compartido con",
+      "availableClasses": "Clases Disponibles",
+      "noSharedClasses": "Aún no compartido con ninguna clase",
+      "newClassesHint": "Selecciona clases para compartir:"
+    },
     "errors": {
       "loadClassesFailed": "Error al cargar las clases",
+      "loadSharesFailed": "Error al cargar información de compartir",
       "noClassesSelected": "Por favor selecciona al menos una clase",
-      "shareFailed": "Error al compartir el documento"
+      "shareFailed": "Error al compartir el documento",
+      "updateFailed": "Error al actualizar configuración de compartir",
+      "removeFailed": "Error al remover documento de la clase",
+      "visibilityFailed": "Error al actualizar visibilidad"
     }
   }
 }

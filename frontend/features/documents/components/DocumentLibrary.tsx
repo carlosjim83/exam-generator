@@ -459,7 +459,6 @@ export function DocumentLibrary() {
           onOpenChange={setShareModalOpen}
           documentId={documentToShare.id}
           documentTitle={documentToShare.title}
-          alreadySharedWith={documentShares.get(documentToShare.id)?.map((s) => s.classId) || []}
           onSuccess={handleShareSuccess}
         />
       )}

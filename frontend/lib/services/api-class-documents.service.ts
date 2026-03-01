@@ -125,3 +125,35 @@ export async function updateDocumentVisibility(
     publishedAt: string | null;
   }>(`/api/documents/${documentId}/share/${classId}`, { isVisible });
 }
+
+/**
+ * Get all documents shared with a class (teacher view - includes drafts)
+ * @param classId - The class ID
+ */
+export interface TeacherClassDocument {
+  id: string;
+  documentId: string;
+  title: string;
+  filename: string;
+  fileSize: number;
+  mimeType: string;
+  isVisible: boolean;
+  publishedAt: string | null;
+  orderIndex: number;
+  sharedAt: string;
+}
+
+export interface TeacherClassDocumentsResponse {
+  class: {
+    id: string;
+    name: string;
+    description: string | null;
+  };
+  documents: TeacherClassDocument[];
+}
+
+export async function getClassDocumentsForTeacher(
+  classId: string
+): Promise<TeacherClassDocumentsResponse> {
+  return apiClient.get<TeacherClassDocumentsResponse>(`/api/classes/${classId}/documents/teacher`);
+}

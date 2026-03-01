@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { FileText, Download, Loader2, FileIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { getClassDocuments, type SharedDocument } from '@/lib/services/api-class-documents.service';
@@ -128,14 +127,7 @@ export function ClassDocuments({ classId }: ClassDocumentsProps) {
                 <DocumentTypeIcon mimeType={doc.mimeType} />
 
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h4 className="truncate font-medium text-sm">{doc.title}</h4>
-                    {doc.isVisible && publishedDate && (
-                      <Badge variant="outline" className="text-xs">
-                        {t('classDetails.published')}
-                      </Badge>
-                    )}
-                  </div>
+                  <h4 className="truncate font-medium text-sm">{doc.title}</h4>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>{formatFileSize(doc.fileSize)}</span>
                     {publishedDate && (

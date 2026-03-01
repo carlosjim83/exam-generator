@@ -15,6 +15,7 @@ import { PrismaClient } from '@prisma/client';
 // Infrastructure
 import type { IMessageBroker } from '@application/ports/IMessageBroker.js'; // Added
 import { GetClassDocumentsForStudentUseCase } from '@application/use-cases/documents/GetClassDocumentsForStudentUseCase.js';
+import { GetClassDocumentsForTeacherUseCase } from '@application/use-cases/classes/GetClassDocumentsForTeacherUseCase.js';
 import { GetDocumentDownloadUrlUseCase } from '@application/use-cases/documents/GetDocumentDownloadUrlUseCase.js';
 import { GetDocumentSharesUseCase } from '@application/use-cases/documents/GetDocumentSharesUseCase.js';
 import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/ShareDocumentWithClassUseCase.js';
@@ -167,6 +168,7 @@ export class Container {
   private readonly _shareDocumentWithClassUseCase: ShareDocumentWithClassUseCase;
   private readonly _unshareDocumentUseCase: UnshareDocumentUseCase;
   private readonly _getClassDocumentsForStudentUseCase: GetClassDocumentsForStudentUseCase;
+  private readonly _getClassDocumentsForTeacherUseCase: GetClassDocumentsForTeacherUseCase;
   private readonly _getDocumentDownloadUrlUseCase: GetDocumentDownloadUrlUseCase;
   private readonly _getDocumentSharesUseCase: GetDocumentSharesUseCase;
   private readonly _updateDocumentVisibilityUseCase: UpdateDocumentVisibilityUseCase;
@@ -268,6 +270,8 @@ export class Container {
 
     this._downloadDocumentUseCase = new DownloadDocumentUseCase(
       this._documentRepository,
+      this._classDocumentRepository,
+      this._studentEnrollmentRepository,
       this._storageService
     );
 
@@ -362,6 +366,11 @@ export class Container {
       this._classDocumentRepository,
       this._classRepository,
       this._studentEnrollmentRepository,
+      this._documentRepository
+    );
+    this._getClassDocumentsForTeacherUseCase = new GetClassDocumentsForTeacherUseCase(
+      this._classDocumentRepository,
+      this._classRepository,
       this._documentRepository
     );
     this._getDocumentDownloadUrlUseCase = new GetDocumentDownloadUrlUseCase(
@@ -649,6 +658,10 @@ export class Container {
 
   public get getClassDocumentsForStudentUseCase(): GetClassDocumentsForStudentUseCase {
     return this._getClassDocumentsForStudentUseCase;
+  }
+
+  public get getClassDocumentsForTeacherUseCase(): GetClassDocumentsForTeacherUseCase {
+    return this._getClassDocumentsForTeacherUseCase;
   }
 
   public get getDocumentDownloadUrlUseCase(): GetDocumentDownloadUrlUseCase {
