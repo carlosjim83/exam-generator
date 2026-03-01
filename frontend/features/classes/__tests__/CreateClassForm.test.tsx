@@ -12,6 +12,28 @@ vi.mock('../services/classes-api', () => ({
   createClass: mockCreateClass,
 }));
 
+// Mock i18n
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        'createClassForm.nameLabel': 'Class Name',
+        'createClassForm.namePlaceholder': 'e.g., Math 101 - Group A',
+        'createClassForm.nameRequired': 'Class name is required',
+        'createClassForm.nameMinLength': 'Class name must be at least 2 characters',
+        'createClassForm.nameMaxLength': 'Class name must be less than 100 characters',
+        'createClassForm.descriptionLabel': 'Description',
+        'createClassForm.descriptionPlaceholder': 'Optional description...',
+        'createClassForm.cancel': 'Cancel',
+        'createClassForm.createButton': 'Create Class',
+        'createClassForm.creating': 'Creating...',
+        'createClassForm.error': 'Failed to create class',
+      };
+      return translations[key] || key;
+    },
+  }),
+}));
+
 describe('CreateClassForm', () => {
   const mockOnSuccess = vi.fn();
   const mockOnCancel = vi.fn();

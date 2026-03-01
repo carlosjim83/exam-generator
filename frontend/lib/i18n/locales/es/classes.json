@@ -8,11 +8,20 @@
   "noSearchResults": "Ninguna clase coincide con tu búsqueda",
   "createFirstClassDescription": "Crea tu primera clase para comenzar a organizar estudiantes y exámenes",
   "searchPlaceholder": "Buscar clases...",
+  "errors": {
+    "retry": "Reintentar"
+  },
   "classCard": {
     "noDescription": "Sin descripción",
-    "students": "estudiantes",
+    "students": "estudiante",
+    "students_plural": "estudiantes",
+    "documents": "documento",
+    "documents_plural": "documentos",
+    "exams": "examen",
+    "exams_plural": "exámenes",
     "manage": "Gestionar",
-    "code": "Código"
+    "code": "Código",
+    "viewClass": "Ver Clase"
   },
   "classDetails": {
     "backToClasses": "Volver a Clases",
@@ -21,13 +30,39 @@
     "copyCodeError": "Error al copiar el código",
     "created": "Creada",
     "loadError": "Error al cargar la clase",
+    "tabs": {
+      "students": "Estudiantes",
+      "documents": "Documentos"
+    },
     "studentsSection": {
       "title": "Estudiantes",
       "description": "Gestiona los estudiantes de esta clase"
     },
-    "inviteStudents": "Invitar Estudiantes"
+    "documentsSection": {
+      "title": "Documentos Compartidos",
+      "description": "Gestiona los documentos compartidos con esta clase"
+    },
+    "inviteStudents": "Invitar Estudiantes",
+    "noDocuments": "Aún no hay documentos compartidos",
+    "noDocumentsHint": "Comparte documentos desde tu biblioteca para que estén disponibles para los estudiantes",
+    "publishedOn": "Publicado",
+    "downloadSuccess": "Documento descargado correctamente",
+    "downloadFailed": "Error al descargar el documento",
+    "documentRemoved": "Documento eliminado de la clase",
+    "removeDocumentConfirm": "¿Eliminar \"{{title}}\" de esta clase? Los estudiantes perderán acceso inmediatamente.",
+    "visibility": {
+      "published": "Publicado",
+      "draft": "Borrador",
+      "publishedHint": "Visible para estudiantes",
+      "draftHint": "No visible para estudiantes"
+    },
+    "errors": {
+      "loadDocumentsFailed": "Error al cargar los documentos",
+      "visibilityFailed": "Error al actualizar la visibilidad",
+      "removeDocumentFailed": "Error al eliminar el documento"
+    }
   },
-  "createClassForm": {
+  "createForm": {
     "title": "Crear Nueva Clase",
     "nameLabel": "Nombre de la Clase",
     "namePlaceholder": "ej., Matemáticas 101 - Grupo A",

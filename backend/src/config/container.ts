@@ -15,9 +15,12 @@ import { PrismaClient } from '@prisma/client';
 // Infrastructure
 import type { IMessageBroker } from '@application/ports/IMessageBroker.js'; // Added
 import { GetClassDocumentsForStudentUseCase } from '@application/use-cases/documents/GetClassDocumentsForStudentUseCase.js';
+import { GetClassDocumentsForTeacherUseCase } from '@application/use-cases/classes/GetClassDocumentsForTeacherUseCase.js';
 import { GetDocumentDownloadUrlUseCase } from '@application/use-cases/documents/GetDocumentDownloadUrlUseCase.js';
+import { GetDocumentSharesUseCase } from '@application/use-cases/documents/GetDocumentSharesUseCase.js';
 import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/ShareDocumentWithClassUseCase.js';
 import { UnshareDocumentUseCase } from '@application/use-cases/documents/UnshareDocumentUseCase.js';
+import { UpdateDocumentVisibilityUseCase } from '@application/use-cases/documents/UpdateDocumentVisibilityUseCase.js';
 import {
   RegisterUserUseCase,
   LoginUserUseCase,
@@ -52,6 +55,8 @@ import {
   RemoveStudentFromClassUseCase, // Added
   GetStudentClassesUseCase, // Added
 } from '@application/use-cases/index.js';
+import { GetTeacherClassesWithStatsUseCase } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
+import { GetStudentClassesWithStatsUseCase } from '@application/use-cases/classes/GetStudentClassesWithStatsUseCase.js';
 // Class Document Use Cases
 // Application Use Cases
 // Student Use Cases
@@ -160,12 +165,17 @@ export class Container {
   private readonly _resendInvitationUseCase: ResendInvitationUseCase;
   private readonly _removeStudentFromClassUseCase: RemoveStudentFromClassUseCase;
   private readonly _getStudentClassesUseCase: GetStudentClassesUseCase;
+  private readonly _getTeacherClassesWithStatsUseCase: GetTeacherClassesWithStatsUseCase;
+  private readonly _getStudentClassesWithStatsUseCase: GetStudentClassesWithStatsUseCase;
 
   // Application Layer - Class Document Use Cases
   private readonly _shareDocumentWithClassUseCase: ShareDocumentWithClassUseCase;
   private readonly _unshareDocumentUseCase: UnshareDocumentUseCase;
   private readonly _getClassDocumentsForStudentUseCase: GetClassDocumentsForStudentUseCase;
+  private readonly _getClassDocumentsForTeacherUseCase: GetClassDocumentsForTeacherUseCase;
   private readonly _getDocumentDownloadUrlUseCase: GetDocumentDownloadUrlUseCase;
+  private readonly _getDocumentSharesUseCase: GetDocumentSharesUseCase;
+  private readonly _updateDocumentVisibilityUseCase: UpdateDocumentVisibilityUseCase;
 
   // Application Layer - Student Use Cases
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
@@ -264,6 +274,8 @@ export class Container {
 
     this._downloadDocumentUseCase = new DownloadDocumentUseCase(
       this._documentRepository,
+      this._classDocumentRepository,
+      this._studentEnrollmentRepository,
       this._storageService
     );
 
@@ -342,6 +354,16 @@ export class Container {
       this._classRepository,
       this._studentEnrollmentRepository
     );
+    this._getTeacherClassesWithStatsUseCase = new GetTeacherClassesWithStatsUseCase(
+      this._classRepository,
+      this._studentEnrollmentRepository,
+      this._classDocumentRepository
+    );
+    this._getStudentClassesWithStatsUseCase = new GetStudentClassesWithStatsUseCase(
+      this._classRepository,
+      this._studentEnrollmentRepository,
+      this._classDocumentRepository
+    );
 
     // Class Document Use Cases
     this._shareDocumentWithClassUseCase = new ShareDocumentWithClassUseCase(
@@ -360,10 +382,25 @@ export class Container {
       this._studentEnrollmentRepository,
       this._documentRepository
     );
+    this._getClassDocumentsForTeacherUseCase = new GetClassDocumentsForTeacherUseCase(
+      this._classDocumentRepository,
+      this._classRepository,
+      this._documentRepository
+    );
     this._getDocumentDownloadUrlUseCase = new GetDocumentDownloadUrlUseCase(
       this._documentRepository,
       this._classDocumentRepository,
       this._studentEnrollmentRepository
+    );
+    this._getDocumentSharesUseCase = new GetDocumentSharesUseCase(
+      this._classDocumentRepository,
+      this._documentRepository,
+      this._classRepository
+    );
+    this._updateDocumentVisibilityUseCase = new UpdateDocumentVisibilityUseCase(
+      this._classDocumentRepository,
+      this._documentRepository,
+      this._classRepository
     );
 
     // Student Use Cases
@@ -623,6 +660,14 @@ export class Container {
     return this._getStudentClassesUseCase;
   }
 
+  public get getTeacherClassesWithStatsUseCase(): GetTeacherClassesWithStatsUseCase {
+    return this._getTeacherClassesWithStatsUseCase;
+  }
+
+  public get getStudentClassesWithStatsUseCase(): GetStudentClassesWithStatsUseCase {
+    return this._getStudentClassesWithStatsUseCase;
+  }
+
   // Class Document Use Cases
 
   public get shareDocumentWithClassUseCase(): ShareDocumentWithClassUseCase {
@@ -637,8 +682,20 @@ export class Container {
     return this._getClassDocumentsForStudentUseCase;
   }
 
+  public get getClassDocumentsForTeacherUseCase(): GetClassDocumentsForTeacherUseCase {
+    return this._getClassDocumentsForTeacherUseCase;
+  }
+
   public get getDocumentDownloadUrlUseCase(): GetDocumentDownloadUrlUseCase {
     return this._getDocumentDownloadUrlUseCase;
+  }
+
+  public get getDocumentSharesUseCase(): GetDocumentSharesUseCase {
+    return this._getDocumentSharesUseCase;
+  }
+
+  public get updateDocumentVisibilityUseCase(): UpdateDocumentVisibilityUseCase {
+    return this._updateDocumentVisibilityUseCase;
   }
 
   /**

@@ -32,5 +32,54 @@
   "totalDocuments": "Total Documents",
   "noDocumentsFound": "No documents found",
   "adjustSearch": "Try adjusting your search query",
-  "processingFor": "Processing for {{minutes}}m"
+  "processingFor": "Processing for {{minutes}}m",
+  "share": {
+    "title": "Share Document",
+    "description": "Share \"{{title}}\" with your classes",
+    "shareButton": "Share with {{count}} class",
+    "shareButton_other": "Share with {{count}} classes",
+    "saveChanges": "Save Changes",
+    "makeVisible": "Make visible to students immediately",
+    "visibleHint": "If unchecked, students won't see the document until you publish it",
+    "cancel": "Cancel",
+    "alreadyShared": "Already shared",
+    "students": "students",
+    "noClasses": "You don't have any classes yet. Create a class first to share documents.",
+    "success": "Document shared with {{count}} class successfully",
+    "success_other": "Document shared with {{count}} classes successfully",
+    "updateSuccess": "Document sharing updated successfully",
+    "removeSuccess": "Document removed from class",
+    "visibilitySuccess": "Document visibility updated",
+    "status": {
+      "published": "Published",
+      "draft": "Draft",
+      "publishedOn": "Published {{date}}",
+      "notVisible": "Not visible to students"
+    },
+    "actions": {
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "remove": "Remove",
+      "removeConfirmTitle": "Remove Document from Class",
+      "removeConfirmDescription": "Remove \"{{title}}\" from \"{{className}}\"? Students will lose access immediately.",
+      "removeConfirmWarning": "You can always share it again later.",
+      "removeButton": "Remove from Class",
+      "removing": "Removing..."
+    },
+    "sections": {
+      "sharedClasses": "Shared with",
+      "availableClasses": "Available Classes",
+      "noSharedClasses": "Not shared with any class yet",
+      "newClassesHint": "Select classes to share with:"
+    },
+    "errors": {
+      "loadClassesFailed": "Failed to load classes",
+      "loadSharesFailed": "Failed to load sharing information",
+      "noClassesSelected": "Please select at least one class",
+      "shareFailed": "Failed to share document",
+      "updateFailed": "Failed to update sharing settings",
+      "removeFailed": "Failed to remove document from class",
+      "visibilityFailed": "Failed to update visibility"
+    }
+  }
 }

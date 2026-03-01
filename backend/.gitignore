@@ -6,7 +6,7 @@ node_modules/
 .env
 .env.local
 .env.*.local
-.env.test
+# Note: .env.test is NOT ignored - it contains test config (no secrets), needed for CI
 
 # Build output
 dist/

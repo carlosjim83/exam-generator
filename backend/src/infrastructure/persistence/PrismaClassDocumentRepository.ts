@@ -127,6 +127,18 @@ export class PrismaClassDocumentRepository implements IClassDocumentRepository {
     });
   }
 
+  async countByClassId(classId: ClassId, options?: { visibleOnly?: boolean }): Promise<number> {
+    const where: Prisma.ClassDocumentWhereInput = {
+      classId: classId.value,
+    };
+
+    if (options?.visibleOnly) {
+      where.isVisible = true;
+    }
+
+    return this.prisma.classDocument.count({ where });
+  }
+
   /**
    * Maps Prisma ClassDocument record to domain ClassDocument entity
    */

@@ -1,17 +1,19 @@
 import { beforeAll, afterAll, vi } from 'vitest';
 
-import './env'; // Load environment variables FIRST (triggers dotenv.config())
-import { Container } from './container'; // Ensure container can be reset
-import { prisma } from './prisma'; // Import prisma for cleanup/reset
+// Note: Database setup is handled by tests/global-setup.ts which runs ONCE before all tests
+// This file handles per-worker setup and cleanup
+
+import { Container } from './container.js';
+import { prisma } from './prisma.js';
 
 /**
  * Global Vitest setup file.
- * This file runs once before all test suites and provides global hooks
+ * This file runs once per test worker and provides global hooks
  * for database cleanup and container management.
  *
  * Strategy:
- * - beforeAll: Runs ONCE at the start of the entire test run
- * - Cleans database and resets container to ensure fresh state
+ * - beforeAll: Runs ONCE at the start of the test worker
+ * - Cleans database to ensure fresh state
  * - Each test file is responsible for managing its own test data lifecycle
  *
  * Note: Individual test files should use beforeAll/beforeEach to set up
@@ -98,22 +100,26 @@ vi.mock('@infrastructure/ai/AzureOpenAIEmbeddingService.js', () => {
   };
 });
 
-// Reset container and cleanup database ONCE before all tests run
+// Reset container and cleanup database before all tests
 beforeAll(async () => {
-  // Ensure the container is reset for a clean state
+  // Reset container for clean state
   Container.reset();
 
   // Clean the database before test run starts
-  // Delete in correct order to respect foreign key constraints:
-  // 1. Delete child tables first (most dependent)
-  // 2. Delete parent tables last (least dependent)
+  // Note: We use the test database (from .env.test), NOT development database
   await prisma.$transaction([
     // Student module tables (most dependent)
     prisma.studentAnswer.deleteMany(),
     prisma.examAssignment.deleteMany(),
     prisma.question.deleteMany(),
     prisma.exam.deleteMany(),
+    // Class module tables
+    prisma.classDocument.deleteMany(),
+    prisma.invitation.deleteMany(),
+    prisma.studentEnrollment.deleteMany(),
+    prisma.class.deleteMany(),
     // Document tables
+    prisma.documentChunk.deleteMany(),
     prisma.document.deleteMany(),
     // User table (least dependent - others reference this)
     prisma.user.deleteMany(),

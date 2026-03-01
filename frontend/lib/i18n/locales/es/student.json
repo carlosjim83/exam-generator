@@ -162,8 +162,13 @@
     "noMaterials": "No hay materiales disponibles",
     "backToClasses": "Volver a Clases",
     "notFound": "Clase no encontrada",
+    "published": "Publicado",
+    "publishedOn": "Publicado",
+    "downloadSuccess": "Documento descargado exitosamente",
+    "downloadFailed": "Error al descargar el documento",
     "errors": {
-      "loadFailed": "Error al cargar los detalles de la clase"
+      "loadFailed": "Error al cargar los detalles de la clase",
+      "loadDocumentsFailed": "Error al cargar los materiales de la clase"
     }
   }
 }

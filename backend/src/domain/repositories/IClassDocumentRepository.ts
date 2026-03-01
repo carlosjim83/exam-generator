@@ -57,4 +57,11 @@ export interface IClassDocumentRepository {
    * Delete all ClassDocuments for a document (when document is deleted)
    */
   deleteByDocumentId(documentId: DocumentId): Promise<void>;
+
+  /**
+   * Count documents shared with a class
+   * @param classId - The class ID
+   * @param options - Filter options
+   */
+  countByClassId(classId: ClassId, options?: { visibleOnly?: boolean }): Promise<number>;
 }

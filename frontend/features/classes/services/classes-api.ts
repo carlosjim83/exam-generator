@@ -15,8 +15,9 @@ export interface Class {
   code: string;
   description?: string;
   color?: string;
-  teacherId: string;
   studentCount: number;
+  documentCount: number;
+  examCount: number;
   createdAt: string;
   updatedAt: string;
 }
