@@ -8,11 +8,20 @@
   "noSearchResults": "No classes match your search criteria",
   "createFirstClassDescription": "Create your first class to start organizing students and exams",
   "searchPlaceholder": "Search classes...",
+  "errors": {
+    "retry": "Retry"
+  },
   "classCard": {
     "noDescription": "No description",
-    "students": "students",
+    "students": "student",
+    "students_plural": "students",
+    "documents": "document",
+    "documents_plural": "documents",
+    "exams": "exam",
+    "exams_plural": "exams",
     "manage": "Manage",
-    "code": "Code"
+    "code": "Code",
+    "viewClass": "View Class"
   },
   "classDetails": {
     "backToClasses": "Back to Classes",

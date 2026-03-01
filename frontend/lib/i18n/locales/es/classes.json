@@ -8,11 +8,20 @@
   "noSearchResults": "Ninguna clase coincide con tu búsqueda",
   "createFirstClassDescription": "Crea tu primera clase para comenzar a organizar estudiantes y exámenes",
   "searchPlaceholder": "Buscar clases...",
+  "errors": {
+    "retry": "Reintentar"
+  },
   "classCard": {
     "noDescription": "Sin descripción",
-    "students": "estudiantes",
+    "students": "estudiante",
+    "students_plural": "estudiantes",
+    "documents": "documento",
+    "documents_plural": "documentos",
+    "exams": "examen",
+    "exams_plural": "exámenes",
     "manage": "Gestionar",
-    "code": "Código"
+    "code": "Código",
+    "viewClass": "Ver Clase"
   },
   "classDetails": {
     "backToClasses": "Volver a Clases",

@@ -137,6 +137,15 @@ export class PrismaStudentEnrollmentRepository implements IStudentEnrollmentRepo
     return count > 0;
   }
 
+  async countByClassId(classId: ClassId): Promise<number> {
+    return this.prisma.studentEnrollment.count({
+      where: {
+        classId: classId.toString(),
+        isActive: true,
+      },
+    });
+  }
+
   /**
    * Maps Prisma StudentEnrollment record to domain StudentEnrollment entity
    */
