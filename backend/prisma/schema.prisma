@@ -36,11 +36,12 @@ model User {
   documents          Document[]
   exams              Exam[]
   preferences        UserPreferences?
-  studentAssignments ExamAssignment[]    @relation("StudentAssignments")
-  teacherAssignments ExamAssignment[]    @relation("TeacherAssignments")
-  taughtClasses      Class[]             @relation("TeacherClasses")
-  joinedClasses      StudentEnrollment[] @relation("StudentEnrollments")
-  createdInvitations Invitation[]        @relation("CreatedInvitations")
+  studentAssignments ExamAssignment[]     @relation("StudentAssignments")
+  teacherAssignments ExamAssignment[]     @relation("TeacherAssignments")
+  taughtClasses      Class[]              @relation("TeacherClasses")
+  joinedClasses      StudentEnrollment[]  @relation("StudentEnrollments")
+  createdInvitations Invitation[]         @relation("CreatedInvitations")
+  taughtExams        ClassExam[]          @relation("TaughtExams")
 
   @@map("users")
 }
@@ -168,6 +169,7 @@ model Exam {
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions   Question[]
   assignments ExamAssignment[]
+  classExams  ClassExam[]
 
   @@index([userId])
   @@map("exams")
@@ -221,10 +223,11 @@ enum QuestionDifficulty {
 // ============================================================================
 
 model ExamAssignment {
-  id        String @id @default(uuid())
-  examId    String @map("exam_id")
-  studentId String @map("student_id")
-  teacherId String @map("teacher_id")
+  id         String @id @default(uuid())
+  examId     String @map("exam_id")
+  studentId  String @map("student_id")
+  teacherId  String @map("teacher_id")
+  classExamId String? @map("class_exam_id") // Link to ClassExam (nullable for backwards compatibility)
 
   // Status tracking
   status      ExamAssignmentStatus @default(PENDING)
@@ -237,10 +240,11 @@ model ExamAssignment {
   feedback String? @db.Text
 
   // Relations
-  exam    Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
-  student User            @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
-  teacher User            @relation("TeacherAssignments", fields: [teacherId], references: [id], onDelete: Cascade)
-  answers StudentAnswer[]
+  exam      Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  student   User            @relation("StudentAssignments", fields: [studentId], references: [id], onDelete: Cascade)
+  teacher   User            @relation("TeacherAssignments", fields: [teacherId], references: [id], onDelete: Cascade)
+  classExam ClassExam?      @relation(fields: [classExamId], references: [id], onDelete: SetNull)
+  answers   StudentAnswer[]
 
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
@@ -250,6 +254,7 @@ model ExamAssignment {
   @@index([studentId])
   @@index([teacherId])
   @@index([status])
+  @@index([classExamId])
   @@map("exam_assignments")
 }
 
@@ -307,6 +312,7 @@ model Class {
   enrollments StudentEnrollment[]
   invitations Invitation[]
   documents   ClassDocument[]
+  classExams  ClassExam[]
 
   @@index([teacherId])
   @@index([code])
@@ -395,4 +401,45 @@ model ClassDocument {
   @@index([documentId])
   @@index([classId, isVisible])
   @@map("class_documents")
+}
+
+// ============================================================================
+// Class Exams (Exam Assignment to Classes)
+// ============================================================================
+
+model ClassExam {
+  id        String   @id @default(uuid())
+  classId   String   @map("class_id")
+  examId    String   @map("exam_id")
+  teacherId String   @map("teacher_id")
+
+  // Availability settings
+  availableAt DateTime? @map("available_at") // When students can start seeing it
+  dueDate     DateTime? @map("due_date")      // Deadline for submission
+  timeLimit   Int?      @map("time_limit")    // Minutes (null = unlimited)
+
+  // Visibility
+  isPublished Boolean @default(false) @map("is_published")
+
+  // Attempt settings
+  maxAttempts            Int     @default(1) @map("max_attempts")
+  showResultsImmediately Boolean @default(false) @map("show_results_immediately")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  class       Class           @relation(fields: [classId], references: [id], onDelete: Cascade)
+  exam        Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  teacher     User            @relation("TaughtExams", fields: [teacherId], references: [id], onDelete: Cascade)
+  assignments ExamAssignment[]
+
+  // Constraints
+  @@unique([classId, examId]) // One exam assignment per class
+  @@index([classId])
+  @@index([examId])
+  @@index([teacherId])
+  @@index([isPublished])
+  @@map("class_exams")
 }

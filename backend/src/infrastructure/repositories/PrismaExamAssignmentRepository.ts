@@ -7,6 +7,7 @@ import type {
   FindAssignmentsFilters,
 } from '@domain/repositories/IExamAssignmentRepository.js';
 import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
+import { ClassExamId } from '@domain/value-objects/ClassExamId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export class PrismaExamAssignmentRepository implements IExamAssignmentRepository {
@@ -64,6 +65,21 @@ export class PrismaExamAssignmentRepository implements IExamAssignmentRepository
     return assignments.map((a: any) => this.toDomain(a));
   }
 
+  async findByClassExamId(classExamId: ClassExamId): Promise<ExamAssignment[]> {
+    const assignments = await this.prisma.examAssignment.findMany({
+      where: { classExamId: classExamId.value },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return assignments.map((a: any) => this.toDomain(a));
+  }
+
+  async countByClassExamId(classExamId: ClassExamId): Promise<number> {
+    return this.prisma.examAssignment.count({
+      where: { classExamId: classExamId.value },
+    });
+  }
+
   async create(data: CreateExamAssignmentDTO): Promise<ExamAssignment> {
     const assignment = await this.prisma.examAssignment.create({
       data: {
@@ -72,6 +88,7 @@ export class PrismaExamAssignmentRepository implements IExamAssignmentRepository
         teacherId: data.teacherId.value,
         status: ExamAssignmentStatus.PENDING,
         dueDate: data.dueDate,
+        classExamId: data.classExamId ?? null,
       },
     });
 
