@@ -1,16 +1,13 @@
 import type { Prisma, PrismaClient } from '@prisma/client';
 
-import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
+import type {
+  IClassExamRepository,
+  ClassExamWithStats,
+} from '@domain/repositories/IClassExamRepository.js';
 import { ClassExam } from '@domain/entities/ClassExam.js';
 import { ClassExamId } from '@domain/value-objects/ClassExamId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-
-type ClassExamWithStats = ClassExam & {
-  startedCount: number;
-  submittedCount: number;
-  gradedCount: number;
-};
 
 export class PrismaClassExamRepository implements IClassExamRepository {
   private constructor(private prisma: PrismaClient) {}
@@ -70,12 +67,24 @@ export class PrismaClassExamRepository implements IClassExamRepository {
         }),
       ]);
 
-      const classExamEntity = this.toDomain(ce);
-      const result: ClassExamWithStats = Object.assign({}, classExamEntity, {
+      // Build result directly from Prisma record
+      const result: ClassExamWithStats = {
+        id: ce.id,
+        classId: ce.classId,
+        examId: ce.examId,
+        teacherId: ce.teacherId,
+        availableAt: ce.availableAt,
+        dueDate: ce.dueDate,
+        timeLimit: ce.timeLimit,
+        isPublished: ce.isPublished,
+        maxAttempts: ce.maxAttempts,
+        showResultsImmediately: ce.showResultsImmediately,
+        createdAt: ce.createdAt,
+        updatedAt: ce.updatedAt,
         startedCount: started,
         submittedCount: submitted,
         gradedCount: graded,
-      }) as ClassExamWithStats;
+      };
 
       results.push(result);
     }

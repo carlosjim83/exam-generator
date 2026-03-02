@@ -7,6 +7,7 @@ import type { FastifyInstance } from 'fastify';
 
 import type { GetClassExamsInput } from '@application/use-cases/classes/GetClassExamsUseCase.js';
 import type { GetStudentExamsInput } from '@application/use-cases/classes/GetStudentExamsUseCase.js';
+import type { GetStudentClassExamsInput } from '@application/use-cases/classes/GetStudentClassExamsUseCase.js';
 import type { PublishClassExamInput } from '@application/use-cases/classes/PublishClassExamUseCase.js';
 import type { UpdateClassExamSettingsInput } from '@application/use-cases/classes/UpdateClassExamSettingsUseCase.js';
 import { container } from '@config/container.js';
@@ -181,6 +182,88 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           gradedCount: exam.gradedCount,
           assignedCount: exam.assignedCount,
           createdAt: exam.createdAt.toISOString(),
+        })),
+      });
+    }
+  );
+
+  // GET /api/classes/:classId/exams/available - Get available exams for student (student view)
+  fastify.get(
+    '/api/classes/:classId/exams/available',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['class-exams'],
+        summary: 'Get available exams for a class',
+        description:
+          'Get all published exams available to the current student for a specific class',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              exams: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string', format: 'uuid' },
+                    classId: { type: 'string', format: 'uuid' },
+                    examId: { type: 'string', format: 'uuid' },
+                    examTitle: { type: 'string' },
+                    questionCount: { type: 'number' },
+                    availableAt: { type: 'string', format: 'date-time', nullable: true },
+                    dueDate: { type: 'string', format: 'date-time', nullable: true },
+                    timeLimit: { type: 'number', nullable: true },
+                    maxAttempts: { type: 'number' },
+                    status: {
+                      type: 'string',
+                      enum: ['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'GRADED'],
+                    },
+                    score: { type: 'number', nullable: true },
+                    attemptNumber: { type: 'number' },
+                    remainingAttempts: { type: 'number' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId } = request.params as { classId: string };
+
+      const input: GetStudentClassExamsInput = {
+        studentId: userId,
+        classId,
+      };
+
+      const result = await container.getStudentClassExamsUseCase.execute(input);
+
+      reply.status(200).send({
+        exams: result.exams.map((exam) => ({
+          id: exam.id,
+          classId: exam.classId,
+          examId: exam.examId,
+          examTitle: exam.examTitle,
+          questionCount: exam.questionCount,
+          availableAt: exam.availableAt?.toISOString() ?? null,
+          dueDate: exam.dueDate?.toISOString() ?? null,
+          timeLimit: exam.timeLimit,
+          maxAttempts: exam.maxAttempts,
+          status: exam.status,
+          score: exam.score,
+          attemptNumber: exam.attemptNumber,
+          remainingAttempts: exam.remainingAttempts,
         })),
       });
     }

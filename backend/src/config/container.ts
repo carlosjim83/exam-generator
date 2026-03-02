@@ -104,6 +104,7 @@ import type { IClassExamRepository } from '@domain/repositories/IClassExamReposi
 import { PrismaExamAssignmentRepository } from '@infrastructure/repositories/PrismaExamAssignmentRepository.js';
 import { PrismaExamRepository } from '@infrastructure/repositories/PrismaExamRepository.js';
 import { PrismaStudentAnswerRepository } from '@infrastructure/repositories/PrismaStudentAnswerRepository.js';
+import { GetStudentClassExamsUseCase } from '@application/use-cases/classes/GetStudentClassExamsUseCase.js';
 
 /**
  * Container class - Singleton pattern
@@ -180,6 +181,7 @@ export class Container {
   // Application Layer - Class Exam Use Cases
   private readonly _getClassExamsUseCase: GetClassExamsUseCase;
   private readonly _getStudentExamsUseCase: GetStudentExamsUseCase;
+  private readonly _getStudentClassExamsUseCase: GetStudentClassExamsUseCase;
   private readonly _publishClassExamUseCase: PublishClassExamUseCase;
   private readonly _updateClassExamSettingsUseCase: UpdateClassExamSettingsUseCase;
   private readonly _getClassExamResultsUseCase: GetClassExamResultsUseCase;
@@ -396,6 +398,12 @@ export class Container {
       this._classExamRepository,
       this._examRepository,
       this._examAssignmentRepository
+    );
+    this._getStudentClassExamsUseCase = new GetStudentClassExamsUseCase(
+      this._classExamRepository,
+      this._examRepository,
+      this._examAssignmentRepository,
+      this._classRepository
     );
     this._publishClassExamUseCase = new PublishClassExamUseCase(
       this._classExamRepository,
@@ -731,6 +739,10 @@ export class Container {
 
   public get getStudentExamsUseCase(): GetStudentExamsUseCase {
     return this._getStudentExamsUseCase;
+  }
+
+  public get getStudentClassExamsUseCase(): GetStudentClassExamsUseCase {
+    return this._getStudentClassExamsUseCase;
   }
 
   public get publishClassExamUseCase(): PublishClassExamUseCase {

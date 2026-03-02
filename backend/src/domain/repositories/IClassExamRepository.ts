@@ -3,6 +3,27 @@ import type { ClassExamId } from '@domain/value-objects/ClassExamId.js';
 import type { ClassId } from '@domain/value-objects/ClassId.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
 
+/**
+ * ClassExam with statistics for teacher view
+ */
+export interface ClassExamWithStats {
+  id: string;
+  classId: string;
+  examId: string;
+  teacherId: string;
+  availableAt: Date | null;
+  dueDate: Date | null;
+  timeLimit: number | null;
+  isPublished: boolean;
+  maxAttempts: number;
+  showResultsImmediately: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  startedCount: number;
+  submittedCount: number;
+  gradedCount: number;
+}
+
 export interface IClassExamRepository {
   /**
    * Find a ClassExam by its ID
@@ -20,11 +41,7 @@ export interface IClassExamRepository {
    * Find all exams assigned to a class with stats
    * @param classId - The class ID
    */
-  findByClassIdWithStats(
-    classId: ClassId
-  ): Promise<
-    Array<ClassExam & { startedCount: number; submittedCount: number; gradedCount: number }>
-  >;
+  findByClassIdWithStats(classId: ClassId): Promise<ClassExamWithStats[]>;
 
   /**
    * Find all class exams for a student (through enrollments)
