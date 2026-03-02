@@ -86,10 +86,20 @@ export function AssignExamModal({ open, onOpenChange, classId, onAssigned }: Ass
 
     setSubmitting(true);
     try {
+      // Convert datetime-local to ISO 8601 format
+      // datetime-local returns: "2026-03-10T09:00"
+      // Backend expects: "2026-03-10T09:00:00.000Z" (ISO 8601)
+      const toISOString = (localDateTime: string): string | null => {
+        if (!localDateTime) return null;
+        // Append seconds and timezone if missing
+        const date = new Date(localDateTime);
+        return date.toISOString();
+      };
+
       const data: AssignExamRequest = {
         examId: selectedExamId,
-        availableAt: availableAt || null,
-        dueDate: dueDate || null,
+        availableAt: toISOString(availableAt),
+        dueDate: toISOString(dueDate),
         timeLimit: timeLimit ? parseInt(timeLimit, 10) : null,
         maxAttempts: parseInt(maxAttempts, 10) || 1,
         showResultsImmediately: showResults,
