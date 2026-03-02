@@ -7,12 +7,14 @@ import { useTranslation } from 'react-i18next';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { StudentList } from '@/features/classes/components/StudentList';
 import { TeacherClassDocuments } from '@/features/classes/components/TeacherClassDocuments';
+import { ClassExamList } from '@/features/classes/components/ClassExamList';
+import { AssignExamModal } from '@/features/classes/components/AssignExamModal';
 import { InviteStudentsDialog } from '@/features/classes/components/InviteStudentsDialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Copy, ArrowLeft, Users, FileText, UserPlus } from 'lucide-react';
+import { Copy, ArrowLeft, Users, FileText, BookOpen, Plus, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getClassById,
@@ -46,7 +48,9 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<ClassDetails['students']>([]);
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [assignExamDialogOpen, setAssignExamDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('students');
+  const [examListKey, setExamListKey] = useState(0);
 
   const loadClassData = async () => {
     try {
@@ -169,7 +173,7 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
           </Card>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="students" className="flex items-center gap-2">
                 <Users className="h-4 w-4" />
                 {t('classDetails.tabs.students')}
@@ -177,6 +181,10 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
               <TabsTrigger value="documents" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 {t('classDetails.tabs.documents')}
+              </TabsTrigger>
+              <TabsTrigger value="exams" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                {t('classDetails.tabs.exams')}
               </TabsTrigger>
             </TabsList>
 
@@ -215,6 +223,26 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            <TabsContent value="exams" className="mt-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>{t('classExams.title')}</CardTitle>
+                      <CardDescription>{t('classExams.subtitle')}</CardDescription>
+                    </div>
+                    <Button onClick={() => setAssignExamDialogOpen(true)}>
+                      <Plus className="mr-2 h-4 w-4" />
+                      {t('classExams.assignExam')}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <ClassExamList key={examListKey} classId={classId} />
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
 
           <InviteStudentsDialog
@@ -222,6 +250,16 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
             onOpenChange={setInviteDialogOpen}
             onInvite={handleInvite}
             onUploadCsv={handleUploadCsv}
+          />
+
+          <AssignExamModal
+            open={assignExamDialogOpen}
+            onOpenChange={setAssignExamDialogOpen}
+            classId={classId}
+            onAssigned={() => {
+              setAssignExamDialogOpen(false);
+              setExamListKey((k) => k + 1);
+            }}
           />
         </div>
       </div>

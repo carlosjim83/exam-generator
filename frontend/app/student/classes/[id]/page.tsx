@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
 import { ClassDocuments } from '@/features/classes/components/ClassDocuments';
+import { StudentExamList } from '@/features/classes/components/StudentExamList';
 
 interface StudentClassDetailPageProps {
   params: Promise<{
@@ -159,9 +160,7 @@ export default function StudentClassDetailPage({ params }: StudentClassDetailPag
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground text-center py-8">
-                  {t('classDetails.noExams')}
-                </p>
+                <StudentExamList classId={classId} />
               </CardContent>
             </Card>
 

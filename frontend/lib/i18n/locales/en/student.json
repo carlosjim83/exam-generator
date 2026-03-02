@@ -167,6 +167,34 @@
       "loadDocumentsFailed": "Failed to load class materials"
     }
   },
+  "classExams": {
+    "title": "Class Exams",
+    "subtitle": "Exams available for this class",
+    "noExams": "No exams available",
+    "noExamsHint": "Your teacher hasn't assigned any exams yet",
+    "questions": "question",
+    "questions_other": "questions",
+    "timeLimit": "{{minutes}} min",
+    "unlimited": "Unlimited",
+    "dueDate": "Due",
+    "availableFrom": "Available from",
+    "noDueDate": "No due date",
+    "status": {
+      "NOT_STARTED": "Not Started",
+      "IN_PROGRESS": "In Progress",
+      "SUBMITTED": "Submitted",
+      "GRADED": "Graded"
+    },
+    "actions": {
+      "startExam": "Start Exam",
+      "continue": "Continue",
+      "viewResults": "View Results"
+    },
+    "score": "Score",
+    "attempt": "attempt",
+    "attempt_other": "attempts",
+    "remainingAttempts": "{{count}} remaining"
+  },
   "exams": {
     "title": "My Exams",
     "welcome": "Welcome, {{name}}! Here are your assigned exams."

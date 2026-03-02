@@ -32,7 +32,8 @@
     "loadError": "Error al cargar la clase",
     "tabs": {
       "students": "Estudiantes",
-      "documents": "Documentos"
+      "documents": "Documentos",
+      "exams": "Exámenes"
     },
     "studentsSection": {
       "title": "Estudiantes",
@@ -121,6 +122,85 @@
     },
     "success": {
       "removed": "{{name}} eliminado de la clase"
+    }
+  },
+  "classExams": {
+    "title": "Exámenes",
+    "subtitle": "Gestiona los exámenes asignados a esta clase",
+    "noExams": "Aún no hay exámenes asignados",
+    "noExamsHint": "Asigna exámenes desde tu biblioteca para que estén disponibles para los estudiantes",
+    "assignExam": "Asignar Examen",
+    "status": {
+      "draft": "Borrador",
+      "published": "Publicado"
+    },
+    "visibility": {
+      "published": "Publicado",
+      "draft": "Borrador",
+      "publishedHint": "Visible para estudiantes",
+      "draftHint": "No visible para estudiantes"
+    },
+    "questions": "pregunta",
+    "questions_other": "preguntas",
+    "timeLimit": "{{minutes}} min",
+    "unlimited": "Sin límite",
+    "dueDate": "Vence",
+    "availableFrom": "Disponible desde",
+    "noDueDate": "Sin fecha límite",
+    "stats": {
+      "started": "iniciado",
+      "submitted": "enviado",
+      "graded": "calificado"
+    },
+    "actions": {
+      "publish": "Publicar",
+      "unpublish": "Despublicar",
+      "viewResults": "Ver Resultados",
+      "editSettings": "Editar Configuración",
+      "remove": "Eliminar Examen"
+    },
+    "publishConfirm": "¿Publicar este examen?",
+    "publishConfirmDescription": "Los estudiantes podrán ver y tomar este examen. Esta acción no se puede deshacer.",
+    "unpublishConfirm": "¿Despublicar este examen?",
+    "unpublishConfirmDescription": "Los estudiantes ya no podrán ver este examen. Los que ya empezaron pueden seguir enviándolo.",
+    "removeConfirm": "¿Eliminar \"{{title}}\" de esta clase?",
+    "removeConfirmDescription": "Los estudiantes perderán acceso inmediatamente. Su progreso se conservará.",
+    "published": "Examen publicado correctamente",
+    "unpublished": "Examen despublicado correctamente",
+    "removed": "Examen eliminado de la clase",
+    "errors": {
+      "loadFailed": "Error al cargar los exámenes",
+      "publishFailed": "Error al publicar el examen",
+      "unpublishFailed": "Error al despublicar el examen",
+      "removeFailed": "Error al eliminar el examen"
+    }
+  },
+  "assignExamModal": {
+    "title": "Asignar Examen a la Clase",
+    "selectExam": "Seleccionar Examen",
+    "selectExamHint": "Elige un examen de tu biblioteca",
+    "noExams": "No hay exámenes disponibles",
+    "noExamsHint": "Crea exámenes primero antes de asignarlos a clases",
+    "settings": "Configuración",
+    "availableFrom": "Disponible Desde",
+    "availableFromHint": "Cuándo los estudiantes pueden empezar a ver este examen",
+    "dueDate": "Fecha Límite",
+    "dueDateHint": "Plazo para entregar",
+    "timeLimit": "Límite de Tiempo",
+    "timeLimitHint": "Tiempo máximo en minutos (0 = sin límite)",
+    "maxAttempts": "Intentos Máximos",
+    "maxAttemptsHint": "Cuántas veces pueden tomar el examen los estudiantes",
+    "showResults": "Mostrar resultados inmediatamente después de enviar",
+    "showResultsHint": "Los estudiantes pueden ver su puntuación al instante",
+    "cancel": "Cancelar",
+    "assigning": "Asignando...",
+    "assignButton": "Asignar Examen",
+    "errors": {
+      "noExamSelected": "Por favor selecciona un examen",
+      "assignFailed": "Error al asignar el examen"
+    },
+    "success": {
+      "assigned": "Examen asignado a la clase"
     }
   }
 }
