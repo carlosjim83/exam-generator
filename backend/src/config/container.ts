@@ -57,6 +57,12 @@ import {
 } from '@application/use-cases/index.js';
 import { GetTeacherClassesWithStatsUseCase } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
 import { GetStudentClassesWithStatsUseCase } from '@application/use-cases/classes/GetStudentClassesWithStatsUseCase.js';
+import { GetClassExamsUseCase } from '@application/use-cases/classes/GetClassExamsUseCase.js';
+import { GetStudentExamsUseCase } from '@application/use-cases/classes/GetStudentExamsUseCase.js';
+import { PublishClassExamUseCase } from '@application/use-cases/classes/PublishClassExamUseCase.js';
+import { UpdateClassExamSettingsUseCase } from '@application/use-cases/classes/UpdateClassExamSettingsUseCase.js';
+import { GetClassExamResultsUseCase } from '@application/use-cases/classes/GetClassExamResultsUseCase.js';
+import { DeleteClassExamUseCase } from '@application/use-cases/classes/DeleteClassExamUseCase.js';
 // Class Document Use Cases
 // Application Use Cases
 // Student Use Cases
@@ -92,7 +98,9 @@ import {
   PrismaStudentEnrollmentRepository,
   PrismaInvitationRepository,
   PrismaClassDocumentRepository,
+  PrismaClassExamRepository,
 } from '@infrastructure/index.js';
+import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import { PrismaExamAssignmentRepository } from '@infrastructure/repositories/PrismaExamAssignmentRepository.js';
 import { PrismaExamRepository } from '@infrastructure/repositories/PrismaExamRepository.js';
 import { PrismaStudentAnswerRepository } from '@infrastructure/repositories/PrismaStudentAnswerRepository.js';
@@ -123,6 +131,7 @@ export class Container {
   private readonly _studentEnrollmentRepository: IStudentEnrollmentRepository;
   private readonly _invitationRepository: IInvitationRepository;
   private readonly _classDocumentRepository: IClassDocumentRepository;
+  private readonly _classExamRepository: IClassExamRepository;
 
   // Application Layer - Auth Use Cases
   private readonly _registerUserUseCase: RegisterUserUseCase;
@@ -167,6 +176,14 @@ export class Container {
   private readonly _getStudentClassesUseCase: GetStudentClassesUseCase;
   private readonly _getTeacherClassesWithStatsUseCase: GetTeacherClassesWithStatsUseCase;
   private readonly _getStudentClassesWithStatsUseCase: GetStudentClassesWithStatsUseCase;
+
+  // Application Layer - Class Exam Use Cases
+  private readonly _getClassExamsUseCase: GetClassExamsUseCase;
+  private readonly _getStudentExamsUseCase: GetStudentExamsUseCase;
+  private readonly _publishClassExamUseCase: PublishClassExamUseCase;
+  private readonly _updateClassExamSettingsUseCase: UpdateClassExamSettingsUseCase;
+  private readonly _getClassExamResultsUseCase: GetClassExamResultsUseCase;
+  private readonly _deleteClassExamUseCase: DeleteClassExamUseCase;
 
   // Application Layer - Class Document Use Cases
   private readonly _shareDocumentWithClassUseCase: ShareDocumentWithClassUseCase;
@@ -228,6 +245,7 @@ export class Container {
     this._studentEnrollmentRepository = PrismaStudentEnrollmentRepository.create(this._prisma);
     this._invitationRepository = PrismaInvitationRepository.create(this._prisma);
     this._classDocumentRepository = PrismaClassDocumentRepository.create(this._prisma);
+    this._classExamRepository = PrismaClassExamRepository.create(this._prisma);
 
     // ========================================
     // APPLICATION LAYER - USE CASES
@@ -330,6 +348,8 @@ export class Container {
     );
     this._assignExamToClassUseCase = new AssignExamToClassUseCase(
       this._classRepository,
+      this._examRepository,
+      this._classExamRepository,
       this._studentEnrollmentRepository,
       this._examAssignmentRepository
     );
@@ -357,12 +377,43 @@ export class Container {
     this._getTeacherClassesWithStatsUseCase = new GetTeacherClassesWithStatsUseCase(
       this._classRepository,
       this._studentEnrollmentRepository,
-      this._classDocumentRepository
+      this._classDocumentRepository,
+      this._classExamRepository
     );
     this._getStudentClassesWithStatsUseCase = new GetStudentClassesWithStatsUseCase(
       this._classRepository,
       this._studentEnrollmentRepository,
-      this._classDocumentRepository
+      this._classDocumentRepository,
+      this._classExamRepository
+    );
+
+    // Class Exam Use Cases
+    this._getClassExamsUseCase = new GetClassExamsUseCase(
+      this._classExamRepository,
+      this._examRepository
+    );
+    this._getStudentExamsUseCase = new GetStudentExamsUseCase(
+      this._classExamRepository,
+      this._examRepository,
+      this._examAssignmentRepository
+    );
+    this._publishClassExamUseCase = new PublishClassExamUseCase(
+      this._classExamRepository,
+      this._classRepository
+    );
+    this._updateClassExamSettingsUseCase = new UpdateClassExamSettingsUseCase(
+      this._classExamRepository,
+      this._classRepository
+    );
+    this._getClassExamResultsUseCase = new GetClassExamResultsUseCase(
+      this._classExamRepository,
+      this._classRepository,
+      this._examRepository,
+      this._examAssignmentRepository
+    );
+    this._deleteClassExamUseCase = new DeleteClassExamUseCase(
+      this._classExamRepository,
+      this._classRepository
     );
 
     // Class Document Use Cases
@@ -634,6 +685,10 @@ export class Container {
     return this._studentEnrollmentRepository;
   }
 
+  public get classExamRepository(): IClassExamRepository {
+    return this._classExamRepository;
+  }
+
   // Student Use Cases
 
   public get assignExamToStudentUseCase(): AssignExamToStudentUseCase {
@@ -666,6 +721,32 @@ export class Container {
 
   public get getStudentClassesWithStatsUseCase(): GetStudentClassesWithStatsUseCase {
     return this._getStudentClassesWithStatsUseCase;
+  }
+
+  // Class Exam Use Cases
+
+  public get getClassExamsUseCase(): GetClassExamsUseCase {
+    return this._getClassExamsUseCase;
+  }
+
+  public get getStudentExamsUseCase(): GetStudentExamsUseCase {
+    return this._getStudentExamsUseCase;
+  }
+
+  public get publishClassExamUseCase(): PublishClassExamUseCase {
+    return this._publishClassExamUseCase;
+  }
+
+  public get updateClassExamSettingsUseCase(): UpdateClassExamSettingsUseCase {
+    return this._updateClassExamSettingsUseCase;
+  }
+
+  public get getClassExamResultsUseCase(): GetClassExamResultsUseCase {
+    return this._getClassExamResultsUseCase;
+  }
+
+  public get deleteClassExamUseCase(): DeleteClassExamUseCase {
+    return this._deleteClassExamUseCase;
   }
 
   // Class Document Use Cases
