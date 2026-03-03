@@ -170,5 +170,34 @@
       "loadFailed": "Error al cargar los detalles de la clase",
       "loadDocumentsFailed": "Error al cargar los materiales de la clase"
     }
+  },
+  "classExams": {
+    "title": "Exámenes de la Clase",
+    "subtitle": "Exámenes disponibles para esta clase",
+    "noExams": "No hay exámenes disponibles",
+    "noExamsHint": "Tu profesor aún no ha asignado exámenes",
+    "questions": "pregunta",
+    "questions_other": "preguntas",
+    "timeLimit": "{{minutes}} min",
+    "unlimited": "Sin límite",
+    "dueDate": "Vence",
+    "availableFrom": "Disponible desde",
+    "noDueDate": "Sin fecha límite",
+    "status": {
+      "NOT_STARTED": "No Iniciado",
+      "IN_PROGRESS": "En Progreso",
+      "SUBMITTED": "Enviado",
+      "GRADED": "Calificado"
+    },
+    "actions": {
+      "startExam": "Iniciar Examen",
+      "continue": "Continuar",
+      "viewResults": "Ver Resultados"
+    },
+    "score": "Puntuación",
+    "attempt": "intento",
+    "attempt_other": "intentos",
+    "remainingAttempts": "{{count}} restante",
+    "remainingAttempts_other": "{{count}} restantes"
   }
 }

@@ -32,7 +32,8 @@
     "loadError": "Failed to load class",
     "tabs": {
       "students": "Students",
-      "documents": "Documents"
+      "documents": "Documents",
+      "exams": "Exams"
     },
     "studentsSection": {
       "title": "Students",
@@ -121,6 +122,85 @@
     },
     "success": {
       "removed": "{{name}} removed from class"
+    }
+  },
+  "classExams": {
+    "title": "Exams",
+    "subtitle": "Manage exams assigned to this class",
+    "noExams": "No exams assigned yet",
+    "noExamsHint": "Assign exams from your library to make them available to students",
+    "assignExam": "Assign Exam",
+    "status": {
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "visibility": {
+      "published": "Published",
+      "draft": "Draft",
+      "publishedHint": "Visible to students",
+      "draftHint": "Not visible to students"
+    },
+    "questions": "question",
+    "questions_other": "questions",
+    "timeLimit": "{{minutes}} min",
+    "unlimited": "Unlimited",
+    "dueDate": "Due",
+    "availableFrom": "Available from",
+    "noDueDate": "No due date",
+    "stats": {
+      "started": "started",
+      "submitted": "submitted",
+      "graded": "graded"
+    },
+    "actions": {
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "viewResults": "View Results",
+      "editSettings": "Edit Settings",
+      "remove": "Remove Exam"
+    },
+    "publishConfirm": "Publish this exam?",
+    "publishConfirmDescription": "Students will be able to see and take this exam. This action cannot be undone.",
+    "unpublishConfirm": "Unpublish this exam?",
+    "unpublishConfirmDescription": "Students will no longer be able to see this exam. Students already in progress can still submit.",
+    "removeConfirm": "Remove \"{{title}}\" from this class?",
+    "removeConfirmDescription": "Students will lose access immediately. Their progress will be preserved.",
+    "published": "Exam published successfully",
+    "unpublished": "Exam unpublished successfully",
+    "removed": "Exam removed from class",
+    "errors": {
+      "loadFailed": "Failed to load exams",
+      "publishFailed": "Failed to publish exam",
+      "unpublishFailed": "Failed to unpublish exam",
+      "removeFailed": "Failed to remove exam"
+    }
+  },
+  "assignExamModal": {
+    "title": "Assign Exam to Class",
+    "selectExam": "Select Exam",
+    "selectExamHint": "Choose an exam from your library",
+    "noExams": "No exams available",
+    "noExamsHint": "Create exams first before assigning them to classes",
+    "settings": "Settings",
+    "availableFrom": "Available From",
+    "availableFromHint": "When students can start seeing this exam",
+    "dueDate": "Due Date",
+    "dueDateHint": "Deadline for submissions",
+    "timeLimit": "Time Limit",
+    "timeLimitHint": "Maximum time in minutes (0 = unlimited)",
+    "maxAttempts": "Max Attempts",
+    "maxAttemptsHint": "How many times students can take this exam",
+    "showResults": "Show results immediately after submission",
+    "showResultsHint": "Students can see their score right away",
+    "cancel": "Cancel",
+    "assigning": "Assigning...",
+    "assignButton": "Assign Exam",
+    "errors": {
+      "noExamSelected": "Please select an exam",
+      "assignFailed": "Failed to assign exam"
+    },
+    "success": {
+      "assigned": "Exam assigned to class"
     }
   }
 }

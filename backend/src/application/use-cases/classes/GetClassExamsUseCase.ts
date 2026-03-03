@@ -48,15 +48,25 @@ export class GetClassExamsUseCase {
     const classExams = await this.classExamRepository.findByClassIdWithStats(classId);
 
     // Build results without assigned count (requires separate query)
-    const examsWithStats: ClassExamWithStats[] = await Promise.all(
+    const results = await Promise.all(
       classExams.map(async (ce) => {
+        // Validate examId exists
+        if (!ce.examId) {
+          console.error('[GetClassExamsUseCase] ClassExam missing examId:', {
+            id: ce.id,
+            examId: ce.examId,
+            classId: ce.classId,
+          });
+          return null; // Skip invalid records
+        }
+
         // Get exam details
         const exam = await this.examRepository.findById(ce.examId);
         const questionCount = exam?.questionCount ?? 0;
 
         return {
-          id: ce.id.toString(),
-          classId: ce.classId.toString(),
+          id: ce.id,
+          classId: ce.classId,
           examId: ce.examId,
           examTitle: exam?.title ?? 'Unknown Exam',
           questionCount,
@@ -74,6 +84,9 @@ export class GetClassExamsUseCase {
         };
       })
     );
+
+    // Filter out null results (invalid records)
+    const examsWithStats = results.filter((r): r is ClassExamWithStats => r !== null);
 
     return { exams: examsWithStats };
   }
