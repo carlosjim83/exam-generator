@@ -20,6 +20,8 @@ import studentEN from './locales/en/student.json';
 import studentES from './locales/es/student.json';
 import classesEN from './locales/en/classes.json';
 import classesES from './locales/es/classes.json';
+import landingEN from './locales/en/landing.json';
+import landingES from './locales/es/landing.json';
 
 // Define resources type
 const resources = {
@@ -33,6 +35,7 @@ const resources = {
     settings: settingsEN,
     student: studentEN,
     classes: classesEN,
+    landing: landingEN,
   },
   es: {
     common: commonES,
@@ -44,6 +47,7 @@ const resources = {
     settings: settingsES,
     student: studentES,
     classes: classesES,
+    landing: landingES,
   },
 } as const;
 
@@ -56,7 +60,18 @@ i18n
     lng: 'en', // Force 'en' on both server and client to prevent hydration mismatch
     fallbackLng: 'en',
     defaultNS: 'common',
-    ns: ['common', 'dashboard', 'exams', 'documents', 'upload', 'generate', 'settings', 'student', 'classes'],
+    ns: [
+      'common',
+      'dashboard',
+      'exams',
+      'documents',
+      'upload',
+      'generate',
+      'settings',
+      'student',
+      'classes',
+      'landing',
+    ],
 
     detection: {
       // Detect from localStorage for manual language changes
