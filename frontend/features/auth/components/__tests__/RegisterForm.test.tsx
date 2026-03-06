@@ -62,10 +62,10 @@ describe('RegisterForm', () => {
       expect(screen.getByText('Get started with AI-powered exam generation')).toBeInTheDocument();
     });
 
-    it('should render ExamForge logo', () => {
+    it('should render Formydable logo', () => {
       render(<RegisterForm />);
 
-      expect(screen.getByText('ExamForge')).toBeInTheDocument();
+      expect(screen.getByText('Formydable')).toBeInTheDocument();
     });
 
     it('should render all form inputs', () => {

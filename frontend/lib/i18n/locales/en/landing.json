@@ -1,0 +1,156 @@
+{
+  "appName": "Formydable",
+  "hero": {
+    "title": "Generate AI-Powered Exams in Minutes",
+    "subtitle": "Transform your educational materials into intelligent assessments. Upload, configure, and generate professional exams in seconds.",
+    "ctaTeacher": "Get Started as Teacher",
+    "ctaStudent": "Join as Student"
+  },
+  "features": {
+    "title": "Why Formydable?",
+    "subtitle": "Everything you need to create, manage, and grade assessments at scale.",
+    "aiGenerate": {
+      "title": "AI-Powered Generation",
+      "description": "Our AI analyzes your documents and generates high-quality questions automatically."
+    },
+    "autoGrade": {
+      "title": "Auto-Grading",
+      "description": "Instant automated grading with detailed explanations and performance analytics."
+    },
+    "multiLanguage": {
+      "title": "Multi-Language Support",
+      "description": "Create exams in multiple languages to serve diverse classrooms."
+    },
+    "documentImport": {
+      "title": "Easy Document Import",
+      "description": "Upload PDF or DOCX files and convert them into assessments seamlessly."
+    },
+    "analytics": {
+      "title": "Real-time Analytics",
+      "description": "Track student progress with detailed insights and performance metrics."
+    },
+    "classManagement": {
+      "title": "Class Management",
+      "description": "Organize students, assign exams, and manage your entire curriculum."
+    }
+  },
+  "teachers": {
+    "title": "Empower Your Teaching",
+    "subtitle": "Spend less time grading and more time teaching with AI-powered tools.",
+    "benefits": [
+      "Save hours of exam preparation time",
+      "Create unlimited assessments from your materials",
+      "Auto-grade with detailed feedback",
+      "Track student performance effortlessly"
+    ],
+    "cta": "Get Started Free"
+  },
+  "students": {
+    "title": "Learn Better, Faster",
+    "subtitle": "Take exams anytime, see results instantly, and track your progress.",
+    "benefits": [
+      "Take exams on any device",
+      "Get instant results and explanations",
+      "Track your learning progress",
+      "Join multiple classes easily"
+    ],
+    "cta": "Join a Class"
+  },
+  "howItWorks": {
+    "title": "How It Works",
+    "subtitle": "Three simple steps to your first AI-generated exam.",
+    "step1": {
+      "title": "Upload Your Document",
+      "description": "Drag and drop your PDF or DOCX file with course material."
+    },
+    "step2": {
+      "title": "Configure Your Exam",
+      "description": "Set the number of questions, difficulty level, and question types."
+    },
+    "step3": {
+      "title": "Generate & Share",
+      "description": "Let AI create your exam and share it with your class instantly."
+    }
+  },
+  "pricing": {
+    "title": "Simple Pricing",
+    "subtitle": "Start free, upgrade when you need more.",
+    "free": {
+      "title": "Free",
+      "description": "Perfect for getting started.",
+      "features": [
+        "5 exams per month",
+        "Up to 30 students",
+        "1 active class",
+        "Basic analytics",
+        "Email support"
+      ]
+    },
+    "pro": {
+      "title": "Pro",
+      "description": "For teachers who need more.",
+      "features": [
+        "Unlimited exams",
+        "Unlimited students",
+        "Unlimited classes",
+        "Advanced analytics",
+        "Priority support"
+      ],
+      "price": "$9",
+      "period": "/month",
+      "cta": "Upgrade to Pro"
+    },
+    "enterprise": {
+      "title": "For Schools & Universities",
+      "description": "Custom solutions for institutions.",
+      "features": [
+        "Everything in Pro",
+        "SSO Integration",
+        "Custom AI training",
+        "Dedicated support",
+        "SLA guarantee"
+      ],
+      "cta": "Contact Us"
+    }
+  },
+  "footer": {
+    "tagline": "Transform education with AI-powered assessments",
+    "madeWith": "Made with ❤️ for educators worldwide",
+    "links": {
+      "about": "About",
+      "features": "Features",
+      "pricing": "Pricing",
+      "contact": "Contact"
+    },
+    "legal": {
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy"
+    },
+    "rights": "All rights reserved."
+  },
+  "navigation": {
+    "features": "Features",
+    "pricing": "Pricing"
+  },
+  "roleLabels": {
+    "forTeachers": "For Teachers",
+    "forStudents": "For Students"
+  },
+  "badges": {
+    "aiPowered": "AI-Powered",
+    "free": "Free"
+  },
+  "trustIndicators": {
+    "freeEducation": "Free to start",
+    "multiLanguage": "Multi-Language",
+    "aiPowered": "AI-Powered"
+  },
+  "mockUI": {
+    "aiAssistant": "AI Assistant",
+    "readyToHelp": "Ready to help",
+    "yourProgress": "Your Progress",
+    "keepItUp": "Keep it up!",
+    "recentActivity": "Recent Activity",
+    "upcomingExams": "Upcoming Exams"
+  }
+}

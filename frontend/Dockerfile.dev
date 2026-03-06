@@ -16,11 +16,12 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY frontend/package.json ./frontend/
 
-# Install dependencies for frontend ONLY (to handle pnpm monorepo properly)
+# Install dependencies for frontend ONLY (initial setup)
 RUN cd /app && pnpm install --frozen-lockfile
 
-# Install frontend dependencies at workspace level (to fix symlink issues)
-RUN pnpm install --frozen-lockfile --filter=exam-generator-frontend...
+# Copy entrypoint script
+COPY frontend/docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
 
 # Copy frontend source code
 COPY frontend ./frontend
@@ -33,5 +34,5 @@ EXPOSE 3000
 # Use dumb-init for proper signal handling
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start Next.js dev server with hot reload
-CMD ["pnpm", "dev"]
+# Start with entrypoint that installs deps then runs dev
+CMD ["/bin/sh", "/app/docker-entrypoint.sh"]

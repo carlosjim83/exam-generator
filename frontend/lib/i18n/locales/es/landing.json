@@ -1,0 +1,156 @@
+{
+  "appName": "Formydable",
+  "hero": {
+    "title": "Genera Exámenes con IA en Minutos",
+    "subtitle": "Transforma tus materiales educativos en evaluaciones inteligentes. Sube, configura y genera exámenes profesionales en segundos.",
+    "ctaTeacher": "Comenzar como Profesor",
+    "ctaStudent": "Unirse como Estudiante"
+  },
+  "features": {
+    "title": "¿Por qué Formydable?",
+    "subtitle": "Todo lo que necesitas para crear, gestionar y calificar evaluaciones a gran escala.",
+    "aiGenerate": {
+      "title": "Generación con IA",
+      "description": "Nuestra IA analiza tus documentos y genera preguntas de alta calidad automáticamente."
+    },
+    "autoGrade": {
+      "title": "Calificación Automática",
+      "description": "Calificación instantánea con explicaciones detalladas y análisis de desempeño."
+    },
+    "multiLanguage": {
+      "title": "Soporte Multilingüe",
+      "description": "Crea exámenes en múltiples idiomas para servir a aulas diversas."
+    },
+    "documentImport": {
+      "title": "Importación de Documentos",
+      "description": "Sube archivos PDF o DOCX y conviértelos en evaluaciones sin interrupciones."
+    },
+    "analytics": {
+      "title": "Análisis en Tiempo Real",
+      "description": "Rastrea el progreso de los estudiantes con insights detallados y métricas de desempeño."
+    },
+    "classManagement": {
+      "title": "Gestión de Clases",
+      "description": "Organiza estudiantes, asigna exámenes y gestiona todo tu currículo."
+    }
+  },
+  "teachers": {
+    "title": "Potencia tu Enseñanza",
+    "subtitle": "Pasa menos tiempo calificando y más enseñando con herramientas potenciadas por IA.",
+    "benefits": [
+      "Ahorra horas de preparación de exámenes",
+      "Crea evaluaciones ilimitadas con tu material",
+      "Califica automáticamente con feedback detallado",
+      "Rastrea el desempeño sin esfuerzo"
+    ],
+    "cta": "Comenzar Gratis"
+  },
+  "students": {
+    "title": "Aprende Mejor, Más Rápido",
+    "subtitle": "Toma exámenes cuando quieras, mira los resultados al instante y rastrea tu progreso.",
+    "benefits": [
+      "Toma exámenes en cualquier dispositivo",
+      "Obtén resultados y explicaciones al instante",
+      "Rastrea tu progreso de aprendizaje",
+      "Únete a múltiples clases fácilmente"
+    ],
+    "cta": "Unirse a una Clase"
+  },
+  "howItWorks": {
+    "title": "Cómo Funciona",
+    "subtitle": "Tres simples pasos para tu primer examen generado por IA.",
+    "step1": {
+      "title": "Sube tu Documento",
+      "description": "Arrastra y suelta tu archivo PDF o DOCX con el material del curso."
+    },
+    "step2": {
+      "title": "Configura tu Examen",
+      "description": "Define la cantidad de preguntas, nivel de dificultad y tipos de preguntas."
+    },
+    "step3": {
+      "title": "Genera y Comparte",
+      "description": "Deja que la IA cree tu examen y compártelo con tu clase al instante."
+    }
+  },
+  "pricing": {
+    "title": "Precios Simples",
+    "subtitle": "Comienza gratis, actualiza cuando necesites más.",
+    "free": {
+      "title": "Gratis",
+      "description": "Perfecto para empezar.",
+      "features": [
+        "5 exámenes por mes",
+        "Hasta 30 estudiantes",
+        "1 clase activa",
+        "Análisis básico",
+        "Soporte por email"
+      ]
+    },
+    "pro": {
+      "title": "Pro",
+      "description": "Para profesores que necesitan más.",
+      "features": [
+        "Exámenes ilimitados",
+        "Estudiantes ilimitados",
+        "Clases ilimitadas",
+        "Análisis avanzado",
+        "Soporte prioritario"
+      ],
+      "price": "$9",
+      "period": "/mes",
+      "cta": "Actualizar a Pro"
+    },
+    "enterprise": {
+      "title": "Para Escuelas y Universidades",
+      "description": "Soluciones personalizadas para instituciones.",
+      "features": [
+        "Todo lo de Pro",
+        "Integración SSO",
+        "Entrenamiento IA personalizado",
+        "Soporte dedicado",
+        "Garantía SLA"
+      ],
+      "cta": "Contáctanos"
+    }
+  },
+  "footer": {
+    "tagline": "Transforma la educación con evaluaciones potenciadas por IA",
+    "madeWith": "Hecho con ❤️ para educadores de todo el mundo",
+    "links": {
+      "about": "Nosotros",
+      "features": "Características",
+      "pricing": "Precios",
+      "contact": "Contacto"
+    },
+    "legal": {
+      "terms": "Términos de Servicio",
+      "privacy": "Política de Privacidad"
+    },
+    "rights": "Todos los derechos reservados."
+  },
+  "navigation": {
+    "features": "Características",
+    "pricing": "Precios"
+  },
+  "roleLabels": {
+    "forTeachers": "Para Profesores",
+    "forStudents": "Para Estudiantes"
+  },
+  "badges": {
+    "aiPowered": "Impulsado por IA",
+    "free": "Gratis"
+  },
+  "trustIndicators": {
+    "freeEducation": "Gratis para empezar",
+    "multiLanguage": "Multi-idioma",
+    "aiPowered": "Impulsado por IA"
+  },
+  "mockUI": {
+    "aiAssistant": "Asistente de IA",
+    "readyToHelp": "Listo para ayudar",
+    "yourProgress": "Tu Progreso",
+    "keepItUp": "¡Sigue así!",
+    "recentActivity": "Actividad Reciente",
+    "upcomingExams": "Próximos Exámenes"
+  }
+}

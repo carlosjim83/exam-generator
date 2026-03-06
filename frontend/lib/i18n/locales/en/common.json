@@ -1,5 +1,5 @@
 {
-  "appName": "ExamForge",
+  "appName": "Formydable",
   "welcome": "Welcome",
   "logout": "Sign out",
   "settings": "Settings",
@@ -147,5 +147,10 @@
   },
   "common": {
     "withGoogle": "with Google"
+  },
+  "landingHeader": {
+    "goToDashboard": "Go to Dashboard",
+    "settings": "Settings",
+    "signOut": "Sign Out"
   }
 }

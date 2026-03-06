@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
 import { AlertCircle } from 'lucide-react';
 import { OAuthButtons } from './OAuthButtons';
+import { colors } from '@/lib/colors';
 
 export function LoginForm() {
   const { t } = useTranslation('common');
@@ -38,27 +39,19 @@ export function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{ backgroundColor: colors.logo.bg }}
+    >
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
-            <svg
-              className="w-7 h-7 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-              />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold">ExamForge</h1>
-        </div>
+        <Link
+          href="/"
+          className="flex items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity"
+        >
+          <img src="/logo.png" alt="Formydable" className="h-12 w-12 rounded-xl object-cover" />
+          <h1 className="text-3xl font-bold">Formydable</h1>
+        </Link>
 
         <Card>
           <CardHeader>
@@ -116,7 +109,12 @@ export function LoginForm() {
               </div>
 
               {/* Submit Button */}
-              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                size="lg"
+                disabled={isLoading}
+              >
                 {isLoading ? t('auth.signingIn') + '...' : t('auth.signIn')}
               </Button>
 
