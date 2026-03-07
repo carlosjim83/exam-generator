@@ -24,6 +24,9 @@
   "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
   "or": "o",
   "close": "Cerrar",
+  "actions": {
+    "remove": "Eliminar"
+  },
   "auth": {
     "authenticationFailed": "Error de autenticación. Por favor, inténtalo de nuevo.",
     "welcomeBack": "Bienvenido de nuevo",

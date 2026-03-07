@@ -50,7 +50,8 @@
     "downloadSuccess": "Documento descargado correctamente",
     "downloadFailed": "Error al descargar el documento",
     "documentRemoved": "Documento eliminado de la clase",
-    "removeDocumentConfirm": "¿Eliminar \"{{title}}\" de esta clase? Los estudiantes perderán acceso inmediatamente.",
+    "removeDocumentConfirm": "¿Eliminar \"{{title}}\" de esta clase?",
+    "removeDocumentConfirmDescription": "Los estudiantes perderán acceso inmediatamente. Su progreso se conservará.",
     "visibility": {
       "published": "Publicado",
       "draft": "Borrador",
