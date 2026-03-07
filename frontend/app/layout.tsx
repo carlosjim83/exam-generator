@@ -12,6 +12,10 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Formydable - AI-Powered Exam Generator',
   description: 'Transform your educational materials into intelligent assessments using AI',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({

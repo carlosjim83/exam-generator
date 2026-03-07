@@ -71,6 +71,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
 # These are served at /_next/static/* by the Next.js server
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./frontend/.next/static/
 
+# Copy public folder with static assets (logo.png, favicon, etc.)
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/public ./frontend/public/
+
 # Switch to non-root user
 USER nextjs
 
