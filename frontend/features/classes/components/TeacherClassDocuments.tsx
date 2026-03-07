@@ -6,6 +6,17 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { FileText, Download, Loader2, Eye, EyeOff, Trash2, FileIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -18,6 +29,60 @@ import { ApiDocumentService } from '@/lib/services/api-document.service';
 
 interface TeacherClassDocumentsProps {
   classId: string;
+}
+
+// Helper component for remove document confirmation
+function RemoveDialog({
+  id,
+  title,
+  onRemove,
+  disabled,
+}: {
+  id: string;
+  title: string;
+  onRemove: () => Promise<void>;
+  disabled: boolean;
+}) {
+  const { t } = useTranslation('classes');
+  const [open, setOpen] = useState(false);
+
+  const handleConfirm = () => {
+    setOpen(false);
+    onRemove();
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={disabled}
+          onClick={() => setOpen(true)}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{t('classDetails.removeDocumentConfirm', { title })}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('classDetails.removeDocumentConfirmDescription')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirm}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {t('common:actions.remove')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 function DocumentTypeIcon({ mimeType }: { mimeType: string }) {
@@ -41,6 +106,7 @@ export function TeacherClassDocuments({ classId }: TeacherClassDocumentsProps) {
   const [loading, setLoading] = useState(true);
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
   const [updatingVisibility, setUpdatingVisibility] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const [documentService] = useState(() => new ApiDocumentService());
 
   useEffect(() => {
@@ -108,21 +174,6 @@ export function TeacherClassDocuments({ classId }: TeacherClassDocumentsProps) {
     }
   };
 
-  const handleRemove = async (doc: TeacherClassDocument) => {
-    if (!confirm(t('classDetails.removeDocumentConfirm', { title: doc.title }))) {
-      return;
-    }
-
-    try {
-      await unshareDocument(doc.documentId, classId);
-      setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
-      toast.success(t('classDetails.documentRemoved'));
-    } catch (error) {
-      console.error('Failed to remove document:', error);
-      toast.error(t('classDetails.errors.removeDocumentFailed'));
-    }
-  };
-
   const formatFileSize = (bytes: number) => {
     const mb = bytes / (1024 * 1024);
     if (mb < 1) {
@@ -152,6 +203,8 @@ export function TeacherClassDocuments({ classId }: TeacherClassDocumentsProps) {
                   <div className="h-4 w-48 bg-muted rounded animate-pulse" />
                   <div className="h-3 w-24 bg-muted rounded animate-pulse" />
                 </div>
+                {/* Skeleton for remove button */}
+                <div className="h-8 w-8 bg-muted rounded animate-pulse" />
               </div>
             </CardContent>
           </Card>
@@ -241,15 +294,25 @@ export function TeacherClassDocuments({ classId }: TeacherClassDocumentsProps) {
                     )}
                   </Button>
 
-                  {/* Remove Button */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleRemove(doc)}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  {/* Remove Dialog */}
+                  <RemoveDialog
+                    id={doc.id}
+                    title={doc.title}
+                    onRemove={async () => {
+                      setRemovingId(doc.id);
+                      try {
+                        await unshareDocument(doc.documentId, classId);
+                        setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+                        toast.success(t('classDetails.documentRemoved'));
+                      } catch (error) {
+                        console.error('Failed to remove document:', error);
+                        toast.error(t('classDetails.errors.removeDocumentFailed'));
+                      } finally {
+                        setRemovingId(null);
+                      }
+                    }}
+                    disabled={removingId === doc.id || updatingVisibility === doc.id}
+                  />
                 </div>
               </div>
             </CardContent>
