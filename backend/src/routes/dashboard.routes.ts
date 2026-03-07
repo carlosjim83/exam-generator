@@ -87,4 +87,107 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
       }
     }
   );
+
+  // GET /api/dashboard/class-exams - Get recent class exams for teacher
+  fastify.get(
+    '/api/dashboard/class-exams',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['dashboard'],
+        summary: 'Get recent class exams for teacher',
+        description:
+          'Returns recent class exams with exam title, class name, and publication status',
+        security: [{ bearerAuth: [] }],
+        querystring: {
+          type: 'object',
+          properties: {
+            limit: {
+              type: 'number',
+              minimum: 1,
+              maximum: 50,
+              default: 10,
+              description: 'Maximum number of exams to return',
+            },
+          },
+        },
+        response: {
+          200: {
+            description: 'Recent class exams',
+            type: 'object',
+            properties: {
+              classExams: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    examTitle: { type: 'string', nullable: true },
+                    className: { type: 'string', nullable: true },
+                    dueDate: { type: 'string', format: 'date-time', nullable: true },
+                    isPublished: { type: 'boolean' },
+                    questionCount: { type: 'number', nullable: true },
+                    submittedCount: { type: 'number' },
+                    createdAt: { type: 'string', format: 'date-time' },
+                  },
+                },
+              },
+            },
+          },
+          401: {
+            description: 'Unauthorized',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const userId = (request as any).user.userId;
+        const query = request.query as { limit?: number };
+        const limit = query.limit ? Math.min(Math.max(query.limit, 1), 50) : 10;
+
+        // Execute ListRecentClassExamsUseCase
+        const result = await container.listRecentClassExamsUseCase.execute({
+          teacherId: userId,
+          limit,
+        });
+
+        return reply.status(200).send({
+          classExams: result.classExams.map((exam) => ({
+            id: exam.id,
+            examTitle: exam.examTitle,
+            className: exam.className,
+            dueDate: exam.dueDate ? exam.dueDate.toISOString() : null,
+            isPublished: exam.isPublished,
+            questionCount: exam.questionCount,
+            submittedCount: exam.submittedCount,
+            createdAt: exam.createdAt.toISOString(),
+          })),
+        });
+      } catch (error: any) {
+        fastify.log.error('Recent class exams error:', error);
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to fetch recent class exams',
+        });
+      }
+    }
+  );
 }

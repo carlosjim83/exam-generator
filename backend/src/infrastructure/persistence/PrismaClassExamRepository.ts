@@ -237,4 +237,54 @@ export class PrismaClassExamRepository implements IClassExamRepository {
       updatedAt: record.updatedAt,
     });
   }
+
+  async findRecentByTeacherId(teacherId: string, limit: number): Promise<ClassExamWithStats[]> {
+    const classExams = await this.prisma.classExam.findMany({
+      where: {
+        class: {
+          teacherId: teacherId,
+        },
+      },
+      include: {
+        exam: {
+          select: {
+            id: true,
+            title: true,
+            questions: {
+              select: { id: true },
+            },
+          },
+        },
+        class: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return classExams.map((ce) => ({
+      id: ce.id,
+      classId: ce.classId,
+      examId: ce.examId,
+      teacherId: teacherId,
+      examTitle: ce.exam?.title ?? 'Untitled Exam',
+      className: ce.class?.name ?? 'Unknown Class',
+      questionCount: ce.exam?.questions?.length ?? 0,
+      availableAt: ce.availableAt,
+      dueDate: ce.dueDate,
+      timeLimit: ce.timeLimit,
+      isPublished: ce.isPublished,
+      maxAttempts: ce.maxAttempts,
+      showResultsImmediately: ce.showResultsImmediately,
+      createdAt: ce.createdAt,
+      updatedAt: ce.updatedAt,
+      startedCount: 0,
+      submittedCount: 0,
+      gradedCount: 0,
+    }));
+  }
 }
