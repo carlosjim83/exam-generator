@@ -19,7 +19,10 @@
   "deleteFailed": "Error al eliminar el examen",
   "cancel": "Cancelar",
   "createdAt": "Creado",
+  "backToMyExams": "Volver a Mis Exámenes",
   "examDetails": {
+    "title": "Detalles del Examen",
+    "review": "Revisa tu examen generado",
     "notFound": "Examen no encontrado",
     "notFoundDescription": "El examen que buscas no existe o no tienes acceso a él.",
     "print": "Imprimir",

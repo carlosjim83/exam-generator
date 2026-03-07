@@ -1,18 +1,12 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { LandingPage } from '@/features/landing/LandingPage';
+import { SafeTranslation } from '@/components/SafeTranslation';
 
 export default function Home() {
-  const router = useRouter();
-
-  useEffect(() => {
-    router.replace('/dashboard');
-  }, [router]);
-
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-blue-600" />
-    </div>
+    <SafeTranslation>
+      <LandingPage />
+    </SafeTranslation>
   );
 }
+
+export const dynamic = 'force-dynamic';

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,8 +11,10 @@ import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
 import { AlertCircle, GraduationCap, BookOpen } from 'lucide-react';
 import { OAuthButtons } from './OAuthButtons';
+import { colors } from '@/lib/colors';
 
 export function RegisterForm() {
+  const searchParams = useSearchParams();
   const { t } = useTranslation('common');
   const { register } = useAuth();
   const [firstName, setFirstName] = useState('');
@@ -19,10 +22,24 @@ export function RegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'TEACHER' | 'STUDENT'>('TEACHER');
+
+  // Set role from URL query param if present, default to TEACHER
+  const roleParam = searchParams.get('role');
+  const initialRole: 'TEACHER' | 'STUDENT' = roleParam === 'student' ? 'STUDENT' : 'TEACHER';
+  const [role, setRole] = useState<'TEACHER' | 'STUDENT'>(initialRole);
+
   const [error, setError] = useState<string>('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
   const [isLoading, setIsLoading] = useState(false);
+
+  // Update role if query param changes
+  useEffect(() => {
+    if (roleParam === 'student') {
+      setRole('STUDENT');
+    } else if (roleParam === 'teacher') {
+      setRole('TEACHER');
+    }
+  }, [roleParam]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +77,7 @@ export function RegisterForm() {
   };
 
   // Dynamic color scheme based on role
-  const colors = {
+  const roleColors = {
     TEACHER: {
       bg: 'from-blue-50 to-indigo-100',
       accent: 'bg-blue-600 hover:bg-blue-700',
@@ -79,32 +96,19 @@ export function RegisterForm() {
     },
   };
 
-  const currentTheme = colors[role];
+  const currentTheme = roleColors[role];
   const Icon = currentTheme.icon;
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center bg-gradient-to-br ${currentTheme.bg} px-4 py-12 transition-colors duration-500`}
+      className="min-h-screen flex items-center justify-center px-4 py-12"
+      style={{ backgroundColor: colors.logo.bg }}
     >
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
-            <svg
-              className="w-7 h-7 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-              />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold">ExamForge</h1>
+          <img src="/logo.png" alt="Formydable" className="h-12 w-12 rounded-xl object-cover" />
+          <h1 className="text-3xl font-bold">Formydable</h1>
         </div>
 
         <Card className="shadow-xl">

@@ -19,7 +19,10 @@
   "deleteFailed": "Failed to delete exam",
   "cancel": "Cancel",
   "createdAt": "Created",
+  "backToMyExams": "Back to My Exams",
   "examDetails": {
+    "title": "Exam Details",
+    "review": "Review your generated exam",
     "notFound": "Exam not found",
     "notFoundDescription": "The exam you're looking for doesn't exist or you don't have access to it.",
     "print": "Print",

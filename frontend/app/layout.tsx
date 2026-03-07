@@ -10,8 +10,8 @@ import { Toaster } from 'sonner';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'ExamForge - AI-Powered Exam Generator',
-  description: 'Generate intelligent exams from your documents using AI',
+  title: 'Formydable - AI-Powered Exam Generator',
+  description: 'Transform your educational materials into intelligent assessments using AI',
 };
 
 export default function RootLayout({
