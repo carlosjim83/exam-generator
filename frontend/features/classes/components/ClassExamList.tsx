@@ -5,7 +5,18 @@ import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileQuestion, Loader2, Eye, EyeOff, Trash2, BarChart3 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { FileQuestion, Eye, Trash2, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getClassExams,
@@ -40,73 +51,6 @@ export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
       toast.error(t('classExams.errors.loadFailed'));
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleTogglePublish = async (exam: ClassExam) => {
-    const newStatus = !exam.isPublished;
-    const actionText = newStatus
-      ? t('classExams.actions.publish')
-      : t('classExams.actions.unpublish');
-
-    if (newStatus) {
-      // Publishing - show confirmation
-      if (
-        !confirm(
-          t('classExams.publishConfirm') + '\n\n' + t('classExams.publishConfirmDescription')
-        )
-      ) {
-        return;
-      }
-    } else {
-      // Unpublishing - show confirmation
-      if (
-        !confirm(
-          t('classExams.unpublishConfirm') + '\n\n' + t('classExams.unpublishConfirmDescription')
-        )
-      ) {
-        return;
-      }
-    }
-
-    setPublishingId(exam.id);
-    try {
-      await publishClassExam(classId, exam.id, newStatus);
-      setExams((prev) =>
-        prev.map((e) => (e.id === exam.id ? { ...e, isPublished: newStatus } : e))
-      );
-      toast.success(newStatus ? t('classExams.published') : t('classExams.unpublished'));
-    } catch (error) {
-      console.error('Failed to toggle publish:', error);
-      toast.error(
-        newStatus ? t('classExams.errors.publishFailed') : t('classExams.errors.unpublishFailed')
-      );
-    } finally {
-      setPublishingId(null);
-    }
-  };
-
-  const handleDelete = async (exam: ClassExam) => {
-    if (
-      !confirm(
-        t('classExams.removeConfirm', { title: exam.examTitle }) +
-          '\n\n' +
-          t('classExams.removeConfirmDescription')
-      )
-    ) {
-      return;
-    }
-
-    setDeletingId(exam.id);
-    try {
-      await deleteClassExam(classId, exam.id);
-      setExams((prev) => prev.filter((e) => e.id !== exam.id));
-      toast.success(t('classExams.removed'));
-    } catch (error) {
-      console.error('Failed to delete exam:', error);
-      toast.error(t('classExams.errors.removeFailed'));
-    } finally {
-      setDeletingId(null);
     }
   };
 
@@ -187,7 +131,6 @@ export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
                         variant="outline"
                         className="text-xs bg-amber-50 text-amber-700 border-amber-200"
                       >
-                        <EyeOff className="h-3 w-3 mr-1" />
                         {t('classExams.status.draft')}
                       </Badge>
                     )}
@@ -242,35 +185,56 @@ export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
                   )}
 
                   {/* Publish/Unpublish */}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleTogglePublish(exam)}
+                  <PublishDialog
+                    exam={exam}
+                    onPublishingChange={(publishing) => {
+                      if (publishing) setPublishingId(exam.id);
+                    }}
+                    onConfirm={async (published) => {
+                      setPublishingId(exam.id);
+                      try {
+                        await publishClassExam(classId, exam.id, published);
+                        setExams((prev) =>
+                          prev.map((e) => (e.id === exam.id ? { ...e, isPublished: published } : e))
+                        );
+                        toast.success(
+                          published ? t('classExams.published') : t('classExams.unpublished')
+                        );
+                      } catch (error) {
+                        console.error('Failed to toggle publish:', error);
+                        toast.error(
+                          published
+                            ? t('classExams.errors.publishFailed')
+                            : t('classExams.errors.unpublishFailed')
+                        );
+                      } finally {
+                        setPublishingId(null);
+                      }
+                    }}
                     disabled={isPublishing || isDeleting}
-                  >
-                    {isPublishing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : exam.isPublished ? (
-                      t('classExams.actions.unpublish')
-                    ) : (
-                      t('classExams.actions.publish')
-                    )}
-                  </Button>
+                  />
 
                   {/* Delete */}
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(exam)}
+                  <DeleteDialog
+                    exam={exam}
+                    onDeletingChange={(deleting) => {
+                      if (deleting) setDeletingId(exam.id);
+                    }}
+                    onConfirm={async () => {
+                      setDeletingId(exam.id);
+                      try {
+                        await deleteClassExam(classId, exam.id);
+                        setExams((prev) => prev.filter((e) => e.id !== exam.id));
+                        toast.success(t('classExams.removed'));
+                      } catch (error) {
+                        console.error('Failed to delete exam:', error);
+                        toast.error(t('classExams.errors.removeFailed'));
+                      } finally {
+                        setDeletingId(null);
+                      }
+                    }}
                     disabled={isPublishing || isDeleting}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    {isDeleting ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4" />
-                    )}
-                  </Button>
+                  />
                 </div>
               </div>
             </CardContent>
@@ -278,5 +242,123 @@ export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
         );
       })}
     </div>
+  );
+}
+
+// Helper component for publish/unpublish confirmation
+function PublishDialog({
+  exam,
+  onConfirm,
+  onPublishingChange,
+  disabled,
+}: {
+  exam: ClassExam;
+  onConfirm: (published: boolean) => Promise<void>;
+  onPublishingChange: (publishing: boolean) => void;
+  disabled: boolean;
+}) {
+  const { t } = useTranslation('classes');
+  const [open, setOpen] = useState(false);
+
+  const newStatus = !exam.isPublished;
+  const handleConfirm = () => {
+    setOpen(false);
+    onPublishingChange(true);
+    onConfirm(newStatus);
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button variant="outline" size="sm" disabled={disabled} onClick={() => setOpen(true)}>
+          {exam.isPublished ? (
+            <>
+              <Eye className="h-4 w-4 mr-1" />
+              {t('classExams.actions.unpublish')}
+            </>
+          ) : (
+            <>
+              <Eye className="h-4 w-4 mr-1" />
+              {t('classExams.actions.publish')}
+            </>
+          )}
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {newStatus ? t('classExams.publishConfirm') : t('classExams.unpublishConfirm')}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {newStatus
+              ? t('classExams.publishConfirmDescription')
+              : t('classExams.unpublishConfirmDescription')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirm}>
+            {newStatus ? t('classExams.actions.publish') : t('classExams.actions.unpublish')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
+
+// Helper component for delete confirmation
+function DeleteDialog({
+  exam,
+  onConfirm,
+  onDeletingChange,
+  disabled,
+}: {
+  exam: ClassExam;
+  onConfirm: () => Promise<void>;
+  onDeletingChange: (deleting: boolean) => void;
+  disabled: boolean;
+}) {
+  const { t } = useTranslation('classes');
+  const [open, setOpen] = useState(false);
+
+  const handleConfirm = () => {
+    setOpen(false);
+    onDeletingChange(true);
+    onConfirm();
+  };
+
+  return (
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled={disabled}
+          onClick={() => setOpen(true)}
+          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {t('classExams.removeConfirm', { title: exam.examTitle })}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('classExams.removeConfirmDescription')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('common:cancel')}</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleConfirm}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {t('classExams.actions.remove')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
