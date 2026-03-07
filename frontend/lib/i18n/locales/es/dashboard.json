@@ -44,6 +44,18 @@
     "draft": "Borrador",
     "published": "Publicado"
   },
+  "recentClassExams": {
+    "title": "Exámenes Recientes",
+    "viewAll": "Ver todos",
+    "questions": "preguntas",
+    "viewExam": "Ver Examen",
+    "editDraft": "Editar Borrador",
+    "draft": "Borrador",
+    "published": "Publicado",
+    "assignedTo": "Asignado a {{className}}",
+    "submitted": "entregados",
+    "due": "Entrega"
+  },
   "navigation": {
     "dashboard": "Panel de Control",
     "myLibrary": "Mi Biblioteca",

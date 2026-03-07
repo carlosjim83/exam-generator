@@ -122,6 +122,8 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
                   type: 'object',
                   properties: {
                     id: { type: 'string' },
+                    examId: { type: 'string' },
+                    classId: { type: 'string' },
                     examTitle: { type: 'string', nullable: true },
                     className: { type: 'string', nullable: true },
                     dueDate: { type: 'string', format: 'date-time', nullable: true },
@@ -170,6 +172,8 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
         return reply.status(200).send({
           classExams: result.classExams.map((exam) => ({
             id: exam.id,
+            examId: exam.examId,
+            classId: exam.classId,
             examTitle: exam.examTitle,
             className: exam.className,
             dueDate: exam.dueDate ? exam.dueDate.toISOString() : null,

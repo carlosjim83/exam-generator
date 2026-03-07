@@ -5,7 +5,7 @@
  * Returns empty data when user is not authenticated.
  */
 
-import type { Document, Exam, DashboardStats } from '../types/dashboard.types';
+import type { Document, ClassExam, DashboardStats } from '../types/dashboard.types';
 import { configManager } from '@/lib/config/config-manager';
 import { TokenManager } from '@/lib/api-client';
 
@@ -186,35 +186,43 @@ export class ApiDashboardService {
     }
   }
 
-  async getRecentExams(limit: number = 5): Promise<Exam[]> {
+  async getRecentClassExams(limit: number = 5): Promise<ClassExam[]> {
     // If not authenticated, return empty array
     if (!this.isAuthenticated()) {
-      console.warn('[ApiDashboardService] User not authenticated, returning empty exams');
+      console.warn('[ApiDashboardService] User not authenticated, returning empty class exams');
       return [];
     }
 
     try {
-      // Call /api/exams endpoint
-      const response = await this.fetchWithAuth<{ exams: any[] }>('/api/exams');
+      // Call /api/dashboard/class-exams endpoint
+      const response = await this.fetchWithAuth<{ classExams: any[] }>(
+        '/api/dashboard/class-exams',
+        {
+          method: 'GET',
+        }
+      );
 
       // If no response, return empty array
       if (!response) {
         return [];
       }
 
-      const exams = response.exams.map((exam: any) => ({
+      const classExams = response.classExams.map((exam: any) => ({
         id: exam.id,
-        title: exam.title,
-        status: 'draft' as const, // Backend doesn't have status field yet
-        questionsCount: exam.questionCount || 0,
-        gradeLevel: 'N/A', // Backend doesn't have gradeLevel yet
+        examId: exam.examId,
+        examTitle: exam.examTitle,
+        classId: exam.classId,
+        className: exam.className,
+        dueDate: exam.dueDate ? new Date(exam.dueDate) : null,
+        isPublished: exam.isPublished,
+        questionCount: exam.questionCount,
+        submittedCount: exam.submittedCount,
         createdAt: new Date(exam.createdAt),
-        updatedAt: new Date(exam.createdAt), // Backend doesn't have updatedAt
       }));
 
-      return exams.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()).slice(0, limit);
+      return classExams.slice(0, limit);
     } catch (error) {
-      console.error('[ApiDashboardService] Failed to fetch exams:', error);
+      console.error('[ApiDashboardService] Failed to fetch class exams:', error);
       return [];
     }
   }
