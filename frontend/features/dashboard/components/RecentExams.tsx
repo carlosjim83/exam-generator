@@ -49,7 +49,7 @@ function ClassExamCard({ exam }: { exam: ClassExam }) {
       </CardContent>
 
       <CardFooter className="p-6 pt-0 flex gap-2">
-        <Link href={`/dashboard/classes/${exam.classId}/exams/${exam.id}`} className="flex-1">
+        <Link href={`/dashboard/exams/${exam.examId}`} className="flex-1">
           <Button className="w-full">
             {t(
               isPublished
