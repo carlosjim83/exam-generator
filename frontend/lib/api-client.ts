@@ -134,9 +134,12 @@ export class ApiClient {
    */
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const headers: Record<string, string> = {};
+
+    // Only add Content-Type if there's a body
+    if (options.body) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     // Merge existing headers
     if (options.headers) {
@@ -314,9 +317,12 @@ export class ApiClient {
    */
   async publicRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const headers: Record<string, string> = {};
+
+    // Only add Content-Type if there's a body
+    if (options.body) {
+      headers['Content-Type'] = 'application/json';
+    }
 
     if (options.headers) {
       const existingHeaders = new Headers(options.headers);
@@ -419,10 +425,20 @@ export async function fetchWithAuth<T>(url: string, options: RequestInit = {}): 
   const token = TokenManager.getAccessToken();
   const baseUrl = configManager.getApiUrl();
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...((options.headers as Record<string, string>) || {}),
-  };
+  const headers: Record<string, string> = {};
+
+  // Only add Content-Type if there's a body
+  if (options.body) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  // Merge existing headers
+  if (options.headers) {
+    const existingHeaders = new Headers(options.headers);
+    existingHeaders.forEach((value, key) => {
+      headers[key] = value;
+    });
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;

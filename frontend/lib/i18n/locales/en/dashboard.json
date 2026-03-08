@@ -44,6 +44,18 @@
     "draft": "Draft",
     "published": "Published"
   },
+  "recentClassExams": {
+    "title": "Recent Exams",
+    "viewAll": "View all",
+    "questions": "questions",
+    "viewExam": "View Exam",
+    "editDraft": "Edit Draft",
+    "draft": "Draft",
+    "published": "Published",
+    "assignedTo": "Assigned to {{className}}",
+    "submitted": "submitted",
+    "due": "Due"
+  },
   "navigation": {
     "dashboard": "Control Panel",
     "myLibrary": "My Library",

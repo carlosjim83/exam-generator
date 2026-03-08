@@ -63,6 +63,7 @@ import { PublishClassExamUseCase } from '@application/use-cases/classes/PublishC
 import { UpdateClassExamSettingsUseCase } from '@application/use-cases/classes/UpdateClassExamSettingsUseCase.js';
 import { GetClassExamResultsUseCase } from '@application/use-cases/classes/GetClassExamResultsUseCase.js';
 import { DeleteClassExamUseCase } from '@application/use-cases/classes/DeleteClassExamUseCase.js';
+import { ListRecentClassExamsUseCase } from '@application/use-cases/class-exams/ListRecentClassExamsUseCase.js';
 // Class Document Use Cases
 // Application Use Cases
 // Student Use Cases
@@ -186,6 +187,7 @@ export class Container {
   private readonly _updateClassExamSettingsUseCase: UpdateClassExamSettingsUseCase;
   private readonly _getClassExamResultsUseCase: GetClassExamResultsUseCase;
   private readonly _deleteClassExamUseCase: DeleteClassExamUseCase;
+  private readonly _listRecentClassExamsUseCase: ListRecentClassExamsUseCase;
 
   // Application Layer - Class Document Use Cases
   private readonly _shareDocumentWithClassUseCase: ShareDocumentWithClassUseCase;
@@ -423,6 +425,7 @@ export class Container {
       this._classExamRepository,
       this._classRepository
     );
+    this._listRecentClassExamsUseCase = new ListRecentClassExamsUseCase(this._classExamRepository);
 
     // Class Document Use Cases
     this._shareDocumentWithClassUseCase = new ShareDocumentWithClassUseCase(
@@ -759,6 +762,10 @@ export class Container {
 
   public get deleteClassExamUseCase(): DeleteClassExamUseCase {
     return this._deleteClassExamUseCase;
+  }
+
+  public get listRecentClassExamsUseCase(): ListRecentClassExamsUseCase {
+    return this._listRecentClassExamsUseCase;
   }
 
   // Class Document Use Cases

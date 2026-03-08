@@ -11,7 +11,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import {
   useDashboardStats,
   useDashboardDocuments,
-  useDashboardExams,
+  useDashboardClassExams,
 } from '@/lib/hooks/useDashboard';
 
 interface DashboardContextValue {
@@ -27,11 +27,11 @@ interface DashboardContextValue {
   documentsError: Error | null;
   refreshDocuments: () => Promise<void>;
 
-  // Exams
-  exams: ReturnType<typeof useDashboardExams>['exams'];
-  examsLoading: boolean;
-  examsError: Error | null;
-  refreshExams: () => Promise<void>;
+  // Class Exams (was: Exams)
+  classExams: ReturnType<typeof useDashboardClassExams>['classExams'];
+  classExamsLoading: boolean;
+  classExamsError: Error | null;
+  refreshClassExams: () => Promise<void>;
 
   // Refresh all data
   refreshAll: () => Promise<void>;
@@ -59,14 +59,14 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
   } = useDashboardDocuments(5);
 
   const {
-    exams,
-    loading: examsLoading,
-    error: examsError,
-    refetch: refreshExams,
-  } = useDashboardExams(5);
+    classExams,
+    loading: classExamsLoading,
+    error: classExamsError,
+    refetch: refreshClassExams,
+  } = useDashboardClassExams(5);
 
   const refreshAll = async () => {
-    await Promise.all([refreshStats(), refreshDocuments(), refreshExams()]);
+    await Promise.all([refreshStats(), refreshDocuments(), refreshClassExams()]);
   };
 
   return (
@@ -80,10 +80,10 @@ export function DashboardProvider({ children }: DashboardProviderProps) {
         documentsLoading,
         documentsError,
         refreshDocuments,
-        exams,
-        examsLoading,
-        examsError,
-        refreshExams,
+        classExams,
+        classExamsLoading,
+        classExamsError,
+        refreshClassExams,
         refreshAll,
       }}
     >

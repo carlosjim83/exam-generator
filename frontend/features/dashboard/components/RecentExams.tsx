@@ -8,12 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { ClipboardCheck } from 'lucide-react';
 import { useDashboardContext } from '../context/DashboardContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Exam } from '@/lib/types/dashboard.types';
+import type { ClassExam } from '@/lib/types/dashboard.types';
 
-function ExamCard({ exam }: { exam: Exam }) {
+function ClassExamCard({ exam }: { exam: ClassExam }) {
   const { t } = useTranslation();
-  const isDraft = exam.status === 'draft';
-  const isPublished = exam.status === 'published';
+  const isPublished = exam.isPublished;
 
   return (
     <Card>
@@ -23,24 +22,40 @@ function ExamCard({ exam }: { exam: Exam }) {
             variant={isPublished ? 'default' : 'secondary'}
             className="uppercase text-xs font-bold"
           >
-            {t(isDraft ? 'dashboard:recentExams.draft' : 'dashboard:recentExams.published')}
+            {t(
+              isPublished
+                ? 'dashboard:recentClassExams.published'
+                : 'dashboard:recentClassExams.draft'
+            )}
           </Badge>
           <span className="text-xs text-muted-foreground italic">
-            {isDraft ? t('dashboard.status.draft') : t('dashboard.status.published')}
+            {t(isPublished ? 'dashboard.status.published' : 'dashboard.status.draft')}
           </span>
         </div>
 
-        <h3 className="font-semibold text-lg mb-3">{exam.title}</h3>
+        <h3 className="font-semibold text-lg mb-2">{exam.examTitle}</h3>
+
+        <p className="text-sm text-muted-foreground mb-2">
+          {t('dashboard:recentClassExams.assignedTo', { className: exam.className })}
+        </p>
 
         <p className="text-sm text-muted-foreground">
-          {exam.questionsCount} {t('dashboard:recentExams.questions')} • {exam.gradeLevel}
+          {exam.questionCount} {t('dashboard:recentClassExams.questions')}
+          {exam.submittedCount > 0 &&
+            ` • ${exam.submittedCount} ${t('dashboard:recentClassExams.submitted')}`}
+          {exam.dueDate &&
+            ` • ${t('dashboard:recentClassExams.due')}: ${new Date(exam.dueDate).toLocaleDateString()}`}
         </p>
       </CardContent>
 
       <CardFooter className="p-6 pt-0 flex gap-2">
-        <Link href={`/dashboard/exams/${exam.id}`} className="flex-1">
+        <Link href={`/dashboard/exams/${exam.examId}`} className="flex-1">
           <Button className="w-full">
-            {t(isPublished ? 'dashboard:recentExams.viewExam' : 'dashboard:recentExams.editDraft')}
+            {t(
+              isPublished
+                ? 'dashboard:recentClassExams.viewExam'
+                : 'dashboard:recentClassExams.editDraft'
+            )}
           </Button>
         </Link>
       </CardFooter>
@@ -69,15 +84,15 @@ function ExamCardSkeleton() {
 
 export function RecentExams() {
   const { t } = useTranslation();
-  const { exams, examsLoading: loading, examsError: error } = useDashboardContext();
+  const { classExams, classExamsLoading: loading, classExamsError: error } = useDashboardContext();
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">{t('dashboard:recentExams.title')}</h2>
+        <h2 className="text-xl font-bold">{t('dashboard:recentClassExams.title')}</h2>
         <Link href="/dashboard/exams">
           <Button variant="link" className="text-primary">
-            {t('dashboard:recentExams.viewAll')}
+            {t('dashboard:recentClassExams.viewAll')}
           </Button>
         </Link>
       </div>
@@ -99,7 +114,7 @@ export function RecentExams() {
           </Card>
         )}
 
-        {!loading && !error && exams.length === 0 && (
+        {!loading && !error && classExams.length === 0 && (
           <Card className="col-span-2">
             <CardContent className="p-6 text-center">
               <ClipboardCheck className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
@@ -109,7 +124,9 @@ export function RecentExams() {
           </Card>
         )}
 
-        {!loading && !error && exams.map((exam) => <ExamCard key={exam.id} exam={exam} />)}
+        {!loading &&
+          !error &&
+          classExams.map((exam) => <ClassExamCard key={exam.id} exam={exam} />)}
       </div>
     </div>
   );

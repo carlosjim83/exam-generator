@@ -24,6 +24,9 @@
   "unexpectedError": "An unexpected error occurred. Please try again.",
   "or": "or",
   "close": "Close",
+  "actions": {
+    "remove": "Remove"
+  },
   "auth": {
     "authenticationFailed": "Authentication failed. Please try again.",
     "welcomeBack": "Welcome back",

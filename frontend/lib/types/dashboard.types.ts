@@ -26,6 +26,19 @@ export interface Exam {
   updatedAt: Date;
 }
 
+export interface ClassExam {
+  id: string;
+  examId: string;
+  examTitle: string;
+  classId: string;
+  className: string;
+  dueDate: Date | null;
+  isPublished: boolean;
+  questionCount: number;
+  submittedCount: number;
+  createdAt: Date;
+}
+
 export interface DashboardStats {
   totalDocuments: number;
   totalExams: number;

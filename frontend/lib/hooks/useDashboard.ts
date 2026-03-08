@@ -9,7 +9,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { ApiDashboardService } from '../providers/api-dashboard.service';
-import type { Document, Exam, DashboardStats } from '../types/dashboard.types';
+import type { Document, ClassExam, DashboardStats } from '../types/dashboard.types';
 
 // Singleton instance
 const dashboardService = new ApiDashboardService();
@@ -28,8 +28,8 @@ interface UseDashboardDocumentsResult {
   refetch: () => Promise<void>;
 }
 
-interface UseDashboardExamsResult {
-  exams: Exam[];
+interface UseDashboardClassExamsResult {
+  classExams: ClassExam[];
   loading: boolean;
   error: Error | null;
   refetch: () => Promise<void>;
@@ -92,29 +92,36 @@ export function useDashboardDocuments(limit: number = 5): UseDashboardDocumentsR
 }
 
 /**
- * Get recent exams
+ * Get recent class exams
  */
-export function useDashboardExams(limit: number = 5): UseDashboardExamsResult {
-  const [exams, setExams] = useState<Exam[]>([]);
+export function useDashboardClassExams(limit: number = 5): UseDashboardClassExamsResult {
+  const [classExams, setClassExams] = useState<ClassExam[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  const fetchExams = useCallback(async () => {
+  const fetchClassExams = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await dashboardService.getRecentExams(limit);
-      setExams(data);
+      const data = await dashboardService.getRecentClassExams(limit);
+      setClassExams(data);
     } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch exams'));
+      setError(err instanceof Error ? err : new Error('Failed to fetch class exams'));
     } finally {
       setLoading(false);
     }
   }, [limit]);
 
   useEffect(() => {
-    fetchExams();
-  }, [fetchExams]);
+    fetchClassExams();
+  }, [fetchClassExams]);
 
-  return { exams, loading, error, refetch: fetchExams };
+  return { classExams, loading, error, refetch: fetchClassExams };
 }
+
+/**
+ * @deprecated Use useDashboardClassExams instead - this is an alias for backward compatibility
+ */
+// export function useDashboardExams(limit: number = 5): UseDashboardClassExamsResult {
+//   return useDashboardClassExams(limit);
+// }

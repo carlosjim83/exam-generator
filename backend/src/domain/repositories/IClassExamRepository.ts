@@ -11,6 +11,11 @@ export interface ClassExamWithStats {
   classId: string;
   examId: string;
   teacherId: string;
+  // Dashboard-specific fields (optional, populated by findRecentByTeacherId)
+  examTitle?: string;
+  className?: string;
+  questionCount?: number;
+  // Original fields
   availableAt: Date | null;
   dueDate: Date | null;
   timeLimit: number | null;
@@ -77,4 +82,11 @@ export interface IClassExamRepository {
    * Count exams for a class
    */
   countByClassId(classId: ClassId, options?: { publishedOnly?: boolean }): Promise<number>;
+
+  /**
+   * Find recent class exams for a teacher (for dashboard)
+   * @param teacherId - The teacher ID
+   * @param limit - Maximum number of results
+   */
+  findRecentByTeacherId(teacherId: string, limit: number): Promise<ClassExamWithStats[]>;
 }
