@@ -250,6 +250,61 @@ signals.forEach((signal) => {
   });
 });
 
+// ============================================================================
+// AdminJS Admin Panel
+// ============================================================================
+
+import { admin } from './admin/index.js';
+import AdminJSFastify from '@adminjs/fastify';
+import { authenticate } from './admin/auth.js';
+import Connect from 'connect-pg-simple';
+import FastifySession from '@fastify/session';
+
+// Register session plugin
+const ConnectSession = Connect(FastifySession as any);
+const sessionStore = new ConnectSession({
+  conObject: {
+    connectionString: process.env.DATABASE_URL,
+  },
+  tableName: 'admin_session',
+  createTableIfMissing: true,
+});
+
+await fastify.register(FastifySession, {
+  store: sessionStore,
+  secret: env.ADMINJS_COOKIE_SECRET,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: env.NODE_ENV === 'production',
+    secure: env.NODE_ENV === 'production',
+  },
+});
+
+// Create a Prisma client for AdminJS
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+// Register AdminJS router
+await AdminJSFastify.buildAuthenticatedRouter(
+  admin,
+  {
+    authenticate: async (email, password) => {
+      return await authenticate(email, password, prisma);
+    },
+    cookiePassword: env.ADMINJS_COOKIE_SECRET,
+    cookieName: 'adminjs',
+  },
+  fastify,
+  {
+    store: sessionStore,
+    secret: env.ADMINJS_COOKIE_SECRET,
+    cookie: {
+      httpOnly: env.NODE_ENV === 'production',
+      secure: env.NODE_ENV === 'production',
+    },
+  }
+);
+
 // Start server
 const start = async () => {
   try {
