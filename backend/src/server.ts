@@ -1,15 +1,20 @@
+import AdminJSFastify from '@adminjs/fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
+import FastifySession from '@fastify/session';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import Connect from 'connect-pg-simple';
 import Fastify from 'fastify';
 
+import { authenticate } from './admin/auth.js';
+import { admin } from './admin/index.js';
 import { env, validateEnv } from './config/env.js';
 import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 import { authRoutes } from './routes/auth.routes.js';
-import { classRoutes } from './routes/class.routes.js';
 import { classExamRoutes } from './routes/class-exam.routes.js';
+import { classRoutes } from './routes/class.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import { examRoutes } from './routes/exam.routes.js';
@@ -18,6 +23,7 @@ import { oauthRoutes } from './routes/oauth.routes.js';
 import { preferencesRoutes } from './routes/preferences.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
 import { studentRoutes } from './routes/student.routes.js';
+
 
 // Validate environment variables on startup
 try {
@@ -250,15 +256,7 @@ signals.forEach((signal) => {
   });
 });
 
-// ============================================================================
-// AdminJS Admin Panel
-// ============================================================================
 
-import { admin } from './admin/index.js';
-import AdminJSFastify from '@adminjs/fastify';
-import { authenticate } from './admin/auth.js';
-import Connect from 'connect-pg-simple';
-import FastifySession from '@fastify/session';
 
 // Register session plugin
 const ConnectSession = Connect(FastifySession as any);
