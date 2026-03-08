@@ -10,6 +10,44 @@ These rules exist because **we learned the hard way** what happens when you don'
 
 ## 🚨 CRITICAL RULES - NO EXCEPTIONS
 
+### 0. **NEVER RUN APP WITH `pnpm dev` - USE DOCKER**
+
+**❌ PROHIBITED:**
+
+```bash
+cd backend && pnpm dev
+cd backend && ts-node src/index.ts
+npm run dev
+```
+
+**✅ REQUIRED:**
+
+```bash
+# Use Docker Compose for local development
+docker-compose up
+
+# Or run specific services
+docker-compose up backend postgres redis
+
+# Or use already running containers
+# The app is already running in Docker containers
+```
+
+**Database Access:**
+
+- PostgreSQL: `exam-gen-postgres` container running at `localhost:5433`
+- Redis: `exam-gen-redis` container running at `localhost:6379`
+- Backend: Already running in Docker
+
+**Why?**
+
+- Local environment is Docker-based
+- Database runs in container, not local PostgreSQL
+- Using `pnpm dev` will fail to connect to `localhost:5433`
+- Maintain consistency across all environments
+
+---
+
 ### 1. **NEVER COMMIT DIRECTLY TO `main`**
 
 **❌ PROHIBITED:**

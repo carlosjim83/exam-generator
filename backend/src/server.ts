@@ -24,7 +24,6 @@ import { preferencesRoutes } from './routes/preferences.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
 import { studentRoutes } from './routes/student.routes.js';
 
-
 // Validate environment variables on startup
 try {
   validateEnv();
@@ -57,14 +56,6 @@ await fastify.register(cors, {
   origin: env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-});
-
-// Register multipart/form-data plugin (for file uploads)
-await fastify.register(multipart, {
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB max file size
-    files: 1, // Max 1 file per request
-  },
 });
 
 // Register rate limiting plugin (global defaults)
@@ -100,6 +91,14 @@ await fastify.register(rateLimit, {
     'x-ratelimit-limit': true,
     'x-ratelimit-remaining': true,
     'x-ratelimit-reset': true,
+  },
+});
+
+// Register multipart/form-data plugin (for file uploads)
+await fastify.register(multipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max file size
+    files: 1, // Max 1 file per request
   },
 });
 
@@ -256,9 +255,11 @@ signals.forEach((signal) => {
   });
 });
 
+// Create a Prisma client for AdminJS
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
-
-// Register session plugin
+// Create session store for AdminJS
 const ConnectSession = Connect(FastifySession as any);
 const sessionStore = new ConnectSession({
   conObject: {
@@ -267,20 +268,6 @@ const sessionStore = new ConnectSession({
   tableName: 'admin_session',
   createTableIfMissing: true,
 });
-
-await fastify.register(FastifySession, {
-  store: sessionStore,
-  secret: env.ADMINJS_COOKIE_SECRET,
-  saveUninitialized: true,
-  cookie: {
-    httpOnly: env.NODE_ENV === 'production',
-    secure: env.NODE_ENV === 'production',
-  },
-});
-
-// Create a Prisma client for AdminJS
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
 
 // Register AdminJS router
 await AdminJSFastify.buildAuthenticatedRouter(
