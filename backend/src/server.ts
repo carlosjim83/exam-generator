@@ -94,7 +94,8 @@ await fastify.register(rateLimit, {
   },
 });
 
-// Register multipart/form-data plugin (for file uploads)
+// Register multipart/form-data plugin BEFORE AdminJS (for document upload routes)
+// AdminJS will detect this is already registered and won't register it again
 await fastify.register(multipart, {
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB max file size
