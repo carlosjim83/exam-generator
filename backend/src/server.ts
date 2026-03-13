@@ -1,6 +1,5 @@
 import AdminJSFastify from '@adminjs/fastify';
 import cors from '@fastify/cors';
-import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import FastifySession from '@fastify/session';
 import swagger from '@fastify/swagger';
@@ -214,12 +213,48 @@ await fastify.register(swaggerUi, {
   transformStaticCSP: (header) => header,
 });
 
-// Register routes
+// Create session store for AdminJS
+const ConnectSession = Connect(FastifySession as any);
+const sessionStore = new ConnectSession({
+  conObject: {
+    connectionString: process.env.DATABASE_URL,
+  },
+  tableName: 'admin_session',
+  createTableIfMissing: true,
+});
+
+// Register AdminJS router BEFORE other routes
+// AdminJS internally registers @fastify/multipart for its own file upload functionality
+// This must be done BEFORE routes that need multipart
+await AdminJSFastify.buildAuthenticatedRouter(
+  admin,
+  {
+    authenticate: async (email, password) => {
+      // Need to import Prisma here to avoid circular dependencies
+      const { PrismaClient } = await import('@prisma/client');
+      const prisma = new PrismaClient();
+      return await authenticate(email, password, prisma);
+    },
+    cookiePassword: env.ADMINJS_COOKIE_SECRET,
+    cookieName: 'adminjs',
+  },
+  fastify,
+  {
+    store: sessionStore,
+    secret: env.ADMINJS_COOKIE_SECRET,
+    cookie: {
+      httpOnly: env.NODE_ENV === 'production',
+      secure: env.NODE_ENV === 'production',
+    },
+  }
+);
+
+// Register routes AFTER AdminJS (so multipart decorator is available)
 await fastify.register(healthRoutes);
 await fastify.register(authRoutes);
 await fastify.register(oauthRoutes);
 await fastify.register(preferencesRoutes);
-await fastify.register(documentRoutes);
+await fastify.register(documentRoutes); // Needs multipart - registered after AdminJS
 await fastify.register(examRoutes);
 await fastify.register(studentRoutes);
 await fastify.register(dashboardRoutes);

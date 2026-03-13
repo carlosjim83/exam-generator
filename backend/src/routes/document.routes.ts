@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import '@fastify/multipart'; // Import for type augmentation
 
 import { container } from '@config/container.js';
 import { queueDocumentProcessing, retryFailedJob } from '@infrastructure/queue/DocumentQueue.js';
