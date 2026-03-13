@@ -55,6 +55,10 @@ export const env = {
 
   // Development - OAuth Mock
   ENABLE_OAUTH_MOCK: process.env.ENABLE_OAUTH_MOCK || 'false',
+
+  // AdminJS
+  ADMINJS_COOKIE_SECRET:
+    process.env.ADMINJS_COOKIE_SECRET || 'default-secret-change-in-production-min-32-chars',
 } as const;
 
 // Validation function for required environment variables

@@ -1,15 +1,20 @@
+import AdminJSFastify from '@adminjs/fastify';
 import cors from '@fastify/cors';
 import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
+import FastifySession from '@fastify/session';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
+import Connect from 'connect-pg-simple';
 import Fastify from 'fastify';
 
+import { authenticate } from './admin/auth.js';
+import { admin } from './admin/index.js';
 import { env, validateEnv } from './config/env.js';
 import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 import { authRoutes } from './routes/auth.routes.js';
-import { classRoutes } from './routes/class.routes.js';
 import { classExamRoutes } from './routes/class-exam.routes.js';
+import { classRoutes } from './routes/class.routes.js';
 import { dashboardRoutes } from './routes/dashboard.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import { examRoutes } from './routes/exam.routes.js';
@@ -53,14 +58,6 @@ await fastify.register(cors, {
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 });
 
-// Register multipart/form-data plugin (for file uploads)
-await fastify.register(multipart, {
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB max file size
-    files: 1, // Max 1 file per request
-  },
-});
-
 // Register rate limiting plugin (global defaults)
 await fastify.register(rateLimit, {
   global: true, // Enable rate limiting globally
@@ -94,6 +91,15 @@ await fastify.register(rateLimit, {
     'x-ratelimit-limit': true,
     'x-ratelimit-remaining': true,
     'x-ratelimit-reset': true,
+  },
+});
+
+// Register multipart/form-data plugin BEFORE AdminJS (for document upload routes)
+// AdminJS will detect this is already registered and won't register it again
+await fastify.register(multipart, {
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB max file size
+    files: 1, // Max 1 file per request
   },
 });
 
@@ -249,6 +255,41 @@ signals.forEach((signal) => {
     process.exit(0);
   });
 });
+
+// Create a Prisma client for AdminJS
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+// Create session store for AdminJS
+const ConnectSession = Connect(FastifySession as any);
+const sessionStore = new ConnectSession({
+  conObject: {
+    connectionString: process.env.DATABASE_URL,
+  },
+  tableName: 'admin_session',
+  createTableIfMissing: true,
+});
+
+// Register AdminJS router
+await AdminJSFastify.buildAuthenticatedRouter(
+  admin,
+  {
+    authenticate: async (email, password) => {
+      return await authenticate(email, password, prisma);
+    },
+    cookiePassword: env.ADMINJS_COOKIE_SECRET,
+    cookieName: 'adminjs',
+  },
+  fastify,
+  {
+    store: sessionStore,
+    secret: env.ADMINJS_COOKIE_SECRET,
+    cookie: {
+      httpOnly: env.NODE_ENV === 'production',
+      secure: env.NODE_ENV === 'production',
+    },
+  }
+);
 
 // Start server
 const start = async () => {
