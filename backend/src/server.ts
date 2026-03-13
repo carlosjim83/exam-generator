@@ -210,9 +210,13 @@ const ConnectSession = Connect(FastifySession as any);
 const sessionStore = new ConnectSession({
   conObject: {
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-      rejectUnauthorized: false, // Required for Azure PostgreSQL Flexible Server
-    },
+    // SSL required for Azure PostgreSQL Flexible Server in production
+    // Local development doesn't use SSL
+    ...(env.NODE_ENV === 'production' && {
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    }),
   },
   tableName: 'admin_session',
   createTableIfMissing: true,
