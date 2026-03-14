@@ -2,10 +2,10 @@ import AdminJSFastify from '@adminjs/fastify';
 import cors from '@fastify/cors';
 import '@fastify/multipart'; // Import for type augmentation (AdminJS registers it)
 import rateLimit from '@fastify/rate-limit';
-import FastifySession from '@fastify/session';
+// import FastifySession from '@fastify/session'; // Not used when using in-memory store
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
-import Connect from 'connect-pg-simple';
+// import Connect from 'connect-pg-simple'; // Not used when using in-memory store
 import Fastify from 'fastify';
 
 import { authenticate } from './admin/auth.js';
@@ -214,41 +214,46 @@ await fastify.register(swaggerUi, {
 });
 
 // Create session store for AdminJS
-const ConnectSession = Connect(FastifySession as any);
-const sessionStore = new ConnectSession({
-  conObject: {
-    connectionString: process.env.DATABASE_URL,
-    // SSL required for Azure PostgreSQL Flexible Server in production
-    // Local development doesn't use SSL
-    ...(env.NODE_ENV === 'production' && {
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    }),
-  },
-  tableName: 'admin_session',
-  createTableIfMissing: true,
-});
+// TEMPORARY: Using in-memory store to debug PostgreSQL connection issues
+// TODO: Fix PostgreSQL session store connection (getting ECONNRESET errors)
+console.log('⚠️  Using in-memory session store (not persistent across restarts)');
 
-// Log session store events for debugging
-sessionStore.on('connect', () => {
-  console.log('✅ Session store connected to PostgreSQL');
-});
+// COMMENTED OUT: PostgreSQL session store (not connecting in production)
+// const ConnectSession = Connect(FastifySession as any);
+// const sessionStore = new ConnectSession({
+//   conObject: {
+//     connectionString: process.env.DATABASE_URL,
+//     // SSL required for Azure PostgreSQL Flexible Server in production
+//     // Local development doesn't use SSL
+//     ...(env.NODE_ENV === 'production' && {
+//       ssl: {
+//         rejectUnauthorized: false,
+//       },
+//     }),
+//   },
+//   tableName: 'admin_session',
+//   createTableIfMissing: true,
+// });
 
-sessionStore.on('disconnect', () => {
-  console.log('❌ Session store disconnected from PostgreSQL');
-});
+// // Log session store events for debugging
+// sessionStore.on('connect', () => {
+//   console.log('✅ Session store connected to PostgreSQL');
+// });
 
-// Monkey-patch the set method to log session creation
-const originalSet = sessionStore.set.bind(sessionStore);
-sessionStore.set = function (sid: string, session: any, callback: any) {
-  console.log('📝 Session store SET called:', {
-    sid: sid.substring(0, 8) + '...',
-    hasSession: !!session,
-    sessionKeys: session ? Object.keys(session) : [],
-  });
-  return originalSet(sid, session, callback);
-};
+// sessionStore.on('disconnect', () => {
+//   console.log('❌ Session store disconnected from PostgreSQL');
+// });
+
+// // Monkey-patch the set method to log session creation
+// const originalSet = sessionStore.set.bind(sessionStore);
+// sessionStore.set = function (sid: string, session: any, callback: any) {
+//   console.log('📝 Session store SET called:', {
+//     sid: sid.substring(0, 8) + '...',
+//     hasSession: !!session,
+//     sessionKeys: session ? Object.keys(session) : [],
+//   });
+//   return originalSet(sid, session, callback);
+// };
 
 // Register AdminJS router BEFORE other routes
 // AdminJS internally registers @fastify/multipart for its own file upload functionality
@@ -267,7 +272,7 @@ await AdminJSFastify.buildAuthenticatedRouter(
   },
   fastify,
   {
-    store: sessionStore,
+    // Using default in-memory store (no 'store' parameter)
     secret: env.ADMINJS_COOKIE_SECRET,
     saveUninitialized: false,
     cookie: {
