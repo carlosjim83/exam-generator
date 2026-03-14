@@ -284,7 +284,7 @@ await AdminJSFastify.buildAuthenticatedRouter(
   }
 );
 
-// WORKAROUND: Add hook to explicitly save session after AdminJS login
+// WORKAROUND: Add hook to explicitly save session and set cookie after AdminJS login
 // AdminJS uses req.session.set() but doesn't call save(), causing session to not persist
 fastify.addHook('onRequest', async (request) => {
   if (request.method === 'POST' && request.url === '/admin/login') {
@@ -292,7 +292,7 @@ fastify.addHook('onRequest', async (request) => {
   }
 });
 
-fastify.addHook('onSend', async (request, _reply, payload) => {
+fastify.addHook('preSerialization', async (request, reply, payload) => {
   if (request.method === 'POST' && request.url === '/admin/login') {
     // @ts-ignore - AdminJS adds adminUser to session
     const hasAdminUser = request.session && request.session.get('adminUser');
@@ -300,7 +300,7 @@ fastify.addHook('onSend', async (request, _reply, payload) => {
     if (hasAdminUser) {
       console.log('💾 AdminUser found in session, forcing save...');
 
-      // Force session save before sending response
+      // Force session save before serializing response
       await new Promise<void>((resolve, reject) => {
         request.session.save((err: any) => {
           if (err) {
@@ -308,6 +308,26 @@ fastify.addHook('onSend', async (request, _reply, payload) => {
             reject(err);
           } else {
             console.log('✅ Session saved successfully');
+            console.log('🍪 Session ID:', request.session.sessionId);
+            console.log('🍪 Encrypted Session ID:', request.session.encryptedSessionId);
+
+            // Manually set the cookie if it wasn't set by @fastify/session
+            const cookieName = 'adminjs';
+            const cookieValue = request.session.encryptedSessionId;
+            const cookieOptions = {
+              httpOnly: true,
+              secure: env.NODE_ENV === 'production',
+              sameSite: 'lax' as const,
+              maxAge: 24 * 60 * 60, // 24 hours in seconds
+              path: '/',
+            };
+
+            console.log('🍪 Manually setting cookie:', {
+              cookieName,
+              cookieValue: cookieValue.substring(0, 20) + '...',
+            });
+            reply.setCookie(cookieName, cookieValue, cookieOptions);
+
             resolve();
           }
         });
