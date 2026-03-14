@@ -273,7 +273,7 @@ await AdminJSFastify.buildAuthenticatedRouter(
   fastify,
   {
     // Using default in-memory store (no 'store' parameter)
-    secret: env.ADMINJS_COOKIE_SECRET,
+    // NOTE: Don't pass 'secret' here - AdminJS sets it from cookiePassword above
     saveUninitialized: false,
     cookie: {
       httpOnly: true, // Always true for security (prevents XSS)
