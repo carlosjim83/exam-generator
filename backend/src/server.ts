@@ -284,6 +284,47 @@ await AdminJSFastify.buildAuthenticatedRouter(
   }
 );
 
+// WORKAROUND: Override AdminJS login handler to explicitly save session
+// AdminJS uses req.session.set() but doesn't call save(), causing session to not persist
+fastify.post('/admin/login', async (req, reply) => {
+  console.log('🔧 Custom login handler called (overriding AdminJS default)');
+
+  const { email, password } = req.body as { email: string; password: string };
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient();
+
+  const adminUser = await authenticate(email, password, prisma);
+
+  if (adminUser) {
+    console.log('💾 Setting adminUser in session and calling save()...');
+    // @ts-ignore - AdminJS adds adminUser to session but types don't reflect it
+    req.session.set('adminUser', adminUser);
+
+    // CRITICAL: Explicitly save the session to ensure Set-Cookie header is sent
+    await new Promise<void>((resolve, reject) => {
+      req.session.save((err: any) => {
+        if (err) {
+          console.error('❌ Session save failed:', err);
+          reject(err);
+        } else {
+          console.log('✅ Session saved successfully');
+          resolve();
+        }
+      });
+    });
+
+    return reply.redirect('/admin');
+  } else {
+    console.log('❌ Login failed, rendering error page');
+    const login = await admin.renderLogin({
+      action: admin.options.loginPath,
+      errorMessage: 'invalidCredentials',
+    });
+    reply.type('text/html');
+    return reply.send(login);
+  }
+});
+
 // Register routes AFTER AdminJS (so multipart decorator is available)
 await fastify.register(healthRoutes);
 await fastify.register(authRoutes);
