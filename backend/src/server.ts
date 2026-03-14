@@ -230,6 +230,26 @@ const sessionStore = new ConnectSession({
   createTableIfMissing: true,
 });
 
+// Log session store events for debugging
+sessionStore.on('connect', () => {
+  console.log('✅ Session store connected to PostgreSQL');
+});
+
+sessionStore.on('disconnect', () => {
+  console.log('❌ Session store disconnected from PostgreSQL');
+});
+
+// Monkey-patch the set method to log session creation
+const originalSet = sessionStore.set.bind(sessionStore);
+sessionStore.set = function (sid: string, session: any, callback: any) {
+  console.log('📝 Session store SET called:', {
+    sid: sid.substring(0, 8) + '...',
+    hasSession: !!session,
+    sessionKeys: session ? Object.keys(session) : [],
+  });
+  return originalSet(sid, session, callback);
+};
+
 // Register AdminJS router BEFORE other routes
 // AdminJS internally registers @fastify/multipart for its own file upload functionality
 // This must be done BEFORE routes that need multipart
@@ -249,9 +269,12 @@ await AdminJSFastify.buildAuthenticatedRouter(
   {
     store: sessionStore,
     secret: env.ADMINJS_COOKIE_SECRET,
+    saveUninitialized: false,
     cookie: {
-      httpOnly: env.NODE_ENV === 'production',
-      secure: env.NODE_ENV === 'production',
+      httpOnly: true, // Always true for security (prevents XSS)
+      secure: env.NODE_ENV === 'production', // Only send over HTTPS in production
+      sameSite: 'lax', // Required for AdminJS login flow (allows same-site POST)
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
     },
   }
 );
