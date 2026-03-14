@@ -32,6 +32,14 @@ try {
   process.exit(1);
 }
 
+// Log AdminJS secret configuration (for debugging production issues)
+console.log('🔐 AdminJS Cookie Secret configured:', {
+  length: env.ADMINJS_COOKIE_SECRET.length,
+  preview: env.ADMINJS_COOKIE_SECRET.substring(0, 8) + '...',
+  isDefault: env.ADMINJS_COOKIE_SECRET === 'default-secret-change-in-production-min-32-chars',
+  nodeEnv: env.NODE_ENV,
+});
+
 // Bootstrap event handlers for background processing
 bootstrapEventHandlers();
 

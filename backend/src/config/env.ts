@@ -63,7 +63,7 @@ export const env = {
 
 // Validation function for required environment variables
 export function validateEnv() {
-  const required = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET'];
+  const required = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ADMINJS_COOKIE_SECRET'];
 
   const missing = required.filter((key) => !env[key as keyof typeof env]);
 
@@ -71,6 +71,13 @@ export function validateEnv() {
     throw new Error(
       `Missing required environment variables: ${missing.join(', ')}\n` +
         'Please check your .env file and ensure all required variables are set.'
+    );
+  }
+
+  // Validate AdminJS cookie secret length (must be at least 32 characters)
+  if (env.ADMINJS_COOKIE_SECRET.length < 32) {
+    throw new Error(
+      `ADMINJS_COOKIE_SECRET must be at least 32 characters long. Current length: ${env.ADMINJS_COOKIE_SECRET.length}`
     );
   }
 }
