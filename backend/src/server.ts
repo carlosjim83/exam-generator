@@ -1,11 +1,9 @@
 import AdminJSFastify from '@adminjs/fastify';
 import cors from '@fastify/cors';
-import '@fastify/multipart'; // Import for type augmentation (AdminJS registers it)
+import '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
-// import FastifySession from '@fastify/session'; // Not used when using in-memory store
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
-// import Connect from 'connect-pg-simple'; // Not used when using in-memory store
 import Fastify from 'fastify';
 
 import { authenticate } from './admin/auth.js';
@@ -32,25 +30,14 @@ try {
   process.exit(1);
 }
 
-// Log AdminJS secret configuration (for debugging production issues)
-console.log('🔐 AdminJS Cookie Secret configured:', {
-  length: env.ADMINJS_COOKIE_SECRET.length,
-  preview: env.ADMINJS_COOKIE_SECRET.substring(0, 8) + '...',
-  isDefault: env.ADMINJS_COOKIE_SECRET === 'default-secret-change-in-production-min-32-chars',
-  nodeEnv: env.NODE_ENV,
-});
-
 // Bootstrap event handlers for background processing
 bootstrapEventHandlers();
 
 // Start the document processing worker
-// This imports and initializes the BullMQ worker that processes documents in the background
 import './infrastructure/queue/DocumentWorker.js';
 console.log('📦 Document processing worker initialized');
 
 // Create Fastify instance with logging
-// trustProxy: true tells Fastify to trust headers from reverse proxies (like Azure Container Apps)
-// This allows proper detection of HTTPS requests and correct cookie settings
 const fastify = Fastify({
   logger: {
     level: env.NODE_ENV === 'development' ? 'info' : 'warn',
@@ -59,8 +46,6 @@ const fastify = Fastify({
         ? { target: 'pino-pretty', options: { colorize: true } }
         : undefined,
   },
-  // Trust proxy headers (X-Forwarded-For, X-Forwarded-Proto, etc.)
-  // Required for Azure Container Apps and other reverse proxies
   trustProxy: true,
 });
 
@@ -218,94 +203,39 @@ await fastify.register(swaggerUi, {
   transformStaticCSP: (header) => header,
 });
 
-// Create session store for AdminJS
-// TEMPORARY: Using in-memory store to debug PostgreSQL connection issues
-// TODO: Fix PostgreSQL session store connection (getting ECONNRESET errors)
 console.log('⚠️  Using in-memory session store (not persistent across restarts)');
 
-// COMMENTED OUT: PostgreSQL session store (not connecting in production)
-// const ConnectSession = Connect(FastifySession as any);
-// const sessionStore = new ConnectSession({
-//   conObject: {
-//     connectionString: process.env.DATABASE_URL,
-//     // SSL required for Azure PostgreSQL Flexible Server in production
-//     // Local development doesn't use SSL
-//     ...(env.NODE_ENV === 'production' && {
-//       ssl: {
-//         rejectUnauthorized: false,
-//       },
-//     }),
-//   },
-//   tableName: 'admin_session',
-//   createTableIfMissing: true,
-// });
-
-// // Log session store events for debugging
-// sessionStore.on('connect', () => {
-//   console.log('✅ Session store connected to PostgreSQL');
-// });
-
-// sessionStore.on('disconnect', () => {
-//   console.log('❌ Session store disconnected from PostgreSQL');
-// });
-
-// // Monkey-patch the set method to log session creation
-// const originalSet = sessionStore.set.bind(sessionStore);
-// sessionStore.set = function (sid: string, session: any, callback: any) {
-//   console.log('📝 Session store SET called:', {
-//     sid: sid.substring(0, 8) + '...',
-//     hasSession: !!session,
-//     sessionKeys: session ? Object.keys(session) : [],
-//   });
-//   return originalSet(sid, session, callback);
-// };
-
 // Register AdminJS router BEFORE other routes
-// AdminJS internally registers @fastify/multipart for its own file upload functionality
-// This must be done BEFORE routes that need multipart
 await AdminJSFastify.buildAuthenticatedRouter(
   admin,
   {
     authenticate: async (email, password) => {
-      console.log('🔐 AdminJS login attempt:', { email, hasPassword: !!password });
-      // Need to import Prisma here to avoid circular dependencies
       const { PrismaClient } = await import('@prisma/client');
       const prisma = new PrismaClient();
-      const result = await authenticate(email, password, prisma);
-      console.log('🔐 AdminJS authenticate result:', { success: !!result, user: result?.email });
-      return result;
+      return await authenticate(email, password, prisma);
     },
     cookiePassword: env.ADMINJS_COOKIE_SECRET,
     cookieName: 'adminjs',
   },
   fastify,
   {
-    // Using default in-memory store (no 'store' parameter)
-    secret: env.ADMINJS_COOKIE_SECRET, // Explicit secret
-    saveUninitialized: false, // Don't save empty sessions
+    secret: env.ADMINJS_COOKIE_SECRET,
+    saveUninitialized: false,
     cookie: {
-      httpOnly: true, // Always true for security (prevents XSS)
-      // secure: "auto" lets @fastify/session determine HTTPS/HTTP from proxy headers
-      // When trustProxy: true, session will use HTTPS if X-Forwarded-Proto is https
+      httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'lax', // Required for AdminJS login flow (allows same-site POST)
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+      sameSite: 'lax',
+      maxAge: 24 * 60 * 60 * 1000,
     },
   }
 );
 
-// DEBUG: Log all /admin requests to verify session middleware is working
+// AdminJS debug hook - can be removed in production
 fastify.addHook('onRequest', async (request) => {
   if (request.url.startsWith('/admin')) {
     console.log('🔍 ADMIN request:', {
       method: request.method,
       url: request.url,
-      // @ts-ignore - session may not be typed
-      hasSession: !!request.session,
-      // @ts-ignore
-      sessionId: request.session?.sessionId,
-      // @ts-ignore
-      adminUser: request.session?.get ? request.session.get('adminUser') : undefined,
     });
   }
 });
