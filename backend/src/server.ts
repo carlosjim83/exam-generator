@@ -49,6 +49,8 @@ import './infrastructure/queue/DocumentWorker.js';
 console.log('📦 Document processing worker initialized');
 
 // Create Fastify instance with logging
+// trustProxy: true tells Fastify to trust headers from reverse proxies (like Azure Container Apps)
+// This allows proper detection of HTTPS requests and correct cookie settings
 const fastify = Fastify({
   logger: {
     level: env.NODE_ENV === 'development' ? 'info' : 'warn',
@@ -57,6 +59,9 @@ const fastify = Fastify({
         ? { target: 'pino-pretty', options: { colorize: true } }
         : undefined,
   },
+  // Trust proxy headers (X-Forwarded-For, X-Forwarded-Proto, etc.)
+  // Required for Azure Container Apps and other reverse proxies
+  trustProxy: true,
 });
 
 // Register CORS plugin
@@ -262,10 +267,13 @@ await AdminJSFastify.buildAuthenticatedRouter(
   admin,
   {
     authenticate: async (email, password) => {
+      console.log('🔐 AdminJS login attempt:', { email, hasPassword: !!password });
       // Need to import Prisma here to avoid circular dependencies
       const { PrismaClient } = await import('@prisma/client');
       const prisma = new PrismaClient();
-      return await authenticate(email, password, prisma);
+      const result = await authenticate(email, password, prisma);
+      console.log('🔐 AdminJS authenticate result:', { success: !!result, user: result?.email });
+      return result;
     },
     cookiePassword: env.ADMINJS_COOKIE_SECRET,
     cookieName: 'adminjs',
@@ -273,71 +281,33 @@ await AdminJSFastify.buildAuthenticatedRouter(
   fastify,
   {
     // Using default in-memory store (no 'store' parameter)
-    // NOTE: Don't pass 'secret' here - AdminJS sets it from cookiePassword above
-    // NOTE: Don't pass 'saveUninitialized' - let AdminJS handle session initialization
+    secret: env.ADMINJS_COOKIE_SECRET, // Explicit secret
+    saveUninitialized: false, // Don't save empty sessions
     cookie: {
       httpOnly: true, // Always true for security (prevents XSS)
-      secure: env.NODE_ENV === 'production', // Only send over HTTPS in production
+      // secure: "auto" lets @fastify/session determine HTTPS/HTTP from proxy headers
+      // When trustProxy: true, session will use HTTPS if X-Forwarded-Proto is https
+      secure: env.NODE_ENV === 'production',
       sameSite: 'lax', // Required for AdminJS login flow (allows same-site POST)
       maxAge: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
     },
   }
 );
 
-// WORKAROUND: Add hook to explicitly save session and set cookie after AdminJS login
-// AdminJS uses req.session.set() but doesn't call save(), causing session to not persist
+// DEBUG: Log all /admin requests to verify session middleware is working
 fastify.addHook('onRequest', async (request) => {
-  if (request.method === 'POST' && request.url === '/admin/login') {
-    console.log('🔧 Login request intercepted, will force session save after response');
+  if (request.url.startsWith('/admin')) {
+    console.log('🔍 ADMIN request:', {
+      method: request.method,
+      url: request.url,
+      // @ts-ignore - session may not be typed
+      hasSession: !!request.session,
+      // @ts-ignore
+      sessionId: request.session?.sessionId,
+      // @ts-ignore
+      adminUser: request.session?.get ? request.session.get('adminUser') : undefined,
+    });
   }
-});
-
-fastify.addHook('preSerialization', async (request, reply, payload) => {
-  if (request.method === 'POST' && request.url === '/admin/login') {
-    // @ts-ignore - AdminJS adds adminUser to session
-    const hasAdminUser = request.session && request.session.get('adminUser');
-
-    if (hasAdminUser) {
-      console.log('💾 AdminUser found in session, forcing save...');
-
-      // Force session save before serializing response
-      await new Promise<void>((resolve, reject) => {
-        request.session.save((err: any) => {
-          if (err) {
-            console.error('❌ Session save failed:', err);
-            reject(err);
-          } else {
-            console.log('✅ Session saved successfully');
-            console.log('🍪 Session ID:', request.session.sessionId);
-            console.log('🍪 Encrypted Session ID:', request.session.encryptedSessionId);
-
-            // Manually set the cookie if it wasn't set by @fastify/session
-            const cookieName = 'adminjs';
-            const cookieValue = request.session.encryptedSessionId;
-            const cookieOptions = {
-              httpOnly: true,
-              secure: env.NODE_ENV === 'production',
-              sameSite: 'lax' as const,
-              maxAge: 24 * 60 * 60, // 24 hours in seconds
-              path: '/',
-            };
-
-            console.log('🍪 Manually setting cookie:', {
-              cookieName,
-              cookieValue: cookieValue.substring(0, 20) + '...',
-            });
-            reply.setCookie(cookieName, cookieValue, cookieOptions);
-
-            resolve();
-          }
-        });
-      });
-    } else {
-      console.log('⚠️  No adminUser in session after login attempt');
-    }
-  }
-
-  return payload;
 });
 
 // Register routes AFTER AdminJS (so multipart decorator is available)
