@@ -81,9 +81,9 @@
       "features": [
         "5 exams per month",
         "Up to 30 students",
-        "1 active class",
+        "3 active classes",
         "Basic analytics",
-        "Email support"
+        "Community support"
       ]
     },
     "pro": {
@@ -91,26 +91,40 @@
       "description": "For teachers who need more.",
       "features": [
         "Unlimited exams",
-        "Unlimited students",
+        "Up to 500 students",
         "Unlimited classes",
         "Advanced analytics",
         "Priority support"
       ],
-      "price": "$9",
+      "price": "$9.99",
       "period": "/month",
       "cta": "Upgrade to Pro"
     },
-    "enterprise": {
-      "title": "For Schools & Universities",
-      "description": "Custom solutions for institutions.",
+    "team": {
+      "title": "Team",
+      "description": "For schools and departments.",
       "features": [
-        "Everything in Pro",
-        "SSO Integration",
-        "Custom AI training",
-        "Dedicated support",
-        "SLA guarantee"
+        "Up to 10 teachers",
+        "Up to 5,000 students",
+        "Admin dashboard",
+        "SSO (Google, Microsoft)",
+        "Priority support 8h"
       ],
-      "cta": "Contact Us"
+      "price": "$149",
+      "period": "/month",
+      "cta": "Upgrade to Team"
+    },
+    "enterprise": {
+      "title": "Enterprise",
+      "description": "For large institutions.",
+      "features": [
+        "Everything in Team",
+        "SSO SAML/LDAP",
+        "Custom AI training",
+        "Dedicated account manager",
+        "99.9% SLA guarantee"
+      ],
+      "cta": "Contact Sales"
     }
   },
   "footer": {

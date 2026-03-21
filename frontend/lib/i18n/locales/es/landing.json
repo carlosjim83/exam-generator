@@ -73,7 +73,7 @@
     }
   },
   "pricing": {
-    "title": "Precios Simples",
+    "title": "Planes Simples",
     "subtitle": "Comienza gratis, actualiza cuando necesites más.",
     "free": {
       "title": "Gratis",
@@ -81,9 +81,9 @@
       "features": [
         "5 exámenes por mes",
         "Hasta 30 estudiantes",
-        "1 clase activa",
+        "3 clases activas",
         "Análisis básico",
-        "Soporte por email"
+        "Soporte comunitario"
       ]
     },
     "pro": {
@@ -96,7 +96,7 @@
         "Análisis avanzado",
         "Soporte prioritario"
       ],
-      "price": "$9",
+      "price": "$9.99",
       "period": "/mes",
       "cta": "Actualizar a Pro"
     },

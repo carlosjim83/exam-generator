@@ -36,6 +36,7 @@ model User {
   documents          Document[]
   exams              Exam[]
   preferences        UserPreferences?
+  subscription       Subscription?
   studentAssignments ExamAssignment[]     @relation("StudentAssignments")
   teacherAssignments ExamAssignment[]     @relation("TeacherAssignments")
   taughtClasses      Class[]              @relation("TeacherClasses")
@@ -402,6 +403,89 @@ model ClassDocument {
   @@index([documentId])
   @@index([classId, isVisible])
   @@map("class_documents")
+}
+
+// ============================================================================
+// Subscription & Billing
+// ============================================================================
+
+model Subscription {
+  id     String            @id @default(uuid())
+  userId String            @unique @map("user_id")
+  plan   SubscriptionPlan  @default(FREE)
+  status SubscriptionStatus @default(ACTIVE)
+
+  // Stripe integration
+  stripeCustomerId    String?  @map("stripe_customer_id")
+  stripeSubscriptionId String? @map("stripe_subscription_id")
+  stripePriceId       String?  @map("stripe_price_id")
+
+  // Billing
+  billingCycle BillingCycle @default(MONTHLY)
+  
+  // Current period
+  currentPeriodStart DateTime? @map("current_period_start")
+  currentPeriodEnd   DateTime? @map("current_period_end")
+
+  // Cancellation
+  cancelledAt DateTime? @map("cancelled_at")
+  cancelAtPeriodEnd   Boolean   @default(false) @map("cancel_at_period_end")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageRecords UsageRecord[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([stripeCustomerId])
+  @@map("subscriptions")
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  TEAM
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  SUSPENDED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+// ============================================================================
+// Usage Tracking
+// ============================================================================
+
+model UsageRecord {
+  id        String        @id @default(uuid())
+  userId    String        @map("user_id")
+  period    String        // Format: "YYYY-MM" (e.g., "2026-03")
+  
+  // Usage counters
+  examsCreated  Int @default(0) @map("exams_created")
+  
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  subscription Subscription? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, period])
+  @@index([userId])
+  @@index([period])
+  @@map("usage_records")
 }
 
 // ============================================================================

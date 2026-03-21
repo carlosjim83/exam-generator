@@ -21,6 +21,7 @@ import { oauthRoutes } from './routes/oauth.routes.js';
 import { preferencesRoutes } from './routes/preferences.routes.js';
 import { protectedRoutes } from './routes/protected.routes.js';
 import { studentRoutes } from './routes/student.routes.js';
+import { subscriptionRoutes } from './routes/subscription.routes.js';
 
 // Validate environment variables on startup
 try {
@@ -169,6 +170,10 @@ await fastify.register(swagger, {
         name: 'dashboard',
         description: 'Dashboard statistics and analytics',
       },
+      {
+        name: 'subscription',
+        description: 'Subscription management and usage tracking',
+      },
     ],
     components: {
       securitySchemes: {
@@ -252,6 +257,7 @@ await fastify.register(dashboardRoutes);
 await fastify.register(protectedRoutes);
 await fastify.register(classRoutes);
 await fastify.register(classExamRoutes);
+await fastify.register(subscriptionRoutes);
 
 // Legacy health check endpoint (kept for backwards compatibility)
 fastify.get('/health-legacy', async () => {
