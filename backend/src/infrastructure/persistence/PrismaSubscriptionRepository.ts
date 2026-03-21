@@ -1,8 +1,7 @@
-import type { Prisma, PrismaClient } from '@prisma/client';
+import type { PrismaClient } from '@prisma/client';
 
 import { Subscription } from '@domain/entities/Subscription.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
-import { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * PrismaSubscriptionRepository
@@ -26,7 +25,7 @@ export class PrismaSubscriptionRepository implements ISubscriptionRepository {
   }
 
   async findByStripeCustomerId(customerId: string): Promise<Subscription | null> {
-    const record = await this.prisma.subscription.findUnique({
+    const record = await this.prisma.subscription.findFirst({
       where: { stripeCustomerId: customerId },
     });
 
@@ -96,10 +95,7 @@ export class PrismaSubscriptionRepository implements ISubscriptionRepository {
     });
   }
 
-  async getUsageRecord(
-    userId: string,
-    period: string
-  ): Promise<{ examsCreated: number } | null> {
+  async getUsageRecord(userId: string, period: string): Promise<{ examsCreated: number } | null> {
     const record = await this.prisma.usageRecord.findUnique({
       where: {
         userId_period: {
@@ -114,11 +110,7 @@ export class PrismaSubscriptionRepository implements ISubscriptionRepository {
     return { examsCreated: record.examsCreated };
   }
 
-  async upsertUsageRecord(
-    userId: string,
-    period: string,
-    examsCreated: number
-  ): Promise<void> {
+  async upsertUsageRecord(userId: string, period: string, examsCreated: number): Promise<void> {
     await this.prisma.usageRecord.upsert({
       where: {
         userId_period: {

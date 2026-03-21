@@ -232,16 +232,17 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
       try {
         const userId = (request as any).user.userId;
         const result = await recordUsageUseCase.execute(userId);
-        
+
         if (!result.success) {
           return reply.status(403).send({
             statusCode: 403,
             error: 'Limit Exceeded',
-            message: 'You have reached your monthly exam limit. Please upgrade your plan to create more exams.',
+            message:
+              'You have reached your monthly exam limit. Please upgrade your plan to create more exams.',
             remaining: result.remaining,
           });
         }
-        
+
         return reply.status(200).send(result);
       } catch (error: any) {
         fastify.log.error('Record usage error:', error);
@@ -309,7 +310,7 @@ export async function subscriptionRoutes(fastify: FastifyInstance) {
         },
       },
     },
-    async (request, reply) => {
+    async (_request, reply) => {
       try {
         const plans = ['FREE', 'PRO', 'TEAM', 'ENTERPRISE'].map((plan) => ({
           id: plan.toLowerCase(),
