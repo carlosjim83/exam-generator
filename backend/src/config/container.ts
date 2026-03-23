@@ -498,7 +498,10 @@ export class Container {
 
     this._getAssignedExamsUseCase = new GetAssignedExamsUseCase(this._examAssignmentRepository);
 
-    this._startExamUseCase = new StartExamUseCase(this._examAssignmentRepository);
+    this._startExamUseCase = new StartExamUseCase(
+      this._examAssignmentRepository,
+      this._examRepository
+    );
 
     this._submitExamAnswersUseCase = new SubmitExamAnswersUseCase(
       this._examAssignmentRepository,

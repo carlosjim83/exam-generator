@@ -356,7 +356,11 @@ export async function studentRoutes(fastify: FastifyInstance) {
           studentId: (request as any).user.userId,
         });
 
-        return reply.status(200).send({ assignment: result });
+        // Serialize entities for JSON response
+        return reply.status(200).send({
+          assignment: result.assignment.toObject(),
+          exam: result.exam,
+        });
       } catch (error: any) {
         fastify.log.error('Start exam error:', error);
 
@@ -377,6 +381,14 @@ export async function studentRoutes(fastify: FastifyInstance) {
             statusCode: 403,
             error: 'Forbidden',
             message: 'You do not have access to this assignment',
+          });
+        }
+
+        if (error.message.includes('already been completed')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: error.message,
           });
         }
 

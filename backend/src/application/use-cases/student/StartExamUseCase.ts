@@ -1,5 +1,6 @@
 import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 
 export interface StartExamInput {
@@ -7,11 +8,37 @@ export interface StartExamInput {
   studentId: string;
 }
 
-export class StartExamUseCase {
-  constructor(private readonly assignmentRepo: IExamAssignmentRepository) {}
+export interface StartExamOutput {
+  assignment: ExamAssignment;
+  exam: {
+    id: string;
+    title: string;
+    description: string | null;
+    questions: Array<{
+      id: string;
+      text: string;
+      order: number;
+    }>;
+  };
+}
 
-  async execute(input: StartExamInput): Promise<ExamAssignment> {
-    const assignment = await this.assignmentRepo.findById(AssignmentId.create(input.assignmentId));
+/**
+ * Start or resume an exam assignment
+ *
+ * - If PENDING: Start the exam (change status to IN_PROGRESS)
+ * - If IN_PROGRESS: Resume (return existing assignment with questions)
+ * - If SUBMITTED/GRADED: Throw error (cannot resume completed exam)
+ */
+export class StartExamUseCase {
+  constructor(
+    private readonly assignmentRepo: IExamAssignmentRepository,
+    private readonly examRepo: IExamRepository
+  ) {}
+
+  async execute(input: StartExamInput): Promise<StartExamOutput> {
+    const assignmentId = AssignmentId.create(input.assignmentId);
+
+    const assignment = await this.assignmentRepo.findById(assignmentId);
 
     if (!assignment) {
       throw new Error('Assignment not found');
@@ -19,15 +46,44 @@ export class StartExamUseCase {
 
     // Verify ownership
     if (assignment.studentId.value !== input.studentId) {
-      throw new Error('You can only start your own assignments');
+      throw new Error('You can only access your own assignments');
     }
 
-    // Start the exam (domain logic validates status)
-    const startedAssignment = assignment.start();
+    let finalAssignment: ExamAssignment;
 
-    // Persist changes
-    const updated = await this.assignmentRepo.update(startedAssignment);
+    if (assignment.status === 'PENDING') {
+      // Start the exam for the first time
+      finalAssignment = assignment.start();
+      await this.assignmentRepo.update(finalAssignment);
+    } else if (assignment.status === 'IN_PROGRESS') {
+      // Resume: return existing assignment
+      finalAssignment = assignment;
+    } else {
+      // SUBMITTED or GRADED - cannot resume
+      throw new Error(`This exam has already been completed. Status: ${assignment.status}`);
+    }
 
-    return updated;
+    // Get exam with questions
+    const exam = await this.examRepo.findById(assignment.examId);
+    if (!exam) {
+      throw new Error('Exam not found');
+    }
+
+    // Get questions (they might not be loaded)
+    const questions = exam.questions ?? [];
+
+    return {
+      assignment: finalAssignment,
+      exam: {
+        id: exam.id,
+        title: exam.title,
+        description: exam.description ?? null,
+        questions: questions.map((q) => ({
+          id: q.id,
+          text: q.questionText,
+          order: q.orderIndex,
+        })),
+      },
+    };
   }
 }
