@@ -1,5 +1,10 @@
 import type { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
 import type { UsageMetrics } from '@domain/entities/UsageMetrics.js';
+import {
+  UPGRADE_TRIGGERS,
+  UPGRADE_MESSAGES,
+  WARNING_THRESHOLD,
+} from '@config/subscription-limits.js';
 
 /**
  * Result type for subscription limit checks
@@ -20,7 +25,7 @@ export class CheckSubscriptionLimitUseCase {
     const currentStudents = metrics.currentStudents;
     const maxStudents = limits.maxStudents;
 
-    // Unlimit tiers (Pro and above)
+    // Unlimited tiers (Pro and above)
     if (maxStudents === null) {
       return {
         allowed: true,
@@ -38,28 +43,29 @@ export class CheckSubscriptionLimitUseCase {
         remaining: 0,
         limit: maxStudents,
         severity: 'blocked',
-        message: `You've reached your student limit (${maxStudents}). Upgrade to Pro for unlimited students.`,
+        message: UPGRADE_MESSAGES.STUDENTS.BLOCKED,
       };
     }
 
-    if (remaining <= 5) {
+    if (remaining <= UPGRADE_TRIGGERS.STUDENTS_WARNING_THRESHOLD) {
       return {
         allowed: true,
         remaining,
         limit: maxStudents,
         severity: 'warning',
-        message: `${remaining} student${remaining > 1 ? 's' : ''} remaining. Upgrade to Pro for unlimited students.`,
+        message: UPGRADE_MESSAGES.STUDENTS.WARNING(remaining),
       };
     }
 
     // Warning at 80% of limit
-    if (currentStudents >= Math.floor(maxStudents * 0.8)) {
+    if (currentStudents >= Math.floor(maxStudents * WARNING_THRESHOLD)) {
+      const percentage = Math.floor((currentStudents / maxStudents) * 100);
       return {
         allowed: true,
         remaining,
         limit: maxStudents,
         severity: 'warning',
-        message: `${remaining} student${remaining > 1 ? 's' : ''} remaining (${Math.floor((currentStudents / maxStudents) * 100)}% used).`,
+        message: UPGRADE_MESSAGES.STUDENTS.WARNING(remaining) + ` (${percentage}% used).`,
       };
     }
 
@@ -93,17 +99,17 @@ export class CheckSubscriptionLimitUseCase {
         remaining: 0,
         limit: maxClasses,
         severity: 'blocked',
-        message: `You've reached your class limit (${maxClasses}). Upgrade to Pro for unlimited classes.`,
+        message: UPGRADE_MESSAGES.CLASSES.BLOCKED,
       };
     }
 
-    if (remaining <= 1) {
+    if (remaining <= UPGRADE_TRIGGERS.CLASS_WARNING_THRESHOLD) {
       return {
         allowed: true,
         remaining,
         limit: maxClasses,
         severity: 'warning',
-        message: `1 class remaining. Upgrade to Pro for unlimited classes.`,
+        message: UPGRADE_MESSAGES.CLASSES.WARNING,
       };
     }
 
@@ -137,28 +143,29 @@ export class CheckSubscriptionLimitUseCase {
         remaining: 0,
         limit: maxExams,
         severity: 'blocked',
-        message: `You've used your monthly exam limit (${maxExams}). Wait until next month or upgrade to Pro.`,
+        message: UPGRADE_MESSAGES.EXAMS.BLOCKED,
       };
     }
 
-    if (remaining <= 2) {
+    if (remaining <= UPGRADE_TRIGGERS.EXAMS_WARNING_THRESHOLD) {
       return {
         allowed: true,
         remaining,
         limit: maxExams,
         severity: 'warning',
-        message: `${remaining} exam${remaining > 1 ? 's' : ''} remaining this month. Upgrade to Pro for unlimited exams.`,
+        message: UPGRADE_MESSAGES.EXAMS.WARNING(remaining),
       };
     }
 
     // Warning at 80% of limit
-    if (examsThisMonth >= Math.floor(maxExams * 0.8)) {
+    if (examsThisMonth >= Math.floor(maxExams * WARNING_THRESHOLD)) {
+      const percentage = Math.floor((examsThisMonth / maxExams) * 100);
       return {
         allowed: true,
         remaining,
         limit: maxExams,
         severity: 'warning',
-        message: `${remaining} exam${remaining > 1 ? 's' : ''} remaining this month (${Math.floor((examsThisMonth / maxExams) * 100)}% used).`,
+        message: UPGRADE_MESSAGES.EXAMS.WARNING(remaining) + ` (${percentage}% used).`,
       };
     }
 

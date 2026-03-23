@@ -1,4 +1,5 @@
 import { SubscriptionTier } from './Subscription.js';
+import { FREE_TIER_LIMITS, AI_MODELS } from '@config/subscription-limits.js';
 
 /**
  * Analytics Level Enum
@@ -80,14 +81,14 @@ export class SubscriptionLimits {
       case SubscriptionTier.FREE:
         return SubscriptionLimits.create({
           tier: SubscriptionTier.FREE,
-          maxClasses: 1,
-          maxStudents: 30,
-          maxExamsPerMonth: 10,
-          maxQuestionsPerExam: 50,
+          maxClasses: FREE_TIER_LIMITS.MAX_CLASSES,
+          maxStudents: FREE_TIER_LIMITS.MAX_STUDENTS,
+          maxExamsPerMonth: FREE_TIER_LIMITS.MAX_EXAMS_PER_MONTH,
+          maxQuestionsPerExam: FREE_TIER_LIMITS.MAX_QUESTIONS_PER_EXAM,
           maxTeamMembers: 1,
           analyticsLevel: AnalyticsLevel.BASIC,
           supportLevel: SupportLevel.EMAIL,
-          aiModel: AIModel.GPT_4O_MINI,
+          aiModel: AIModel[AI_MODELS.FREE],
           customBranding: false,
           exportFeatures: false,
           lmsIntegrations: [],
@@ -106,7 +107,7 @@ export class SubscriptionLimits {
           maxTeamMembers: 1,
           analyticsLevel: AnalyticsLevel.ADVANCED,
           supportLevel: SupportLevel.PRIORITY,
-          aiModel: AIModel.GPT_4O,
+          aiModel: AIModel[AI_MODELS.PRO],
           customBranding: true,
           exportFeatures: true,
           lmsIntegrations: [],
@@ -125,7 +126,7 @@ export class SubscriptionLimits {
           maxTeamMembers: 5,
           analyticsLevel: AnalyticsLevel.TEAM,
           supportLevel: SupportLevel.PRIORITY,
-          aiModel: AIModel.GPT_4O,
+          aiModel: AIModel[AI_MODELS.PRO_PLUS],
           customBranding: true,
           exportFeatures: true,
           lmsIntegrations: ['google_classroom', 'microsoft_teams', 'canvas'],
@@ -144,7 +145,7 @@ export class SubscriptionLimits {
           maxTeamMembers: null,
           analyticsLevel: AnalyticsLevel.TEAM,
           supportLevel: SupportLevel.DEDICATED,
-          aiModel: AIModel.GPT_4O,
+          aiModel: AIModel[AI_MODELS.ENTERPRISE],
           customBranding: true,
           exportFeatures: true,
           lmsIntegrations: ['google_classroom', 'microsoft_teams', 'canvas'],
