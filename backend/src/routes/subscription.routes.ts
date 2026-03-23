@@ -4,16 +4,12 @@
  */
 
 import type { FastifyInstance } from 'fastify';
-import { GetSubscriptionUseCase } from '@application/use-cases/subscription/index.js';
-import { SubscriptionRepository } from '@infrastructure/persistence/repositories/SubscriptionRepository.js';
-import { UsageMetricsRepository } from '@infrastructure/persistence/repositories/UsageMetricsRepository.js';
+import { container } from '@config/container.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 
 export default async function subscriptionRoutes(fastify: FastifyInstance) {
-  const subscriptionRepo = new SubscriptionRepository();
-  const usageMetricsRepo = new UsageMetricsRepository();
-  const getSubscriptionUseCase = new GetSubscriptionUseCase(subscriptionRepo, usageMetricsRepo);
+  const getSubscriptionUseCase = container.getSubscriptionUseCase;
 
   // GET /api/subscription/current - Get current subscription with limits and usage
   fastify.get(
@@ -64,7 +60,7 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const userId = (request as { user: { userId: string } }).user.userId;
+        const userId = (request as unknown as { user: { userId: string } }).user.userId;
 
         const result = await getSubscriptionUseCase.execute(UserId.create(userId));
 
@@ -77,13 +73,14 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
           limitsReached: result.limitsReached,
           upgradeNeeded: result.upgradeNeeded,
         });
-      } catch (error: { message?: string }) {
-        fastify.log.error('Get subscription error:', error);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Failed to get subscription';
+        fastify.log.error(error, 'Get subscription error');
 
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to get subscription',
+          message,
         });
       }
     }

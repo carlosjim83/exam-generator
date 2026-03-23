@@ -64,6 +64,7 @@ import { UpdateClassExamSettingsUseCase } from '@application/use-cases/classes/U
 import { GetClassExamResultsUseCase } from '@application/use-cases/classes/GetClassExamResultsUseCase.js';
 import { DeleteClassExamUseCase } from '@application/use-cases/classes/DeleteClassExamUseCase.js';
 import { ListRecentClassExamsUseCase } from '@application/use-cases/class-exams/ListRecentClassExamsUseCase.js';
+import { GetSubscriptionUseCase } from '@application/use-cases/subscription/index.js';
 // Class Document Use Cases
 // Application Use Cases
 // Student Use Cases
@@ -100,14 +101,16 @@ import {
   PrismaInvitationRepository,
   PrismaClassDocumentRepository,
   PrismaClassExamRepository,
-  SubscriptionRepository,
-  UsageMetricsRepository,
+  PrismaSubscriptionRepository,
+  PrismaUsageMetricsRepository,
 } from '@infrastructure/index.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import { PrismaExamAssignmentRepository } from '@infrastructure/repositories/PrismaExamAssignmentRepository.js';
 import { PrismaExamRepository } from '@infrastructure/repositories/PrismaExamRepository.js';
 import { PrismaStudentAnswerRepository } from '@infrastructure/repositories/PrismaStudentAnswerRepository.js';
 import { GetStudentClassExamsUseCase } from '@application/use-cases/classes/GetStudentClassExamsUseCase.js';
+import { ISubscriptionRepository } from '@/domain/repositories/ISubscriptionRepository';
+import { IUsageMetricsRepository } from '@/domain/repositories/IUsageMetricsRepository';
 
 /**
  * Container class - Singleton pattern
@@ -211,6 +214,9 @@ export class Container {
   private readonly _submitExamAnswersUseCase: SubmitExamAnswersUseCase;
   private readonly _getExamResultsUseCase: GetExamResultsUseCase;
 
+  // Application Layer - Subscription Use Cases
+  private readonly _getSubscriptionUseCase: GetSubscriptionUseCase;
+
   private constructor() {
     // ========================================
     // INFRASTRUCTURE LAYER
@@ -258,8 +264,8 @@ export class Container {
     this._classExamRepository = PrismaClassExamRepository.create(this._prisma);
 
     // Subscription Repositories
-    this._subscriptionRepository = new SubscriptionRepository();
-    this._usageMetricsRepository = new UsageMetricsRepository();
+    this._subscriptionRepository = PrismaSubscriptionRepository.create(this._prisma);
+    this._usageMetricsRepository = PrismaUsageMetricsRepository.create(this._prisma);
 
     // ========================================
     // APPLICATION LAYER - USE CASES
@@ -504,6 +510,12 @@ export class Container {
       this._examAssignmentRepository,
       this._studentAnswerRepository,
       this._examRepository
+    );
+
+    // Subscription Use Cases
+    this._getSubscriptionUseCase = new GetSubscriptionUseCase(
+      this._subscriptionRepository,
+      this._usageMetricsRepository
     );
   }
 
@@ -824,6 +836,12 @@ export class Container {
 
   public get updateDocumentVisibilityUseCase(): UpdateDocumentVisibilityUseCase {
     return this._updateDocumentVisibilityUseCase;
+  }
+
+  // Subscription Use Cases
+
+  public get getSubscriptionUseCase(): GetSubscriptionUseCase {
+    return this._getSubscriptionUseCase;
   }
 
   /**

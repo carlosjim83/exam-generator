@@ -16,12 +16,17 @@
 import { QuestionType, QuestionDifficulty } from '@domain/entities/ExamTypes.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IExamRepository, CreateQuestionDTO } from '@domain/repositories/IExamRepository.js';
+import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
+import { SubscriptionTier } from '@domain/entities/Subscription.js';
+import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
+import { FREE_TIER_LIMITS, LIMIT_ERRORS, EXAM_LIMITS } from '@config/subscription-limits.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import type { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 import { generateExamFlow } from '@infrastructure/ai/flows/generateExam.flow.js';
-import { EXAM_LIMITS } from '@config/subscription-limits.js';
 
 export interface GenerateExamInput {
   userId: string;
@@ -59,11 +64,18 @@ export class GenerateExamUseCase {
   constructor(
     private readonly documentRepository: IDocumentRepository,
     private readonly examRepository: IExamRepository,
-    private readonly embeddingService: AzureOpenAIEmbeddingService
+    private readonly embeddingService: AzureOpenAIEmbeddingService,
+    private readonly subscriptionRepository: ISubscriptionRepository | null = null,
+    private readonly usageMetricsRepository: IUsageMetricsRepository | null = null
   ) {}
 
   async execute(input: GenerateExamInput): Promise<GenerateExamOutput> {
     const startTime = Date.now();
+
+    // Check subscription limit if repositories are available
+    if (this.subscriptionRepository && this.usageMetricsRepository) {
+      await this.enforceExamLimit(input.userId);
+    }
 
     // Validation
     this.validateInput(input);
@@ -129,6 +141,11 @@ export class GenerateExamUseCase {
       },
       questionsDTO
     );
+
+    // Update usage metrics if repositories are available
+    if (this.subscriptionRepository && this.usageMetricsRepository) {
+      await this.updateUsageMetrics(input.userId);
+    }
 
     const generationTime = Date.now() - startTime;
     console.log(
@@ -379,6 +396,108 @@ export class GenerateExamUseCase {
       if (!validTypes.includes(type)) {
         throw new Error(`Invalid question type: ${type}`);
       }
+    }
+  }
+
+  /**
+   * Enforce subscription exam limit
+   * Checks if user can create a new exam based on their tier
+   */
+  private async enforceExamLimit(teacherId: string): Promise<void> {
+    const teacherUserId = UserId.create(teacherId);
+
+    // Get subscription
+    const subscription = await this.subscriptionRepository!.findByTeacherId(teacherUserId);
+
+    if (!subscription) {
+      // Free tier user - check usage metrics
+      await this.checkFreeTierExamLimit(teacherUserId);
+      return;
+    }
+
+    // Get limits for current tier
+    const limits = SubscriptionLimits.getForTier(subscription.tier);
+
+    // If unlimited exams, skip check
+    if (!limits.hasExamLimit()) {
+      return;
+    }
+
+    // Get current usage
+    const usageMetrics = await this.usageMetricsRepository!.findCurrentByTeacherId(teacherUserId);
+
+    if (!usageMetrics) {
+      // No usage metrics yet - user can create exam
+      return;
+    }
+
+    // Check if can create exam
+    if (!limits.canCreateExam(usageMetrics.examsCreatedThisMonth)) {
+      const errorMessage =
+        subscription.tier === SubscriptionTier.FREE
+          ? LIMIT_ERRORS.EXAM_LIMIT.FREE
+          : LIMIT_ERRORS.EXAM_LIMIT.PRO;
+
+      throw new Error(errorMessage);
+    }
+  }
+
+  /**
+   * Check Free tier exam limit
+   * Free tier: 10 exams per month
+   */
+  private async checkFreeTierExamLimit(teacherUserId: UserId): Promise<void> {
+    const usageMetrics = await this.usageMetricsRepository!.findCurrentByTeacherId(teacherUserId);
+
+    if (
+      usageMetrics &&
+      usageMetrics.examsCreatedThisMonth >= FREE_TIER_LIMITS.MAX_EXAMS_PER_MONTH
+    ) {
+      throw new Error(LIMIT_ERRORS.EXAM_LIMIT.FREE);
+    }
+  }
+
+  /**
+   * Update usage metrics after exam creation
+   * Increments exam count for the current period
+   */
+  private async updateUsageMetrics(teacherId: string): Promise<void> {
+    try {
+      const teacherUserId = UserId.create(teacherId);
+
+      // Try to get existing subscription
+      const subscription = await this.subscriptionRepository!.findByTeacherId(teacherUserId);
+
+      // Free tier users don't have subscriptions for metrics
+      // We need to find or create usage metrics
+      let usageMetrics: ReturnType<typeof UsageMetrics.createInitial> | null = null;
+
+      if (subscription) {
+        usageMetrics = await this.usageMetricsRepository!.getOrCreateCurrent(
+          teacherUserId,
+          subscription.id
+        );
+      } else {
+        // For free tier, we still need subscriptionId for metrics
+        // This is a design limitation - metrics require subscriptionId
+        // In practice, metrics are created during registration
+        const existingMetrics =
+          await this.usageMetricsRepository!.findCurrentByTeacherId(teacherUserId);
+
+        if (!existingMetrics) {
+          // No metrics for this user yet - this shouldn't happen if properly initialized
+          console.warn(`No usage metrics found for teacher ${teacherId}`);
+          return;
+        }
+
+        await this.usageMetricsRepository!.incrementExamCount(existingMetrics.id);
+        return;
+      }
+
+      await this.usageMetricsRepository!.incrementExamCount(usageMetrics.id);
+    } catch (error) {
+      // Don't fail exam creation if metrics update fails
+      console.error('Failed to update exam usage metrics:', error);
     }
   }
 }

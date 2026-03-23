@@ -102,12 +102,13 @@ export const PRICING = {
 
 /**
  * AI Models per Tier
+ * Use the AIModel enum values directly
  */
 export const AI_MODELS = {
-  FREE: 'gpt-4o-mini',
-  PRO: 'gpt-4o',
-  PRO_PLUS: 'gpt-4o',
-  ENTERPRISE: 'gpt-4o',
+  FREE: 'GPT_4O_MINI',
+  PRO: 'GPT_4O',
+  PRO_PLUS: 'GPT_4O',
+  ENTERPRISE: 'GPT_4O',
 } as const;
 
 /**

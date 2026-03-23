@@ -1,25 +1,36 @@
+import type { PrismaClient } from '@prisma/client';
+
 import { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
-import type { Subscription } from '@domain/entities/Subscription.js';
+import {
+  Subscription,
+  SubscriptionTier,
+  SubscriptionStatus,
+  BillingCycle,
+} from '@domain/entities/Subscription.js';
 import { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { SubscriptionTier, SubscriptionStatus } from '@domain/entities/Subscription.js';
-import { prisma } from '@config/prisma.js';
-import { Subscription as PrismaSubscription } from '@prisma/client';
 
 /**
- * Prisma implementation of ISubscriptionRepository
+ * PrismaSubscriptionRepository
+ * Infrastructure implementation of ISubscriptionRepository using Prisma ORM
  */
-export class SubscriptionRepository implements ISubscriptionRepository {
+export class PrismaSubscriptionRepository implements ISubscriptionRepository {
+  private constructor(private readonly prisma: PrismaClient) {}
+
+  static create(prismaClient: PrismaClient): PrismaSubscriptionRepository {
+    return new PrismaSubscriptionRepository(prismaClient);
+  }
+
   async create(subscription: Subscription): Promise<Subscription> {
     const data = subscription.toObject();
 
-    const created = await prisma.subscription.create({
+    const created = await this.prisma.subscription.create({
       data: {
         id: data.id,
         teacherId: data.teacherId,
-        tier: SubscriptionTier[data.tier as keyof typeof SubscriptionTier],
+        tier: data.tier,
         billingCycle: data.billingCycle,
-        status: SubscriptionStatus[data.status as keyof typeof SubscriptionStatus],
+        status: data.status,
         currentPeriodStart: data.currentPeriodStart,
         currentPeriodEnd: data.currentPeriodEnd,
         cancelAtPeriodEnd: data.cancelAtPeriodEnd,
@@ -34,7 +45,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   async findById(id: SubscriptionId): Promise<Subscription | null> {
-    const subscription = await prisma.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { id: id.value },
     });
 
@@ -46,7 +57,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   async findByTeacherId(teacherId: UserId): Promise<Subscription | null> {
-    const subscription = await prisma.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { teacherId: teacherId.value },
     });
 
@@ -60,12 +71,12 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   async update(subscription: Subscription): Promise<Subscription> {
     const data = subscription.toObject();
 
-    const updated = await prisma.subscription.update({
+    const updated = await this.prisma.subscription.update({
       where: { id: data.id },
       data: {
-        tier: SubscriptionTier[data.tier as keyof typeof SubscriptionTier],
+        tier: data.tier,
         billingCycle: data.billingCycle,
-        status: SubscriptionStatus[data.status as keyof typeof SubscriptionStatus],
+        status: data.status,
         currentPeriodStart: data.currentPeriodStart,
         currentPeriodEnd: data.currentPeriodEnd,
         cancelAtPeriodEnd: data.cancelAtPeriodEnd,
@@ -79,34 +90,34 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   async updateStatus(id: SubscriptionId, status: SubscriptionStatus): Promise<void> {
-    await prisma.subscription.update({
+    await this.prisma.subscription.update({
       where: { id: id.value },
-      data: { status: SubscriptionStatus[status as keyof typeof SubscriptionStatus] },
+      data: { status },
     });
   }
 
   async markForCancellation(id: SubscriptionId): Promise<void> {
-    await prisma.subscription.update({
+    await this.prisma.subscription.update({
       where: { id: id.value },
       data: { cancelAtPeriodEnd: true },
     });
   }
 
   async revertCancellation(id: SubscriptionId): Promise<void> {
-    await prisma.subscription.update({
+    await this.prisma.subscription.update({
       where: { id: id.value },
-      data: { cancelAtPeriodEnd: false, status: SubscriptionStatus.ACTIVE },
+      data: { cancelAtPeriodEnd: false, status: 'ACTIVE' },
     });
   }
 
   async findSubscriptionsToDowngrade(): Promise<Subscription[]> {
     const now = new Date();
 
-    const subscriptions = await prisma.subscription.findMany({
+    const subscriptions = await this.prisma.subscription.findMany({
       where: {
         cancelAtPeriodEnd: true,
         currentPeriodEnd: { lte: now },
-        status: SubscriptionStatus.ACTIVE,
+        status: 'ACTIVE',
       },
     });
 
@@ -114,9 +125,9 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   async findPastDueSubscriptions(): Promise<Subscription[]> {
-    const subscriptions = await prisma.subscription.findMany({
+    const subscriptions = await this.prisma.subscription.findMany({
       where: {
-        status: SubscriptionStatus.PAST_DUE,
+        status: 'PAST_DUE',
       },
     });
 
@@ -124,7 +135,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   async findByStripeSubscriptionId(stripeSubscriptionId: string): Promise<Subscription | null> {
-    const subscription = await prisma.subscription.findUnique({
+    const subscription = await this.prisma.subscription.findUnique({
       where: { stripeSubscriptionId },
     });
 
@@ -136,7 +147,7 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   async findByStripeCustomerId(stripeCustomerId: string): Promise<Subscription | null> {
-    const subscription = await prisma.subscription.findFirst({
+    const subscription = await this.prisma.subscription.findFirst({
       where: { stripeCustomerId },
     });
 
@@ -148,39 +159,52 @@ export class SubscriptionRepository implements ISubscriptionRepository {
   }
 
   async delete(id: SubscriptionId): Promise<void> {
-    await prisma.subscription.delete({
+    await this.prisma.subscription.delete({
       where: { id: id.value },
     });
   }
 
   async countByTier(tier: SubscriptionTier): Promise<number> {
-    return prisma.subscription.count({
-      where: { tier: SubscriptionTier[tier as keyof typeof SubscriptionTier] },
+    return this.prisma.subscription.count({
+      where: { tier },
     });
   }
 
   async findByTier(tier: SubscriptionTier): Promise<Subscription[]> {
-    const subscriptions = await prisma.subscription.findMany({
-      where: { tier: SubscriptionTier[tier as keyof typeof SubscriptionTier] },
+    const subscriptions = await this.prisma.subscription.findMany({
+      where: { tier },
     });
 
     return subscriptions.map((s) => this.mapToEntity(s));
   }
 
-  private mapToEntity(prismaSubscription: any): Subscription {
+  private mapToEntity(record: {
+    id: string;
+    teacherId: string;
+    tier: string;
+    billingCycle: string;
+    status: string;
+    currentPeriodStart: Date;
+    currentPeriodEnd: Date;
+    cancelAtPeriodEnd: boolean;
+    stripeSubscriptionId: string | null;
+    stripeCustomerId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }): Subscription {
     return Subscription.create({
-      id: SubscriptionId.create(prismaSubscription.id),
-      teacherId: UserId.create(prismaSubscription.teacherId),
-      tier: SubscriptionTier[prismaSubscription.tier as keyof typeof SubscriptionTier],
-      billingCycle: prismaSubscription.billingCycle,
-      status: SubscriptionStatus[prismaSubscription.status as keyof typeof SubscriptionStatus],
-      currentPeriodStart: prismaSubscription.currentPeriodStart,
-      currentPeriodEnd: prismaSubscription.currentPeriodEnd,
-      cancelAtPeriodEnd: prismaSubscription.cancelAtPeriodEnd,
-      stripeSubscriptionId: prismaSubscription.stripeSubscriptionId,
-      stripeCustomerId: prismaSubscription.stripeCustomerId,
-      createdAt: prismaSubscription.createdAt,
-      updatedAt: prismaSubscription.updatedAt,
+      id: SubscriptionId.create(record.id),
+      teacherId: UserId.create(record.teacherId),
+      tier: record.tier as SubscriptionTier,
+      billingCycle: record.billingCycle as BillingCycle,
+      status: record.status as SubscriptionStatus,
+      currentPeriodStart: record.currentPeriodStart,
+      currentPeriodEnd: record.currentPeriodEnd,
+      cancelAtPeriodEnd: record.cancelAtPeriodEnd,
+      stripeSubscriptionId: record.stripeSubscriptionId ?? undefined,
+      stripeCustomerId: record.stripeCustomerId ?? undefined,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
     });
   }
 }

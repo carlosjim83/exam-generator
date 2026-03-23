@@ -12,8 +12,8 @@ export { PrismaClassDocumentRepository } from './persistence/PrismaClassDocument
 export { PrismaClassExamRepository } from './persistence/PrismaClassExamRepository.js';
 
 // Infrastructure Layer - Subscription Repositories
-export { SubscriptionRepository } from './persistence/repositories/SubscriptionRepository.js';
-export { UsageMetricsRepository } from './persistence/repositories/UsageMetricsRepository.js';
+export { PrismaSubscriptionRepository } from './persistence/PrismaSubscriptionRepository.js';
+export { PrismaUsageMetricsRepository } from './persistence/PrismaUsageMetricsRepository.js';
 
 // Infrastructure Layer - Storage Services
 export { AzureBlobStorageService } from './storage/AzureBlobStorageService.js';

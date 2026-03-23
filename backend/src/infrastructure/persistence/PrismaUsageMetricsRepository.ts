@@ -1,17 +1,25 @@
+import type { PrismaClient } from '@prisma/client';
+
 import { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
-import type { UsageMetrics } from '@domain/entities/UsageMetrics.js';
+import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
-import { prisma } from '@config/prisma.js';
 
 /**
- * Prisma implementation of IUsageMetricsRepository
+ * PrismaUsageMetricsRepository
+ * Infrastructure implementation of IUsageMetricsRepository using Prisma ORM
  */
-export class UsageMetricsRepository implements IUsageMetricsRepository {
+export class PrismaUsageMetricsRepository implements IUsageMetricsRepository {
+  private constructor(private readonly prisma: PrismaClient) {}
+
+  static create(prismaClient: PrismaClient): PrismaUsageMetricsRepository {
+    return new PrismaUsageMetricsRepository(prismaClient);
+  }
+
   async create(metrics: UsageMetrics): Promise<UsageMetrics> {
     const data = metrics.toObject();
 
-    const created = await prisma.usageMetrics.create({
+    const created = await this.prisma.usageMetrics.create({
       data: {
         id: data.id,
         teacherId: data.teacherId,
@@ -32,7 +40,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async findById(id: string): Promise<UsageMetrics | null> {
-    const metrics = await prisma.usageMetrics.findUnique({
+    const metrics = await this.prisma.usageMetrics.findUnique({
       where: { id },
     });
 
@@ -47,7 +55,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
     const now = new Date();
     const period = new Date(now.getFullYear(), now.getMonth(), 1);
 
-    const metrics = await prisma.usageMetrics.findFirst({
+    const metrics = await this.prisma.usageMetrics.findFirst({
       where: {
         teacherId: teacherId.value,
         period,
@@ -62,7 +70,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async findByTeacherIdAndPeriod(teacherId: UserId, period: Date): Promise<UsageMetrics | null> {
-    const metrics = await prisma.usageMetrics.findFirst({
+    const metrics = await this.prisma.usageMetrics.findFirst({
       where: {
         teacherId: teacherId.value,
         period,
@@ -79,7 +87,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   async update(metrics: UsageMetrics): Promise<UsageMetrics> {
     const data = metrics.toObject();
 
-    const updated = await prisma.usageMetrics.update({
+    const updated = await this.prisma.usageMetrics.update({
       where: { id: data.id },
       data: {
         currentClasses: data.currentClasses,
@@ -110,7 +118,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async incrementClassCount(id: string): Promise<void> {
-    await prisma.usageMetrics.update({
+    await this.prisma.usageMetrics.update({
       where: { id },
       data: {
         currentClasses: { increment: 1 },
@@ -120,8 +128,8 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async decrementClassCount(id: string): Promise<void> {
-    await prisma.usageMetrics.updateMany({
-      where: { id },
+    await this.prisma.usageMetrics.updateMany({
+      where: { id, currentClasses: { gte: 1 } },
       data: {
         currentClasses: { decrement: 1 },
         updatedAt: new Date(),
@@ -130,10 +138,10 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async incrementStudentCount(id: string, count: number = 1): Promise<void> {
-    const metrics = await prisma.usageMetrics.findUnique({ where: { id } });
+    const metrics = await this.prisma.usageMetrics.findUnique({ where: { id } });
     if (!metrics) return;
 
-    await prisma.usageMetrics.update({
+    await this.prisma.usageMetrics.update({
       where: { id },
       data: {
         currentStudents: { increment: count },
@@ -147,7 +155,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async decrementStudentCount(id: string, count: number = 1): Promise<void> {
-    await prisma.usageMetrics.updateMany({
+    await this.prisma.usageMetrics.updateMany({
       where: { id, currentStudents: { gte: count } },
       data: {
         currentStudents: { decrement: count },
@@ -157,7 +165,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async incrementExamCount(id: string): Promise<void> {
-    await prisma.usageMetrics.update({
+    await this.prisma.usageMetrics.update({
       where: { id },
       data: {
         examsCreatedThisMonth: { increment: 1 },
@@ -168,7 +176,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async updateClassCount(id: string, count: number): Promise<void> {
-    await prisma.usageMetrics.update({
+    await this.prisma.usageMetrics.update({
       where: { id },
       data: {
         currentClasses: count,
@@ -178,10 +186,10 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async updateStudentCount(id: string, count: number): Promise<void> {
-    const metrics = await prisma.usageMetrics.findUnique({ where: { id } });
+    const metrics = await this.prisma.usageMetrics.findUnique({ where: { id } });
     if (!metrics) return;
 
-    await prisma.usageMetrics.update({
+    await this.prisma.usageMetrics.update({
       where: { id },
       data: {
         currentStudents: count,
@@ -197,25 +205,23 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
     const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // Find all metrics that are not from current month
-    const allMetrics = await prisma.usageMetrics.findMany({
+    const allMetrics = await this.prisma.usageMetrics.findMany({
       where: {
         period: { lt: currentMonth },
       },
     });
 
-    // Filter to only Free tier teachers (we can determine this via subscription if needed)
-    // For now, return all old metrics
     return allMetrics.map((m) => this.mapToEntity(m));
   }
 
   async delete(id: string): Promise<void> {
-    await prisma.usageMetrics.delete({
+    await this.prisma.usageMetrics.delete({
       where: { id },
     });
   }
 
   async deleteByTeacherId(teacherId: UserId): Promise<void> {
-    await prisma.usageMetrics.deleteMany({
+    await this.prisma.usageMetrics.deleteMany({
       where: { teacherId: teacherId.value },
     });
   }
@@ -231,19 +237,24 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   ): Promise<UsageMetrics[]> {
     const { limit = 50, offset = 0, fromDate, toDate } = options || {};
 
-    const where: any = {
+    const where: {
+      teacherId: string;
+      period?: { gte?: Date; lte?: Date };
+    } = {
       teacherId: teacherId.value,
     };
 
-    if (fromDate) {
-      where.period = { ...where.period, gte: fromDate };
+    if (fromDate || toDate) {
+      where.period = {};
+      if (fromDate) {
+        where.period.gte = fromDate;
+      }
+      if (toDate) {
+        where.period.lte = toDate;
+      }
     }
 
-    if (toDate) {
-      where.period = { ...where.period, lte: toDate };
-    }
-
-    const metrics = await prisma.usageMetrics.findMany({
+    const metrics = await this.prisma.usageMetrics.findMany({
       where,
       orderBy: { period: 'desc' },
       take: limit,
@@ -254,12 +265,31 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async countByTeacherId(teacherId: UserId): Promise<number> {
-    return prisma.usageMetrics.count({
+    return this.prisma.usageMetrics.count({
       where: { teacherId: teacherId.value },
     });
   }
 
-  private mapToEntity(prismaMetrics: any): UsageMetrics {
+  private mapToEntity(prismaMetrics: {
+    id: string;
+    teacherId: string;
+    subscriptionId: string;
+    period: Date;
+    currentClasses: number;
+    currentStudents: number;
+    examsCreatedThisMonth: number;
+    examsCreatedTotal: number;
+    peakConcurrentStudents: number;
+    avgExamsPerMonth: number | { toNumber(): number };
+    createdAt: Date;
+    updatedAt: Date;
+  }): UsageMetrics {
+    // Handle Decimal from Prisma (can be number or Decimal object)
+    const avgExamsPerMonth =
+      typeof prismaMetrics.avgExamsPerMonth === 'number'
+        ? prismaMetrics.avgExamsPerMonth
+        : prismaMetrics.avgExamsPerMonth.toNumber();
+
     return UsageMetrics.create({
       id: prismaMetrics.id,
       teacherId: UserId.create(prismaMetrics.teacherId),
@@ -270,7 +300,7 @@ export class UsageMetricsRepository implements IUsageMetricsRepository {
       examsCreatedThisMonth: prismaMetrics.examsCreatedThisMonth,
       examsCreatedTotal: prismaMetrics.examsCreatedTotal,
       peakConcurrentStudents: prismaMetrics.peakConcurrentStudents,
-      avgExamsPerMonth: Number(prismaMetrics.avgExamsPerMonth),
+      avgExamsPerMonth,
       createdAt: prismaMetrics.createdAt,
       updatedAt: prismaMetrics.updatedAt,
     });

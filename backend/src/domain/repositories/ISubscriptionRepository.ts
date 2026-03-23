@@ -1,11 +1,7 @@
 import type { Subscription } from '@domain/entities/Subscription.js';
 import type { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
-import type {
-  SubscriptionTier,
-  BillingCycle,
-  SubscriptionStatus,
-} from '@domain/entities/Subscription.js';
+import type { SubscriptionTier, SubscriptionStatus } from '@domain/entities/Subscription.js';
 
 /**
  * Repository interface for Subscription entity
