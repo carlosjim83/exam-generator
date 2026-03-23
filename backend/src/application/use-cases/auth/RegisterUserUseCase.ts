@@ -5,6 +5,11 @@ import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import type { ITokenService, TokenPair } from '@domain/services/ITokenService.js';
 import { Email } from '@domain/value-objects/Email.js';
 import { Password } from '@domain/value-objects/Password.js';
+import { Subscription } from '@domain/entities/Subscription.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
 
 /**
  * RegisterUserUseCase
@@ -17,6 +22,7 @@ import { Password } from '@domain/value-objects/Password.js';
  * - Create user entity
  * - Persist user
  * - Generate JWT tokens
+ * - Automatically create free subscription for teachers
  */
 
 export interface RegisterUserInput {
@@ -45,7 +51,9 @@ export class RegisterUserUseCase {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly passwordHasher: IPasswordHasher,
-    private readonly tokenService: ITokenService
+    private readonly tokenService: ITokenService,
+    private readonly subscriptionRepository: ISubscriptionRepository | null = null,
+    private readonly usageMetricsRepository: IUsageMetricsRepository | null = null
   ) {}
 
   /**
@@ -86,7 +94,17 @@ export class RegisterUserUseCase {
       savedUser.role
     );
 
-    // 6. Return DTO (Data Transfer Object)
+    // 6. Automatically create Free tier subscription for teachers
+    if (savedUser.isTeacher() && this.subscriptionRepository && this.usageMetricsRepository) {
+      try {
+        await this.createFreeSubscriptionForTeacher(savedUser.id.value);
+      } catch (error) {
+        // Don't fail registration if subscription creation fails
+        console.error('Failed to create free subscription:', error);
+      }
+    }
+
+    // 7. Return DTO (Data Transfer Object)
     return {
       user: {
         id: savedUser.id.value,
@@ -100,5 +118,20 @@ export class RegisterUserUseCase {
       },
       tokens,
     };
+  }
+
+  /**
+   * Create a Free tier subscription for a new teacher
+   */
+  private async createFreeSubscriptionForTeacher(userId: string): Promise<void> {
+    // Create Free tier subscription
+    const subscription = Subscription.createFreeSubscription(UserId.create(userId));
+
+    const savedSubscription = await this.subscriptionRepository!.create(subscription);
+
+    // Create initial usage metrics
+    const usageMetrics = UsageMetrics.createInitial(UserId.create(userId), savedSubscription.id);
+
+    await this.usageMetricsRepository!.create(usageMetrics);
   }
 }
