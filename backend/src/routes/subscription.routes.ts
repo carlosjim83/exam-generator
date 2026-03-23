@@ -13,10 +13,7 @@ import { authenticateUser } from '@middleware/auth.middleware.js';
 export default async function subscriptionRoutes(fastify: FastifyInstance) {
   const subscriptionRepo = new SubscriptionRepository();
   const usageMetricsRepo = new UsageMetricsRepository();
-  const getSubscriptionUseCase = new GetSubscriptionUseCase(
-    subscriptionRepo,
-    usageMetricsRepo,
-  );
+  const getSubscriptionUseCase = new GetSubscriptionUseCase(subscriptionRepo, usageMetricsRepo);
 
   // GET /api/subscription/current - Get current subscription with limits and usage
   fastify.get(
@@ -64,31 +61,31 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
           },
         },
       },
-      async request => {
-        try {
-          const userId = (request as any).user.userId;
+    },
+    async (request, reply) => {
+      try {
+        const userId = (request as { user: { userId: string } }).user.userId;
 
-          const result = await getSubscriptionUseCase.execute(UserId.create(userId));
+        const result = await getSubscriptionUseCase.execute(UserId.create(userId));
 
-          return reply.send({
-            tier: result.subscription.tier,
-            status: result.subscription.status,
-            currentPeriodEnd: result.subscription.currentPeriodEnd.toISOString(),
-            limits: result.limits.toObject(),
-            usage: result.usage.toObject(),
-            limitsReached: result.limitsReached,
-            upgradeNeeded: result.upgradeNeeded,
-          });
-        } catch (error: any) {
-          fastify.log.error('Get subscription error:', error);
+        return reply.send({
+          tier: result.subscription.tier,
+          status: result.subscription.status,
+          currentPeriodEnd: result.subscription.currentPeriodEnd.toISOString(),
+          limits: result.limits.toObject(),
+          usage: result.usage.toObject(),
+          limitsReached: result.limitsReached,
+          upgradeNeeded: result.upgradeNeeded,
+        });
+      } catch (error: { message?: string }) {
+        fastify.log.error('Get subscription error:', error);
 
-          return reply.status(500).send({
-            statusCode: 500,
-            error: 'Internal Server Error',
-            message: error.message || 'Failed to get subscription',
-          });
-        }
-      },
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to get subscription',
+        });
+      }
     }
   );
 
@@ -134,46 +131,46 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
           },
         },
       },
-      async request => {
-        // For now, just return Free and Pro plans
-        // Pro Plus and Enterprise will be added later
-        return reply.code(200).send({
-          plans: [
-            {
-              tier: 'FREE',
-              price: 0,
-              currency: 'USD',
-              features: [
-                '1 active class',
-                '30 students maximum',
-                '10 exams per month',
-                '50 questions per exam',
-                'Basic analytics',
-                'Email support',
-                'Standard AI (GPT-4o mini)',
-              ],
-            },
-            {
-              tier: 'PRO',
-              price: 9,
-              priceYearly: 90,
-              currency: 'USD',
-              features: [
-                'Unlimited classes',
-                'Unlimited students',
-                'Unlimited exams',
-                'Unlimited questions per exam',
-                'Advanced analytics',
-                'Priority support (24-48hr)',
-                'Remove Formydable branding',
-                'Advanced AI (GPT-4o)',
-                'Export results (CSV, Excel, PDF)',
-                'Exam templates',
-              ],
-            },
-          ],
-        });
-      },
+    },
+    async (_request, reply) => {
+      // For now, just return Free and Pro plans
+      // Pro Plus and Enterprise will be added later
+      return reply.send({
+        plans: [
+          {
+            tier: 'FREE',
+            price: 0,
+            currency: 'USD',
+            features: [
+              '1 active class',
+              '30 students maximum',
+              '10 exams per month',
+              '50 questions per exam',
+              'Basic analytics',
+              'Email support',
+              'Standard AI (GPT-4o mini)',
+            ],
+          },
+          {
+            tier: 'PRO',
+            price: 9,
+            priceYearly: 90,
+            currency: 'USD',
+            features: [
+              'Unlimited classes',
+              'Unlimited students',
+              'Unlimited exams',
+              'Unlimited questions per exam',
+              'Advanced analytics',
+              'Priority support (24-48hr)',
+              'Remove Formydable branding',
+              'Advanced AI (GPT-4o)',
+              'Export results (CSV, Excel, PDF)',
+              'Exam templates',
+            ],
+          },
+        ],
+      });
     }
   );
 }
