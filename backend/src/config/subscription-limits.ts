@@ -4,6 +4,31 @@
  */
 
 /**
+ * Exam Generation Limits
+ */
+export const EXAM_LIMITS = {
+  /**
+   * Maximum number of documents that can be used to generate an exam
+   */
+  MAX_DOCUMENTS_PER_EXAM: 10,
+
+  /**
+   * Maximum chunks to extract per document for balanced context
+   */
+  MAX_CHUNKS_PER_DOCUMENT: 20,
+
+  /**
+   * Minimum number of questions per exam
+   */
+  MIN_QUESTIONS_PER_EXAM: 5,
+
+  /**
+   * Maximum number of questions per exam (hardcoded in Free tier)
+   */
+  MAX_QUESTIONS_PER_EXAM: 50,
+} as const;
+
+/**
  * Free Tier Limits (per spec)
  */
 export const FREE_TIER_LIMITS = {

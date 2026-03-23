@@ -21,6 +21,7 @@ import { ExamId } from '@domain/value-objects/ExamId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import type { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 import { generateExamFlow } from '@infrastructure/ai/flows/generateExam.flow.js';
+import { EXAM_LIMITS } from '@config/subscription-limits.js';
 
 export interface GenerateExamInput {
   userId: string;
@@ -55,9 +56,6 @@ export interface GenerateExamOutput {
 }
 
 export class GenerateExamUseCase {
-  private static readonly MAX_DOCUMENTS = 10; // Maximum documents per exam
-  private static readonly MAX_CHUNKS_PER_DOCUMENT = 20; // Chunks per document for balanced context
-
   constructor(
     private readonly documentRepository: IDocumentRepository,
     private readonly examRepository: IExamRepository,
@@ -207,7 +205,7 @@ export class GenerateExamUseCase {
 
     // Distribute chunks across documents (minimum 10 per document for balance)
     const chunksPerDocument = Math.max(
-      GenerateExamUseCase.MAX_CHUNKS_PER_DOCUMENT,
+      EXAM_LIMITS.MAX_CHUNKS_PER_DOCUMENT,
       Math.ceil(totalChunksToExtract / documentIds.length)
     );
 
@@ -349,8 +347,8 @@ export class GenerateExamUseCase {
       throw new Error('At least one document must be provided');
     }
 
-    if (input.documentIds.length > GenerateExamUseCase.MAX_DOCUMENTS) {
-      throw new Error(`Maximum ${GenerateExamUseCase.MAX_DOCUMENTS} documents allowed per exam`);
+    if (input.documentIds.length > EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM) {
+      throw new Error(`Maximum ${EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM} documents allowed per exam`);
     }
 
     // Validate no duplicate document IDs
@@ -359,8 +357,13 @@ export class GenerateExamUseCase {
       throw new Error('Duplicate document IDs are not allowed');
     }
 
-    if (input.numQuestions < 5 || input.numQuestions > 50) {
-      throw new Error('Number of questions must be between 5 and 50');
+    if (
+      input.numQuestions < EXAM_LIMITS.MIN_QUESTIONS_PER_EXAM ||
+      input.numQuestions > EXAM_LIMITS.MAX_QUESTIONS_PER_EXAM
+    ) {
+      throw new Error(
+        `Number of questions must be between ${EXAM_LIMITS.MIN_QUESTIONS_PER_EXAM} and ${EXAM_LIMITS.MAX_QUESTIONS_PER_EXAM}`
+      );
     }
 
     if (!['EASY', 'MEDIUM', 'HARD', 'MIXED'].includes(input.difficulty)) {
