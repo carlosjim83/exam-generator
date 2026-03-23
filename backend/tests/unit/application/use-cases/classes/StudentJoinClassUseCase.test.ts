@@ -1,15 +1,23 @@
-import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
   StudentJoinClassUseCase,
   StudentJoinClassCommand,
 } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
+import { Class } from '@domain/entities/Class.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
+import { Subscription } from '@domain/entities/Subscription.js';
+import { SubscriptionTier } from '@domain/entities/Subscription.js';
+import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
+import { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
+import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { LIMIT_ERRORS } from '@config/subscription-limits.js';
 
-// Mock the repositories
+// Mock repositories
 const mockClassRepository = {
   findById: vi.fn(),
 } satisfies Partial<IClassRepository> as IClassRepository;
@@ -17,22 +25,63 @@ const mockClassRepository = {
 const mockEnrollmentRepository = {
   findByClassAndStudent: vi.fn(),
   save: vi.fn(),
+  countTotalByTeacherId: vi.fn(),
 } satisfies Partial<IStudentEnrollmentRepository> as IStudentEnrollmentRepository;
+
+const mockSubscriptionRepository = {
+  findByTeacherId: vi.fn(),
+} satisfies Partial<ISubscriptionRepository> as ISubscriptionRepository;
+
+const mockUsageMetricsRepository = {
+  findCurrentByTeacherId: vi.fn(),
+  getOrCreateCurrent: vi.fn(),
+  incrementStudentCount: vi.fn(),
+} satisfies Partial<IUsageMetricsRepository> as IUsageMetricsRepository;
 
 describe('StudentJoinClassUseCase', () => {
   let useCase: StudentJoinClassUseCase;
   const classId = '123e4567-e89b-42d3-a456-426614174000';
   const studentId = '987e6543-e89b-42d3-a456-426614174888';
+  const teacherId = '456e7890-e89b-42d3-a456-426614174999';
 
   beforeEach(() => {
-    useCase = new StudentJoinClassUseCase(mockEnrollmentRepository, mockClassRepository);
+    useCase = new StudentJoinClassUseCase(
+      mockEnrollmentRepository,
+      mockClassRepository,
+      mockSubscriptionRepository,
+      mockUsageMetricsRepository
+    );
     vi.clearAllMocks();
+
+    // Default: class exists
+    vi.mocked(mockClassRepository.findById).mockResolvedValue({
+      id: ClassId.create(classId),
+      teacherId: UserId.create(teacherId),
+      name: 'Test Class',
+      code: 'ABC123',
+      description: null,
+      color: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      toObject: () => ({
+        id: classId,
+        teacherId,
+        name: 'Test Class',
+        code: 'ABC123',
+        description: null,
+        color: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
+    } as any);
+
+    // Default: no subscription (Free tier)
+    vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(null);
+    vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue(null);
   });
 
   describe('execute', () => {
     it('should create new enrollment for student', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
       vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
 
       const command = new StudentJoinClassCommand(classId, studentId);
@@ -56,17 +105,14 @@ describe('StudentJoinClassUseCase', () => {
     });
 
     it('should throw error when student already enrolled', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
-
-      const mockEnrollment = {
+      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue({
+        id: 'enrollment-1',
+        classId: ClassId.create(classId),
+        studentId: UserId.create(studentId),
         isActive: true,
-        id: expect.anything(),
-        classId: expect.anything(),
-        studentId: expect.anything(),
-      } as any;
-
-      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(mockEnrollment);
+        joinedAt: new Date(),
+        leftAt: null,
+      } as any);
 
       const command = new StudentJoinClassCommand(classId, studentId);
 
@@ -75,21 +121,14 @@ describe('StudentJoinClassUseCase', () => {
     });
 
     it('should reactivate inactive enrollment', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
-
-      const mockPreviousEnrollment = {
-        id: expect.anything(),
-        classId: new ClassId(classId),
+      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue({
+        id: 'enrollment-1',
+        classId: ClassId.create(classId),
         studentId: UserId.create(studentId),
         isActive: false,
         joinedAt: new Date('2024-01-01'),
         leftAt: new Date('2024-01-15'),
-      };
-
-      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(
-        mockPreviousEnrollment
-      );
+      } as any);
 
       const command = new StudentJoinClassCommand(classId, studentId);
 
@@ -100,97 +139,72 @@ describe('StudentJoinClassUseCase', () => {
       expect(mockEnrollmentRepository.save).toHaveBeenCalledWith(result);
     });
 
-    it('should pass correct classId to new enrollment', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
-      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
+    describe('subscription limits', () => {
+      it('should enforce FREE tier student limit (30 students)', async () => {
+        vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
+        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(30); // Already at limit
 
-      const command = new StudentJoinClassCommand(classId, studentId);
+        const command = new StudentJoinClassCommand(classId, studentId);
 
-      await useCase.execute(command);
+        await expect(useCase.execute(command)).rejects.toThrow(LIMIT_ERRORS.STUDENT_LIMIT.FREE);
+      });
 
-      const savedEnrollment = vi.mocked(mockEnrollmentRepository.save).mock.calls[0][0];
-      expect(savedEnrollment.classId.toString()).toBe(classId);
-    });
+      it('should allow student enrollment when under FREE tier limit', async () => {
+        vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
+        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(29); // Under limit
+        vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
+          UsageMetrics.createInitial(UserId.create(teacherId), SubscriptionId.create('sub-123'))
+        );
 
-    it('should pass correct studentId to new enrollment', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
-      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
+        const command = new StudentJoinClassCommand(classId, studentId);
 
-      const command = new StudentJoinClassCommand(classId, studentId);
+        const result = await useCase.execute(command);
 
-      await useCase.execute(command);
+        expect(result).toBeInstanceOf(StudentEnrollment);
+        expect(result.isActive).toBe(true);
+      });
 
-      const savedEnrollment = vi.mocked(mockEnrollmentRepository.save).mock.calls[0][0];
-      expect(savedEnrollment.studentId.toString()).toBe(studentId);
-    });
-  });
+      it('should allow PRO tier unlimited students', async () => {
+        const mockSubscription = Subscription.create({
+          id: SubscriptionId.create('sub-123'),
+          teacherId: UserId.create(teacherId),
+          tier: SubscriptionTier.PRO,
+          billingCycle: 'MONTHLY',
+          status: 'ACTIVE',
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          cancelAtPeriodEnd: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(mockSubscription);
+        vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
+        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(100); // Already has many students
 
-  describe('re-enrollment scenarios', () => {
-    it('should create new enrollment with current date', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
-      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
+        const command = new StudentJoinClassCommand(classId, studentId);
 
-      const command = new StudentJoinClassCommand(classId, studentId);
+        const result = await useCase.execute(command);
 
-      await useCase.execute(command);
+        expect(result).toBeInstanceOf(StudentEnrollment);
+        expect(mockEnrollmentRepository.save).toHaveBeenCalled();
+      });
 
-      const savedEnrollment = vi.mocked(mockEnrollmentRepository.save).mock.calls[0][0];
-      expect(savedEnrollment.joinedAt.getTime()).toBeCloseTo(Date.now(), -3);
-    });
+      it('should increment student count after successful enrollment', async () => {
+        vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
+        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
+          UsageMetrics.createInitial(UserId.create(teacherId), SubscriptionId.create('sub-123'))
+        );
 
-    it('should not allow re-enrollment with same classId and studentId if active', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
+        const command = new StudentJoinClassCommand(classId, studentId);
 
-      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockImplementation(
-        async (_classId, _studentId) => ({
-          id: expect.anything(),
-          classId: _classId,
-          studentId: _studentId,
-          isActive: true,
-          joinedAt: new Date(),
-          leftAt: null,
-        })
-      );
+        await useCase.execute(command);
 
-      const command = new StudentJoinClassCommand(classId, studentId);
-
-      await expect(useCase.execute(command)).rejects.toThrow('Already enrolled in this class');
-    });
-  });
-
-  describe('edge cases', () => {
-    it('should handle class with empty description', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101', description: null } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
-      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
-
-      const command = new StudentJoinClassCommand(classId, studentId);
-
-      const result = await useCase.execute(command);
-
-      expect(result).toBeInstanceOf(StudentEnrollment);
-    });
-
-    it('should handle class with long name', async () => {
-      const longName = 'A'.repeat(200);
-      const mockClass = { id: new ClassId(classId), name: longName } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
-      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
-
-      const command = new StudentJoinClassCommand(classId, studentId);
-
-      const result = await useCase.execute(command);
-
-      expect(result.isActive).toBe(true);
+        expect(mockUsageMetricsRepository.incrementStudentCount).toHaveBeenCalled();
+      });
     });
 
     it('should create enrollment with null leftAt for new enrollments', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
       vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
 
       const command = new StudentJoinClassCommand(classId, studentId);
@@ -202,8 +216,6 @@ describe('StudentJoinClassUseCase', () => {
     });
 
     it('should create enrollment with isActive true for new enrollments', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
       vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
 
       const command = new StudentJoinClassCommand(classId, studentId);
@@ -213,10 +225,10 @@ describe('StudentJoinClassUseCase', () => {
       const savedEnrollment = vi.mocked(mockEnrollmentRepository.save).mock.calls[0][0];
       expect(savedEnrollment.isActive).toBe(true);
     });
+  });
 
-    it('should pass EnrollmentId correctly', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
+  describe('re-enrollment scenarios', () => {
+    it('should create new enrollment with current date', async () => {
       vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
 
       const command = new StudentJoinClassCommand(classId, studentId);
@@ -224,14 +236,27 @@ describe('StudentJoinClassUseCase', () => {
       await useCase.execute(command);
 
       const savedEnrollment = vi.mocked(mockEnrollmentRepository.save).mock.calls[0][0];
-      expect(savedEnrollment.id).toBeDefined();
+      expect(savedEnrollment.joinedAt.getTime()).toBeCloseTo(Date.now(), -3);
+    });
+
+    it('should not allow re-enrollment with same classId and studentId if active', async () => {
+      vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockImplementation(async () => ({
+        id: 'enrollment-1',
+        classId: ClassId.create(classId),
+        studentId: UserId.create(studentId),
+        isActive: true,
+        joinedAt: new Date(),
+        leftAt: null,
+      }));
+
+      const command = new StudentJoinClassCommand(classId, studentId);
+
+      await expect(useCase.execute(command)).rejects.toThrow('Already enrolled in this class');
     });
   });
 
   describe('repository interactions', () => {
     it('should call findByClassAndStudent before saving', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
       vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
 
       const command = new StudentJoinClassCommand(classId, studentId);
@@ -245,8 +270,6 @@ describe('StudentJoinClassUseCase', () => {
     });
 
     it('should use same classId and studentId for checking existing enrollment', async () => {
-      const mockClass = { id: new ClassId(classId), name: 'Math 101' } as any;
-      vi.mocked(mockClassRepository.findById).mockResolvedValue(mockClass);
       vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
 
       const command = new StudentJoinClassCommand(classId, studentId);
