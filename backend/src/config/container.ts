@@ -100,6 +100,8 @@ import {
   PrismaInvitationRepository,
   PrismaClassDocumentRepository,
   PrismaClassExamRepository,
+  SubscriptionRepository,
+  UsageMetricsRepository,
 } from '@infrastructure/index.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import { PrismaExamAssignmentRepository } from '@infrastructure/repositories/PrismaExamAssignmentRepository.js';
@@ -134,6 +136,10 @@ export class Container {
   private readonly _invitationRepository: IInvitationRepository;
   private readonly _classDocumentRepository: IClassDocumentRepository;
   private readonly _classExamRepository: IClassExamRepository;
+
+  // Subscription Repositories
+  private readonly _subscriptionRepository: ISubscriptionRepository;
+  private readonly _usageMetricsRepository: IUsageMetricsRepository;
 
   // Application Layer - Auth Use Cases
   private readonly _registerUserUseCase: RegisterUserUseCase;
@@ -251,6 +257,10 @@ export class Container {
     this._classDocumentRepository = PrismaClassDocumentRepository.create(this._prisma);
     this._classExamRepository = PrismaClassExamRepository.create(this._prisma);
 
+    // Subscription Repositories
+    this._subscriptionRepository = new SubscriptionRepository();
+    this._usageMetricsRepository = new UsageMetricsRepository();
+
     // ========================================
     // APPLICATION LAYER - USE CASES
     // ========================================
@@ -259,7 +269,9 @@ export class Container {
     this._registerUserUseCase = new RegisterUserUseCase(
       this._userRepository,
       this._passwordHasher,
-      this._tokenService
+      this._tokenService,
+      this._subscriptionRepository,
+      this._usageMetricsRepository
     );
 
     this._loginUserUseCase = new LoginUserUseCase(
@@ -321,13 +333,19 @@ export class Container {
     this._deleteExamUseCase = new DeleteExamUseCase(this._examRepository);
 
     // Classes & Invitations Use Cases
-    this._createClassUseCase = new CreateClassUseCase(this._classRepository);
+    this._createClassUseCase = new CreateClassUseCase(
+      this._classRepository,
+      this._subscriptionRepository,
+      this._usageMetricsRepository
+    );
     this._createEmailInvitationsUseCase = new CreateEmailInvitationsUseCase(
       this._invitationRepository
     );
     this._studentJoinClassUseCase = new StudentJoinClassUseCase(
       this._studentEnrollmentRepository,
-      this._classRepository
+      this._classRepository,
+      this._subscriptionRepository,
+      this._usageMetricsRepository
     );
     this._getClassesUseCase = new GetClassesUseCase(this._classRepository);
     this._getClassByCodeUseCase = new GetClassByCodeUseCase(
@@ -698,6 +716,16 @@ export class Container {
 
   public get classExamRepository(): IClassExamRepository {
     return this._classExamRepository;
+  }
+
+  // Subscription Use Cases
+
+  public get subscriptionRepository(): ISubscriptionRepository {
+    return this._subscriptionRepository;
+  }
+
+  public get usageMetricsRepository(): IUsageMetricsRepository {
+    return this._usageMetricsRepository;
   }
 
   // Student Use Cases
