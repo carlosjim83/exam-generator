@@ -55,6 +55,7 @@ import {
   RemoveStudentFromClassUseCase, // Added
   GetStudentClassesUseCase, // Added
 } from '@application/use-cases/index.js';
+import { SaveAnswerUseCase } from '@application/use-cases/student/SaveAnswerUseCase.js';
 import { GetTeacherClassesWithStatsUseCase } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
 import { GetStudentClassesWithStatsUseCase } from '@application/use-cases/classes/GetStudentClassesWithStatsUseCase.js';
 import { GetClassExamsUseCase } from '@application/use-cases/classes/GetClassExamsUseCase.js';
@@ -211,6 +212,7 @@ export class Container {
   private readonly _assignExamToStudentUseCase: AssignExamToStudentUseCase;
   private readonly _getAssignedExamsUseCase: GetAssignedExamsUseCase;
   private readonly _startExamUseCase: StartExamUseCase;
+  private readonly _saveAnswerUseCase: SaveAnswerUseCase;
   private readonly _submitExamAnswersUseCase: SubmitExamAnswersUseCase;
   private readonly _getExamResultsUseCase: GetExamResultsUseCase;
 
@@ -503,6 +505,12 @@ export class Container {
       this._examRepository
     );
 
+    this._saveAnswerUseCase = new SaveAnswerUseCase(
+      this._examAssignmentRepository,
+      this._studentAnswerRepository,
+      this._examRepository
+    );
+
     this._submitExamAnswersUseCase = new SubmitExamAnswersUseCase(
       this._examAssignmentRepository,
       this._studentAnswerRepository,
@@ -755,6 +763,10 @@ export class Container {
 
   public get startExamUseCase(): StartExamUseCase {
     return this._startExamUseCase;
+  }
+
+  public get saveAnswerUseCase(): SaveAnswerUseCase {
+    return this._saveAnswerUseCase;
   }
 
   public get submitExamAnswersUseCase(): SubmitExamAnswersUseCase {

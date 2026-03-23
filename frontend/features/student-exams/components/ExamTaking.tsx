@@ -60,13 +60,13 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
   } = useExamAssignment(assignmentId);
 
   const {
-    answers,
+    savedAnswers,
     answeredCount,
-    isSubmittingAnswer,
+    isSavingAnswer,
     isSubmittingExam,
     isExamSubmitted,
     submissionError,
-    submitAnswer,
+    saveAnswer,
     submitExam,
     getAnswerForQuestion,
   } = useExamSubmission(assignmentId);
@@ -78,7 +78,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
   useEffect(() => {
     if (currentQuestion) {
       const existingAnswer = getAnswerForQuestion(currentQuestion.id);
-      setCurrentAnswer(existingAnswer?.answer ?? '');
+      setCurrentAnswer(existingAnswer ?? '');
     }
   }, [currentQuestion, getAnswerForQuestion]);
 
@@ -91,9 +91,9 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
 
   const handleSaveAnswer = useCallback(async () => {
     if (currentQuestion && currentAnswer.trim()) {
-      await submitAnswer(currentQuestion.id, currentAnswer);
+      await saveAnswer(currentQuestion.id, currentAnswer);
     }
-  }, [currentQuestion, currentAnswer, submitAnswer]);
+  }, [currentQuestion, currentAnswer, saveAnswer]);
 
   const handleSubmitExam = useCallback(() => {
     setShowConfirmDialog(true);
@@ -182,7 +182,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
       {/* Question Navigation Dots */}
       <div className="flex justify-center gap-2 flex-wrap">
         {exam.questions.map((q, idx) => {
-          const isAnswered = answers[q.id] !== undefined;
+          const isAnswered = savedAnswers[q.id] !== undefined;
           const isCurrent = idx === currentQuestionIndex;
 
           return (
@@ -238,9 +238,9 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
             <Button
               variant="secondary"
               onClick={handleSaveAnswer}
-              disabled={isSubmittingAnswer || !currentAnswer.trim()}
+              disabled={isSavingAnswer || !currentAnswer.trim()}
             >
-              {isSubmittingAnswer ? (
+              {isSavingAnswer ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   {t('examTaking.saving')}

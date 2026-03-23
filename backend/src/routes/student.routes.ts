@@ -552,7 +552,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
           });
         }
 
-        if (error.message.includes('only view your own') || error.message.includes('belong to')) {
+        if (error.message.includes('does not belong')) {
           return reply.status(403).send({
             statusCode: 403,
             error: 'Forbidden',
@@ -560,11 +560,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
           });
         }
 
-        if (
-          error.message.includes('status') ||
-          error.message.includes('not in progress') ||
-          error.message.includes('question')
-        ) {
+        if (error.message.includes('Cannot submit')) {
           return reply.status(400).send({
             statusCode: 400,
             error: 'Bad Request',
@@ -576,6 +572,139 @@ export async function studentRoutes(fastify: FastifyInstance) {
           statusCode: 500,
           error: 'Internal Server Error',
           message: error.message || 'Failed to submit exam',
+        });
+      }
+    }
+  );
+
+  // POST /api/students/assignments/:id/answers - Save a single answer (student only)
+  fastify.post(
+    '/api/students/assignments/:id/answers',
+    {
+      preHandler: [authenticateUser, authorizeRoles(['STUDENT'])],
+      schema: {
+        tags: ['students'],
+        summary: 'Save answer for a question (student only)',
+        description: 'Students can save answers as they progress without submitting',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'Assignment ID' },
+          },
+          required: ['id'],
+        },
+        body: {
+          type: 'object',
+          properties: {
+            questionId: { type: 'string', description: 'Question ID' },
+            answerText: { type: 'string', description: 'Answer text' },
+          },
+          required: ['questionId', 'answerText'],
+        },
+        response: {
+          200: {
+            description: 'Answer saved successfully',
+            type: 'object',
+            properties: {
+              saved: { type: 'boolean' },
+              questionId: { type: 'string' },
+            },
+          },
+          400: {
+            description: 'Bad request',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          403: {
+            description: 'Forbidden',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          404: {
+            description: 'Assignment not found',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+          500: {
+            description: 'Internal server error',
+            type: 'object',
+            properties: {
+              statusCode: { type: 'number' },
+              error: { type: 'string' },
+              message: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const { id } = request.params as { id: string };
+        const body = request.body as {
+          questionId: string;
+          answerText: string;
+        };
+
+        const result = await container.saveAnswerUseCase.execute({
+          assignmentId: id,
+          questionId: body.questionId,
+          answerText: body.answerText,
+          studentId: (request as any).user.userId,
+        });
+
+        return reply.status(200).send(result);
+      } catch (error: any) {
+        fastify.log.error('Save answer error:', error);
+
+        if (error.message.includes('Assignment not found')) {
+          return reply.status(404).send({
+            statusCode: 404,
+            error: 'Not Found',
+            message: 'Assignment not found',
+          });
+        }
+
+        if (error.message.includes('does not belong')) {
+          return reply.status(403).send({
+            statusCode: 403,
+            error: 'Forbidden',
+            message: 'You do not have access to this assignment',
+          });
+        }
+
+        if (error.message.includes('must be in progress')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: 'Exam must be started before saving answers',
+          });
+        }
+
+        if (error.message.includes('does not belong to this exam')) {
+          return reply.status(400).send({
+            statusCode: 400,
+            error: 'Bad Request',
+            message: 'Invalid question for this exam',
+          });
+        }
+
+        return reply.status(500).send({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message: error.message || 'Failed to save answer',
         });
       }
     }

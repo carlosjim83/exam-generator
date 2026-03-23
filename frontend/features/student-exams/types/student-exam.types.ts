@@ -71,6 +71,11 @@ export interface StartExamResponse {
   exam: ExamWithQuestions;
 }
 
+export interface SaveAnswerResponse {
+  saved: boolean;
+  questionId: string;
+}
+
 export interface SubmitAnswerRequest {
   assignmentId: string;
   questionId: string;
