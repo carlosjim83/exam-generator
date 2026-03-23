@@ -248,7 +248,13 @@ export async function studentRoutes(fastify: FastifyInstance) {
           status: query.status as any,
         });
 
-        return reply.status(200).send(result);
+        // Convert entities to plain objects for serialization
+        const assignments = result.assignments.map((assignment) => assignment.toObject());
+
+        return reply.status(200).send({
+          assignments,
+          total: result.total,
+        });
       } catch (error: any) {
         fastify.log.error('Get assigned exams error:', error);
 
