@@ -286,7 +286,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         },
         response: {
           200: {
-            description: 'Exam started successfully',
+            description: 'Exam started/resumed successfully',
             type: 'object',
             properties: {
               assignment: {
@@ -295,6 +295,25 @@ export async function studentRoutes(fastify: FastifyInstance) {
                   id: { type: 'string' },
                   status: { type: 'string' },
                   startedAt: { type: 'string' },
+                },
+              },
+              exam: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  title: { type: 'string' },
+                  description: { type: 'string', nullable: true },
+                  questions: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        text: { type: 'string' },
+                        order: { type: 'number' },
+                      },
+                    },
+                  },
                 },
               },
             },
