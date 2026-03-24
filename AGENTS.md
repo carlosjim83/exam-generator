@@ -503,7 +503,115 @@ Before making significant architectural changes, **ALWAYS** consult existing ADR
 - Use Prisma for PostgreSQL queries
 - Map database records to domain entities
 
-### 12. **SPECS-DRIVEN DEVELOPMENT**
+---
+
+### 12. **TESTING - MOTHER OBJECT PATTERN**
+
+**Use the Mother Object pattern for test data:**
+
+```typescript
+// ✅ DO: Create a Mother Object for test entities
+// tests/helpers/mothers/SubscriptionMother.ts
+import {
+  Subscription,
+  SubscriptionTier,
+  SubscriptionStatus,
+} from '@domain/entities/Subscription.js';
+import { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+
+export class SubscriptionMother {
+  static createFree(
+    overrides: Partial<{
+      teacherId: string;
+      id: string;
+    }> = {}
+  ): Subscription {
+    return Subscription.create({
+      id: SubscriptionId.create(overrides.id ?? '123e4567-e89b-42d3-a456-426614174000'),
+      teacherId: UserId.create(overrides.teacherId ?? '123e4567-e89b-42d3-a456-426614174001'),
+      tier: SubscriptionTier.FREE,
+      billingCycle: 'MONTHLY',
+      status: SubscriptionStatus.ACTIVE,
+      currentPeriodStart: new Date(),
+      currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      cancelAtPeriodEnd: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  static createPro(
+    overrides: Partial<{
+      teacherId: string;
+      stripeCustomerId: string;
+    }> = {}
+  ): Subscription {
+    const freeSub = this.createFree(overrides);
+    return {
+      ...freeSub,
+      tier: SubscriptionTier.PRO,
+      stripeCustomerId: overrides.stripeCustomerId ?? 'stripe-cust-123',
+    } as Subscription;
+  }
+}
+
+// ✅ Usage in tests:
+const subscription = SubscriptionMother.createFree({ teacherId: 'my-uuid' });
+const proSubscription = SubscriptionMother.createPro();
+```
+
+**Rules:**
+
+1. **Organize Mothers by domain concept**: `tests/helpers/mothers/` folder
+2. **One Mother per entity**: `SubscriptionMother.ts`, `UsageMetricsMother.ts`
+3. **Sensible defaults**: All required fields must have valid defaults
+4. **Override pattern**: Accept a partial object for customization
+5. **Factory methods**: Use descriptive names like `createFree()`, `createPro()`, `createWithExpiredPeriod()`
+6. **UUID values**: Use real UUID format for IDs (entities validate UUIDs)
+7. **No external dependencies**: Mother objects should be pure TypeScript
+
+**Why?**
+
+- Tests become more readable: `SubscriptionMother.createFree()` vs 15 lines of entity creation
+- Easy to create test variations: `SubscriptionMother.createPro({ teacherId: 'custom' })`
+- Consistent test data across all tests
+- Changes to entity structure only require updating one place
+- Avoids invalid test data that causes false positives/negatives
+
+---
+
+### 13. **TESTING - MOCK INTERFACES CORRECTLY**
+
+**✅ DO: Mock repository interfaces with vi.fn()**
+
+```typescript
+// tests/unit/application/use-cases/classes/CreateClassUseCase.test.ts
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+
+const mockClassRepository = {
+  existsByCode: vi.fn(),
+  save: vi.fn(),
+  countByTeacherId: vi.fn(),
+} satisfies Partial<IClassRepository> as IClassRepository;
+```
+
+**❌ DON'T: Use any or loose typing**
+
+```typescript
+// ❌ BAD - loses type safety
+const mockClassRepository: any = {
+  existsByCode: vi.fn(),
+};
+
+// ❌ BAD - incomplete mock
+const mockClassRepository = {
+  save: vi.fn(),
+  // Missing existsByCode! TypeScript won't catch this
+};
+```
+
+### 14. **SPECS-DRIVEN DEVELOPMENT**
 
 **Workflow for New Features:**
 

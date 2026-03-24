@@ -1,7 +1,7 @@
 import type {
   StudentExamListItem,
   StartExamResponse,
-  SubmitAnswerResponse,
+  SaveAnswerResponse,
   SubmitExamResponse,
   ExamResultsData,
 } from '../types';
@@ -25,35 +25,38 @@ export class StudentExamAPIService {
 
   /**
    * Start an exam (changes status from PENDING to IN_PROGRESS)
+   * Also used to resume an exam that is already IN_PROGRESS
    */
   async startExam(assignmentId: string): Promise<StartExamResponse> {
     return apiClient.post<StartExamResponse>(`/api/students/assignments/${assignmentId}/start`, {});
   }
 
   /**
-   * Submit an answer to a specific question
+   * Save a single answer WITHOUT submitting the exam
+   * Use this to save progress as student navigates through questions
    */
-  async submitAnswer(
+  async saveAnswer(
     assignmentId: string,
     questionId: string,
-    answer: string
-  ): Promise<SubmitAnswerResponse> {
-    return apiClient.post<SubmitAnswerResponse>(
-      `/api/students/assignments/${assignmentId}/submit`,
-      {
-        answers: [{ questionId, answerText: answer }],
-      }
-    );
+    answerText: string
+  ): Promise<SaveAnswerResponse> {
+    return apiClient.post<SaveAnswerResponse>(`/api/students/assignments/${assignmentId}/answers`, {
+      questionId,
+      answerText,
+    });
   }
 
   /**
    * Submit the complete exam (finalize and mark as SUBMITTED)
+   * This will grade multiple-choice questions automatically
    */
-  async submitExam(assignmentId: string): Promise<SubmitExamResponse> {
-    return apiClient.post<SubmitExamResponse>(
-      `/api/students/assignments/${assignmentId}/submit`,
-      {}
-    );
+  async submitExam(
+    assignmentId: string,
+    answers: Array<{ questionId: string; answerText: string }>
+  ): Promise<SubmitExamResponse> {
+    return apiClient.post<SubmitExamResponse>(`/api/students/assignments/${assignmentId}/submit`, {
+      answers,
+    });
   }
 
   /**

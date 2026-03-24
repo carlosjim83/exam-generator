@@ -36,12 +36,14 @@ model User {
   documents          Document[]
   exams              Exam[]
   preferences        UserPreferences?
-  studentAssignments ExamAssignment[]     @relation("StudentAssignments")
-  teacherAssignments ExamAssignment[]     @relation("TeacherAssignments")
-  taughtClasses      Class[]              @relation("TeacherClasses")
-  joinedClasses      StudentEnrollment[]  @relation("StudentEnrollments")
-  createdInvitations Invitation[]         @relation("CreatedInvitations")
-  taughtExams        ClassExam[]          @relation("TaughtExams")
+  studentAssignments ExamAssignment[]    @relation("StudentAssignments")
+  teacherAssignments ExamAssignment[]    @relation("TeacherAssignments")
+  taughtClasses      Class[]             @relation("TeacherClasses")
+  joinedClasses      StudentEnrollment[] @relation("StudentEnrollments")
+  createdInvitations Invitation[]        @relation("CreatedInvitations")
+  taughtExams        ClassExam[]         @relation("TaughtExams")
+  subscription       Subscription?
+  usageMetrics       UsageMetrics?
 
   @@map("users")
 }
@@ -224,10 +226,10 @@ enum QuestionDifficulty {
 // ============================================================================
 
 model ExamAssignment {
-  id         String @id @default(uuid())
-  examId     String @map("exam_id")
-  studentId  String @map("student_id")
-  teacherId  String @map("teacher_id")
+  id          String  @id @default(uuid())
+  examId      String  @map("exam_id")
+  studentId   String  @map("student_id")
+  teacherId   String  @map("teacher_id")
   classExamId String? @map("class_exam_id") // Link to ClassExam (nullable for backwards compatibility)
 
   // Status tracking
@@ -409,15 +411,15 @@ model ClassDocument {
 // ============================================================================
 
 model ClassExam {
-  id        String   @id @default(uuid())
-  classId   String   @map("class_id")
-  examId    String   @map("exam_id")
-  teacherId String   @map("teacher_id")
+  id        String @id @default(uuid())
+  classId   String @map("class_id")
+  examId    String @map("exam_id")
+  teacherId String @map("teacher_id")
 
   // Availability settings
   availableAt DateTime? @map("available_at") // When students can start seeing it
-  dueDate     DateTime? @map("due_date")      // Deadline for submission
-  timeLimit   Int?      @map("time_limit")    // Minutes (null = unlimited)
+  dueDate     DateTime? @map("due_date") // Deadline for submission
+  timeLimit   Int?      @map("time_limit") // Minutes (null = unlimited)
 
   // Visibility
   isPublished Boolean @default(false) @map("is_published")
@@ -431,9 +433,9 @@ model ClassExam {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  class       Class           @relation(fields: [classId], references: [id], onDelete: Cascade)
-  exam        Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
-  teacher     User            @relation("TaughtExams", fields: [teacherId], references: [id], onDelete: Cascade)
+  class       Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  exam        Exam             @relation(fields: [examId], references: [id], onDelete: Cascade)
+  teacher     User             @relation("TaughtExams", fields: [teacherId], references: [id], onDelete: Cascade)
   assignments ExamAssignment[]
 
   // Constraints
@@ -443,4 +445,92 @@ model ClassExam {
   @@index([teacherId])
   @@index([isPublished])
   @@map("class_exams")
+}
+
+// ============================================================================
+// Subscription Management
+// ============================================================================
+
+model Subscription {
+  id        String @id @default(uuid())
+  teacherId String @unique @map("teacher_id")
+  teacher   User   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  // Subscription details
+  tier         SubscriptionTier   @default(FREE)
+  billingCycle BillingCycle       @default(MONTHLY) @map("billing_cycle")
+  status       SubscriptionStatus @default(ACTIVE)
+
+  // Period
+  currentPeriodStart DateTime @default(now()) @map("current_period_start")
+  currentPeriodEnd   DateTime @default(now()) @map("current_period_end")
+  cancelAtPeriodEnd  Boolean  @default(false) @map("cancel_at_period_end")
+
+  // Stripe integration
+  stripeSubscriptionId String? @unique @map("stripe_subscription_id")
+  stripeCustomerId     String? @map("stripe_customer_id")
+
+  // Timestamps
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  usageMetrics UsageMetrics[]
+
+  @@index([teacherId])
+  @@index([tier])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  PRO_PLUS
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+// ============================================================================
+// Usage Metrics
+// ============================================================================
+
+model UsageMetrics {
+  id             String @id @default(uuid())
+  teacherId      String @unique @map("teacher_id")
+  teacher        User   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  subscriptionId String @default(uuid()) @map("subscription_id")
+
+  // Current period (YYYY-MM-01 format)
+  period DateTime @map("period")
+
+  // Current usage
+  currentClasses        Int @default(0) @map("current_classes")
+  currentStudents       Int @default(0) @map("current_students")
+  examsCreatedThisMonth Int @default(0) @map("exams_created_this_month")
+  examsCreatedTotal     Int @default(0) @map("exams_created_total")
+
+  // Historical data
+  peakConcurrentStudents Int     @default(0) @map("peak_concurrent_students")
+  avgExamsPerMonth       Decimal @default(0) @map("avg_exams_per_month") @db.Decimal(10, 2)
+
+  // Timestamps
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@index([teacherId])
+  @@index([period])
+  @@map("usage_metrics")
 }

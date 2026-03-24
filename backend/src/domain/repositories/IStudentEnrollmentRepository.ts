@@ -19,4 +19,5 @@ export interface IStudentEnrollmentRepository {
   deleteByClassId(classId: ClassId): Promise<void>;
   isStudentEnrolled(classId: ClassId, studentId: UserId): Promise<boolean>;
   countByClassId(classId: ClassId): Promise<number>;
+  countTotalByTeacherId(teacherId: UserId): Promise<number>;
 }

@@ -1,84 +1,114 @@
 /**
  * useExamSubmission Hook
  *
- * React hook for submitting answers and finalizing exam submission
+ * React hook for saving answers and submitting exam
  */
 
 'use client';
 
 import { useState, useCallback } from 'react';
 import { studentExamAPI } from '../services/student-exam-api.service';
-import type { StudentAnswer } from '../types';
 
 interface UseExamSubmissionResult {
-  answers: Record<string, StudentAnswer>;
+  savedAnswers: Record<string, string>;
   answeredCount: number;
-  isSubmittingAnswer: boolean;
+  isSavingAnswer: boolean;
   isSubmittingExam: boolean;
   isExamSubmitted: boolean;
   submissionError: Error | null;
-  submitAnswer: (questionId: string, answer: string) => Promise<void>;
+  saveAnswer: (questionId: string, answer: string) => Promise<void>;
   submitExam: () => Promise<void>;
-  getAnswerForQuestion: (questionId: string) => StudentAnswer | undefined;
+  getAnswerForQuestion: (questionId: string) => string | undefined;
 }
 
 /**
- * Hook for managing answer submissions and exam finalization
+ * Hook for managing answer saving and exam submission
+ *
+ * - saveAnswer: Saves a single answer WITHOUT submitting the exam
+ * - submitExam: Finalizes the exam with all saved answers
  *
  * @param assignmentId - The exam assignment ID
  * @returns Object containing submission state and functions
  */
 export function useExamSubmission(assignmentId: string): UseExamSubmissionResult {
-  const [answers, setAnswers] = useState<Record<string, StudentAnswer>>({});
-  const [isSubmittingAnswer, setIsSubmittingAnswer] = useState(false);
+  // Local state for saved answers (questionId -> answerText)
+  const [savedAnswers, setSavedAnswers] = useState<Record<string, string>>({});
+  const [isSavingAnswer, setIsSavingAnswer] = useState(false);
   const [isSubmittingExam, setIsSubmittingExam] = useState(false);
   const [isExamSubmitted, setIsExamSubmitted] = useState(false);
   const [submissionError, setSubmissionError] = useState<Error | null>(null);
 
-  const submitAnswer = useCallback(
+  /**
+   * Save a single answer to the backend
+   * This does NOT submit/finalize the exam
+   */
+  const saveAnswer = useCallback(
     async (questionId: string, answer: string) => {
       try {
-        setIsSubmittingAnswer(true);
+        setIsSavingAnswer(true);
         setSubmissionError(null);
-        const response = await studentExamAPI.submitAnswer(assignmentId, questionId, answer);
-        setAnswers((prev) => ({
+
+        await studentExamAPI.saveAnswer(assignmentId, questionId, answer);
+
+        // Update local state
+        setSavedAnswers((prev) => ({
           ...prev,
-          [questionId]: response.answer,
+          [questionId]: answer,
         }));
       } catch (err) {
-        setSubmissionError(err instanceof Error ? err : new Error('Failed to submit answer'));
+        setSubmissionError(err instanceof Error ? err : new Error('Failed to save answer'));
+        throw err;
       } finally {
-        setIsSubmittingAnswer(false);
+        setIsSavingAnswer(false);
       }
     },
     [assignmentId]
   );
 
+  /**
+   * Submit the exam (finalize)
+   * This sends all saved answers and marks the exam as SUBMITTED
+   */
   const submitExam = useCallback(async () => {
     try {
       setIsSubmittingExam(true);
       setSubmissionError(null);
-      await studentExamAPI.submitExam(assignmentId);
+
+      // Convert saved answers to array format
+      const answers = Object.entries(savedAnswers).map(([questionId, answerText]) => ({
+        questionId,
+        answerText,
+      }));
+
+      if (answers.length === 0) {
+        throw new Error('No answers to submit. Please answer at least one question.');
+      }
+
+      await studentExamAPI.submitExam(assignmentId, answers);
       setIsExamSubmitted(true);
     } catch (err) {
       setSubmissionError(err instanceof Error ? err : new Error('Failed to submit exam'));
+      throw err;
     } finally {
       setIsSubmittingExam(false);
     }
-  }, [assignmentId]);
+  }, [assignmentId, savedAnswers]);
 
-  const getAnswerForQuestion = useCallback((questionId: string) => answers[questionId], [answers]);
+  const getAnswerForQuestion = useCallback(
+    (questionId: string) => savedAnswers[questionId],
+    [savedAnswers]
+  );
 
-  const answeredCount = Object.keys(answers).length;
+  const answeredCount = Object.keys(savedAnswers).length;
 
   return {
-    answers,
+    savedAnswers,
     answeredCount,
-    isSubmittingAnswer,
+    isSavingAnswer,
     isSubmittingExam,
     isExamSubmitted,
     submissionError,
-    submitAnswer,
+    saveAnswer,
     submitExam,
     getAnswerForQuestion,
   };

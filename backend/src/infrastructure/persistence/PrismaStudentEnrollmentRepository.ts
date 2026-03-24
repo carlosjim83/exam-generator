@@ -146,6 +146,21 @@ export class PrismaStudentEnrollmentRepository implements IStudentEnrollmentRepo
     });
   }
 
+  async countTotalByTeacherId(teacherId: UserId): Promise<number> {
+    // Count all active students across all classes of this teacher
+    const result = await this.prisma.studentEnrollment.aggregate({
+      where: {
+        class: {
+          teacherId: teacherId.toString(),
+        },
+        isActive: true,
+      },
+      _count: true,
+    });
+
+    return result._count || 0;
+  }
+
   /**
    * Maps Prisma StudentEnrollment record to domain StudentEnrollment entity
    */

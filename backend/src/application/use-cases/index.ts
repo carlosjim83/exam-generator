@@ -89,3 +89,7 @@ export type { StudentJoinClassWithInvitationCommand } from './classes/StudentJoi
 export type { GetClassStudentsCommand } from './classes/GetClassStudentsUseCase.js';
 export type { AcceptInvitationCommand } from './classes/AcceptInvitationUseCase.js';
 export type { RemoveStudentFromClassCommand } from './classes/RemoveStudentFromClassUseCase.js';
+
+// Application Layer - Student Use Cases
+export { SaveAnswerUseCase } from './student/SaveAnswerUseCase.js';
+export type { SaveAnswerInput, SaveAnswerOutput } from './student/SaveAnswerUseCase.js';

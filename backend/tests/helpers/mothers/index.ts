@@ -18,6 +18,8 @@ export { DocumentMother } from './DocumentMother.js';
 export { ExamMother } from './ExamMother.js';
 export { UserMother } from './UserMother.js';
 export { ExamAssignmentMother } from './ExamAssignmentMother.js';
+export { SubscriptionMother } from './SubscriptionMother.js';
+export { UsageMetricsMother } from './UsageMetricsMother.js';
 
 export type { DocumentMotherOptions } from './DocumentMother.js';
 export type { ExamMotherOptions } from './ExamMother.js';
