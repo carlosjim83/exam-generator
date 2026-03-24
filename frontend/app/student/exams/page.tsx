@@ -29,7 +29,7 @@ export default function StudentExamsPage() {
 
   const handleExamSelect = useCallback(
     (exam: StudentExamListItem) => {
-      if (exam.status === 'GRADED') {
+      if (exam.status === 'GRADED' || exam.status === 'SUBMITTED') {
         router.push(`/student/exams/${exam.id}/results`);
       } else {
         router.push(`/student/exams/${exam.id}`);

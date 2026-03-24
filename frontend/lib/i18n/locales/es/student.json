@@ -75,6 +75,7 @@
       "continue": "Continuar",
       "continueExam": "Continuar Examen",
       "viewResults": "Ver Resultados",
+      "viewSubmission": "Ver Envío",
       "backToExams": "Volver a Exámenes"
     }
   },
@@ -127,7 +128,10 @@
     "errorLoading": "Error al Cargar Resultados",
     "correctCount": "Correctas",
     "incorrectCount": "Incorrectas",
-    "noAnswerProvided": "No proporcionó respuesta"
+    "noAnswerProvided": "No proporcionó respuesta",
+    "gradingInProgressTitle": "Calificación en Progreso",
+    "gradingInProgressMessage": "Tu examen ha sido enviado y está siendo calificado por tu profesor. Vuelve más tarde para ver tus resultados.",
+    "submittedOn": "Enviado el"
   },
   "exams": {
     "title": "Mis Exámenes",

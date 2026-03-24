@@ -75,6 +75,7 @@
       "continue": "Continue",
       "continueExam": "Continue Exam",
       "viewResults": "View Results",
+      "viewSubmission": "View Submission",
       "backToExams": "Back to Exams"
     }
   },
@@ -127,7 +128,10 @@
     "errorLoading": "Error Loading Results",
     "correctCount": "Correct",
     "incorrectCount": "Incorrect",
-    "noAnswerProvided": "No answer provided"
+    "noAnswerProvided": "No answer provided",
+    "gradingInProgressTitle": "Grading in Progress",
+    "gradingInProgressMessage": "Your exam has been submitted and is being graded by your teacher. Check back later for your results.",
+    "submittedOn": "Submitted on"
   },
   "errors": {
     "retry": "Retry",

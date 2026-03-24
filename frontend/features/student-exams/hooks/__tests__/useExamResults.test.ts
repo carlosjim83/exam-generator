@@ -159,4 +159,28 @@ describe('useExamResults', () => {
 
     expect(mockGetExamResults).toHaveBeenCalledTimes(2);
   });
+
+  it('should provide status from results', async () => {
+    mockGetExamResults.mockResolvedValue(mockResults);
+
+    const { result } = renderHook(() => useExamResults(mockAssignmentId));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.status).toBe('GRADED');
+  });
+
+  it('should return null status when no results', async () => {
+    mockGetExamResults.mockRejectedValue(new Error('Results not available'));
+
+    const { result } = renderHook(() => useExamResults(mockAssignmentId));
+
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false);
+    });
+
+    expect(result.current.status).toBeNull();
+  });
 });

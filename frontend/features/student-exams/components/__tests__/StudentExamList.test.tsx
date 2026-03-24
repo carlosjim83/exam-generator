@@ -40,6 +40,7 @@ vi.mock('react-i18next', () => ({
         'examList.actions.start': 'Start Exam',
         'examList.actions.continueExam': 'Continue Exam',
         'examList.actions.viewResults': 'View Results',
+        'examList.actions.viewSubmission': 'View Submission',
         'examList.questions': 'questions',
         'examList.assigned': 'Assigned',
         'results.score': 'Score',
@@ -292,6 +293,36 @@ describe('StudentExamList', () => {
       render(<StudentExamList />);
 
       expect(screen.getByRole('button', { name: /view results/i })).toBeInTheDocument();
+    });
+
+    it('should show "View Submission" button for SUBMITTED exams', () => {
+      const submittedExam: StudentExamListItem = {
+        id: 'assignment-4',
+        examId: 'exam-4',
+        examTitle: 'Biology Test',
+        examDescription: 'Chapter 1 quiz',
+        status: 'SUBMITTED',
+        startedAt: '2024-01-10T09:00:00Z',
+        submittedAt: '2024-01-10T10:00:00Z',
+        score: null,
+        maxScore: 100,
+        questionCount: 10,
+        createdAt: '2024-01-08T10:00:00Z',
+      };
+      mockUseStudentExams.mockReturnValue({
+        exams: [submittedExam],
+        loading: false,
+        error: null,
+        refetch: vi.fn(),
+      });
+
+      render(<StudentExamList />);
+
+      const buttons = screen.getAllByRole('button');
+      const viewSubmissionButton = buttons.find((btn) =>
+        btn.textContent?.includes('View Submission')
+      );
+      expect(viewSubmissionButton).toBeTruthy();
     });
   });
 

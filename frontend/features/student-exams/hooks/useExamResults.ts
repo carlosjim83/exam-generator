@@ -17,6 +17,7 @@ interface UseExamResultsReturn {
   score: number | null;
   maxScore: number | null;
   percentage: number | null;
+  status: 'PENDING' | 'IN_PROGRESS' | 'SUBMITTED' | 'GRADED' | null;
   refetch: () => Promise<void>;
 }
 
@@ -58,6 +59,7 @@ export function useExamResults(assignmentId: string): UseExamResultsReturn {
   const score = results?.score ?? null;
   const maxScore = results?.maxScore ?? null;
   const percentage = results?.percentage ?? null;
+  const status = results?.assignment?.status ?? null;
 
   return {
     results,
@@ -66,6 +68,7 @@ export function useExamResults(assignmentId: string): UseExamResultsReturn {
     score,
     maxScore,
     percentage,
+    status,
     refetch: fetchResults,
   };
 }

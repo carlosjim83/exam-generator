@@ -37,6 +37,10 @@ vi.mock('react-i18next', () => ({
         'results.incorrect': 'Incorrect.',
         'results.noResults': 'No Results Found',
         'results.errorLoading': 'Error Loading Results',
+        'results.gradingInProgressTitle': 'Grading in Progress',
+        'results.gradingInProgressMessage':
+          'Your exam has been submitted and is being graded by your teacher. Check back later for your results.',
+        'results.submittedOn': 'Submitted on',
         'examList.actions.viewResults': 'View Results',
         'examList.actions.backToExams': 'Back to Exams',
         'errors.retry': 'Retry',
@@ -123,6 +127,7 @@ describe('ExamResults', () => {
     score: null,
     maxScore: null,
     percentage: null,
+    status: null,
     refetch: vi.fn(),
   };
 
@@ -333,6 +338,69 @@ describe('ExamResults', () => {
         score: 67,
         maxScore: 100,
         percentage: 67,
+      });
+
+      render(<ExamResults assignmentId={mockAssignmentId} token={mockToken} onBack={onBackMock} />);
+
+      const { default: userEvent } = await import('@testing-library/user-event');
+      await userEvent.click(screen.getByRole('button', { name: /back to exams/i }));
+
+      expect(onBackMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('SUBMITTED State (Grading in Progress)', () => {
+    const mockSubmittedResults: ExamResultsData = {
+      ...mockResults,
+      assignment: {
+        ...mockResults.assignment,
+        status: 'SUBMITTED',
+        submittedAt: '2024-01-15T11:00:00Z',
+      },
+    };
+
+    it('should show grading in progress message when status is SUBMITTED', () => {
+      mockUseExamResults.mockReturnValue({
+        ...defaultUseExamResultsReturn,
+        results: mockSubmittedResults,
+        status: 'SUBMITTED',
+      });
+
+      render(<ExamResults assignmentId={mockAssignmentId} token={mockToken} />);
+
+      expect(screen.getByText(/grading in progress/i)).toBeInTheDocument();
+    });
+
+    it('should show exam title in submitted state', () => {
+      mockUseExamResults.mockReturnValue({
+        ...defaultUseExamResultsReturn,
+        results: mockSubmittedResults,
+        status: 'SUBMITTED',
+      });
+
+      render(<ExamResults assignmentId={mockAssignmentId} token={mockToken} />);
+
+      expect(screen.getByText('General Knowledge Quiz')).toBeInTheDocument();
+    });
+
+    it('should show submission date in submitted state', () => {
+      mockUseExamResults.mockReturnValue({
+        ...defaultUseExamResultsReturn,
+        results: mockSubmittedResults,
+        status: 'SUBMITTED',
+      });
+
+      render(<ExamResults assignmentId={mockAssignmentId} token={mockToken} />);
+
+      expect(screen.getByText(/Submitted on:/i)).toBeInTheDocument();
+    });
+
+    it('should show back button in submitted state', async () => {
+      const onBackMock = vi.fn();
+      mockUseExamResults.mockReturnValue({
+        ...defaultUseExamResultsReturn,
+        results: mockSubmittedResults,
+        status: 'SUBMITTED',
       });
 
       render(<ExamResults assignmentId={mockAssignmentId} token={mockToken} onBack={onBackMock} />);
