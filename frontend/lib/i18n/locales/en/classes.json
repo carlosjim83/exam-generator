@@ -203,5 +203,40 @@
     "success": {
       "assigned": "Exam assigned to class"
     }
+  },
+  "classExamResults": {
+    "backToClass": "Back to Class",
+    "subtitle": "View all student submissions and performance statistics",
+    "loadError": "Failed to load exam results",
+    "refresh": "Refresh",
+    "errorLoading": "Error loading results",
+    "noResults": "No student results yet",
+    "stats": {
+      "totalStudents": "Total Students",
+      "started": "started",
+      "submissionRate": "Submission Rate",
+      "submitted": "submitted",
+      "averageScore": "Average Score",
+      "graded": "graded",
+      "scoreRange": "Score Range",
+      "lowest": "Low",
+      "highest": "High"
+    },
+    "status": {
+      "graded": "Graded",
+      "submitted": "Submitted",
+      "inProgress": "In Progress",
+      "notStarted": "Not Started"
+    },
+    "studentResults": "Student Results",
+    "studentResultsDescription": "Detailed view of each student's submission status",
+    "table": {
+      "student": "Student",
+      "status": "Status",
+      "started": "Started",
+      "submitted": "Submitted",
+      "timeTaken": "Time",
+      "score": "Score"
+    }
   }
 }

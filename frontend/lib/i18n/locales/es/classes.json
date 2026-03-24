@@ -203,5 +203,40 @@
     "success": {
       "assigned": "Examen asignado a la clase"
     }
+  },
+  "classExamResults": {
+    "backToClass": "Volver a la Clase",
+    "subtitle": "Ver todas las entregas de estudiantes y estadísticas de rendimiento",
+    "loadError": "Error al cargar los resultados del examen",
+    "refresh": "Actualizar",
+    "errorLoading": "Error al cargar los resultados",
+    "noResults": "Aún no hay resultados de estudiantes",
+    "stats": {
+      "totalStudents": "Total Estudiantes",
+      "started": "iniciado",
+      "submissionRate": "Tasa de Entrega",
+      "submitted": "entregado",
+      "averageScore": "Puntuación Media",
+      "graded": "calificado",
+      "scoreRange": "Rango de Notas",
+      "lowest": "Mín",
+      "highest": "Máx"
+    },
+    "status": {
+      "graded": "Calificado",
+      "submitted": "Enviado",
+      "inProgress": "En Progreso",
+      "notStarted": "No Iniciado"
+    },
+    "studentResults": "Resultados de Estudiantes",
+    "studentResultsDescription": "Vista detallada del estado de entrega de cada estudiante",
+    "table": {
+      "student": "Estudiante",
+      "status": "Estado",
+      "started": "Iniciado",
+      "submitted": "Enviado",
+      "timeTaken": "Tiempo",
+      "score": "Nota"
+    }
   }
 }

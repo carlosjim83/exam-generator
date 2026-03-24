@@ -97,6 +97,10 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
     loadClassData();
   };
 
+  const handleViewResults = (examId: string) => {
+    router.push(`/dashboard/classes/${classId}/exams/${examId}/results`);
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -239,7 +243,11 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <ClassExamList key={examListKey} classId={classId} />
+                  <ClassExamList
+                    key={examListKey}
+                    classId={classId}
+                    onViewResults={handleViewResults}
+                  />
                 </CardContent>
               </Card>
             </TabsContent>
