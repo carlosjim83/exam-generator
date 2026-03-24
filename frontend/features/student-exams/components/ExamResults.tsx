@@ -30,7 +30,7 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
 
   // Calculate statistics
   const stats = useMemo(() => {
-    if (!results) return { correct: 0, incorrect: 0 };
+    if (!results?.answers) return { correct: 0, incorrect: 0 };
 
     const correct = results.answers.filter((a) => a.isCorrect).length;
     const incorrect = results.answers.filter((a) => !a.isCorrect).length;
@@ -40,7 +40,7 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
 
   // Get answer for a specific question
   const getAnswerForQuestion = (questionId: string): StudentAnswer | undefined => {
-    return results?.answers.find((a) => a.questionId === questionId);
+    return results?.answers?.find((a) => a.questionId === questionId);
   };
 
   if (loading) {
