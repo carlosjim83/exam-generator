@@ -101,17 +101,17 @@ describe('GetExamResultsUseCase', () => {
       ).rejects.toThrow('You can only view your own results');
     });
 
-    it('should throw error if assignment is not graded yet', async () => {
+    it('should throw error if assignment is not submitted or graded yet', async () => {
       // Arrange
       const assignment = ExamAssignment.create({
         id: AssignmentId.create(assignmentId),
         examId,
         studentId: UserId.create(studentId),
         teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.SUBMITTED,
+        status: ExamAssignmentStatus.IN_PROGRESS,
         dueDate: null,
         startedAt: new Date(),
-        submittedAt: new Date(),
+        submittedAt: null,
         score: null,
         feedback: null,
         createdAt: new Date(),
@@ -126,7 +126,7 @@ describe('GetExamResultsUseCase', () => {
           assignmentId,
           studentId,
         })
-      ).rejects.toThrow('Exam has not been graded yet');
+      ).rejects.toThrow('Exam has not been submitted yet');
     });
 
     it('should throw error if exam does not exist', async () => {
@@ -160,6 +160,75 @@ describe('GetExamResultsUseCase', () => {
   });
 
   describe('🟢 GREEN: Success cases', () => {
+    it('should return exam results for SUBMITTED assignments', async () => {
+      // Arrange
+      const question1 = Question.create({
+        id: QuestionId.create(question1Id),
+        examId,
+        text: 'What is 2+2?',
+        type: QuestionType.MULTIPLE_CHOICE,
+        options: ['1', '2', '3', '4'],
+        correctAnswer: '4',
+        points: 10,
+        explanation: 'Basic arithmetic',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const assignment = ExamAssignment.create({
+        id: AssignmentId.create(assignmentId),
+        examId,
+        studentId: UserId.create(studentId),
+        teacherId: UserId.create(teacherId),
+        status: ExamAssignmentStatus.SUBMITTED,
+        dueDate: null,
+        startedAt: new Date(),
+        submittedAt: new Date(),
+        score: null,
+        feedback: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const exam = Exam.create({
+        id: ExamId.create(examId),
+        title: 'Test Exam',
+        description: 'Test Description',
+        userId: UserId.create(teacherId),
+        generatedFrom: [],
+        questions: [question1],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      const answer1 = StudentAnswer.create({
+        id: 'answer-1',
+        assignmentId: AssignmentId.create(assignmentId),
+        questionId: question1Id,
+        answerText: '4',
+        isCorrect: null, // Not graded yet
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
+      vi.mocked(mockExamRepo.findByIdWithQuestions).mockResolvedValue(exam);
+      vi.mocked(mockAnswerRepo.findByAssignment).mockResolvedValue([answer1]);
+
+      // Act
+      const result = await useCase.execute({
+        assignmentId,
+        studentId,
+      });
+
+      // Assert
+      expect(result.assignment).toBe(assignment);
+      expect(result.exam).toBe(exam);
+      expect(result.results).toHaveLength(1);
+      expect(result.results[0].studentAnswer).toBe(answer1);
+      expect(result.results[0].isCorrect).toBeNull(); // Not graded yet
+    });
+
     it('should return exam results with all question details', async () => {
       // Arrange
       const question1 = Question.create({
