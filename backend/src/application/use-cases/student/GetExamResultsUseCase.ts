@@ -46,9 +46,9 @@ export class GetExamResultsUseCase {
       throw new Error('You can only view your own results');
     }
 
-    // Verify graded
-    if (!assignment.isGraded()) {
-      throw new Error('Exam has not been graded yet');
+    // Verify submitted or graded
+    if (!assignment.isCompleted()) {
+      throw new Error('Exam has not been submitted yet');
     }
 
     // Get exam with questions

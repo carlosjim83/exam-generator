@@ -115,6 +115,13 @@ export class ExamAssignment {
     return this.props.status === ExamAssignmentStatus.GRADED;
   }
 
+  isCompleted(): boolean {
+    return (
+      this.props.status === ExamAssignmentStatus.SUBMITTED ||
+      this.props.status === ExamAssignmentStatus.GRADED
+    );
+  }
+
   start(): ExamAssignment {
     if (!this.canStart()) {
       throw new Error(`Cannot start assignment with status ${this.props.status}`);
