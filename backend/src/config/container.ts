@@ -445,7 +445,8 @@ export class Container {
       this._classExamRepository,
       this._classRepository,
       this._examRepository,
-      this._examAssignmentRepository
+      this._examAssignmentRepository,
+      this._userRepository
     );
     this._deleteClassExamUseCase = new DeleteClassExamUseCase(
       this._classExamRepository,

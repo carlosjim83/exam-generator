@@ -2,6 +2,7 @@ import type { IClassExamRepository } from '@domain/repositories/IClassExamReposi
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { ClassExamId } from '@domain/value-objects/ClassExamId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -51,7 +52,8 @@ export class GetClassExamResultsUseCase {
     private readonly classExamRepository: IClassExamRepository,
     private readonly classRepository: IClassRepository,
     private readonly examRepository: IExamRepository,
-    private readonly assignmentRepository: IExamAssignmentRepository
+    private readonly assignmentRepository: IExamAssignmentRepository,
+    private readonly userRepository: IUserRepository
   ) {}
 
   async execute(input: GetClassExamResultsInput): Promise<GetClassExamResultsOutput> {
@@ -89,25 +91,30 @@ export class GetClassExamResultsUseCase {
     // Get all assignments for this class exam
     const assignments = await this.assignmentRepository.findByClassExamId(classExamId);
 
-    // Build results
-    const results: StudentResult[] = assignments.map((assignment) => {
-      const timeTaken =
-        assignment.startedAt && assignment.submittedAt
-          ? Math.floor((assignment.submittedAt.getTime() - assignment.startedAt.getTime()) / 1000)
-          : null;
+    // Build results with student info
+    const results: StudentResult[] = await Promise.all(
+      assignments.map(async (assignment) => {
+        const timeTaken =
+          assignment.startedAt && assignment.submittedAt
+            ? Math.floor((assignment.submittedAt.getTime() - assignment.startedAt.getTime()) / 1000)
+            : null;
 
-      return {
-        studentId: assignment.studentId.toString(),
-        studentName: '', // Will be populated by caller
-        studentEmail: '', // Will be populated by caller
-        status: assignment.status,
-        startedAt: assignment.startedAt,
-        submittedAt: assignment.submittedAt,
-        timeTaken,
-        score: assignment.score,
-        attemptNumber: 1, // TODO: Track multiple attempts
-      };
-    });
+        // Fetch student info from userRepository
+        const student = await this.userRepository.findById(assignment.studentId);
+
+        return {
+          studentId: assignment.studentId.toString(),
+          studentName: student ? student.fullName : 'Unknown Student',
+          studentEmail: student ? student.email.value : '',
+          status: assignment.status,
+          startedAt: assignment.startedAt,
+          submittedAt: assignment.submittedAt,
+          timeTaken,
+          score: assignment.score,
+          attemptNumber: 1, // TODO: Track multiple attempts
+        };
+      })
+    );
 
     // Calculate statistics
     const totalStudents = results.length;
