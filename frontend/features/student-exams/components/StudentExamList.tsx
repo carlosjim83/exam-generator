@@ -97,9 +97,9 @@ export function StudentExamList({ onExamSelect }: StudentExamListProps) {
         );
       case 'SUBMITTED':
         return (
-          <Button onClick={() => onExamSelect?.(exam)} size="sm" variant="outline" disabled>
+          <Button onClick={() => onExamSelect?.(exam)} size="sm" variant="outline">
             <Clock className="h-4 w-4 mr-2" />
-            {t('examList.status.SUBMITTED')}
+            {t('examList.actions.viewSubmission')}
           </Button>
         );
       case 'GRADED':

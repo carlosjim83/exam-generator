@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, XCircle, ArrowLeft, AlertCircle, Trophy, Target } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowLeft, AlertCircle, Trophy, Target, Clock } from 'lucide-react';
 import { useExamResults } from '../hooks';
 import type { Question, StudentAnswer } from '../types';
 import { cn } from '@/lib/utils';
@@ -25,7 +25,7 @@ interface ExamResultsProps {
 
 export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
   const { t } = useTranslation('student');
-  const { results, loading, error, score, maxScore, percentage, refetch } =
+  const { results, loading, error, score, maxScore, percentage, status, refetch } =
     useExamResults(assignmentId);
 
   // Calculate statistics
@@ -79,6 +79,47 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
           </Button>
         </CardContent>
       </Card>
+    );
+  }
+
+  // Show grading in progress for SUBMITTED status
+  if (status === 'SUBMITTED') {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                <CardTitle className="text-2xl">
+                  {results?.exam?.title || t('results.title')}
+                </CardTitle>
+                <CardDescription className="mt-1">{t('results.title')}</CardDescription>
+              </div>
+              {onBack && (
+                <Button variant="outline" onClick={onBack}>
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  {t('examList.actions.backToExams')}
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <Clock className="h-16 w-16 text-amber-500 mb-4 animate-pulse" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              {t('results.gradingInProgressTitle')}
+            </h3>
+            <p className="text-gray-600 text-center max-w-sm">
+              {t('results.gradingInProgressMessage')}
+            </p>
+            {results?.assignment?.submittedAt && (
+              <p className="text-sm text-gray-500 mt-4">
+                {t('results.submittedOn')}:{' '}
+                {new Date(results.assignment.submittedAt).toLocaleDateString()}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
