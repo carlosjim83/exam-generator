@@ -820,7 +820,44 @@ export async function studentRoutes(fastify: FastifyInstance) {
           studentId: (request as any).user.userId,
         });
 
-        return reply.status(200).send(result);
+        // Transform the use case result to match frontend expectations
+        // Map QuestionResult[] to StudentAnswer[] format
+        const answers = result.results.map((r) => ({
+          id: r.studentAnswer?.id || `${r.question.id}-answer`,
+          questionId: r.question.id,
+          answer: r.studentAnswer?.answerText || '',
+          isCorrect: r.isCorrect,
+          createdAt: r.studentAnswer?.createdAt?.toISOString() || new Date().toISOString(),
+          updatedAt: r.studentAnswer?.updatedAt?.toISOString() || new Date().toISOString(),
+        }));
+
+        // Calculate score and percentage
+        const maxScore = result.results.reduce((sum, r) => sum + (r.question.points || 0), 0);
+        const score = result.results
+          .filter((r) => r.isCorrect)
+          .reduce((sum, r) => sum + (r.question.points || 0), 0);
+        const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+
+        return reply.status(200).send({
+          assignment: result.assignment.toObject(),
+          exam: {
+            id: result.exam.id,
+            title: result.exam.title,
+            description: result.exam.description || null,
+            documentId: result.exam.generatedFrom[0] || '',
+            createdBy: result.exam.userId,
+            createdAt: result.exam.createdAt.toISOString(),
+            questions: result.exam.questions?.map((q) => ({
+              id: q.id,
+              text: q.questionText,
+              order: q.orderIndex,
+            })),
+          },
+          answers,
+          score,
+          maxScore,
+          percentage,
+        });
       } catch (error: any) {
         fastify.log.error('Get exam results error:', error);
 
@@ -840,7 +877,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
           });
         }
 
-        if (error.message.includes('not been graded')) {
+        if (error.message.includes('not been submitted')) {
           return reply.status(400).send({
             statusCode: 400,
             error: 'Bad Request',
