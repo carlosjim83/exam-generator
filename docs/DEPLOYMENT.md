@@ -168,18 +168,18 @@ az keyvault secret show --vault-name exam-generator-kv --name ACR-PASSWORD --que
 openssl rand -base64 32
 
 # NEXT_PUBLIC_API_URL
-https://exam-generator-backend.azurecontainerapps.io
+https://exam-generator-backend.delightfulforest-a488ef6b.swedencentral.azurecontainerapps.io
 ```
 
 **Lista completa de secrets necesarios:**
 
-| Secret                | Descripción                 | Ejemplo                                                |
-| --------------------- | --------------------------- | ------------------------------------------------------ |
-| `AZURE_CREDENTIALS`   | Service Principal JSON      | `{"clientId":"...","clientSecret":"..."}`              |
-| `ACR_USERNAME`        | Container Registry username | `examgenacr`                                           |
-| `ACR_PASSWORD`        | Container Registry password | `****`                                                 |
-| `JWT_SECRET`          | Secret para JWT tokens      | `****` (32+ caracteres)                                |
-| `NEXT_PUBLIC_API_URL` | Backend URL                 | `https://exam-generator-backend.azurecontainerapps.io` |
+| Secret                | Descripción                 | Ejemplo                                                                                        |
+| --------------------- | --------------------------- | ---------------------------------------------------------------------------------------------- |
+| `AZURE_CREDENTIALS`   | Service Principal JSON      | `{"clientId":"...","clientSecret":"..."}`                                                      |
+| `ACR_USERNAME`        | Container Registry username | `examgenacr`                                                                                   |
+| `ACR_PASSWORD`        | Container Registry password | `****`                                                                                         |
+| `JWT_SECRET`          | Secret para JWT tokens      | `****` (32+ caracteres)                                                                        |
+| `NEXT_PUBLIC_API_URL` | Backend URL                 | `https://exam-generator-backend.delightfulforest-a488ef6b.swedencentral.azurecontainerapps.io` |
 
 ### 4. Configurar Variables de Entorno en Azure
 
@@ -265,7 +265,7 @@ gh workflow run frontend-cicd.yml
 az containerapp ingress cors update \
   --name exam-generator-backend \
   --resource-group exam-generator-rg \
-  --allowed-origins "https://exam-generator-frontend.azurecontainerapps.io" \
+  --allowed-origins "https://exam-generator-frontend.delightfulforest-a488ef6b.swedencentral.azurecontainerapps.io" \
   --allowed-methods GET POST PUT DELETE OPTIONS \
   --allowed-headers "*" \
   --max-age 3600
@@ -314,10 +314,10 @@ az containerapp update \
 
 ```bash
 # Backend
-curl https://exam-generator-backend.azurecontainerapps.io/health
+curl https://exam-generator-backend.delightfulforest-a488ef6b.swedencentral.azurecontainerapps.io/health
 
 # Frontend
-curl https://exam-generator-frontend.azurecontainerapps.io/api/health
+curl https://exam-generator-frontend.delightfulforest-a488ef6b.swedencentral.azurecontainerapps.io/api/health
 ```
 
 ### Logs en Tiempo Real
