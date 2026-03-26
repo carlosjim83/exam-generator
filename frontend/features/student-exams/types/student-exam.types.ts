@@ -6,10 +6,14 @@
 
 export type ExamAssignmentStatus = 'PENDING' | 'IN_PROGRESS' | 'SUBMITTED' | 'GRADED';
 
+export type QuestionType = 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER';
+
 export interface Question {
   id: string;
   text: string;
   order: number;
+  type: QuestionType;
+  options: string[];
 }
 
 export interface StudentAnswer {

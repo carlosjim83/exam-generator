@@ -18,6 +18,8 @@ export interface StartExamOutput {
       id: string;
       text: string;
       order: number;
+      type: string;
+      options: string[];
     }>;
   };
 }
@@ -82,6 +84,8 @@ export class StartExamUseCase {
           id: q.id,
           text: q.questionText,
           order: q.orderIndex,
+          type: q.type,
+          options: q.options,
         })),
       },
     };
