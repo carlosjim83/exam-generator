@@ -74,6 +74,9 @@
       "@tiptap/react": "^2.27.2",
       "@tiptap/starter-kit": "^2.27.2",
       "@tiptap/suggestion": "^2.27.2"
+    },
+    "patchedDependencies": {
+      "@adminjs/fastify@4.2.0": "patches/@adminjs__fastify@4.2.0.patch"
     }
   }
 }
