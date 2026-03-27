@@ -50,6 +50,9 @@ COPY --from=builder --chown=nodejs:nodejs /app/pnpm-lock.yaml ./
 COPY --from=builder --chown=nodejs:nodejs /app/pnpm-workspace.yaml ./
 COPY --from=builder --chown=nodejs:nodejs /app/backend/package.json ./backend/
 
+# Copy patches for pnpm patch
+COPY --from=builder --chown=nodejs:nodejs /app/patches ./patches
+
 # Install ALL dependencies (including dev for prisma CLI)
 # This ensures native modules are compiled for the target platform
 RUN pnpm install --frozen-lockfile
