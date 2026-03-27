@@ -86,12 +86,37 @@ export async function documentRoutes(fastify: FastifyInstance) {
         const { file, filename, mimetype } = fileField;
         const title = body?.title?.value || filename;
 
-        // Convert file stream to buffer
-        const chunks: Buffer[] = [];
-        for await (const chunk of file) {
-          chunks.push(chunk);
+        // Debug logging for production troubleshooting
+        fastify.log.info(
+          {
+            hasFileField: !!fileField,
+            hasFile: !!file,
+            hasToBuffer: typeof fileField?.toBuffer === 'function',
+            fileType: typeof file,
+            isBuffer: Buffer.isBuffer(file),
+            filename,
+            mimetype,
+          },
+          'Processing upload file'
+        );
+
+        // Convert file to buffer - with attachFieldsToBody: true, use fileField.toBuffer()
+        let buffer: Buffer;
+        if (typeof fileField.toBuffer === 'function') {
+          buffer = await fileField.toBuffer();
+          fastify.log.info({ bufferSize: buffer.length }, 'File loaded via toBuffer()');
+        } else if (Buffer.isBuffer(file)) {
+          buffer = file;
+          fastify.log.info({ bufferSize: buffer.length }, 'File is already buffer');
+        } else {
+          // Fallback: read stream manually
+          const chunks: Buffer[] = [];
+          for await (const chunk of file) {
+            chunks.push(chunk);
+          }
+          buffer = Buffer.concat(chunks);
+          fastify.log.info({ bufferSize: buffer.length }, 'File loaded via stream');
         }
-        const buffer = Buffer.concat(chunks);
 
         // Execute UploadDocumentUseCase
         const result = await container.uploadDocumentUseCase.execute({
