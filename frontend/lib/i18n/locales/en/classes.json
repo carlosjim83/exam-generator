@@ -78,6 +78,19 @@
     "createButton": "Create Class",
     "error": "Failed to create class"
   },
+  "createClassForm": {
+    "nameLabel": "Class Name",
+    "namePlaceholder": "e.g., Math 101 - Group A",
+    "nameRequired": "Class name is required",
+    "nameMinLength": "Class name must be at least 2 characters",
+    "nameMaxLength": "Class name must be less than 100 characters",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Optional description of the class...",
+    "cancel": "Cancel",
+    "creating": "Creating...",
+    "createButton": "Create Class",
+    "error": "Failed to create class"
+  },
   "inviteStudents": {
     "title": "Invite Students",
     "description": "Send email invitations to students to join this class. You can enter emails manually or upload a CSV file.",
