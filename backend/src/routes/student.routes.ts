@@ -311,6 +311,8 @@ export async function studentRoutes(fastify: FastifyInstance) {
                         id: { type: 'string' },
                         text: { type: 'string' },
                         order: { type: 'number' },
+                        type: { type: 'string' },
+                        options: { type: 'array', items: { type: 'string' } },
                       },
                     },
                   },

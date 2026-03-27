@@ -212,15 +212,41 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="answer">{t('examTaking.yourAnswer')}</Label>
-            <Textarea
-              id="answer"
-              placeholder={t('examTaking.yourAnswer')}
-              value={currentAnswer}
-              onChange={(e) => setCurrentAnswer(e.target.value)}
-              className="min-h-[150px] resize-none"
-              aria-label={t('examTaking.yourAnswer')}
-            />
+            <Label>{t('examTaking.yourAnswer')}</Label>
+            {currentQuestion?.type === 'SHORT_ANSWER' ? (
+              <Textarea
+                id="answer"
+                placeholder={t('examTaking.yourAnswer')}
+                value={currentAnswer}
+                onChange={(e) => setCurrentAnswer(e.target.value)}
+                className="min-h-[150px] resize-none"
+                aria-label={t('examTaking.yourAnswer')}
+              />
+            ) : (
+              <div className="space-y-3">
+                {currentQuestion?.options?.map((option, idx) => (
+                  <label
+                    key={idx}
+                    className={cn(
+                      'flex items-center gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all',
+                      currentAnswer === option
+                        ? 'border-primary bg-primary/5'
+                        : 'border-gray-200 hover:border-gray-300'
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name={`question-${currentQuestion.id}`}
+                      value={option}
+                      checked={currentAnswer === option}
+                      onChange={(e) => setCurrentAnswer(e.target.value)}
+                      className="w-4 h-4 text-primary"
+                    />
+                    <span className="flex-1">{option}</span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
 
           {submissionError && (
@@ -238,7 +264,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
             <Button
               variant="secondary"
               onClick={handleSaveAnswer}
-              disabled={isSavingAnswer || !currentAnswer.trim()}
+              disabled={isSavingAnswer || !currentAnswer}
             >
               {isSavingAnswer ? (
                 <>
