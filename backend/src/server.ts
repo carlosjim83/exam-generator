@@ -38,7 +38,10 @@ bootstrapEventHandlers();
 import './infrastructure/queue/DocumentWorker.js';
 console.log('📦 Document processing worker initialized');
 
-// Create Fastify instance with logging
+// 10MB in bytes for file uploads
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+// Create Fastify instance with logging and increased body limit
 const fastify = Fastify({
   logger: {
     level: env.NODE_ENV === 'development' ? 'info' : 'warn',
@@ -48,6 +51,7 @@ const fastify = Fastify({
         : undefined,
   },
   trustProxy: true,
+  bodyLimit: MAX_FILE_SIZE,
 });
 
 // Register CORS plugin
@@ -216,6 +220,7 @@ await AdminJSFastify.buildAuthenticatedRouter(
   {
     authenticate: async (email, password) => {
       const { PrismaClient } = await import('@prisma/client');
+
       const prisma = new PrismaClient();
       return await authenticate(email, password, prisma);
     },

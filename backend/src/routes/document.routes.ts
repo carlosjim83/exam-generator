@@ -70,10 +70,11 @@ export async function documentRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        // Get uploaded file from multipart request
-        const data = await request.file();
+        // With attachFieldsToBody: true (registered by AdminJS), file is in request.body
+        const body = request.body as any;
+        const fileField = body?.file;
 
-        if (!data) {
+        if (!fileField || !fileField.file) {
           return reply.status(400).send({
             statusCode: 400,
             error: 'Bad Request',
@@ -81,19 +82,23 @@ export async function documentRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // Convert file stream to buffer
-        const buffer = await data.toBuffer();
+        // Get file info from the body
+        const { file, filename, mimetype } = fileField;
+        const title = body?.title?.value || filename;
 
-        // Get title from fields (or use filename)
-        const fields = data.fields;
-        const title = (fields.title as any)?.value || undefined;
+        // Convert file stream to buffer
+        const chunks: Buffer[] = [];
+        for await (const chunk of file) {
+          chunks.push(chunk);
+        }
+        const buffer = Buffer.concat(chunks);
 
         // Execute UploadDocumentUseCase
         const result = await container.uploadDocumentUseCase.execute({
           userId: (request as any).user.userId,
           title,
-          filename: data.filename,
-          mimetype: data.mimetype,
+          filename,
+          mimetype,
           buffer,
         });
 

@@ -1,0 +1,19 @@
+diff --git a/lib/buildRouter.js b/lib/buildRouter.js
+index abcdef1..1234567 100644
+--- a/lib/buildRouter.js
++++ b/lib/buildRouter.js
+@@ -20,7 +20,13 @@ export const buildRouter = async (admin, fastifyApp) => {
+     if (admin?.constructor?.name !== 'AdminJS') {
+         throw new WrongArgumentError(INVALID_ADMIN_JS_INSTANCE);
+     }
+-    await fastifyApp.register(fastifyMultipart, { attachFieldsToBody: true });
++    await fastifyApp.register(fastifyMultipart, {
++        attachFieldsToBody: true,
++        limits: {
++            fileSize: 10 * 1024 * 1024,
++            files: 1,
++        },
++    });
+     admin.initialize().then(() => {
+         log.debug('AdminJS: bundle ready');
+     });
