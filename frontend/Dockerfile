@@ -22,6 +22,9 @@ COPY frontend/package.json ./frontend/
 # Copy shared packages
 COPY packages ./packages
 
+# Copy patches for pnpm patch
+COPY patches ./patches
+
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 

@@ -16,6 +16,9 @@ WORKDIR /app
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY frontend/package.json ./frontend/
 
+# Copy patches for pnpm patch
+COPY patches ./patches
+
 # Install dependencies for frontend ONLY (initial setup)
 RUN cd /app && pnpm install --frozen-lockfile
 

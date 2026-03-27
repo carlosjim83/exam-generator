@@ -15,6 +15,9 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY backend/package.json ./backend/
 
+# Copy patches for pnpm patch
+COPY patches ./patches
+
 # Install all dependencies
 RUN pnpm install --frozen-lockfile
 

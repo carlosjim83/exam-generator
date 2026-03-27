@@ -18,6 +18,9 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY backend/package.json ./backend/
 COPY packages ./packages
 
+# Copy patches for pnpm patch
+COPY patches ./patches
+
 # Install dependencies for backend workspace
 RUN pnpm install --frozen-lockfile --filter=@exam-generator/backend...
 
