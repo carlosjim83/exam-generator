@@ -78,6 +78,19 @@
     "createButton": "Crear Clase",
     "error": "Error al crear la clase"
   },
+  "createClassForm": {
+    "nameLabel": "Nombre de la Clase",
+    "namePlaceholder": "ej., Matemáticas 101 - Grupo A",
+    "nameRequired": "El nombre de la clase es obligatorio",
+    "nameMinLength": "El nombre debe tener al menos 2 caracteres",
+    "nameMaxLength": "El nombre debe tener menos de 100 caracteres",
+    "descriptionLabel": "Descripción",
+    "descriptionPlaceholder": "Descripción opcional de la clase...",
+    "cancel": "Cancelar",
+    "creating": "Creando...",
+    "createButton": "Crear Clase",
+    "error": "Error al crear la clase"
+  },
   "inviteStudents": {
     "title": "Invitar Estudiantes",
     "description": "Envía invitaciones por correo a los estudiantes para unirse a esta clase. Puedes introducir correos manualmente o subir un archivo CSV.",
