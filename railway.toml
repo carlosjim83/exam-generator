@@ -1,0 +1,18 @@
+# Railway configuration
+# This tells Railway to deploy from the backend directory
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "backend/Dockerfile"
+
+[deploy]
+startCommand = "cd backend && node dist/server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+# Resource limits for free tier
+[deploy.resources]
+memory = "1GB"
+cpu = "1"
