@@ -1,0 +1,30 @@
+# Simple Dockerfile for Railway
+FROM node:20-alpine
+
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY backend/package.json ./backend/
+COPY patches ./patches
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+WORKDIR /app/backend
+
+# Generate Prisma and build
+RUN pnpm prisma generate
+RUN pnpm build
+
+# Expose port
+EXPOSE 3001
+
+# Start command
+CMD ["node", "dist/server.js"]
