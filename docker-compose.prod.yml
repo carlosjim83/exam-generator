@@ -1,8 +1,14 @@
 # ================================
-# Production-like Docker Compose
+# Production Docker Compose - Oracle Cloud
 # ================================
-# Use this for local testing of production builds
-# NOT for actual production deployment (use Azure Container Apps)
+# Use this for Oracle Cloud deployment with Ollama Cloud
+#
+# Variables required in .env file:
+# - POSTGRES_PASSWORD, REDIS_PASSWORD
+# - JWT_SECRET, JWT_REFRESH_SECRET
+# - OLLAMA_API_KEY (from cloud.ollama.com)
+# - OCI_NAMESPACE, REGISTRY_URL
+# ================================
 
 version: '3.9'
 
@@ -10,112 +16,126 @@ services:
   # PostgreSQL with pgvector
   postgres:
     image: pgvector/pgvector:pg16
-    container_name: exam-generator-postgres-prod
-    restart: unless-stopped
-    ports:
-      - '5432:5432'
+    container_name: examgen-postgres
+    restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_USER: ${POSTGRES_USER:-examgen}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB:-exam_generator}
     volumes:
-      - postgres_prod_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:5432:5432'
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-examgen}']
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - exam-generator-network
+      - examgen-network
 
   # Redis
   redis:
     image: redis:7-alpine
-    container_name: exam-generator-redis-prod
-    restart: unless-stopped
+    container_name: examgen-redis
+    restart: always
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     volumes:
-      - redis_prod_data:/data
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redispassword}
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     healthcheck:
-      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - exam-generator-network
+      - examgen-network
 
   # Backend API
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: exam-generator-backend-prod
-    restart: unless-stopped
-    ports:
-      - '3001:3001'
+    image: ${REGISTRY_URL:-ghcr.io}/${BACKEND_IMAGE_NAME:-exam-generator-backend}:${IMAGE_TAG:-latest}
+    container_name: examgen-backend
+    restart: always
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-exam_generator}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-examgen}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-exam_generator}?schema=public
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-redispassword}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+
+      # Object Storage (OCI)
+      OCI_NAMESPACE: ${OCI_NAMESPACE}
+      OCI_BUCKET_NAME: ${OCI_BUCKET_NAME:-exam-generator-documents}
+      OCI_REGION: ${OCI_REGION:-eu-frankfurt-1}
+
+      # Auth
       JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-86400}
-      AZURE_STORAGE_ACCOUNT_NAME: ${AZURE_STORAGE_ACCOUNT_NAME}
-      AZURE_STORAGE_ACCOUNT_KEY: ${AZURE_STORAGE_ACCOUNT_KEY}
-      AZURE_STORAGE_CONTAINER_NAME: ${AZURE_STORAGE_CONTAINER_NAME:-documents}
-      AZURE_OPENAI_API_KEY: ${AZURE_OPENAI_API_KEY}
-      AZURE_OPENAI_ENDPOINT: ${AZURE_OPENAI_ENDPOINT}
-      AZURE_OPENAI_DEPLOYMENT_NAME: ${AZURE_OPENAI_DEPLOYMENT_NAME:-gpt-4o}
-      AZURE_OPENAI_EMBEDDING_DEPLOYMENT: ${AZURE_OPENAI_EMBEDDING_DEPLOYMENT:-text-embedding-3-small}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+
+      # OAuth
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+
+      # AI: Ollama Cloud (no consume recursos de la VM)
+      OLLAMA_HOST: ${OLLAMA_HOST:-https://api.ollama.com}
+      OLLAMA_API_KEY: ${OLLAMA_API_KEY}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      OLLAMA_EMBEDDING_MODEL: ${OLLAMA_EMBEDDING_MODEL:-nomic-embed-text}
+
+    ports:
+      - '127.0.0.1:3001:3001'
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:3001/health')"]
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3001/health']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
     networks:
-      - exam-generator-network
+      - examgen-network
 
-  # Frontend (Next.js)
+  # Frontend Next.js
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-    container_name: exam-generator-frontend-prod
-    restart: unless-stopped
-    ports:
-      - '3000:3000'
+    image: ${REGISTRY_URL:-ghcr.io}/${FRONTEND_IMAGE_NAME:-exam-generator-frontend}:${IMAGE_TAG:-latest}
+    container_name: examgen-frontend
+    restart: always
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    ports:
+      - '127.0.0.1:3000:3000'
     depends_on:
       - backend
-    healthcheck:
-      test: ['CMD', 'node', '-e', "require('http').get('http://localhost:3000/api/health')"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
     networks:
-      - exam-generator-network
+      - examgen-network
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: examgen-nginx
+    restart: always
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - examgen-network
 
 volumes:
-  postgres_prod_data:
-    driver: local
-  redis_prod_data:
-    driver: local
+  postgres_data:
+  redis_data:
 
 networks:
-  exam-generator-network:
+  examgen-network:
     driver: bridge

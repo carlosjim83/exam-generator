@@ -1,0 +1,51 @@
+# ========================================
+# OpenTofu Variables - Oracle Cloud Infrastructure
+# ========================================
+# Copia este archivo a terraform.tfvars y completa tus valores
+
+# ========================================
+# OCI Authentication (obtenidos de la consola de OCI)
+# ========================================
+tenancy_ocid     = "ocid1.tenancy.oc1..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+user_ocid        = "ocid1.user.oc1..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+fingerprint      = "xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx:xx"
+private_key_path = "~/.oci/oci_api_key.pem"
+region           = "eu-madrid-1"  # Madrid (mejor latencia desde España)
+
+# ========================================
+# SSH Key (ruta a tu clave pública)
+# ========================================
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+
+# ========================================
+# Database Password (CONTRASEÑA DE POSTGRESQL)
+# ========================================
+# Esta contraseña se usa para:
+# - Usuario PostgreSQL: examgen
+# - Usuario Redis (misma contraseña)
+db_password = "cambia-esta-por-una-contraseña-segura-12345"
+
+# ========================================
+# JWT Secrets (genera strings aleatorios largos)
+# ========================================
+jwt_secret         = "genera-un-string-aleatorio-muy-largo-de-al-menos-64-caracteres-para-jwt"
+jwt_refresh_secret = "otro-string-aleatorio-diferente-para-refresh-tokens-muy-largo-y-seguro"
+
+# ========================================
+# Ollama Cloud (AI en la nube, sin consumir recursos de la VM)
+# ========================================
+# Obtén tu API key en https://cloud.ollama.com
+ollama_api_key         = "sk-xxxx..."  # Tu API key de Ollama Cloud
+ollama_model           = "llama3.2"
+ollama_embedding_model = "nomic-embed-text"
+
+# ========================================
+# Google OAuth (opcional, para login con Google)
+# ========================================
+# Crear en: https://console.cloud.google.com/apis/credentials
+google_client_id     = "xxx.apps.googleusercontent.com"
+google_client_secret = "GOCSPX-xxxxxxxxxxxxxxxxxxxx"
+
+# Estos se actualizan automáticamente con la IP pública de la VM
+google_callback_url = "http://localhost:3001/auth/google/callback"
+frontend_url        = "http://localhost:3000"
