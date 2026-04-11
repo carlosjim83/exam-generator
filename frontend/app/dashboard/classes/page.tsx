@@ -12,6 +12,7 @@ import { Plus, Search, GraduationCap } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { listClasses } from '@/features/classes/services/classes-api';
 import { useAuth } from '@/features/auth/context/AuthContext';
+import { SubscriptionBanner } from '@/features/subscription/components/SubscriptionBanner';
 
 export default function ClassesPage() {
   const { t } = useTranslation('classes');
@@ -72,6 +73,9 @@ export default function ClassesPage() {
             </Button>
           }
         />
+
+        {/* Subscription Banner */}
+        <SubscriptionBanner limitType="classes" />
 
         {/* Search */}
         <div className="mb-6">

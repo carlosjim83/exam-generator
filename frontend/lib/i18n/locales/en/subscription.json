@@ -1,0 +1,59 @@
+{
+  "title": "Subscription",
+  "subtitle": "Manage your subscription plan and usage",
+  "freeDescription": "You are on the free plan. Upgrade anytime to unlock more features.",
+  "paidDescription": "Your subscription is active. Manage your plan below.",
+  "loadError": "Failed to load subscription data",
+  "errorLoading": "Error loading subscription",
+  "retry": "Retry",
+  "upgrade": "Upgrade Plan",
+  "currentPlan": "Current Plan",
+  "approachingLimit": "You're approaching your usage limits. Consider upgrading for more capacity.",
+  "currentPeriodEnds": "Current period ends",
+  "limitReached": "Limit Reached",
+  "usage": {
+    "classes": "Classes",
+    "students": "Students",
+    "exams": "Exams This Month"
+  },
+  "warnings": {
+    "classes": "Only {{remaining}} class remaining. Upgrade for unlimited classes.",
+    "classes_plural": "Only {{remaining}} classes remaining. Upgrade for unlimited classes.",
+    "students": "Only {{remaining}} student remaining. Upgrade for unlimited students.",
+    "students_plural": "Only {{remaining}} students remaining. Upgrade for unlimited students.",
+    "exams": "Only {{remaining}} exam remaining this month. Upgrade for unlimited exams.",
+    "exams_plural": "Only {{remaining}} exams remaining this month. Upgrade for unlimited exams."
+  },
+  "features": {
+    "title": "Plan Features",
+    "description": "Features included in your current plan",
+    "maxQuestions": "Up to {{count}} questions per exam",
+    "maxQuestionsUnlimited": "Unlimited questions per exam",
+    "maxDocuments": "Up to {{count}} documents per exam",
+    "maxDocumentsUnlimited": "Unlimited documents per exam",
+    "aiModel": "AI Model: {{model}}",
+    "advancedAnalytics": "Advanced Analytics",
+    "noBranding": "No Formydable Branding"
+  },
+  "tiers": {
+    "FREE": "Free",
+    "PRO": "Pro",
+    "PRO_PLUS": "Pro+",
+    "ENTERPRISE": "Enterprise"
+  },
+  "status": {
+    "ACTIVE": "Active",
+    "PAST_DUE": "Past Due",
+    "CANCELLED": "Cancelled",
+    "EXPIRED": "Expired"
+  },
+  "banner": {
+    "limitReached": "You've reached your plan limit",
+    "classesLimitReached": "You've reached the maximum number of classes",
+    "studentsLimitReached": "You've reached the maximum number of students",
+    "examsLimitReached": "You've reached your monthly exam limit",
+    "upgradePrompt": "Upgrade to Pro for unlimited access",
+    "upgrade": "Upgrade",
+    "upgradeNow": "Upgrade Now"
+  }
+}

@@ -7,13 +7,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Users, Trophy, Target, Clock, CheckCircle2, AlertCircle, Minus, Eye } from 'lucide-react';
+import {
+  Users,
+  Trophy,
+  Target,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Minus,
+  Eye,
+  Download,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getClassExamResults,
   type ClassExamResultsResponse,
   type StudentExamResult,
 } from '@/lib/services/api-class-exams.service';
+import { exportExamResults } from '@/lib/services/api-subscription.service';
 import { cn } from '@/lib/utils';
 
 interface ClassExamResultsProps {
@@ -40,6 +51,24 @@ export function ClassExamResults({ classId, classExamId }: ClassExamResultsProps
       toast.error(t('classExamResults.loadError'));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleExport = async (format: 'CSV' | 'JSON') => {
+    try {
+      const blob = await exportExamResults(classId, classExamId, format);
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${results?.examTitle || 'exam-results'}.${format.toLowerCase()}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.success(t('classExamResults.exportSuccess', { format }));
+    } catch (error) {
+      console.error('Failed to export results:', error);
+      toast.error(t('classExamResults.exportError'));
     }
   };
 
@@ -139,9 +168,23 @@ export function ClassExamResults({ classId, classExamId }: ClassExamResultsProps
               <CardTitle className="text-2xl">{results.examTitle}</CardTitle>
               <CardDescription>{t('classExamResults.subtitle')}</CardDescription>
             </div>
-            <Button variant="outline" onClick={loadResults}>
-              {t('classExamResults.refresh')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={loadResults}>
+                {t('classExamResults.refresh')}
+              </Button>
+              {statistics.submittedCount > 0 && (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('CSV')}>
+                    <Download className="h-4 w-4 mr-1" />
+                    CSV
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('JSON')}>
+                    <Download className="h-4 w-4 mr-1" />
+                    JSON
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </CardHeader>
       </Card>

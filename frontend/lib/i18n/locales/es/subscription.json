@@ -1,0 +1,59 @@
+{
+  "title": "Suscripción",
+  "subtitle": "Gestiona tu plan de suscripción y uso",
+  "freeDescription": "Estás en el plan gratuito. Actualiza en cualquier momento para desbloquear más funciones.",
+  "paidDescription": "Tu suscripción está activa. Gestiona tu plan a continuación.",
+  "loadError": "Error al cargar datos de suscripción",
+  "errorLoading": "Error al cargar la suscripción",
+  "retry": "Reintentar",
+  "upgrade": "Actualizar Plan",
+  "currentPlan": "Plan Actual",
+  "approachingLimit": "Te estás acercando a tus límites de uso. Considera actualizar para más capacidad.",
+  "currentPeriodEnds": "El período actual termina",
+  "limitReached": "Límite Alcanzado",
+  "usage": {
+    "classes": "Clases",
+    "students": "Estudiantes",
+    "exams": "Exámenes Este Mes"
+  },
+  "warnings": {
+    "classes": "Solo queda {{remaining}} clase. Actualiza para clases ilimitadas.",
+    "classes_plural": "Solo quedan {{remaining}} clases. Actualiza para clases ilimitadas.",
+    "students": "Solo queda {{remaining}} estudiante. Actualiza para estudiantes ilimitados.",
+    "students_plural": "Solo quedan {{remaining}} estudiantes. Actualiza para estudiantes ilimitados.",
+    "exams": "Solo queda {{remaining}} examen este mes. Actualiza para exámenes ilimitados.",
+    "exams_plural": "Solo quedan {{remaining}} exámenes este mes. Actualiza para exámenes ilimitados."
+  },
+  "features": {
+    "title": "Características del Plan",
+    "description": "Funciones incluidas en tu plan actual",
+    "maxQuestions": "Hasta {{count}} preguntas por examen",
+    "maxQuestionsUnlimited": "Preguntas ilimitadas por examen",
+    "maxDocuments": "Hasta {{count}} documentos por examen",
+    "maxDocumentsUnlimited": "Documentos ilimitados por examen",
+    "aiModel": "Modelo de IA: {{model}}",
+    "advancedAnalytics": "Análisis Avanzados",
+    "noBranding": "Sin Marca de Formydable"
+  },
+  "tiers": {
+    "FREE": "Gratis",
+    "PRO": "Pro",
+    "PRO_PLUS": "Pro+",
+    "ENTERPRISE": "Empresas"
+  },
+  "status": {
+    "ACTIVE": "Activo",
+    "PAST_DUE": "Vencido",
+    "CANCELLED": "Cancelado",
+    "EXPIRED": "Expirado"
+  },
+  "banner": {
+    "limitReached": "Has alcanzado el límite de tu plan",
+    "classesLimitReached": "Has alcanzado el número máximo de clases",
+    "studentsLimitReached": "Has alcanzado el número máximo de estudiantes",
+    "examsLimitReached": "Has alcanzado tu límite mensual de exámenes",
+    "upgradePrompt": "Actualiza a Pro para acceso ilimitado",
+    "upgrade": "Actualizar",
+    "upgradeNow": "Actualizar Ahora"
+  }
+}

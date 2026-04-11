@@ -249,7 +249,11 @@
       "started": "Iniciado",
       "submitted": "Enviado",
       "timeTaken": "Tiempo",
-      "score": "Nota"
-    }
+      "score": "Nota",
+      "actions": "Acciones",
+      "viewDetails": "Ver Detalles"
+    },
+    "exportSuccess": "Resultados exportados como {{format}}",
+    "exportError": "Error al exportar resultados"
   }
 }
