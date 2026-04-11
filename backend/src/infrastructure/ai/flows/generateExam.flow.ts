@@ -229,7 +229,7 @@ export const generateExamFlow = ai.defineFlow(
           { role: 'user', content: userPrompt },
         ],
         temperature: 0.7,
-        max_tokens: numQuestions * 500, // Estimate ~500 tokens per question
+        max_completion_tokens: numQuestions * 500, // Estimate ~500 tokens per question
         response_format: { type: 'json_object' }, // Force JSON mode
       });
 
