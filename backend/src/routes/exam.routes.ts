@@ -7,13 +7,14 @@ import type { FastifyInstance } from 'fastify';
 
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
+import { checkSubscriptionLimit } from '@middleware/subscription.middleware.js';
 
 export async function examRoutes(fastify: FastifyInstance) {
   // POST /api/exams/generate - Generate exam from documents
   fastify.post(
     '/api/exams/generate',
     {
-      preHandler: authenticateUser,
+      preHandler: [authenticateUser, checkSubscriptionLimit('EXAMS')],
       schema: {
         tags: ['exams'],
         summary: 'Generate exam from one or more documents using AI',

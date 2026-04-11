@@ -20,6 +20,7 @@ import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/cl
 import type { GetTeacherClassesWithStatsInput } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
+import { checkSubscriptionLimit } from '@middleware/subscription.middleware.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
   // GET /api/classes - List all classes for authenticated teacher (with stats)
@@ -236,7 +237,7 @@ export async function classRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/classes',
     {
-      preHandler: authenticateUser,
+      preHandler: [authenticateUser, checkSubscriptionLimit('CLASSES')],
       schema: {
         tags: ['classes'],
         summary: 'Create a new class',
