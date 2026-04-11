@@ -149,7 +149,7 @@ export class ExportClassExamResultsUseCase {
 
   private escapeCSV(value: string): string {
     // If value contains comma, quote, or newline, wrap in quotes
-    if (/[\",\n]/.test(value)) {
+    if (/[",\n]/.test(value)) {
       return `"${value.replace(/"/g, '""')}"`;
     }
     return value;
