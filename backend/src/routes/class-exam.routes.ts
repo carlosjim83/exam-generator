@@ -10,6 +10,7 @@ import type { GetStudentExamsInput } from '@application/use-cases/classes/GetStu
 import type { GetStudentClassExamsInput } from '@application/use-cases/classes/GetStudentClassExamsUseCase.js';
 import type { PublishClassExamInput } from '@application/use-cases/classes/PublishClassExamUseCase.js';
 import type { UpdateClassExamSettingsInput } from '@application/use-cases/classes/UpdateClassExamSettingsUseCase.js';
+import type { GetStudentSubmissionDetailInput } from '@application/use-cases/classes/GetStudentSubmissionDetailUseCase.js';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 
@@ -578,6 +579,117 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           attemptNumber: r.attemptNumber,
         })),
         statistics: result.statistics,
+      });
+    }
+  );
+
+  // GET /api/classes/:classId/exams/:classExamId/students/:studentId - Get student submission detail
+  fastify.get(
+    '/api/classes/:classId/exams/:classExamId/students/:studentId',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['class-exams'],
+        summary: 'Get student submission detail',
+        description: 'Get detailed submission results for a specific student (teacher view)',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+            classExamId: { type: 'string', format: 'uuid' },
+            studentId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId', 'classExamId', 'studentId'],
+        },
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              student: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                },
+              },
+              exam: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  title: { type: 'string' },
+                  description: { type: 'string', nullable: true },
+                },
+              },
+              assignment: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string', format: 'uuid' },
+                  status: { type: 'string' },
+                  startedAt: { type: 'string', format: 'date-time', nullable: true },
+                  submittedAt: { type: 'string', format: 'date-time', nullable: true },
+                  score: { type: 'number', nullable: true },
+                },
+              },
+              questions: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    questionId: { type: 'string', format: 'uuid' },
+                    questionText: { type: 'string' },
+                    questionType: {
+                      type: 'string',
+                      enum: ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER'],
+                    },
+                    options: { type: 'array', items: { type: 'string' }, nullable: true },
+                    correctAnswer: { type: 'string' },
+                    studentAnswer: { type: 'string' },
+                    isCorrect: { type: 'boolean', nullable: true },
+                    pointsEarned: { type: 'number' },
+                    maxPoints: { type: 'number' },
+                    feedback: { type: 'string', nullable: true },
+                  },
+                },
+              },
+              totalScore: { type: 'number' },
+              maxScore: { type: 'number' },
+              percentage: { type: 'number', nullable: true },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const userId = (request as any).user.userId;
+      const { classId, classExamId, studentId } = request.params as {
+        classId: string;
+        classExamId: string;
+        studentId: string;
+      };
+
+      const input: GetStudentSubmissionDetailInput = {
+        classExamId,
+        classId,
+        studentId,
+        teacherId: userId,
+      };
+
+      const result = await container.getStudentSubmissionDetailUseCase.execute(input);
+
+      reply.status(200).send({
+        student: result.student,
+        exam: result.exam,
+        assignment: {
+          ...result.assignment,
+          startedAt: result.assignment.startedAt?.toISOString() ?? null,
+          submittedAt: result.assignment.submittedAt?.toISOString() ?? null,
+        },
+        questions: result.questions,
+        totalScore: result.totalScore,
+        maxScore: result.maxScore,
+        percentage: result.percentage,
       });
     }
   );
