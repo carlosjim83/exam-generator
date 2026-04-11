@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { Users, Trophy, Target, Clock, CheckCircle2, AlertCircle, Minus } from 'lucide-react';
+import { Users, Trophy, Target, Clock, CheckCircle2, AlertCircle, Minus, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getClassExamResults,
@@ -253,19 +253,20 @@ export function ClassExamResults({ classId, classExamId }: ClassExamResultsProps
           ) : (
             <div className="space-y-4">
               {/* Header Row */}
-              <div className="hidden md:grid md:grid-cols-6 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
+              <div className="hidden md:grid md:grid-cols-7 gap-4 text-sm font-medium text-muted-foreground border-b pb-2">
                 <div className="col-span-2">{t('classExamResults.table.student')}</div>
                 <div>{t('classExamResults.table.status')}</div>
                 <div>{t('classExamResults.table.started')}</div>
                 <div>{t('classExamResults.table.timeTaken')}</div>
                 <div>{t('classExamResults.table.score')}</div>
+                <div>{t('classExamResults.table.actions')}</div>
               </div>
 
               {/* Student Rows */}
               {results.results.map((result) => (
                 <div
                   key={result.studentId}
-                  className="grid grid-cols-1 md:grid-cols-6 gap-4 py-4 border-b last:border-0 items-center"
+                  className="grid grid-cols-1 md:grid-cols-7 gap-4 py-4 border-b last:border-0 items-center"
                 >
                   <div className="col-span-2">
                     <div className="font-medium">{result.studentName}</div>
@@ -304,6 +305,18 @@ export function ClassExamResults({ classId, classExamId }: ClassExamResultsProps
                       </div>
                     ) : (
                       <span className="text-muted-foreground">-</span>
+                    )}
+                  </div>
+
+                  <div>
+                    {(result.status === 'SUBMITTED' || result.status === 'GRADED') && (
+                      <a
+                        href={`/dashboard/classes/${classId}/exams/${classExamId}/students/${result.studentId}`}
+                        className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        {t('classExamResults.table.viewDetails')}
+                      </a>
                     )}
                   </div>
                 </div>

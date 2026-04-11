@@ -127,6 +127,59 @@ export interface AvailableExam {
   createdAt: string;
 }
 
+/**
+ * Question result in a student submission
+ */
+export interface QuestionResult {
+  questionId: string;
+  questionText: string;
+  questionType: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER';
+  options?: string[];
+  correctAnswer: string;
+  studentAnswer: string;
+  isCorrect: boolean | null;
+  pointsEarned: number;
+  maxPoints: number;
+  feedback?: string;
+}
+
+/**
+ * Student info in submission detail
+ */
+export interface StudentInfo {
+  id: string;
+  name: string;
+  email: string;
+}
+
+/**
+ * Assignment info in submission detail
+ */
+export interface AssignmentInfo {
+  id: string;
+  status: string;
+  startedAt: string | null;
+  submittedAt: string | null;
+  score: number | null;
+}
+
+/**
+ * Student submission detail response
+ */
+export interface StudentSubmissionDetailResponse {
+  student: StudentInfo;
+  exam: {
+    id: string;
+    title: string;
+    description: string | null;
+  };
+  assignment: AssignmentInfo;
+  questions: QuestionResult[];
+  totalScore: number;
+  maxScore: number;
+  percentage: number | null;
+}
+
 // ============================================================================
 // API Functions - Teacher Endpoints
 // ============================================================================
@@ -202,6 +255,22 @@ export async function getClassExamResults(
  */
 export async function deleteClassExam(classId: string, classExamId: string): Promise<void> {
   await apiClient.delete(`/api/classes/${classId}/exams/${classExamId}`);
+}
+
+/**
+ * Get detailed submission for a specific student
+ * @param classId - The class ID
+ * @param classExamId - The class exam ID
+ * @param studentId - The student ID
+ */
+export async function getStudentSubmissionDetail(
+  classId: string,
+  classExamId: string,
+  studentId: string
+): Promise<StudentSubmissionDetailResponse> {
+  return apiClient.get<StudentSubmissionDetailResponse>(
+    `/api/classes/${classId}/exams/${classExamId}/students/${studentId}`
+  );
 }
 
 // ============================================================================
