@@ -5,6 +5,7 @@ export interface CreateStudentAnswerDTO {
   assignmentId: AssignmentId;
   questionId: string;
   answerText: string;
+  isCorrect?: boolean;
 }
 
 /**

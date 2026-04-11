@@ -57,6 +57,7 @@ export class PrismaStudentAnswerRepository implements IStudentAnswerRepository {
         assignmentId: data.assignmentId.value,
         questionId: data.questionId,
         answerText: data.answerText,
+        isCorrect: data.isCorrect ?? null,
       },
     });
 
