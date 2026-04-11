@@ -1,51 +1,31 @@
-/**
- * Azure OpenAI Answer Grading Service
- *
- * Implementation of IAnswerGradingService using Azure OpenAI GPT-4o
- * to evaluate short-answer questions.
- */
-
 import { AzureOpenAI } from 'openai';
-
-import { env } from '@config/env.js';
 import type {
   GradeAnswerInput,
   GradeAnswerOutput,
   IAnswerGradingService,
 } from '@domain/services/IAnswerGradingService.js';
+import { env } from '@config/env.js';
 
-/**
- * Service for grading short-answer questions using Azure OpenAI
- */
+interface GradingResponse {
+  isCorrect: boolean;
+  score: number;
+  feedback: string;
+  explanation: string;
+}
+
 export class AzureOpenAIGradingService implements IAnswerGradingService {
-  private readonly client: AzureOpenAI;
+  private client: AzureOpenAI;
 
   constructor() {
     this.client = new AzureOpenAI({
-      apiKey: env.AZURE_OPENAI_API_KEY,
       endpoint: env.AZURE_OPENAI_ENDPOINT,
       apiVersion: env.AZURE_OPENAI_API_VERSION,
-      deployment: env.AZURE_OPENAI_CHAT_DEPLOYMENT,
+      apiKey: env.AZURE_OPENAI_API_KEY,
     });
   }
 
-  /**
-   * Grade a student's answer using Azure OpenAI
-   *
-   * @param params - Grading parameters
-   * @returns Grading result with score and feedback
-   */
   async gradeAnswer(params: GradeAnswerInput): Promise<GradeAnswerOutput> {
     const { questionText, correctAnswer, studentAnswer, points } = params;
-
-    // Handle empty answers immediately
-    if (!studentAnswer || studentAnswer.trim().length === 0) {
-      return {
-        isCorrect: false,
-        score: 0,
-        feedback: 'No answer provided.',
-      };
-    }
 
     try {
       const completion = await this.client.chat.completions.create({
@@ -60,7 +40,7 @@ export class AzureOpenAIGradingService implements IAnswerGradingService {
             content: this.buildUserPrompt(questionText, correctAnswer, studentAnswer),
           },
         ],
-        temperature: 0.3, // Low temperature for consistent grading
+        temperature: 0.3,
         max_completion_tokens: 500,
         response_format: { type: 'json_object' },
       });
@@ -70,43 +50,54 @@ export class AzureOpenAIGradingService implements IAnswerGradingService {
         throw new Error('Empty response from Azure OpenAI');
       }
 
-      const result = this.parseResponse(content, points);
-      return result;
+      const result = JSON.parse(content) as GradingResponse;
+
+      // Validate score is within bounds
+      const score = Math.max(0, Math.min(points, result.score));
+
+      return {
+        isCorrect: result.isCorrect,
+        score,
+        feedback: result.feedback,
+        explanation: result.explanation,
+      };
     } catch (error) {
       console.error('Error grading answer with Azure OpenAI:', error);
-      // Fallback: if AI fails, return partial credit for non-empty answers
-      return this.fallbackGrading(studentAnswer, correctAnswer, points);
+      // Fallback: return 0 points on error to avoid blocking submission
+      return {
+        isCorrect: false,
+        score: 0,
+        feedback: 'Error during automatic grading. Please contact your teacher.',
+      };
     }
   }
 
-  /**
-   * Build the system prompt for grading
-   */
   private buildSystemPrompt(maxPoints: number): string {
-    return `You are an expert teacher grading student answers for short-answer questions.
+    return `You are an AI exam grader. Your task is to evaluate student answers and provide detailed feedback.
 
-Your task is to evaluate the student's answer and provide:
-1. A score (0 to ${maxPoints})
-2. Whether the answer is correct (score >= ${Math.round(maxPoints * 0.8)})
-3. Constructive feedback explaining the grade
+Grading Guidelines:
+1. Evaluate the student's answer against the correct answer provided
+2. Consider partial credit for answers that show understanding but may have minor errors
+3. Be lenient with spelling and grammar mistakes if the core concept is correct
+4. For numerical answers, accept equivalent values (e.g., "0.5" = "1/2" = "50%")
+5. For explanations, focus on key concepts being present
 
-Grading guidelines:
-- Score ${maxPoints}: Perfect or essentially correct answer with key concepts
-- Score ${Math.round(maxPoints * 0.7)}-${maxPoints - 1}: Mostly correct with minor errors or omissions
-- Score ${Math.round(maxPoints * 0.4)}-${Math.round(maxPoints * 0.6)}: Partially correct, shows some understanding
-- Score 0-${Math.round(maxPoints * 0.3)}: Incorrect or shows little understanding
+Scoring:
+- Maximum points: ${maxPoints}
+- Award partial credit based on how close the answer is to the correct answer
+- Consider 70%+ of max points if the answer demonstrates good understanding
+- Consider 30-70% if partially correct
+- 0 points if completely wrong or off-topic
 
-Return ONLY valid JSON with this exact structure:
+You must respond with a JSON object in this exact format:
 {
-  "score": number,
-  "isCorrect": boolean,
-  "feedback": "string explaining the grade"
+  "isCorrect": boolean,      // true if answer is mostly/fully correct
+  "score": number,           // points earned (0 to ${maxPoints})
+  "feedback": string,      // brief feedback for the student (1-2 sentences)
+  "explanation": string      // brief explanation of why this score was given
 }`;
   }
 
-  /**
-   * Build the user prompt with question and answers
-   */
   private buildUserPrompt(
     questionText: string,
     correctAnswer: string,
@@ -114,78 +105,10 @@ Return ONLY valid JSON with this exact structure:
   ): string {
     return `Question: ${questionText}
 
-Correct Answer (reference): ${correctAnswer}
+Correct Answer: ${correctAnswer || 'N/A (any reasonable answer may be acceptable)'}
 
 Student's Answer: ${studentAnswer}
 
-Please evaluate the student's answer and provide the JSON response.`;
-  }
-
-  /**
-   * Parse the AI response
-   */
-  private parseResponse(content: string, maxPoints: number): GradeAnswerOutput {
-    try {
-      const parsed = JSON.parse(content);
-
-      // Validate and normalize
-      let score = Math.max(0, Math.min(maxPoints, Number(parsed.score) || 0));
-      score = Math.round(score); // Round to nearest integer
-
-      const isCorrect = parsed.isCorrect === true || score >= maxPoints * 0.8;
-
-      return {
-        isCorrect,
-        score,
-        feedback: String(parsed.feedback || 'No feedback provided.'),
-      };
-    } catch (error) {
-      console.error('Error parsing grading response:', error);
-      throw new Error('Failed to parse AI grading response');
-    }
-  }
-
-  /**
-   * Fallback grading method when AI fails
-   * Uses simple string similarity
-   */
-  private fallbackGrading(
-    studentAnswer: string,
-    correctAnswer: string,
-    maxPoints: number
-  ): GradeAnswerOutput {
-    const similarity = this.calculateSimilarity(studentAnswer, correctAnswer);
-    const score = Math.round(similarity * maxPoints);
-
-    return {
-      isCorrect: score >= maxPoints * 0.8,
-      score,
-      feedback:
-        similarity >= 0.8
-          ? 'Correct answer.'
-          : 'Partial credit based on similarity to correct answer.',
-    };
-  }
-
-  /**
-   * Calculate simple string similarity (0-1)
-   */
-  private calculateSimilarity(a: string, b: string): number {
-    const aLower = a.toLowerCase().trim();
-    const bLower = b.toLowerCase().trim();
-
-    if (aLower === bLower) return 1;
-
-    // Check if one contains the other
-    if (aLower.includes(bLower) || bLower.includes(aLower)) return 0.8;
-
-    // Calculate word overlap
-    const aWords = new Set(aLower.split(/\s+/));
-    const bWords = new Set(bLower.split(/\s+/));
-
-    const intersection = [...aWords].filter((word) => bWords.has(word));
-    const union = new Set([...aWords, ...bWords]);
-
-    return intersection.length / union.size;
+Please evaluate the student's answer and respond with the required JSON format.`;
   }
 }

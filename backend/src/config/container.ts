@@ -111,8 +111,11 @@ import { PrismaExamAssignmentRepository } from '@infrastructure/repositories/Pri
 import { PrismaExamRepository } from '@infrastructure/repositories/PrismaExamRepository.js';
 import { PrismaStudentAnswerRepository } from '@infrastructure/repositories/PrismaStudentAnswerRepository.js';
 import { GetStudentClassExamsUseCase } from '@application/use-cases/classes/GetStudentClassExamsUseCase.js';
+import { GetStudentSubmissionDetailUseCase } from '@application/use-cases/classes/GetStudentSubmissionDetailUseCase.js';
 import { ISubscriptionRepository } from '@/domain/repositories/ISubscriptionRepository';
 import { IUsageMetricsRepository } from '@/domain/repositories/IUsageMetricsRepository';
+import type { IAnswerGradingService } from '@domain/services/IAnswerGradingService.js';
+import { AzureOpenAIGradingService } from '@infrastructure/ai/AzureOpenAIGradingService.js';
 
 /**
  * Container class - Singleton pattern
@@ -146,6 +149,9 @@ export class Container {
   // Subscription Repositories
   private readonly _subscriptionRepository: ISubscriptionRepository;
   private readonly _usageMetricsRepository: IUsageMetricsRepository;
+
+  // AI Services
+  private readonly _gradingService: IAnswerGradingService;
 
   // Application Layer - Auth Use Cases
   private readonly _registerUserUseCase: RegisterUserUseCase;
@@ -200,6 +206,7 @@ export class Container {
   private readonly _getClassExamResultsUseCase: GetClassExamResultsUseCase;
   private readonly _deleteClassExamUseCase: DeleteClassExamUseCase;
   private readonly _listRecentClassExamsUseCase: ListRecentClassExamsUseCase;
+  private readonly _getStudentSubmissionDetailUseCase: GetStudentSubmissionDetailUseCase;
 
   // Application Layer - Class Document Use Cases
   private readonly _shareDocumentWithClassUseCase: ShareDocumentWithClassUseCase;
@@ -456,6 +463,15 @@ export class Container {
       this._classRepository
     );
     this._listRecentClassExamsUseCase = new ListRecentClassExamsUseCase(this._classExamRepository);
+
+    this._getStudentSubmissionDetailUseCase = new GetStudentSubmissionDetailUseCase(
+      this._classExamRepository,
+      this._classRepository,
+      this._examRepository,
+      this._examAssignmentRepository,
+      this._studentAnswerRepository,
+      this._userRepository
+    );
 
     // Class Document Use Cases
     this._shareDocumentWithClassUseCase = new ShareDocumentWithClassUseCase(
@@ -826,6 +842,14 @@ export class Container {
 
   public get listRecentClassExamsUseCase(): ListRecentClassExamsUseCase {
     return this._listRecentClassExamsUseCase;
+  }
+
+  public get getStudentSubmissionDetailUseCase(): GetStudentSubmissionDetailUseCase {
+    return this._getStudentSubmissionDetailUseCase;
+  }
+
+  public get gradingService(): IAnswerGradingService {
+    return this._gradingService;
   }
 
   // Class Document Use Cases

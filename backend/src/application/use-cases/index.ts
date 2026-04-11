@@ -90,6 +90,46 @@ export type { GetClassStudentsCommand } from './classes/GetClassStudentsUseCase.
 export type { AcceptInvitationCommand } from './classes/AcceptInvitationUseCase.js';
 export type { RemoveStudentFromClassCommand } from './classes/RemoveStudentFromClassUseCase.js';
 
+// Application Layer - Class Exam Use Cases
+export { GetClassExamsUseCase } from './classes/GetClassExamsUseCase.js';
+export { GetStudentExamsUseCase } from './classes/GetStudentExamsUseCase.js';
+export { GetStudentClassExamsUseCase } from './classes/GetStudentClassExamsUseCase.js';
+export { PublishClassExamUseCase } from './classes/PublishClassExamUseCase.js';
+export { UpdateClassExamSettingsUseCase } from './classes/UpdateClassExamSettingsUseCase.js';
+export { GetClassExamResultsUseCase } from './classes/GetClassExamResultsUseCase.js';
+export { DeleteClassExamUseCase } from './classes/DeleteClassExamUseCase.js';
+export { GetTeacherClassesWithStatsUseCase } from './classes/GetTeacherClassesWithStatsUseCase.js';
+export { GetStudentClassesWithStatsUseCase } from './classes/GetStudentClassesWithStatsUseCase.js';
+export { GetStudentSubmissionDetailUseCase } from './classes/GetStudentSubmissionDetailUseCase.js';
+
+// Export input/output types for class exam use cases
+export type { GetClassExamsInput, GetClassExamsOutput } from './classes/GetClassExamsUseCase.js';
+export type {
+  GetStudentExamsInput,
+  GetStudentExamsOutput,
+} from './classes/GetStudentExamsUseCase.js';
+export type {
+  GetStudentClassExamsInput,
+  GetStudentClassExamsOutput,
+} from './classes/GetStudentClassExamsUseCase.js';
+export type {
+  PublishClassExamInput,
+  PublishClassExamOutput,
+} from './classes/PublishClassExamUseCase.js';
+export type {
+  UpdateClassExamSettingsInput,
+  UpdateClassExamSettingsOutput,
+} from './classes/UpdateClassExamSettingsUseCase.js';
+export type {
+  GetClassExamResultsInput,
+  GetClassExamResultsOutput,
+} from './classes/GetClassExamResultsUseCase.js';
+export type { DeleteClassExamInput } from './classes/DeleteClassExamUseCase.js';
+export type {
+  GetStudentSubmissionDetailInput,
+  GetStudentSubmissionDetailOutput,
+} from './classes/GetStudentSubmissionDetailUseCase.js';
+
 // Application Layer - Student Use Cases
 export { SaveAnswerUseCase } from './student/SaveAnswerUseCase.js';
 export type { SaveAnswerInput, SaveAnswerOutput } from './student/SaveAnswerUseCase.js';
