@@ -88,7 +88,6 @@ import type { IStorageService } from '@domain/services/IStorageService.js';
 import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
 import type { ITokenService } from '@domain/services/ITokenService.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
-import { AzureOpenAIGradingService } from '@infrastructure/ai/AzureOpenAIGradingService.js';
 import {
   PrismaUserRepository,
   PrismaDocumentRepository,
@@ -137,7 +136,6 @@ export class Container {
   private readonly _textExtractor: ITextExtractor;
   private readonly _messageBroker: IMessageBroker; // Added
   private readonly _embeddingService: AzureOpenAIEmbeddingService;
-  private readonly _gradingService: AzureOpenAIGradingService;
 
   // Classes & Invitations Repositories
   private readonly _classRepository: IClassRepository;
