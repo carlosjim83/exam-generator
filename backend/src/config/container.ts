@@ -760,6 +760,14 @@ export class Container {
     return this._classExamRepository;
   }
 
+  public get classRepository(): IClassRepository {
+    return this._classRepository;
+  }
+
+  public get examAssignmentRepository(): IExamAssignmentRepository {
+    return this._examAssignmentRepository;
+  }
+
   // Subscription Use Cases
 
   public get subscriptionRepository(): ISubscriptionRepository {
