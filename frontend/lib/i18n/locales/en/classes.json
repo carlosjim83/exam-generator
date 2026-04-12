@@ -255,5 +255,40 @@
     },
     "exportSuccess": "Results exported as {{format}}",
     "exportError": "Failed to export results"
+  },
+  "studentSubmissionDetail": {
+    "backToResults": "Back to Results",
+    "title": "Student Submission",
+    "subtitle": "Detailed view of student's exam submission",
+    "studentInfo": "Student Information",
+    "name": "Name",
+    "email": "Email",
+    "status": "Status",
+    "status.submitted": "Submitted",
+    "status.graded": "Graded",
+    "status.inProgress": "In Progress",
+    "status.notStarted": "Not Started",
+    "startedAt": "Started At",
+    "submittedAt": "Submitted At",
+    "scoreSummary": "Score Summary",
+    "points": "points",
+    "correctAnswers": "Correct Answers",
+    "totalQuestions": "Total Questions",
+    "questionsBreakdown": "Questions Breakdown",
+    "questionsDescription": "Review each question and the student's response",
+    "question": "Question",
+    "questionTypes": {
+      "multipleChoice": "Multiple Choice",
+      "trueFalse": "True/False",
+      "shortAnswer": "Short Answer"
+    },
+    "correct": "Correct",
+    "studentAnswer": "Student Answer",
+    "correctAnswer": "Correct Answer",
+    "noAnswer": "No answer provided",
+    "anyReasonableAnswer": "Any reasonable answer",
+    "feedback": "Feedback",
+    "loadError": "Failed to load submission details",
+    "errorLoading": "Error loading submission details"
   }
 }
