@@ -131,6 +131,15 @@ export class PrismaClassRepository implements IClassRepository {
     });
   }
 
+  async countTotalStudentsByTeacherId(teacherId: UserId): Promise<number> {
+    return await this.prisma.studentEnrollment.count({
+      where: {
+        class: { teacherId: teacherId.toString() },
+        isActive: true,
+      },
+    });
+  }
+
   /**
    * Maps Prisma Class record to domain Class entity
    */

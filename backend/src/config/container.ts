@@ -545,7 +545,8 @@ export class Container {
     // Subscription Use Cases
     this._getSubscriptionUseCase = new GetSubscriptionUseCase(
       this._subscriptionRepository,
-      this._usageMetricsRepository
+      this._usageMetricsRepository,
+      this._classRepository
     );
   }
 

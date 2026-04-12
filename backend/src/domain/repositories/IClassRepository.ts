@@ -14,4 +14,5 @@ export interface IClassRepository {
   existsByCode(code: string, excludeId?: ClassId): Promise<boolean>;
   countStudents(classId: ClassId): Promise<number>;
   countByTeacherId(teacherId: UserId): Promise<number>;
+  countTotalStudentsByTeacherId(teacherId: UserId): Promise<number>;
 }

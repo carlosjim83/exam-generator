@@ -1,5 +1,6 @@
 import { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { Subscription } from '@domain/entities/Subscription.js';
 import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
 import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
@@ -26,7 +27,8 @@ export interface SubscriptionResult {
 export class GetSubscriptionUseCase {
   constructor(
     private readonly subscriptionRepo: ISubscriptionRepository,
-    private readonly usageMetricsRepo: IUsageMetricsRepository
+    private readonly usageMetricsRepo: IUsageMetricsRepository,
+    private readonly classRepo: IClassRepository
   ) {}
 
   /**
@@ -46,7 +48,25 @@ export class GetSubscriptionUseCase {
     }
 
     // Get or create usage metrics
-    const usageMetrics = await this.usageMetricsRepo.getOrCreateCurrent(userId, subscription.id);
+    let usageMetrics = await this.usageMetricsRepo.getOrCreateCurrent(userId, subscription.id);
+
+    // Calculate actual usage from database
+    const actualClassCount = await this.classRepo.countByTeacherId(userId);
+    const actualStudentCount = await this.classRepo.countTotalStudentsByTeacherId(userId);
+
+    // Update usage metrics with actual counts if they differ
+    if (usageMetrics.currentClasses !== actualClassCount) {
+      usageMetrics = usageMetrics.updateClassCount(actualClassCount);
+    }
+    if (usageMetrics.currentStudents !== actualStudentCount) {
+      usageMetrics = usageMetrics.updateStudentCount(actualStudentCount);
+    }
+    // Note: examsCreatedThisMonth is monthly - we only update if current month and different
+    // For now, we don't auto-correct exam counts since they're reset monthly
+    // and the count from the database is total, not monthly
+
+    // Persist updates if any were made
+    await this.usageMetricsRepo.update(usageMetrics);
 
     // Get limits for current tier
     const limits = SubscriptionLimits.getForTier(subscription.tier);

@@ -14,6 +14,7 @@ import {
   LogOut,
   GraduationCap,
   Users,
+  Crown,
 } from 'lucide-react';
 
 interface NavItem {
@@ -81,6 +82,11 @@ const studentNavigation: NavItem[] = [
 ];
 
 const secondaryNavigation: NavItem[] = [
+  {
+    labelKey: 'dashboard:navigation.subscription',
+    href: '/dashboard/subscription',
+    icon: Crown,
+  },
   {
     labelKey: 'dashboard:navigation.settings',
     href: '/dashboard/settings',

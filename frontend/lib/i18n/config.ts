@@ -22,6 +22,10 @@ import classesEN from './locales/en/classes.json';
 import classesES from './locales/es/classes.json';
 import landingEN from './locales/en/landing.json';
 import landingES from './locales/es/landing.json';
+import subscriptionEN from './locales/en/subscription.json';
+import subscriptionES from './locales/es/subscription.json';
+import pricingEN from './locales/en/pricing.json';
+import pricingES from './locales/es/pricing.json';
 
 // Define resources type
 const resources = {
@@ -36,6 +40,8 @@ const resources = {
     student: studentEN,
     classes: classesEN,
     landing: landingEN,
+    subscription: subscriptionEN,
+    pricing: pricingEN,
   },
   es: {
     common: commonES,
@@ -48,6 +54,8 @@ const resources = {
     student: studentES,
     classes: classesES,
     landing: landingES,
+    subscription: subscriptionES,
+    pricing: pricingES,
   },
 } as const;
 
@@ -71,6 +79,8 @@ i18n
       'student',
       'classes',
       'landing',
+      'subscription',
+      'pricing',
     ],
 
     detection: {

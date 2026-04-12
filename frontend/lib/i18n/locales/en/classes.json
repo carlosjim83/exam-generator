@@ -249,7 +249,11 @@
       "started": "Started",
       "submitted": "Submitted",
       "timeTaken": "Time",
-      "score": "Score"
-    }
+      "score": "Score",
+      "actions": "Actions",
+      "viewDetails": "View Details"
+    },
+    "exportSuccess": "Results exported as {{format}}",
+    "exportError": "Failed to export results"
   }
 }
