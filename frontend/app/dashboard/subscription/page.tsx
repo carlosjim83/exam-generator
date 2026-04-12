@@ -78,13 +78,13 @@ export default function SubscriptionPage() {
     }
   };
 
-  const formatNumber = (value: number | null) => {
-    if (value === null) return 'Unlimited';
+  const formatNumber = (value: number | null | undefined) => {
+    if (value === null || value === undefined) return 'Unlimited';
     return value.toLocaleString();
   };
 
-  const calculatePercentage = (used: number, total: number | null) => {
-    if (total === null) return 0;
+  const calculatePercentage = (used: number | undefined, total: number | null | undefined) => {
+    if (total === null || total === undefined || used === undefined) return 0;
     return Math.min(100, Math.round((used / total) * 100));
   };
 
