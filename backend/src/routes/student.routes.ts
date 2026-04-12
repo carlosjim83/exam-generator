@@ -748,21 +748,42 @@ export async function studentRoutes(fastify: FastifyInstance) {
                 properties: {
                   id: { type: 'string' },
                   title: { type: 'string' },
+                  description: { type: 'string', nullable: true },
+                  documentId: { type: 'string' },
+                  createdBy: { type: 'string' },
+                  createdAt: { type: 'string' },
+                  questions: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        text: { type: 'string' },
+                        order: { type: 'number' },
+                        type: { type: 'string' },
+                        options: { type: 'array', items: { type: 'string' } },
+                      },
+                    },
+                  },
                 },
               },
-              results: {
+              answers: {
                 type: 'array',
                 items: {
                   type: 'object',
                   properties: {
-                    question: { type: 'object' },
-                    studentAnswer: { type: 'object' },
-                    isCorrect: { type: 'boolean' },
-                    correctAnswer: { type: 'string' },
-                    explanation: { type: 'string' },
+                    id: { type: 'string' },
+                    questionId: { type: 'string' },
+                    answer: { type: 'string' },
+                    isCorrect: { type: 'boolean', nullable: true },
+                    createdAt: { type: 'string' },
+                    updatedAt: { type: 'string' },
                   },
                 },
               },
+              score: { type: 'number' },
+              maxScore: { type: 'number' },
+              percentage: { type: 'number' },
             },
           },
           400: {
@@ -822,6 +843,20 @@ export async function studentRoutes(fastify: FastifyInstance) {
           studentId: (request as any).user.userId,
         });
 
+        // Debug logging - check what we're sending
+        const mappedQuestions =
+          result.exam.questions?.map((q) => ({
+            id: q.id,
+            text: q.questionText,
+            order: q.orderIndex,
+            type: q.type,
+            options: q.options,
+          })) || [];
+        console.log(
+          `[GetExamResults] Mapping ${result.exam.questions?.length || 0} questions to ${mappedQuestions.length} mapped questions`
+        );
+        console.log(`[GetExamResults] First question sample:`, mappedQuestions[0]);
+
         // Transform the use case result to match frontend expectations
         // Map QuestionResult[] to StudentAnswer[] format
         const answers = result.results.map((r) => ({
@@ -840,7 +875,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
           .reduce((sum, r) => sum + (r.question.points || 0), 0);
         const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
 
-        return reply.status(200).send({
+        const responsePayload = {
           assignment: result.assignment.toObject(),
           exam: {
             id: result.exam.id,
@@ -849,17 +884,22 @@ export async function studentRoutes(fastify: FastifyInstance) {
             documentId: result.exam.generatedFrom[0] || '',
             createdBy: result.exam.userId,
             createdAt: result.exam.createdAt.toISOString(),
-            questions: result.exam.questions?.map((q) => ({
-              id: q.id,
-              text: q.questionText,
-              order: q.orderIndex,
-            })),
+            questions: mappedQuestions,
           },
           answers,
           score,
           maxScore,
           percentage,
-        });
+        };
+        console.log(
+          '[GetExamResults] Sending response with exam.questions length:',
+          responsePayload.exam.questions.length
+        );
+        console.log(
+          '[GetExamResults] Response payload exam:',
+          JSON.stringify(responsePayload.exam, null, 2)
+        );
+        return reply.status(200).send(responsePayload);
       } catch (error: any) {
         fastify.log.error('Get exam results error:', error);
 

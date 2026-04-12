@@ -131,7 +131,8 @@
     "noAnswerProvided": "No answer provided",
     "gradingInProgressTitle": "Grading in Progress",
     "gradingInProgressMessage": "Your exam has been submitted and is being graded by your teacher. Check back later for your results.",
-    "submittedOn": "Submitted on"
+    "submittedOn": "Submitted on",
+    "noQuestionsAvailable": "No questions available"
   },
   "errors": {
     "retry": "Retry",

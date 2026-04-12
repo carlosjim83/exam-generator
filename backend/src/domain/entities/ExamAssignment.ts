@@ -161,6 +161,18 @@ export class ExamAssignment {
     });
   }
 
+  markAsGraded(): ExamAssignment {
+    if (!this.isCompleted()) {
+      throw new Error(`Cannot mark as graded assignment with status ${this.props.status}`);
+    }
+
+    return ExamAssignment.create({
+      ...this.props,
+      status: ExamAssignmentStatus.GRADED,
+      updatedAt: new Date(),
+    });
+  }
+
   toObject() {
     return {
       id: this.props.id.value,

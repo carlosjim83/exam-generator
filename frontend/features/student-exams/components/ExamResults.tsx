@@ -28,12 +28,22 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
   const { results, loading, error, score, maxScore, percentage, status, refetch } =
     useExamResults(assignmentId);
 
+  // Debug logging
+  console.log('[ExamResults] Component received:', {
+    results,
+    exam: results?.exam,
+    questions: results?.exam?.questions,
+    questionsLength: results?.exam?.questions?.length,
+    answers: results?.answers,
+    answersLength: results?.answers?.length,
+  });
+
   // Calculate statistics
   const stats = useMemo(() => {
     if (!results?.answers) return { correct: 0, incorrect: 0 };
 
-    const correct = results.answers.filter((a) => a.isCorrect).length;
-    const incorrect = results.answers.filter((a) => !a.isCorrect).length;
+    const correct = results.answers.filter((a) => a.isCorrect === true).length;
+    const incorrect = results.answers.filter((a) => a.isCorrect === false).length;
 
     return { correct, incorrect };
   }, [results]);
@@ -218,66 +228,74 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">{t('results.questionBreakdown')}</h3>
 
-        {results.exam.questions.map((question: Question, index: number) => {
-          const answer = getAnswerForQuestion(question.id);
-          const isCorrect = answer?.isCorrect ?? false;
+        {!results.exam.questions || results.exam.questions.length === 0 ? (
+          <Card>
+            <CardContent className="py-8 text-center text-gray-500">
+              {t('results.noQuestionsAvailable')}
+            </CardContent>
+          </Card>
+        ) : (
+          results.exam.questions.map((question: Question, index: number) => {
+            const answer = getAnswerForQuestion(question.id);
+            const isCorrect = answer?.isCorrect ?? false;
 
-          return (
-            <Card
-              key={question.id}
-              className={cn('border-l-4', isCorrect ? 'border-l-green-500' : 'border-l-red-500')}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-base font-medium">
-                      {t('results.question')} {index + 1}
-                    </CardTitle>
-                    <CardDescription className="mt-1 text-gray-900">
-                      {question.text}
-                    </CardDescription>
-                  </div>
-                  {isCorrect ? (
-                    <CheckCircle2
-                      data-testid="correct-icon"
-                      className="h-6 w-6 text-green-600 flex-shrink-0"
-                    />
-                  ) : (
-                    <XCircle
-                      data-testid="incorrect-icon"
-                      className="h-6 w-6 text-red-600 flex-shrink-0"
-                    />
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <span className="text-sm font-medium text-gray-500">
-                    {t('results.yourAnswer')}:
-                  </span>
-                  <p
-                    className={cn(
-                      'mt-1 p-3 rounded-md',
-                      isCorrect ? 'bg-green-50 text-green-900' : 'bg-red-50 text-red-900'
+            return (
+              <Card
+                key={question.id}
+                className={cn('border-l-4', isCorrect ? 'border-l-green-500' : 'border-l-red-500')}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-base font-medium">
+                        {t('results.question')} {index + 1}
+                      </CardTitle>
+                      <CardDescription className="mt-1 text-gray-900">
+                        {question.text}
+                      </CardDescription>
+                    </div>
+                    {isCorrect ? (
+                      <CheckCircle2
+                        data-testid="correct-icon"
+                        className="h-6 w-6 text-green-600 flex-shrink-0"
+                      />
+                    ) : (
+                      <XCircle
+                        data-testid="incorrect-icon"
+                        className="h-6 w-6 text-red-600 flex-shrink-0"
+                      />
                     )}
-                  >
-                    {answer?.answer ?? t('results.noAnswerProvided')}
-                  </p>
-                </div>
-                {answer?.feedback && (
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
                   <div>
                     <span className="text-sm font-medium text-gray-500">
-                      {t('results.feedback')}:
+                      {t('results.yourAnswer')}:
                     </span>
-                    <p className="mt-1 p-3 bg-gray-50 rounded-md text-gray-700">
-                      {answer.feedback}
+                    <p
+                      className={cn(
+                        'mt-1 p-3 rounded-md',
+                        isCorrect ? 'bg-green-50 text-green-900' : 'bg-red-50 text-red-900'
+                      )}
+                    >
+                      {answer?.answer ?? t('results.noAnswerProvided')}
                     </p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
+                  {answer?.feedback && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">
+                        {t('results.feedback')}:
+                      </span>
+                      <p className="mt-1 p-3 bg-gray-50 rounded-md text-gray-700">
+                        {answer.feedback}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })
+        )}
       </div>
     </div>
   );
