@@ -48,12 +48,22 @@ export interface SubscriptionResponse {
   upgradeNeeded: boolean;
 }
 
+export interface PlanLimits {
+  maxClasses: number | null;
+  maxStudents: number | null;
+  maxExamsPerMonth: number | null;
+  maxQuestionsPerExam: number | null;
+  aiModel: string;
+  analyticsLevel: string;
+  supportLevel: string;
+}
+
 export interface SubscriptionPlan {
   tier: SubscriptionTier;
   price: number;
   priceYearly: number;
   currency: string;
-  features: string[];
+  limits: PlanLimits;
 }
 
 export interface SubscriptionPlansResponse {

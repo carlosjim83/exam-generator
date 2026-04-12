@@ -78,64 +78,64 @@ export default function PricingPage() {
     return t('subscribe');
   };
 
-  // Map backend feature strings to translation keys
-  const translateFeature = (feature: string): string => {
-    const featureMap: Record<string, string> = {
-      // English patterns from backend
-      'Unlimited classes': 'feature.unlimitedClasses',
-      'Unlimited students': 'feature.unlimitedStudents',
-      'Unlimited exams': 'feature.unlimitedExams',
-      'Unlimited questions per exam': 'feature.unlimitedQuestions',
-      'Up to 1 active class': 'feature.activeClasses',
-      'Up to 2 active classes': 'feature.activeClasses_plural',
-      '1 active class': 'feature.activeClasses',
-      'active class': 'feature.activeClasses',
-      'active classes': 'feature.activeClasses_plural',
-      '30 students maximum': 'feature.maxStudents',
-      'students maximum': 'feature.maxStudents',
-      '10 exams per month': 'feature.maxExams',
-      'exams per month': 'feature.maxExams',
-      'Up to 50 questions per exam': 'feature.maxQuestions',
-      'Up to 100 questions per exam': 'feature.maxQuestions',
-      'Up to 500 questions per exam': 'feature.maxQuestions',
-      'Basic analytics': 'feature.basicAnalytics',
-      'Advanced analytics': 'feature.advancedAnalytics',
-      'Email support': 'feature.emailSupport',
-      'Priority support (24-48hr)': 'feature.prioritySupport',
-      'Remove FormyDable branding': 'feature.removeBranding',
-      'Standard AI (GPT-4o mini)': 'feature.standardAI',
-      'Advanced AI (GPT-4o)': 'feature.advancedAI',
-      'Export results (CSV, Excel, PDF)': 'feature.exportResults',
-      'Exam templates': 'feature.examTemplates',
-    };
+  // Generate features from plan limits using translations
+  const generateFeatures = (plan: SubscriptionPlan): string[] => {
+    const features: string[] = [];
+    const { limits, tier } = plan;
 
-    // Try exact match first
-    if (featureMap[feature]) {
-      const count = extractCount(feature);
-      return count !== undefined ? t(featureMap[feature], { count }) : t(featureMap[feature]);
+    // Classes
+    if (limits.maxClasses === null) {
+      features.push(t('feature.unlimitedClasses'));
+    } else {
+      features.push(t('feature.activeClasses', { count: limits.maxClasses }));
     }
 
-    // Try partial match for dynamic features like "X active classes"
-    for (const [pattern, key] of Object.entries(featureMap)) {
-      if (
-        feature.toLowerCase().includes(pattern.toLowerCase()) ||
-        pattern.toLowerCase().includes(feature.toLowerCase())
-      ) {
-        const count = extractCount(feature);
-        if (count !== undefined) {
-          return t(key, { count });
-        }
-        return t(key);
-      }
+    // Students
+    if (limits.maxStudents === null) {
+      features.push(t('feature.unlimitedStudents'));
+    } else {
+      features.push(t('feature.maxStudents', { count: limits.maxStudents }));
     }
 
-    // Return original if no match found
-    return feature;
-  };
+    // Exams
+    if (limits.maxExamsPerMonth === null) {
+      features.push(t('feature.unlimitedExams'));
+    } else {
+      features.push(t('feature.maxExams', { count: limits.maxExamsPerMonth }));
+    }
 
-  const extractCount = (str: string): number | undefined => {
-    const match = /\d+/.exec(str);
-    return match ? Number.parseInt(match[0], 10) : undefined;
+    // Questions
+    if (limits.maxQuestionsPerExam === null) {
+      features.push(t('feature.unlimitedQuestions'));
+    } else {
+      features.push(t('feature.maxQuestions', { count: limits.maxQuestionsPerExam }));
+    }
+
+    // Analytics
+    features.push(
+      limits.analyticsLevel === 'ADVANCED'
+        ? t('feature.advancedAnalytics')
+        : t('feature.basicAnalytics')
+    );
+
+    // Support
+    features.push(
+      limits.supportLevel === 'PRIORITY' ? t('feature.prioritySupport') : t('feature.emailSupport')
+    );
+
+    // Pro-only features
+    if (tier === 'PRO') {
+      features.push(t('feature.removeBranding'));
+      features.push(
+        limits.aiModel === 'GPT_4O' ? t('feature.advancedAI') : t('feature.standardAI')
+      );
+      features.push(t('feature.exportResults'));
+      features.push(t('feature.examTemplates'));
+    } else {
+      features.push(t('feature.standardAI'));
+    }
+
+    return features;
   };
 
   if (loading) {
@@ -226,10 +226,10 @@ export default function PricingPage() {
                   </Button>
 
                   <ul className="space-y-3">
-                    {plan.features.map((feature, index) => (
+                    {generateFeatures(plan).map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{translateFeature(feature)}</span>
+                        <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
