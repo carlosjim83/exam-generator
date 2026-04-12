@@ -25,6 +25,27 @@
     "PRO_PLUS": "Para profesores que necesitan más potencia",
     "ENTERPRISE": "Para escuelas e instituciones"
   },
+  "feature": {
+    "unlimitedClasses": "Clases ilimitadas",
+    "unlimitedStudents": "Estudiantes ilimitados",
+    "unlimitedExams": "Exámenes ilimitados",
+    "unlimitedQuestions": "Preguntas ilimitadas por examen",
+    "activeClasses": "{{count}} clase activa",
+    "activeClasses_plural": "{{count}} clases activas",
+    "maxStudents": "{{count}} estudiantes máximo",
+    "maxStudents_plural": "{{count}} estudiantes máximo",
+    "maxExams": "{{count}} exámenes por mes",
+    "maxQuestions": "Hasta {{count}} preguntas por examen",
+    "basicAnalytics": "Análisis básicos",
+    "advancedAnalytics": "Análisis avanzados",
+    "emailSupport": "Soporte por email",
+    "prioritySupport": "Soporte prioritario (24-48hr)",
+    "removeBranding": "Sin marca de FormyDable",
+    "standardAI": "IA estándar (GPT-4o mini)",
+    "advancedAI": "IA avanzada (GPT-4o)",
+    "exportResults": "Exportar resultados (CSV, Excel, PDF)",
+    "examTemplates": "Plantillas de exámenes"
+  },
   "faq": {
     "title": "Preguntas Frecuentes",
     "upgradeQuestion": "¿Cómo actualizo mi plan?",

@@ -78,6 +78,66 @@ export default function PricingPage() {
     return t('subscribe');
   };
 
+  // Map backend feature strings to translation keys
+  const translateFeature = (feature: string): string => {
+    const featureMap: Record<string, string> = {
+      // English patterns from backend
+      'Unlimited classes': 'feature.unlimitedClasses',
+      'Unlimited students': 'feature.unlimitedStudents',
+      'Unlimited exams': 'feature.unlimitedExams',
+      'Unlimited questions per exam': 'feature.unlimitedQuestions',
+      'Up to 1 active class': 'feature.activeClasses',
+      'Up to 2 active classes': 'feature.activeClasses_plural',
+      '1 active class': 'feature.activeClasses',
+      'active class': 'feature.activeClasses',
+      'active classes': 'feature.activeClasses_plural',
+      '30 students maximum': 'feature.maxStudents',
+      'students maximum': 'feature.maxStudents',
+      '10 exams per month': 'feature.maxExams',
+      'exams per month': 'feature.maxExams',
+      'Up to 50 questions per exam': 'feature.maxQuestions',
+      'Up to 100 questions per exam': 'feature.maxQuestions',
+      'Up to 500 questions per exam': 'feature.maxQuestions',
+      'Basic analytics': 'feature.basicAnalytics',
+      'Advanced analytics': 'feature.advancedAnalytics',
+      'Email support': 'feature.emailSupport',
+      'Priority support (24-48hr)': 'feature.prioritySupport',
+      'Remove FormyDable branding': 'feature.removeBranding',
+      'Standard AI (GPT-4o mini)': 'feature.standardAI',
+      'Advanced AI (GPT-4o)': 'feature.advancedAI',
+      'Export results (CSV, Excel, PDF)': 'feature.exportResults',
+      'Exam templates': 'feature.examTemplates',
+    };
+
+    // Try exact match first
+    if (featureMap[feature]) {
+      const count = extractCount(feature);
+      return count !== undefined ? t(featureMap[feature], { count }) : t(featureMap[feature]);
+    }
+
+    // Try partial match for dynamic features like "X active classes"
+    for (const [pattern, key] of Object.entries(featureMap)) {
+      if (
+        feature.toLowerCase().includes(pattern.toLowerCase()) ||
+        pattern.toLowerCase().includes(feature.toLowerCase())
+      ) {
+        const count = extractCount(feature);
+        if (count !== undefined) {
+          return t(key, { count });
+        }
+        return t(key);
+      }
+    }
+
+    // Return original if no match found
+    return feature;
+  };
+
+  const extractCount = (str: string): number | undefined => {
+    const match = /\d+/.exec(str);
+    return match ? Number.parseInt(match[0], 10) : undefined;
+  };
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -169,7 +229,7 @@ export default function PricingPage() {
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
+                        <span className="text-sm">{translateFeature(feature)}</span>
                       </li>
                     ))}
                   </ul>
