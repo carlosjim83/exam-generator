@@ -196,14 +196,17 @@ export default function SubscriptionPage() {
                     / {formatNumber(limits.maxClasses)}
                   </span>
                 </div>
-                {limitsReached.classes && <Badge variant="destructive">{t('limitReached')}</Badge>}
+                {limitsReached.classes && limits.maxClasses !== null && (
+                  <Badge variant="destructive">{t('limitReached')}</Badge>
+                )}
               </div>
               <Progress
                 value={calculatePercentage(usage.currentClasses ?? 0, limits.maxClasses)}
                 className={cn(
-                  limitsReached.classes
+                  limits.maxClasses !== null && limitsReached.classes
                     ? 'bg-red-100'
-                    : (usage.currentClasses ?? 0) >= (limits.maxClasses || 0) - 1
+                    : limits.maxClasses !== null &&
+                        (usage.currentClasses ?? 0) >= limits.maxClasses - 1
                       ? 'bg-amber-100'
                       : ''
                 )}
@@ -236,14 +239,17 @@ export default function SubscriptionPage() {
                     / {formatNumber(limits.maxStudents)}
                   </span>
                 </div>
-                {limitsReached.students && <Badge variant="destructive">{t('limitReached')}</Badge>}
+                {limitsReached.students && limits.maxStudents !== null && (
+                  <Badge variant="destructive">{t('limitReached')}</Badge>
+                )}
               </div>
               <Progress
                 value={calculatePercentage(usage.currentStudents ?? 0, limits.maxStudents)}
                 className={cn(
-                  limitsReached.students
+                  limits.maxStudents !== null && limitsReached.students
                     ? 'bg-red-100'
-                    : (usage.currentStudents ?? 0) >= (limits.maxStudents || 0) - 5
+                    : limits.maxStudents !== null &&
+                        (usage.currentStudents ?? 0) >= limits.maxStudents - 5
                       ? 'bg-amber-100'
                       : ''
                 )}
@@ -276,7 +282,9 @@ export default function SubscriptionPage() {
                     / {formatNumber(limits.maxExamsPerMonth)}
                   </span>
                 </div>
-                {limitsReached.exams && <Badge variant="destructive">{t('limitReached')}</Badge>}
+                {limitsReached.exams && limits.maxExamsPerMonth !== null && (
+                  <Badge variant="destructive">{t('limitReached')}</Badge>
+                )}
               </div>
               <Progress
                 value={calculatePercentage(
@@ -284,9 +292,10 @@ export default function SubscriptionPage() {
                   limits.maxExamsPerMonth
                 )}
                 className={cn(
-                  limitsReached.exams
+                  limits.maxExamsPerMonth !== null && limitsReached.exams
                     ? 'bg-red-100'
-                    : (usage.examsCreatedThisMonth ?? 0) >= (limits.maxExamsPerMonth || 0) - 2
+                    : limits.maxExamsPerMonth !== null &&
+                        (usage.examsCreatedThisMonth ?? 0) >= limits.maxExamsPerMonth - 2
                       ? 'bg-amber-100'
                       : ''
                 )}
