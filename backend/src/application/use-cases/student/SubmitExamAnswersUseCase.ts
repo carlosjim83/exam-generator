@@ -63,8 +63,8 @@ export class SubmitExamAnswersUseCase {
 
       const { isCorrect, score } = await this.gradeAnswer(question, answerInput.answerText);
 
-      // Create answer with grading info
-      await this.answerRepo.create({
+      // Save answer with grading info (upsert to handle existing answers)
+      await this.answerRepo.upsert({
         assignmentId: assignment.id,
         questionId: answerInput.questionId,
         answerText: answerInput.answerText,

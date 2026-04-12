@@ -86,11 +86,13 @@ export class PrismaStudentAnswerRepository implements IStudentAnswerRepository {
       },
       update: {
         answerText: data.answerText,
+        isCorrect: data.isCorrect ?? null,
       },
       create: {
         assignmentId: data.assignmentId.value,
         questionId: data.questionId,
         answerText: data.answerText,
+        isCorrect: data.isCorrect ?? null,
       },
     });
 
