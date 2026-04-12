@@ -16,9 +16,12 @@ export interface SubscriptionLimits {
   maxExamsPerMonth: number | null;
   maxQuestionsPerExam: number | null;
   maxDocumentsPerExam: number | null;
+  maxTeamMembers: number | null;
   aiModel: string;
-  hasBranding: boolean;
-  hasAdvancedAnalytics: boolean;
+  customBranding: boolean;
+  exportFeatures: boolean;
+  analyticsLevel: string;
+  supportLevel: string;
 }
 
 export interface SubscriptionUsage {

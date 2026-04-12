@@ -5,6 +5,7 @@ import { UserId } from '@domain/value-objects/UserId.js';
 import { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { Subscription } from '@domain/entities/Subscription.js';
 import type { UsageMetrics } from '@domain/entities/UsageMetrics.js';
 
@@ -20,6 +21,7 @@ function createMockSubscription(tier: SubscriptionTier = SubscriptionTier.FREE):
     status: SubscriptionStatus.ACTIVE,
     isActive: () => true,
     isFreeTier: () => tier === SubscriptionTier.FREE,
+    currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     toObject: () => ({
       id,
       teacherId,
@@ -59,6 +61,15 @@ function createMockUsageMetrics(
     examsCreatedTotal: 0,
     peakConcurrentStudents: 0,
     avgExamsPerMonth: 0,
+    updateClassCount: (count: number) =>
+      createMockUsageMetrics({ ...overrides, currentClasses: count }),
+    updateStudentCount: (count: number) =>
+      createMockUsageMetrics({ ...overrides, currentStudents: count }),
+    incrementExamCount: () =>
+      createMockUsageMetrics({
+        ...overrides,
+        examsCreatedThisMonth: (overrides.examsCreatedThisMonth ?? 0) + 1,
+      }),
     toObject: () => ({
       id,
       teacherId,
@@ -85,14 +96,24 @@ const mockSubscriptionRepository = {
 const mockUsageMetricsRepository = {
   findCurrentByTeacherId: vi.fn(),
   getOrCreateCurrent: vi.fn(),
+  update: vi.fn(),
 } satisfies Partial<IUsageMetricsRepository> as IUsageMetricsRepository;
+
+const mockClassRepository = {
+  countByTeacherId: vi.fn(),
+  countTotalStudentsByTeacherId: vi.fn(),
+} satisfies Partial<IClassRepository> as IClassRepository;
 
 describe('GetSubscriptionUseCase', () => {
   let useCase: GetSubscriptionUseCase;
   const teacherId = '123e4567-e89b-42d3-a456-426614174001';
 
   beforeEach(() => {
-    useCase = new GetSubscriptionUseCase(mockSubscriptionRepository, mockUsageMetricsRepository);
+    useCase = new GetSubscriptionUseCase(
+      mockSubscriptionRepository,
+      mockUsageMetricsRepository,
+      mockClassRepository
+    );
     vi.clearAllMocks();
   });
 
@@ -104,6 +125,8 @@ describe('GetSubscriptionUseCase', () => {
         vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
           createMockUsageMetrics()
         );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(0);
 
         const result = await useCase.execute(UserId.create(teacherId));
 
@@ -118,6 +141,8 @@ describe('GetSubscriptionUseCase', () => {
         vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
           createMockUsageMetrics()
         );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(0);
 
         const result = await useCase.execute(UserId.create(teacherId));
 
@@ -125,6 +150,7 @@ describe('GetSubscriptionUseCase', () => {
         expect(result.limits.maxStudents).toBe(30);
         expect(result.limits.maxExamsPerMonth).toBe(10);
         expect(result.limits.maxQuestionsPerExam).toBe(50);
+        expect(result.limits.maxDocumentsPerExam).toBe(10);
       });
 
       it('should detect when limits are reached', async () => {
@@ -137,6 +163,8 @@ describe('GetSubscriptionUseCase', () => {
             examsCreatedThisMonth: 10,
           })
         );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(1);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(30);
 
         const result = await useCase.execute(UserId.create(teacherId));
 
@@ -156,6 +184,8 @@ describe('GetSubscriptionUseCase', () => {
             examsCreatedThisMonth: 5,
           })
         );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(1);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(15);
 
         const result = await useCase.execute(UserId.create(teacherId));
 
@@ -163,6 +193,24 @@ describe('GetSubscriptionUseCase', () => {
         expect(result.limitsReached.students).toBe(false);
         expect(result.limitsReached.exams).toBe(false);
         expect(result.upgradeNeeded).toBe(true);
+      });
+
+      it('should calculate actual usage from database', async () => {
+        vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(null);
+        vi.mocked(mockSubscriptionRepository.create).mockImplementation(async (sub) => sub);
+        vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
+          createMockUsageMetrics({ currentClasses: 0, currentStudents: 0 })
+        );
+        vi.mocked(mockUsageMetricsRepository.update).mockResolvedValue(undefined);
+        // Database has 1 class and 1 student
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(1);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(1);
+
+        const result = await useCase.execute(UserId.create(teacherId));
+
+        // Should reflect actual counts from database
+        expect(result.usage.currentClasses).toBe(1);
+        expect(result.usage.currentStudents).toBe(1);
       });
     });
 
@@ -174,13 +222,17 @@ describe('GetSubscriptionUseCase', () => {
         vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
           createMockUsageMetrics()
         );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(0);
 
         const result = await useCase.execute(UserId.create(teacherId));
 
         expect(result.subscription.tier).toBe(SubscriptionTier.PRO);
-        expect(result.limits.maxClasses).toBe(null);
-        expect(result.limits.maxStudents).toBe(null);
-        expect(result.limits.maxExamsPerMonth).toBe(null);
+        expect(result.limits.maxClasses).toBeNull();
+        expect(result.limits.maxStudents).toBeNull();
+        expect(result.limits.maxExamsPerMonth).toBeNull();
+        expect(result.limits.maxQuestionsPerExam).toBeNull();
+        expect(result.limits.maxDocumentsPerExam).toBeNull();
       });
 
       it('should not report limits reached for unlimited tiers', async () => {
@@ -194,6 +246,8 @@ describe('GetSubscriptionUseCase', () => {
             examsCreatedThisMonth: 500,
           })
         );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(100);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(1000);
 
         const result = await useCase.execute(UserId.create(teacherId));
 
@@ -215,12 +269,65 @@ describe('GetSubscriptionUseCase', () => {
             examsCreatedThisMonth: 7,
           })
         );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(1);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(25);
 
         const result = await useCase.execute(UserId.create(teacherId));
 
         expect(result.usage.currentClasses).toBe(1);
         expect(result.usage.currentStudents).toBe(25);
         expect(result.usage.examsCreatedThisMonth).toBe(7);
+      });
+    });
+
+    describe('Subscription limits object', () => {
+      it('should return correct limits for Free tier', async () => {
+        vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(null);
+        vi.mocked(mockSubscriptionRepository.create).mockImplementation(async (sub) => sub);
+        vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
+          createMockUsageMetrics()
+        );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(0);
+
+        const result = await useCase.execute(UserId.create(teacherId));
+        const limitsObj = result.limits.toObject();
+
+        expect(limitsObj.tier).toBe('FREE');
+        expect(limitsObj.maxClasses).toBe(1);
+        expect(limitsObj.maxStudents).toBe(30);
+        expect(limitsObj.maxExamsPerMonth).toBe(10);
+        expect(limitsObj.maxQuestionsPerExam).toBe(50);
+        expect(limitsObj.maxDocumentsPerExam).toBe(10);
+        expect(limitsObj.aiModel).toBe('GPT_4O_MINI');
+        expect(limitsObj.customBranding).toBe(false);
+        expect(limitsObj.exportFeatures).toBe(false);
+        expect(limitsObj.analyticsLevel).toBe('BASIC');
+      });
+
+      it('should return correct limits for Pro tier', async () => {
+        vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(
+          createMockSubscription(SubscriptionTier.PRO)
+        );
+        vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
+          createMockUsageMetrics()
+        );
+        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockClassRepository.countTotalStudentsByTeacherId).mockResolvedValue(0);
+
+        const result = await useCase.execute(UserId.create(teacherId));
+        const limitsObj = result.limits.toObject();
+
+        expect(limitsObj.tier).toBe('PRO');
+        expect(limitsObj.maxClasses).toBeNull();
+        expect(limitsObj.maxStudents).toBeNull();
+        expect(limitsObj.maxExamsPerMonth).toBeNull();
+        expect(limitsObj.maxQuestionsPerExam).toBeNull();
+        expect(limitsObj.maxDocumentsPerExam).toBeNull();
+        expect(limitsObj.aiModel).toBe('GPT_4O');
+        expect(limitsObj.customBranding).toBe(true);
+        expect(limitsObj.exportFeatures).toBe(true);
+        expect(limitsObj.analyticsLevel).toBe('ADVANCED');
       });
     });
   });

@@ -179,6 +179,14 @@ export class ApiClient {
         if (response.status === 400 && data.errors) {
           throw new ApiError(response.status, data.message, data.errors);
         }
+        // Handle JWT expired or unauthorized
+        if (response.status === 401) {
+          TokenManager.clearTokens();
+          if (typeof window !== 'undefined') {
+            window.location.href = '/login?error=session_expired';
+          }
+          throw new ApiError(response.status, data.message || 'Session expired');
+        }
         throw new ApiError(response.status, data.message || 'Request failed');
       }
 

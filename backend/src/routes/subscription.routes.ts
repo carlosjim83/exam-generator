@@ -34,8 +34,14 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
                 enum: ['ACTIVE', 'PAST_DUE', 'CANCELLED', 'EXPIRED'],
               },
               currentPeriodEnd: { type: 'string', format: 'date-time' },
-              limits: { type: 'object' },
-              usage: { type: 'object' },
+              limits: {
+                type: 'object',
+                additionalProperties: true,
+              },
+              usage: {
+                type: 'object',
+                additionalProperties: true,
+              },
               limitsReached: {
                 type: 'object',
                 properties: {
@@ -137,6 +143,7 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
           {
             tier: 'FREE',
             price: 0,
+            priceYearly: 0,
             currency: 'USD',
             features: [
               '1 active class',

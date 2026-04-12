@@ -1,5 +1,5 @@
 import { SubscriptionTier } from './Subscription.js';
-import { FREE_TIER_LIMITS, AI_MODELS } from '@config/subscription-limits.js';
+import { FREE_TIER_LIMITS, AI_MODELS, EXAM_LIMITS } from '@config/subscription-limits.js';
 
 /**
  * Analytics Level Enum
@@ -33,6 +33,7 @@ export interface SubscriptionLimitsProps {
   maxStudents: number | null;
   maxExamsPerMonth: number | null;
   maxQuestionsPerExam: number | null;
+  maxDocumentsPerExam: number | null;
   maxTeamMembers: number | null;
   analyticsLevel: AnalyticsLevel;
   supportLevel: SupportLevel;
@@ -66,6 +67,9 @@ export class SubscriptionLimits {
     if (props.maxQuestionsPerExam !== null && props.maxQuestionsPerExam < 0) {
       throw new Error('maxQuestionsPerExam must be null (unlimited) or >= 0');
     }
+    if (props.maxDocumentsPerExam !== null && props.maxDocumentsPerExam < 0) {
+      throw new Error('maxDocumentsPerExam must be null (unlimited) or >= 0');
+    }
     if (props.maxTeamMembers !== null && props.maxTeamMembers < 0) {
       throw new Error('maxTeamMembers must be null (unlimited) or >= 0');
     }
@@ -85,6 +89,7 @@ export class SubscriptionLimits {
           maxStudents: FREE_TIER_LIMITS.MAX_STUDENTS,
           maxExamsPerMonth: FREE_TIER_LIMITS.MAX_EXAMS_PER_MONTH,
           maxQuestionsPerExam: FREE_TIER_LIMITS.MAX_QUESTIONS_PER_EXAM,
+          maxDocumentsPerExam: EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM,
           maxTeamMembers: 1,
           analyticsLevel: AnalyticsLevel.BASIC,
           supportLevel: SupportLevel.EMAIL,
@@ -104,6 +109,7 @@ export class SubscriptionLimits {
           maxStudents: null,
           maxExamsPerMonth: null,
           maxQuestionsPerExam: null,
+          maxDocumentsPerExam: null,
           maxTeamMembers: 1,
           analyticsLevel: AnalyticsLevel.ADVANCED,
           supportLevel: SupportLevel.PRIORITY,
@@ -123,6 +129,7 @@ export class SubscriptionLimits {
           maxStudents: null,
           maxExamsPerMonth: null,
           maxQuestionsPerExam: null,
+          maxDocumentsPerExam: null,
           maxTeamMembers: 5,
           analyticsLevel: AnalyticsLevel.TEAM,
           supportLevel: SupportLevel.PRIORITY,
@@ -142,6 +149,7 @@ export class SubscriptionLimits {
           maxStudents: null,
           maxExamsPerMonth: null,
           maxQuestionsPerExam: null,
+          maxDocumentsPerExam: null,
           maxTeamMembers: null,
           analyticsLevel: AnalyticsLevel.TEAM,
           supportLevel: SupportLevel.DEDICATED,
@@ -178,6 +186,10 @@ export class SubscriptionLimits {
 
   get maxQuestionsPerExam(): number | null {
     return this.props.maxQuestionsPerExam;
+  }
+
+  get maxDocumentsPerExam(): number | null {
+    return this.props.maxDocumentsPerExam;
   }
 
   get maxTeamMembers(): number | null {
@@ -305,6 +317,7 @@ export class SubscriptionLimits {
       maxStudents: this.props.maxStudents,
       maxExamsPerMonth: this.props.maxExamsPerMonth,
       maxQuestionsPerExam: this.props.maxQuestionsPerExam,
+      maxDocumentsPerExam: this.props.maxDocumentsPerExam,
       maxTeamMembers: this.props.maxTeamMembers,
       analyticsLevel: this.props.analyticsLevel,
       supportLevel: this.props.supportLevel,

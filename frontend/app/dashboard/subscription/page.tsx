@@ -83,6 +83,17 @@ export default function SubscriptionPage() {
     return value.toLocaleString();
   };
 
+  const getModelDisplayName = (model: string) => {
+    switch (model) {
+      case 'GPT_4O_MINI':
+        return 'GPT-4o Mini';
+      case 'GPT_4O':
+        return 'GPT-4o';
+      default:
+        return model;
+    }
+  };
+
   const calculatePercentage = (used: number | undefined, total: number | null | undefined) => {
     if (total === null || total === undefined || used === undefined) return 0;
     return Math.min(100, Math.round((used / total) * 100));
@@ -338,25 +349,25 @@ export default function SubscriptionPage() {
               </div>
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="h-5 w-5 text-green-500" />
-                <span>{t('features.aiModel', { model: limits.aiModel })}</span>
+                <span>{t('features.aiModel', { model: getModelDisplayName(limits.aiModel) })}</span>
               </div>
               <div className="flex items-center gap-3">
-                {limits.hasAdvancedAnalytics ? (
+                {limits.analyticsLevel !== 'BASIC' ? (
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                 ) : (
                   <XCircle className="h-5 w-5 text-gray-400" />
                 )}
-                <span className={!limits.hasAdvancedAnalytics ? 'text-gray-500' : ''}>
+                <span className={limits.analyticsLevel === 'BASIC' ? 'text-gray-500' : ''}>
                   {t('features.advancedAnalytics')}
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                {!limits.hasBranding ? (
+                {!limits.customBranding ? (
                   <CheckCircle2 className="h-5 w-5 text-green-500" />
                 ) : (
                   <XCircle className="h-5 w-5 text-gray-400" />
                 )}
-                <span className={limits.hasBranding ? 'text-gray-500' : ''}>
+                <span className={limits.customBranding ? 'text-gray-500' : ''}>
                   {t('features.noBranding')}
                 </span>
               </div>
