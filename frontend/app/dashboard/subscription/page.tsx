@@ -190,7 +190,7 @@ export default function SubscriptionPage() {
             <CardContent>
               <div className="flex items-baseline justify-between mb-2">
                 <div className="text-2xl font-bold">
-                  {usage.currentClasses}
+                  {usage.currentClasses ?? 0}
                   <span className="text-muted-foreground text-lg font-normal">
                     {' '}
                     / {formatNumber(limits.maxClasses)}
@@ -199,20 +199,23 @@ export default function SubscriptionPage() {
                 {limitsReached.classes && <Badge variant="destructive">{t('limitReached')}</Badge>}
               </div>
               <Progress
-                value={calculatePercentage(usage.currentClasses, limits.maxClasses)}
+                value={calculatePercentage(usage.currentClasses ?? 0, limits.maxClasses)}
                 className={cn(
                   limitsReached.classes
                     ? 'bg-red-100'
-                    : usage.currentClasses >= (limits.maxClasses || 0) - 1
+                    : (usage.currentClasses ?? 0) >= (limits.maxClasses || 0) - 1
                       ? 'bg-amber-100'
                       : ''
                 )}
               />
-              {limits.maxClasses !== null && usage.currentClasses >= limits.maxClasses - 1 && (
-                <p className="text-xs text-amber-600 mt-2">
-                  {t('warnings.classes', { remaining: limits.maxClasses - usage.currentClasses })}
-                </p>
-              )}
+              {limits.maxClasses !== null &&
+                (usage.currentClasses ?? 0) >= limits.maxClasses - 1 && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    {t('warnings.classes', {
+                      remaining: limits.maxClasses - (usage.currentClasses ?? 0),
+                    })}
+                  </p>
+                )}
             </CardContent>
           </Card>
 
@@ -227,7 +230,7 @@ export default function SubscriptionPage() {
             <CardContent>
               <div className="flex items-baseline justify-between mb-2">
                 <div className="text-2xl font-bold">
-                  {usage.currentStudents}
+                  {usage.currentStudents ?? 0}
                   <span className="text-muted-foreground text-lg font-normal">
                     {' '}
                     / {formatNumber(limits.maxStudents)}
@@ -236,22 +239,23 @@ export default function SubscriptionPage() {
                 {limitsReached.students && <Badge variant="destructive">{t('limitReached')}</Badge>}
               </div>
               <Progress
-                value={calculatePercentage(usage.currentStudents, limits.maxStudents)}
+                value={calculatePercentage(usage.currentStudents ?? 0, limits.maxStudents)}
                 className={cn(
                   limitsReached.students
                     ? 'bg-red-100'
-                    : usage.currentStudents >= (limits.maxStudents || 0) - 5
+                    : (usage.currentStudents ?? 0) >= (limits.maxStudents || 0) - 5
                       ? 'bg-amber-100'
                       : ''
                 )}
               />
-              {limits.maxStudents !== null && usage.currentStudents >= limits.maxStudents - 5 && (
-                <p className="text-xs text-amber-600 mt-2">
-                  {t('warnings.students', {
-                    remaining: limits.maxStudents - usage.currentStudents,
-                  })}
-                </p>
-              )}
+              {limits.maxStudents !== null &&
+                (usage.currentStudents ?? 0) >= limits.maxStudents - 5 && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    {t('warnings.students', {
+                      remaining: limits.maxStudents - (usage.currentStudents ?? 0),
+                    })}
+                  </p>
+                )}
             </CardContent>
           </Card>
 
@@ -266,7 +270,7 @@ export default function SubscriptionPage() {
             <CardContent>
               <div className="flex items-baseline justify-between mb-2">
                 <div className="text-2xl font-bold">
-                  {usage.examsCreatedThisMonth}
+                  {usage.examsCreatedThisMonth ?? 0}
                   <span className="text-muted-foreground text-lg font-normal">
                     {' '}
                     / {formatNumber(limits.maxExamsPerMonth)}
@@ -275,20 +279,23 @@ export default function SubscriptionPage() {
                 {limitsReached.exams && <Badge variant="destructive">{t('limitReached')}</Badge>}
               </div>
               <Progress
-                value={calculatePercentage(usage.examsCreatedThisMonth, limits.maxExamsPerMonth)}
+                value={calculatePercentage(
+                  usage.examsCreatedThisMonth ?? 0,
+                  limits.maxExamsPerMonth
+                )}
                 className={cn(
                   limitsReached.exams
                     ? 'bg-red-100'
-                    : usage.examsCreatedThisMonth >= (limits.maxExamsPerMonth || 0) - 2
+                    : (usage.examsCreatedThisMonth ?? 0) >= (limits.maxExamsPerMonth || 0) - 2
                       ? 'bg-amber-100'
                       : ''
                 )}
               />
               {limits.maxExamsPerMonth !== null &&
-                usage.examsCreatedThisMonth >= limits.maxExamsPerMonth - 2 && (
+                (usage.examsCreatedThisMonth ?? 0) >= limits.maxExamsPerMonth - 2 && (
                   <p className="text-xs text-amber-600 mt-2">
                     {t('warnings.exams', {
-                      remaining: limits.maxExamsPerMonth - usage.examsCreatedThisMonth,
+                      remaining: limits.maxExamsPerMonth - (usage.examsCreatedThisMonth ?? 0),
                     })}
                   </p>
                 )}
