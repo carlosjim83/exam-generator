@@ -255,5 +255,40 @@
     },
     "exportSuccess": "Resultados exportados como {{format}}",
     "exportError": "Error al exportar resultados"
+  },
+  "studentSubmissionDetail": {
+    "backToResults": "Volver a Resultados",
+    "title": "Entrega del Estudiante",
+    "subtitle": "Vista detallada de la entrega del examen",
+    "studentInfo": "Información del Estudiante",
+    "name": "Nombre",
+    "email": "Correo",
+    "status": "Estado",
+    "status.submitted": "Enviado",
+    "status.graded": "Calificado",
+    "status.inProgress": "En Progreso",
+    "status.notStarted": "No Iniciado",
+    "startedAt": "Iniciado El",
+    "submittedAt": "Enviado El",
+    "scoreSummary": "Resumen de Puntuación",
+    "points": "puntos",
+    "correctAnswers": "Respuestas Correctas",
+    "totalQuestions": "Total de Preguntas",
+    "questionsBreakdown": "Desglose de Preguntas",
+    "questionsDescription": "Revisa cada pregunta y la respuesta del estudiante",
+    "question": "Pregunta",
+    "questionTypes": {
+      "multipleChoice": "Opción Múltiple",
+      "trueFalse": "Verdadero/Falso",
+      "shortAnswer": "Respuesta Corta"
+    },
+    "correct": "Correcta",
+    "studentAnswer": "Respuesta del Estudiante",
+    "correctAnswer": "Respuesta Correcta",
+    "noAnswer": "Sin respuesta",
+    "anyReasonableAnswer": "Cualquier respuesta razonable",
+    "feedback": "Comentarios",
+    "loadError": "Error al cargar los detalles de la entrega",
+    "errorLoading": "Error al cargar los detalles"
   }
 }
