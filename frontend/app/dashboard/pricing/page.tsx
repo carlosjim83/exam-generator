@@ -85,54 +85,48 @@ export default function PricingPage() {
 
     // Classes
     if (limits.maxClasses === null) {
-      features.push(t('feature.unlimitedClasses'));
+      features.push(t('unlimitedClasses'));
     } else {
-      features.push(t('feature.activeClasses', { count: limits.maxClasses }));
+      features.push(t('activeClasses', { count: limits.maxClasses }));
     }
 
     // Students
     if (limits.maxStudents === null) {
-      features.push(t('feature.unlimitedStudents'));
+      features.push(t('unlimitedStudents'));
     } else {
-      features.push(t('feature.maxStudents', { count: limits.maxStudents }));
+      features.push(t('maxStudents', { count: limits.maxStudents }));
     }
 
     // Exams
     if (limits.maxExamsPerMonth === null) {
-      features.push(t('feature.unlimitedExams'));
+      features.push(t('unlimitedExams'));
     } else {
-      features.push(t('feature.maxExams', { count: limits.maxExamsPerMonth }));
+      features.push(t('maxExams', { count: limits.maxExamsPerMonth }));
     }
 
     // Questions
     if (limits.maxQuestionsPerExam === null) {
-      features.push(t('feature.unlimitedQuestions'));
+      features.push(t('unlimitedQuestions'));
     } else {
-      features.push(t('feature.maxQuestions', { count: limits.maxQuestionsPerExam }));
+      features.push(t('maxQuestions', { count: limits.maxQuestionsPerExam }));
     }
 
     // Analytics
     features.push(
-      limits.analyticsLevel === 'ADVANCED'
-        ? t('feature.advancedAnalytics')
-        : t('feature.basicAnalytics')
+      limits.analyticsLevel === 'ADVANCED' ? t('advancedAnalytics') : t('basicAnalytics')
     );
 
     // Support
-    features.push(
-      limits.supportLevel === 'PRIORITY' ? t('feature.prioritySupport') : t('feature.emailSupport')
-    );
+    features.push(limits.supportLevel === 'PRIORITY' ? t('prioritySupport') : t('emailSupport'));
 
     // Pro-only features
     if (tier === 'PRO') {
-      features.push(t('feature.removeBranding'));
-      features.push(
-        limits.aiModel === 'GPT_4O' ? t('feature.advancedAI') : t('feature.standardAI')
-      );
-      features.push(t('feature.exportResults'));
-      features.push(t('feature.examTemplates'));
+      features.push(t('removeBranding'));
+      features.push(limits.aiModel === 'GPT_4O' ? t('advancedAI') : t('standardAI'));
+      features.push(t('exportResults'));
+      features.push(t('examTemplates'));
     } else {
-      features.push(t('feature.standardAI'));
+      features.push(t('standardAI'));
     }
 
     return features;
