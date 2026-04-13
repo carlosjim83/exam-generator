@@ -16,6 +16,7 @@ describe('SubmitExamAnswersUseCase', () => {
   let mockAssignmentRepo: IExamAssignmentRepository;
   let mockExamRepo: IExamRepository;
   let mockAnswerRepo: IStudentAnswerRepository;
+  let mockGradingService: { gradeAnswer: ReturnType<typeof vi.fn> };
 
   const studentId = '550e8400-e29b-41d4-a716-446655440001';
   const teacherId = '550e8400-e29b-41d4-a716-446655440002';
@@ -53,9 +54,19 @@ describe('SubmitExamAnswersUseCase', () => {
       findByQuestion: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      upsert: vi.fn(),
     } as any;
 
-    useCase = new SubmitExamAnswersUseCase(mockAssignmentRepo, mockAnswerRepo, mockExamRepo);
+    mockGradingService = {
+      gradeAnswer: vi.fn().mockResolvedValue({ isCorrect: false, score: 0 }),
+    };
+
+    useCase = new SubmitExamAnswersUseCase(
+      mockAssignmentRepo,
+      mockAnswerRepo,
+      mockExamRepo,
+      mockGradingService as any
+    );
   });
 
   describe('🔴 RED: Error cases', () => {
@@ -274,12 +285,12 @@ describe('SubmitExamAnswersUseCase', () => {
         updatedAt: new Date(),
       });
 
-      const submittedAssignment = ExamAssignment.create({
+      const gradedAssignment = ExamAssignment.create({
         id: AssignmentId.create(assignmentId),
         examId,
         studentId: UserId.create(studentId),
         teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.SUBMITTED,
+        status: ExamAssignmentStatus.GRADED,
         dueDate: null,
         startedAt: new Date(),
         submittedAt: new Date(),
@@ -291,8 +302,8 @@ describe('SubmitExamAnswersUseCase', () => {
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
       vi.mocked(mockExamRepo.findByIdWithQuestions).mockResolvedValue(exam);
-      vi.mocked(mockAssignmentRepo.update).mockResolvedValue(submittedAssignment);
-      vi.mocked(mockAnswerRepo.create).mockResolvedValue(null as any);
+      vi.mocked(mockAssignmentRepo.update).mockResolvedValue(gradedAssignment);
+      vi.mocked(mockAnswerRepo.upsert).mockResolvedValue(null as any);
 
       // Act
       const result = await useCase.execute({
@@ -306,13 +317,13 @@ describe('SubmitExamAnswersUseCase', () => {
       });
 
       // Assert
-      expect(result.status).toBe('SUBMITTED');
+      expect(result.status).toBe('GRADED');
       expect(result.submittedAt).toBeDefined();
       expect(result.score).toBe(10); // Only MC questions auto-graded
-      expect(mockAnswerRepo.create).toHaveBeenCalledTimes(3);
+      expect(mockAnswerRepo.upsert).toHaveBeenCalledTimes(3);
       expect(mockAssignmentRepo.update).toHaveBeenCalledWith(
         expect.objectContaining({
-          status: ExamAssignmentStatus.SUBMITTED,
+          status: ExamAssignmentStatus.GRADED,
         })
       );
     });
@@ -375,7 +386,7 @@ describe('SubmitExamAnswersUseCase', () => {
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
       vi.mocked(mockExamRepo.findByIdWithQuestions).mockResolvedValue(exam);
       vi.mocked(mockAssignmentRepo.update).mockResolvedValue(submittedAssignment);
-      vi.mocked(mockAnswerRepo.create).mockResolvedValue(null as any);
+      vi.mocked(mockAnswerRepo.upsert).mockResolvedValue(null as any);
 
       // Act
       const result = await useCase.execute({
@@ -416,12 +427,12 @@ describe('SubmitExamAnswersUseCase', () => {
         updatedAt: new Date(),
       });
 
-      const submittedAssignment = ExamAssignment.create({
+      const gradedAssignment = ExamAssignment.create({
         id: AssignmentId.create(assignmentId),
         examId,
         studentId: UserId.create(studentId),
         teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.SUBMITTED,
+        status: ExamAssignmentStatus.GRADED,
         dueDate: null,
         startedAt: new Date(),
         submittedAt: new Date(),
@@ -433,7 +444,7 @@ describe('SubmitExamAnswersUseCase', () => {
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
       vi.mocked(mockExamRepo.findByIdWithQuestions).mockResolvedValue(exam);
-      vi.mocked(mockAssignmentRepo.update).mockResolvedValue(submittedAssignment);
+      vi.mocked(mockAssignmentRepo.update).mockResolvedValue(gradedAssignment);
 
       // Act
       const result = await useCase.execute({
@@ -443,9 +454,9 @@ describe('SubmitExamAnswersUseCase', () => {
       });
 
       // Assert
-      expect(result.status).toBe('SUBMITTED');
+      expect(result.status).toBe('GRADED');
       expect(result.score).toBe(0);
-      expect(mockAnswerRepo.create).not.toHaveBeenCalled();
+      expect(mockAnswerRepo.upsert).not.toHaveBeenCalled();
     });
   });
 });
