@@ -122,11 +122,7 @@ export class PrismaExamRepository implements IExamRepository {
 
     if (!exam) return null;
 
-    // Ensure questions is always an array
-    const questions = exam.questions || [];
-    console.log(`[PrismaExamRepository] Loaded exam ${id} with ${questions.length} questions`);
-
-    return this.toDomain(exam, questions);
+    return this.toDomain(exam, exam.questions || []);
   }
 
   /**

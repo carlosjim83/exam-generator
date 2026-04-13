@@ -28,16 +28,6 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
   const { results, loading, error, score, maxScore, percentage, status, refetch } =
     useExamResults(assignmentId);
 
-  // Debug logging
-  console.log('[ExamResults] Component received:', {
-    results,
-    exam: results?.exam,
-    questions: results?.exam?.questions,
-    questionsLength: results?.exam?.questions?.length,
-    answers: results?.answers,
-    answersLength: results?.answers?.length,
-  });
-
   // Calculate statistics
   const stats = useMemo(() => {
     if (!results?.answers) return { correct: 0, incorrect: 0 };

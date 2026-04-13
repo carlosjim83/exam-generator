@@ -10,8 +10,17 @@ export interface GetAssignedExamsInput {
   status?: 'PENDING' | 'IN_PROGRESS' | 'SUBMITTED' | 'GRADED' | 'ALL';
 }
 
+export interface StudentExamListItem {
+  assignment: ExamAssignment;
+  examId: string;
+  examTitle: string;
+  examDescription: string | null;
+  questionCount: number;
+  maxScore: number;
+}
+
 export interface GetAssignedExamsOutput {
-  assignments: ExamAssignment[];
+  assignments: StudentExamListItem[];
   total: number;
 }
 
@@ -32,11 +41,20 @@ export class GetAssignedExamsUseCase {
       filters.status = input.status as ExamAssignmentStatus;
     }
 
-    const assignments = await this.assignmentRepo.findAll(filters);
+    const assignmentsWithExam = await this.assignmentRepo.findAllWithExam(filters);
+
+    const studentExamList: StudentExamListItem[] = assignmentsWithExam.map((item) => ({
+      assignment: item.assignment,
+      examId: item.exam.id,
+      examTitle: item.exam.title,
+      examDescription: item.exam.description,
+      questionCount: item.exam.questionCount,
+      maxScore: item.exam.maxScore,
+    }));
 
     return {
-      assignments,
-      total: assignments.length,
+      assignments: studentExamList,
+      total: studentExamList.length,
     };
   }
 }

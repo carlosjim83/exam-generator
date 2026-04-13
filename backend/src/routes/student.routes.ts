@@ -197,11 +197,14 @@ export async function studentRoutes(fastify: FastifyInstance) {
                   properties: {
                     id: { type: 'string' },
                     examId: { type: 'string' },
+                    examTitle: { type: 'string' },
+                    examDescription: { type: 'string', nullable: true },
                     status: { type: 'string' },
-                    dueDate: { type: 'string' },
-                    startedAt: { type: 'string' },
-                    submittedAt: { type: 'string' },
-                    score: { type: 'number' },
+                    questionCount: { type: 'number' },
+                    maxScore: { type: 'number' },
+                    score: { type: 'number', nullable: true },
+                    startedAt: { type: 'string', nullable: true },
+                    submittedAt: { type: 'string', nullable: true },
                     createdAt: { type: 'string' },
                   },
                 },
@@ -248,8 +251,20 @@ export async function studentRoutes(fastify: FastifyInstance) {
           status: query.status as any,
         });
 
-        // Convert entities to plain objects for serialization
-        const assignments = result.assignments.map((assignment) => assignment.toObject());
+        // Convert to plain objects for serialization
+        const assignments = result.assignments.map((item) => ({
+          id: item.assignment.id.value,
+          examId: item.examId,
+          examTitle: item.examTitle,
+          examDescription: item.examDescription,
+          status: item.assignment.status,
+          questionCount: item.questionCount,
+          maxScore: item.maxScore,
+          score: item.assignment.score,
+          startedAt: item.assignment.startedAt?.toISOString() || null,
+          submittedAt: item.assignment.submittedAt?.toISOString() || null,
+          createdAt: item.assignment.createdAt.toISOString(),
+        }));
 
         return reply.status(200).send({
           assignments,
@@ -843,20 +858,6 @@ export async function studentRoutes(fastify: FastifyInstance) {
           studentId: (request as any).user.userId,
         });
 
-        // Debug logging - check what we're sending
-        const mappedQuestions =
-          result.exam.questions?.map((q) => ({
-            id: q.id,
-            text: q.questionText,
-            order: q.orderIndex,
-            type: q.type,
-            options: q.options,
-          })) || [];
-        console.log(
-          `[GetExamResults] Mapping ${result.exam.questions?.length || 0} questions to ${mappedQuestions.length} mapped questions`
-        );
-        console.log(`[GetExamResults] First question sample:`, mappedQuestions[0]);
-
         // Transform the use case result to match frontend expectations
         // Map QuestionResult[] to StudentAnswer[] format
         const answers = result.results.map((r) => ({
@@ -868,6 +869,16 @@ export async function studentRoutes(fastify: FastifyInstance) {
           updatedAt: r.studentAnswer?.updatedAt?.toISOString() || new Date().toISOString(),
         }));
 
+        // Map questions for frontend
+        const mappedQuestions =
+          result.exam.questions?.map((q) => ({
+            id: q.id,
+            text: q.questionText,
+            order: q.orderIndex,
+            type: q.type,
+            options: q.options,
+          })) || [];
+
         // Calculate score and percentage
         const maxScore = result.results.reduce((sum, r) => sum + (r.question.points || 0), 0);
         const score = result.results
@@ -875,7 +886,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
           .reduce((sum, r) => sum + (r.question.points || 0), 0);
         const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
 
-        const responsePayload = {
+        return reply.status(200).send({
           assignment: result.assignment.toObject(),
           exam: {
             id: result.exam.id,
@@ -890,16 +901,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
           score,
           maxScore,
           percentage,
-        };
-        console.log(
-          '[GetExamResults] Sending response with exam.questions length:',
-          responsePayload.exam.questions.length
-        );
-        console.log(
-          '[GetExamResults] Response payload exam:',
-          JSON.stringify(responsePayload.exam, null, 2)
-        );
-        return reply.status(200).send(responsePayload);
+        });
       } catch (error: any) {
         fastify.log.error('Get exam results error:', error);
 

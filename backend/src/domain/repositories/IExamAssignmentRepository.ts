@@ -17,6 +17,17 @@ export interface FindAssignmentsFilters {
   status?: ExamAssignmentStatus;
 }
 
+export interface AssignmentWithExam {
+  assignment: ExamAssignment;
+  exam: {
+    id: string;
+    title: string;
+    description: string | null;
+    questionCount: number;
+    maxScore: number;
+  };
+}
+
 /**
  * IExamAssignmentRepository Interface (Port)
  * Defines operations for ExamAssignment persistence
@@ -27,6 +38,8 @@ export interface IExamAssignmentRepository {
   findByExamAndStudent(examId: string, studentId: UserId): Promise<ExamAssignment | null>;
 
   findAll(filters: FindAssignmentsFilters): Promise<ExamAssignment[]>;
+
+  findAllWithExam(filters: FindAssignmentsFilters): Promise<AssignmentWithExam[]>;
 
   findByClassExamId(classExamId: ClassExamId): Promise<ExamAssignment[]>;
 
