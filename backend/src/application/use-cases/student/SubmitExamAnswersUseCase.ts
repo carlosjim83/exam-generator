@@ -57,6 +57,7 @@ export class SubmitExamAnswersUseCase {
 
     // Process answers and calculate score
     let totalScore = 0;
+    let hasUngradedQuestions = false;
     for (const answerInput of input.answers) {
       const question = exam.questions?.find((q) => q.id === answerInput.questionId);
       if (!question) continue;
@@ -72,10 +73,20 @@ export class SubmitExamAnswersUseCase {
       });
 
       totalScore += score;
+
+      // Track if there are questions that need manual grading
+      if (question.type === 'SHORT_ANSWER' && isCorrect === null) {
+        hasUngradedQuestions = true;
+      }
     }
 
     // Submit assignment with score
-    const submittedAssignment = assignment.submit(totalScore);
+    let submittedAssignment = assignment.submit(totalScore);
+
+    // If all questions are auto-graded, mark as GRADED immediately
+    if (!hasUngradedQuestions) {
+      submittedAssignment = submittedAssignment.markAsGraded();
+    }
 
     // Persist
     const updated = await this.assignmentRepo.update(submittedAssignment);

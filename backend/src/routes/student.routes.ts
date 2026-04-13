@@ -197,11 +197,14 @@ export async function studentRoutes(fastify: FastifyInstance) {
                   properties: {
                     id: { type: 'string' },
                     examId: { type: 'string' },
+                    examTitle: { type: 'string' },
+                    examDescription: { type: 'string', nullable: true },
                     status: { type: 'string' },
-                    dueDate: { type: 'string' },
-                    startedAt: { type: 'string' },
-                    submittedAt: { type: 'string' },
-                    score: { type: 'number' },
+                    questionCount: { type: 'number' },
+                    maxScore: { type: 'number' },
+                    score: { type: 'number', nullable: true },
+                    startedAt: { type: 'string', nullable: true },
+                    submittedAt: { type: 'string', nullable: true },
                     createdAt: { type: 'string' },
                   },
                 },
@@ -248,8 +251,20 @@ export async function studentRoutes(fastify: FastifyInstance) {
           status: query.status as any,
         });
 
-        // Convert entities to plain objects for serialization
-        const assignments = result.assignments.map((assignment) => assignment.toObject());
+        // Convert to plain objects for serialization
+        const assignments = result.assignments.map((item) => ({
+          id: item.assignment.id.value,
+          examId: item.examId,
+          examTitle: item.examTitle,
+          examDescription: item.examDescription,
+          status: item.assignment.status,
+          questionCount: item.questionCount,
+          maxScore: item.maxScore,
+          score: item.assignment.score,
+          startedAt: item.assignment.startedAt?.toISOString() || null,
+          submittedAt: item.assignment.submittedAt?.toISOString() || null,
+          createdAt: item.assignment.createdAt.toISOString(),
+        }));
 
         return reply.status(200).send({
           assignments,
@@ -748,21 +763,42 @@ export async function studentRoutes(fastify: FastifyInstance) {
                 properties: {
                   id: { type: 'string' },
                   title: { type: 'string' },
+                  description: { type: 'string', nullable: true },
+                  documentId: { type: 'string' },
+                  createdBy: { type: 'string' },
+                  createdAt: { type: 'string' },
+                  questions: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        text: { type: 'string' },
+                        order: { type: 'number' },
+                        type: { type: 'string' },
+                        options: { type: 'array', items: { type: 'string' } },
+                      },
+                    },
+                  },
                 },
               },
-              results: {
+              answers: {
                 type: 'array',
                 items: {
                   type: 'object',
                   properties: {
-                    question: { type: 'object' },
-                    studentAnswer: { type: 'object' },
-                    isCorrect: { type: 'boolean' },
-                    correctAnswer: { type: 'string' },
-                    explanation: { type: 'string' },
+                    id: { type: 'string' },
+                    questionId: { type: 'string' },
+                    answer: { type: 'string' },
+                    isCorrect: { type: 'boolean', nullable: true },
+                    createdAt: { type: 'string' },
+                    updatedAt: { type: 'string' },
                   },
                 },
               },
+              score: { type: 'number' },
+              maxScore: { type: 'number' },
+              percentage: { type: 'number' },
             },
           },
           400: {
@@ -833,6 +869,16 @@ export async function studentRoutes(fastify: FastifyInstance) {
           updatedAt: r.studentAnswer?.updatedAt?.toISOString() || new Date().toISOString(),
         }));
 
+        // Map questions for frontend
+        const mappedQuestions =
+          result.exam.questions?.map((q) => ({
+            id: q.id,
+            text: q.questionText,
+            order: q.orderIndex,
+            type: q.type,
+            options: q.options,
+          })) || [];
+
         // Calculate score and percentage
         const maxScore = result.results.reduce((sum, r) => sum + (r.question.points || 0), 0);
         const score = result.results
@@ -849,11 +895,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
             documentId: result.exam.generatedFrom[0] || '',
             createdBy: result.exam.userId,
             createdAt: result.exam.createdAt.toISOString(),
-            questions: result.exam.questions?.map((q) => ({
-              id: q.id,
-              text: q.questionText,
-              order: q.orderIndex,
-            })),
+            questions: mappedQuestions,
           },
           answers,
           score,

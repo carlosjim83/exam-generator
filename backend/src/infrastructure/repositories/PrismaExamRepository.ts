@@ -122,7 +122,7 @@ export class PrismaExamRepository implements IExamRepository {
 
     if (!exam) return null;
 
-    return this.toDomain(exam, exam.questions);
+    return this.toDomain(exam, exam.questions || []);
   }
 
   /**

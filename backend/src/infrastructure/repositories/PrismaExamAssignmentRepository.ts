@@ -65,6 +65,62 @@ export class PrismaExamAssignmentRepository implements IExamAssignmentRepository
     return assignments.map((a: any) => this.toDomain(a));
   }
 
+  async findAllWithExam(
+    filters: FindAssignmentsFilters
+  ): Promise<
+    {
+      assignment: ExamAssignment;
+      exam: {
+        id: string;
+        title: string;
+        description: string | null;
+        questionCount: number;
+        maxScore: number;
+      };
+    }[]
+  > {
+    const where: any = {};
+
+    if (filters.studentId) {
+      where.studentId = filters.studentId.value;
+    }
+
+    if (filters.teacherId) {
+      where.teacherId = filters.teacherId.value;
+    }
+
+    if (filters.status) {
+      where.status = filters.status;
+    }
+
+    const assignments = await this.prisma.examAssignment.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        exam: {
+          include: {
+            _count: { select: { questions: true } },
+            questions: { select: { points: true } },
+          },
+        },
+      },
+    });
+
+    return assignments.map((a: any) => {
+      const maxScore = a.exam.questions.reduce((sum: number, q: any) => sum + (q.points || 0), 0);
+      return {
+        assignment: this.toDomain(a),
+        exam: {
+          id: a.exam.id,
+          title: a.exam.title,
+          description: a.exam.description,
+          questionCount: a.exam._count.questions,
+          maxScore,
+        },
+      };
+    });
+  }
+
   async findByClassExamId(classExamId: ClassExamId): Promise<ExamAssignment[]> {
     const assignments = await this.prisma.examAssignment.findMany({
       where: { classExamId: classExamId.value },

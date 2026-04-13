@@ -79,6 +79,7 @@ frontend/
 ### Key Path Aliases (Backend)
 
 Use these instead of relative imports:
+
 - `@domain/*` → `src/domain/*`
 - `@application/*` → `src/application/*`
 - `@infrastructure/*` → `src/infrastructure/*`
@@ -87,25 +88,27 @@ Use these instead of relative imports:
 
 ### Key API Routes
 
-| Base Path | Description |
-|-----------|-------------|
-| `/auth` | Local auth (register, login, refresh) |
-| `/auth/oauth` | Google OAuth |
-| `/documents` | Document upload, processing |
-| `/exams` | Exam generation |
-| `/classes` | Classes, invitations, enrollments |
-| `/students` | Student exams, answers |
-| `/dashboard` | Statistics |
+| Base Path     | Description                           |
+| ------------- | ------------------------------------- |
+| `/auth`       | Local auth (register, login, refresh) |
+| `/auth/oauth` | Google OAuth                          |
+| `/documents`  | Document upload, processing           |
+| `/exams`      | Exam generation                       |
+| `/classes`    | Classes, invitations, enrollments     |
+| `/students`   | Student exams, answers                |
+| `/dashboard`  | Statistics                            |
 
 ## Development Rules (from AGENTS.md)
 
 ### NEVER do:
+
 - Commit directly to `main`
 - Mix backend and frontend in one PR
 - Use relative imports in backend (use path aliases)
 - Hardcode URLs or secrets
 
 ### ALWAYS do:
+
 - Create feature branches: `feature/description`, `fix/description`
 - Follow conventional commits: `feat(scope): message`, `fix(scope): message`
 - Run `pnpm validate` before pushing
@@ -113,6 +116,7 @@ Use these instead of relative imports:
 - Create separate PRs for backend and frontend
 
 ### Feature Development Workflow
+
 1. Write spec in `docs/specs/`
 2. Create backend branch: `feature/xxx-backend`
 3. Create frontend branch: `feature/xxx-frontend`
@@ -120,7 +124,9 @@ Use these instead of relative imports:
 5. Each PR should be independently reviewable
 
 ### Docker Image Tagging
+
 Use specific tags, not `latest`:
+
 ```yaml
 image: ghcr.io/user/app:main-abc1234
 ```
@@ -128,6 +134,7 @@ image: ghcr.io/user/app:main-abc1234
 ## Environment Variables
 
 Copy from examples:
+
 - `backend/.env.example` → `backend/.env`
 
 Required: `DATABASE_URL`, `AZURE_OPENAI_*`, `REDIS_*`, `JWT_SECRET`, `JWT_REFRESH_SECRET`
@@ -135,6 +142,7 @@ Required: `DATABASE_URL`, `AZURE_OPENAI_*`, `REDIS_*`, `JWT_SECRET`, `JWT_REFRES
 ## Database
 
 Prisma schema is in `backend/prisma/schema.prisma`. Run migrations after schema changes:
+
 ```bash
 pnpm --filter backend prisma migrate dev
 ```
@@ -142,6 +150,7 @@ pnpm --filter backend prisma migrate dev
 ## Testing
 
 The project uses TDD. Tests are co-located with components:
+
 - Backend: `backend/tests/`
 - Frontend: `frontend/features/*/__tests__/`
 
@@ -152,3 +161,62 @@ The project uses TDD. Tests are co-located with components:
 - API Docs: http://localhost:3001/documentation
 - PostgreSQL: localhost:5432
 - Redis: localhost:6379
+
+## Critical Gotchas
+
+### Fastify Response Schema Filtering
+
+**⚠️ CRITICAL**: Fastify uses `fast-json-stringify` which **filters out any properties not defined in the response schema**. This is a common source of bugs.
+
+**Symptom**: Backend logs show 10 questions, frontend receives empty array. Backend sends `{exam: {id, title, questions: [...]}}`, frontend receives `{exam: {id, title}}`.
+
+**Cause**: The `schema.response.200.properties` doesn't include all fields being sent.
+
+**Fix**: When adding fields to API responses, **ALWAYS** update the Fastify schema:
+
+```typescript
+// backend/src/routes/some.routes.ts
+fastify.get(
+  '/api/endpoint',
+  {
+    schema: {
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            // ❌ WRONG: Missing 'questions' will be filtered out
+            exam: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                title: { type: 'string' },
+              },
+            },
+            // ✅ CORRECT: All fields explicitly defined
+            exam: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                title: { type: 'string' },
+                questions: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string' },
+                      text: { type: 'string' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  handler
+);
+```
+
+**Rule**: If you add a field to a response, you MUST add it to the schema. Fastify does not allow extra properties by default.
