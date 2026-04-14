@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { StartExamUseCase } from '@application/use-cases/student/StartExamUseCase.js';
 import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
 import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -8,6 +9,7 @@ import { UserId } from '@domain/value-objects/UserId.js';
 describe('StartExamUseCase', () => {
   let useCase: StartExamUseCase;
   let mockAssignmentRepo: IExamAssignmentRepository;
+  let mockExamRepo: IExamRepository;
 
   const studentId = '550e8400-e29b-41d4-a716-446655440001';
   const differentStudentId = '550e8400-e29b-41d4-a716-446655440099';
@@ -26,7 +28,18 @@ describe('StartExamUseCase', () => {
       findAll: vi.fn(),
     } as any;
 
-    useCase = new StartExamUseCase(mockAssignmentRepo);
+    mockExamRepo = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findByIdWithQuestions: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      findAll: vi.fn(),
+      findByUserId: vi.fn(),
+      countByUserId: vi.fn(),
+    } as any;
+
+    useCase = new StartExamUseCase(mockAssignmentRepo, mockExamRepo);
   });
 
   describe('🔴 RED: Error cases', () => {
@@ -68,10 +81,10 @@ describe('StartExamUseCase', () => {
           assignmentId,
           studentId,
         })
-      ).rejects.toThrow('You can only start your own assignments');
+      ).rejects.toThrow('You can only access your own assignments');
     });
 
-    it('should throw error if assignment is not in PENDING status', async () => {
+    it('should resume exam if already IN_PROGRESS', async () => {
       // Arrange
       const assignment = ExamAssignment.create({
         id: AssignmentId.create(assignmentId),
@@ -88,15 +101,25 @@ describe('StartExamUseCase', () => {
         updatedAt: new Date(),
       });
 
-      vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
+      const mockExam = {
+        id: examId,
+        title: 'Test Exam',
+        description: 'Test Description',
+        questions: [],
+      };
 
-      // Act & Assert
-      await expect(
-        useCase.execute({
-          assignmentId,
-          studentId,
-        })
-      ).rejects.toThrow('Cannot start assignment with status IN_PROGRESS');
+      vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam as any);
+
+      // Act
+      const result = await useCase.execute({
+        assignmentId,
+        studentId,
+      });
+
+      // Assert - should return the existing assignment without updating
+      expect(result.assignment.status).toBe('IN_PROGRESS');
+      expect(mockAssignmentRepo.update).not.toHaveBeenCalled();
     });
 
     it('should throw error if assignment is already submitted', async () => {
@@ -116,7 +139,15 @@ describe('StartExamUseCase', () => {
         updatedAt: new Date(),
       });
 
+      const mockExam = {
+        id: examId,
+        title: 'Test Exam',
+        description: 'Test Description',
+        questions: [],
+      };
+
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam as any);
 
       // Act & Assert
       await expect(
@@ -124,7 +155,7 @@ describe('StartExamUseCase', () => {
           assignmentId,
           studentId,
         })
-      ).rejects.toThrow('Cannot start assignment with status SUBMITTED');
+      ).rejects.toThrow('This exam has already been completed. Status: SUBMITTED');
     });
   });
 
@@ -161,8 +192,16 @@ describe('StartExamUseCase', () => {
         updatedAt: new Date(),
       });
 
+      const mockExam = {
+        id: examId,
+        title: 'Test Exam',
+        description: 'Test Description',
+        questions: [],
+      };
+
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(pendingAssignment);
       vi.mocked(mockAssignmentRepo.update).mockResolvedValue(startedAssignment);
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam as any);
 
       // Act
       const result = await useCase.execute({
@@ -171,9 +210,9 @@ describe('StartExamUseCase', () => {
       });
 
       // Assert
-      expect(result.status).toBe('IN_PROGRESS');
-      expect(result.startedAt).toBeDefined();
-      expect(result.startedAt).toBeInstanceOf(Date);
+      expect(result.assignment.status).toBe('IN_PROGRESS');
+      expect(result.assignment.startedAt).toBeDefined();
+      expect(result.assignment.startedAt).toBeInstanceOf(Date);
       expect(mockAssignmentRepo.update).toHaveBeenCalledWith(
         expect.objectContaining({
           status: ExamAssignmentStatus.IN_PROGRESS,
@@ -216,8 +255,16 @@ describe('StartExamUseCase', () => {
         updatedAt: new Date(),
       });
 
+      const mockExam = {
+        id: examId,
+        title: 'Test Exam',
+        description: 'Test Description',
+        questions: [],
+      };
+
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(pendingAssignment);
       vi.mocked(mockAssignmentRepo.update).mockResolvedValue(startedAssignment);
+      vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam as any);
 
       // Act
       const result = await useCase.execute({
@@ -226,9 +273,9 @@ describe('StartExamUseCase', () => {
       });
 
       // Assert
-      expect(result.examId).toBe(examId);
-      expect(result.studentId.value).toBe(studentId);
-      expect(result.dueDate).toEqual(dueDate);
+      expect(result.assignment.examId).toBe(examId);
+      expect(result.assignment.studentId.value).toBe(studentId);
+      expect(result.assignment.dueDate).toEqual(dueDate);
     });
   });
 });

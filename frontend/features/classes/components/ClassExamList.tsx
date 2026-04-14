@@ -153,11 +153,11 @@ export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
                   {exam.isPublished && (
                     <div className="flex items-center gap-4 text-xs text-muted-foreground mt-2">
                       <span>
-                        {exam.startedCount ?? 0}/{exam.assignedStudents}{' '}
+                        {exam.startedCount ?? 0}/{exam.assignedCount}{' '}
                         {t('classExams.stats.started')}
                       </span>
                       <span>
-                        {exam.submittedCount ?? 0}/{exam.assignedStudents}{' '}
+                        {exam.submittedCount ?? 0}/{exam.assignedCount}{' '}
                         {t('classExams.stats.submitted')}
                       </span>
                       {(exam.gradedCount ?? 0) > 0 && (
@@ -172,17 +172,19 @@ export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
                 {/* Actions */}
                 <div className="flex items-center gap-2">
                   {/* View Results - only for published exams with submissions */}
-                  {exam.isPublished && (exam.submittedCount ?? 0) > 0 && onViewResults && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onViewResults(exam.id)}
-                      className="text-purple-600 hover:text-purple-700"
-                    >
-                      <BarChart3 className="h-4 w-4 mr-1" />
-                      {t('classExams.actions.viewResults')}
-                    </Button>
-                  )}
+                  {exam.isPublished &&
+                    ((exam.submittedCount ?? 0) > 0 || (exam.gradedCount ?? 0) > 0) &&
+                    onViewResults && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onViewResults(exam.id)}
+                        className="text-purple-600 hover:text-purple-700"
+                      >
+                        <BarChart3 className="h-4 w-4 mr-1" />
+                        {t('classExams.actions.viewResults')}
+                      </Button>
+                    )}
 
                   {/* Publish/Unpublish */}
                   <PublishDialog

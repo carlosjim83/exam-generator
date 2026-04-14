@@ -18,6 +18,7 @@ export interface GetExamOutput {
     title: string;
     description?: string;
     questionCount: number;
+    documentCount: number;
     createdAt: Date;
     updatedAt: Date;
   };
@@ -58,6 +59,7 @@ export class GetExamUseCase {
         title: exam.title,
         description: exam.description,
         questionCount: exam.questionCount,
+        documentCount: exam.generatedFrom.length,
         createdAt: exam.createdAt,
         updatedAt: exam.updatedAt,
       },

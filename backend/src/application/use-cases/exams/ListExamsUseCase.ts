@@ -16,6 +16,7 @@ export interface ListExamsOutput {
     title: string;
     description?: string;
     questionCount: number;
+    documentCount: number;
     createdAt: Date;
   }[];
   total: number;
@@ -35,6 +36,7 @@ export class ListExamsUseCase {
         title: exam.title,
         description: exam.description,
         questionCount: exam.questionCount,
+        documentCount: exam.generatedFrom.length,
         createdAt: exam.createdAt,
       })),
       total: exams.length,

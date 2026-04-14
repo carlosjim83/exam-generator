@@ -98,7 +98,7 @@ export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelect
                     }
                   `}
                 >
-                  {t('common.clickToContinue')}
+                  {t('clickToContinue')}
                 </div>
               </div>
             </button>
@@ -152,7 +152,7 @@ export function RoleSelectionModal({ isOpen, onClose, onSelectRole }: RoleSelect
                     }
                   `}
                 >
-                  {t('common.clickToContinue')}
+                  {t('clickToContinue')}
                 </div>
               </div>
             </button>

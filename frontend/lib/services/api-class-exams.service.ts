@@ -26,7 +26,7 @@ export interface ClassExam {
   isPublished: boolean;
   maxAttempts: number;
   showResultsImmediately: boolean;
-  assignedStudents: number;
+  assignedCount: number;
   startedCount?: number;
   submittedCount?: number;
   gradedCount?: number;

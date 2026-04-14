@@ -5,9 +5,12 @@ import { existsSync } from 'fs';
 
 // Load .env.test FIRST (it overrides DATABASE_URL for tests)
 // Then load .env for other variables that .env.test doesn't define
+// In CI, respect existing env vars (don't override)
+const isCI = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
 const envTestPath = path.resolve(__dirname, '.env.test');
 if (existsSync(envTestPath)) {
-  dotenv.config({ path: envTestPath, override: true });
+  // In CI, don't override existing env vars (respect CI's DATABASE_URL)
+  dotenv.config({ path: envTestPath, override: !isCI });
 }
 dotenv.config({ path: path.resolve(__dirname, '.env'), override: false });
 
