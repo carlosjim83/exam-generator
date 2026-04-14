@@ -119,8 +119,8 @@ describe('StudentExamAPIService', () => {
     });
   });
 
-  describe('submitAnswer', () => {
-    it('should submit an answer to a question', async () => {
+  describe('saveAnswer', () => {
+    it('should save an answer to a question', async () => {
       // ARRANGE
       const mockResponse: SubmitAnswerResponse = {
         answer: {
@@ -136,12 +136,16 @@ describe('StudentExamAPIService', () => {
       vi.mocked(apiClient.post).mockResolvedValueOnce(mockResponse);
 
       // ACT
-      const result = await service.submitAnswer('assignment-1', 'q1', '4');
+      const result = await service.saveAnswer('assignment-1', 'q1', '4');
 
       // ASSERT
-      expect(apiClient.post).toHaveBeenCalledWith('/api/students/assignments/assignment-1/submit', {
-        answers: [{ questionId: 'q1', answerText: '4' }],
-      });
+      expect(apiClient.post).toHaveBeenCalledWith(
+        '/api/students/assignments/assignment-1/answers',
+        {
+          questionId: 'q1',
+          answerText: '4',
+        }
+      );
       expect(result).toEqual(mockResponse);
     });
   });

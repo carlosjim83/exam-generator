@@ -15,13 +15,21 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
       const translations: Record<string, string> = {
+        // Dashboard navigation
         'dashboard:navigation.dashboard': 'Dashboard',
         'dashboard:navigation.myLibrary': 'My Library',
         'dashboard:navigation.myExams': 'My Exams',
         'dashboard:navigation.uploadDocument': 'Upload Document',
         'dashboard:navigation.settings': 'Settings',
-        'student:navigation.myExams': 'My Exams',
+        'dashboard:navigation.subscription': 'Subscription',
+        // Common navigation
+        'common:navigation.myClasses': 'My Classes',
+        'common:navigation.dashboard': 'Dashboard',
+        'common:navigation.myExams': 'My Exams',
+        'common:navigation.joinClass': 'Join Class',
         'common:logout': 'Logout',
+        // Sidebar
+        'sidebar.guest': 'Guest',
       };
       return translations[key] || key;
     },
