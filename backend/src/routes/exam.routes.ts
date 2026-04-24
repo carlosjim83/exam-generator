@@ -81,8 +81,9 @@ export async function examRoutes(fastify: FastifyInstance) {
                 properties: {
                   id: { type: 'string' },
                   title: { type: 'string' },
-                  description: { type: 'string' },
+                  description: { type: 'string', nullable: true },
                   questionCount: { type: 'integer' },
+                  documentCount: { type: 'integer' },
                   createdAt: { type: 'string' },
                 },
               },
