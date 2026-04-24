@@ -245,7 +245,7 @@ export async function authRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Login failed',
+          message: 'Login failed',
         });
       }
     }

@@ -181,7 +181,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Document upload failed',
+          message: 'Document upload failed',
         });
       }
     }
@@ -261,7 +261,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to list documents',
+          message: 'Failed to list documents',
         });
       }
     }
@@ -384,7 +384,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to get document',
+          message: 'Failed to get document',
         });
       }
     }
@@ -531,7 +531,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to process document',
+          message: 'Failed to process document',
         });
       }
     }
@@ -667,7 +667,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to reprocess document',
+          message: 'Failed to reprocess document',
         });
       }
     }
@@ -832,7 +832,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Query failed',
+          message: 'Query failed',
         });
       }
     }
@@ -942,7 +942,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to delete document',
+          message: 'Failed to delete document',
         });
       }
     }
@@ -1057,7 +1057,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to download document',
+          message: 'Failed to download document',
         });
       }
     }
@@ -1232,7 +1232,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to share document',
+          message: 'Failed to share document',
         });
       }
     }
@@ -1349,7 +1349,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to unshare document',
+          message: 'Failed to unshare document',
         });
       }
     }
@@ -1468,7 +1468,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to get document shares',
+          message: 'Failed to get document shares',
         });
       }
     }
@@ -1607,7 +1607,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to update visibility',
+          message: 'Failed to update visibility',
         });
       }
     }

@@ -80,7 +80,7 @@ export default async function subscriptionRoutes(fastify: FastifyInstance) {
           upgradeNeeded: result.upgradeNeeded,
         });
       } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Failed to get subscription';
+        const message = 'Failed to get subscription';
         fastify.log.error(error, 'Get subscription error');
 
         return reply.status(500).send({

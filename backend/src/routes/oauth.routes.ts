@@ -170,7 +170,7 @@ export async function oauthRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({
         statusCode: 500,
         error: 'Internal Server Error',
-        message: error.message || 'Google OAuth authentication failed',
+        message: 'Google OAuth authentication failed',
       });
     }
   });

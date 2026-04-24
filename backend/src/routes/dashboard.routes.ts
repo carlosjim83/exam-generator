@@ -82,7 +82,7 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to fetch dashboard statistics',
+          message: 'Failed to fetch dashboard statistics',
         });
       }
     }
@@ -189,7 +189,7 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to fetch recent class exams',
+          message: 'Failed to fetch recent class exams',
         });
       }
     }

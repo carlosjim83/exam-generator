@@ -219,7 +219,7 @@ export async function examRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Exam generation failed',
+          message: 'Exam generation failed',
         });
       }
     }
@@ -282,7 +282,7 @@ export async function examRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to list exams',
+          message: 'Failed to list exams',
         });
       }
     }
@@ -403,7 +403,7 @@ export async function examRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to get exam',
+          message: 'Failed to get exam',
         });
       }
     }
@@ -497,7 +497,7 @@ export async function examRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to delete exam',
+          message: 'Failed to delete exam',
         });
       }
     }
