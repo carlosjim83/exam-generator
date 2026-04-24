@@ -2,24 +2,19 @@
  * useExamSubmission Hook Tests
  *
  * TDD Red-Green-Refactor
- * Tests for React hook that handles answer submission and exam finalization
+ * Tests for React hook that handles answer saving and exam finalization
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useExamSubmission } from '../useExamSubmission';
 import { studentExamAPI } from '../../services/student-exam-api.service';
-import type {
-  SubmitAnswerResponse,
-  SubmitExamResponse,
-  StudentAnswer,
-  ExamAssignment,
-} from '../../types';
+import type { SaveAnswerResponse, SubmitExamResponse, ExamAssignment } from '../../types';
 
 // Mock the API service singleton
 vi.mock('../../services/student-exam-api.service', () => ({
   studentExamAPI: {
-    submitAnswer: vi.fn(),
+    saveAnswer: vi.fn(),
     submitExam: vi.fn(),
   },
 }));
@@ -34,19 +29,9 @@ describe('useExamSubmission', () => {
     },
   }));
 
-  const mockAnswer: StudentAnswer = {
-    id: 'answer-1',
+  const mockSaveAnswerResponse: SaveAnswerResponse = {
+    saved: true,
     questionId: 'q1',
-    answer: 'The answer is 4',
-    isCorrect: undefined,
-    feedback: undefined,
-    createdAt: '2024-01-20T10:05:00Z',
-    updatedAt: '2024-01-20T10:05:00Z',
-  };
-
-  const mockSubmitAnswerResponse: SubmitAnswerResponse = {
-    answer: mockAnswer,
-    message: 'Answer saved successfully',
   };
 
   const mockSubmittedAssignment: ExamAssignment = {
@@ -79,109 +64,103 @@ describe('useExamSubmission', () => {
     it('should return initial state', () => {
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
-      expect(result.current.answers).toEqual({});
-      expect(result.current.isSubmittingAnswer).toBe(false);
+      expect(result.current.savedAnswers).toEqual({});
+      expect(result.current.isSavingAnswer).toBe(false);
       expect(result.current.isSubmittingExam).toBe(false);
       expect(result.current.submissionError).toBeNull();
       expect(result.current.isExamSubmitted).toBe(false);
-      expect(typeof result.current.submitAnswer).toBe('function');
+      expect(typeof result.current.saveAnswer).toBe('function');
       expect(typeof result.current.submitExam).toBe('function');
       expect(typeof result.current.getAnswerForQuestion).toBe('function');
     });
   });
 
-  describe('Submit Answer', () => {
-    it('should submit answer successfully', async () => {
-      const submitAnswerMock = vi
-        .spyOn(studentExamAPI, 'submitAnswer')
-        .mockResolvedValue(mockSubmitAnswerResponse);
+  describe('Save Answer', () => {
+    it('should save answer successfully', async () => {
+      const saveAnswerMock = vi
+        .spyOn(studentExamAPI, 'saveAnswer')
+        .mockResolvedValue(mockSaveAnswerResponse);
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
       await act(async () => {
-        await result.current.submitAnswer('q1', 'The answer is 4');
+        await result.current.saveAnswer('q1', 'The answer is 4');
       });
 
       await waitFor(() => {
-        expect(result.current.isSubmittingAnswer).toBe(false);
+        expect(result.current.isSavingAnswer).toBe(false);
       });
 
-      expect(result.current.answers['q1']).toEqual(mockAnswer);
+      expect(result.current.savedAnswers['q1']).toBe('The answer is 4');
       expect(result.current.submissionError).toBeNull();
-      expect(submitAnswerMock).toHaveBeenCalledWith(mockAssignmentId, 'q1', 'The answer is 4');
+      expect(saveAnswerMock).toHaveBeenCalledWith(mockAssignmentId, 'q1', 'The answer is 4');
     });
 
-    it('should set isSubmittingAnswer while submitting', async () => {
-      let resolveSubmit: (value: SubmitAnswerResponse) => void;
-      const delayedPromise = new Promise<SubmitAnswerResponse>((resolve) => {
-        resolveSubmit = resolve;
+    it('should set isSavingAnswer while saving', async () => {
+      let resolveSave: (value: SaveAnswerResponse) => void;
+      const delayedPromise = new Promise<SaveAnswerResponse>((resolve) => {
+        resolveSave = resolve;
       });
 
-      vi.spyOn(studentExamAPI, 'submitAnswer').mockReturnValue(delayedPromise);
+      vi.spyOn(studentExamAPI, 'saveAnswer').mockReturnValue(delayedPromise);
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
       act(() => {
-        result.current.submitAnswer('q1', 'answer');
+        result.current.saveAnswer('q1', 'answer');
       });
 
       await waitFor(() => {
-        expect(result.current.isSubmittingAnswer).toBe(true);
+        expect(result.current.isSavingAnswer).toBe(true);
       });
 
       act(() => {
-        resolveSubmit!(mockSubmitAnswerResponse);
+        resolveSave!(mockSaveAnswerResponse);
       });
 
       await waitFor(() => {
-        expect(result.current.isSubmittingAnswer).toBe(false);
+        expect(result.current.isSavingAnswer).toBe(false);
       });
     });
 
-    it('should handle submit answer error', async () => {
-      const mockError = new Error('Failed to submit answer');
-      vi.spyOn(studentExamAPI, 'submitAnswer').mockRejectedValue(mockError);
+    it('should handle save answer error', async () => {
+      const mockError = new Error('Failed to save answer');
+      vi.spyOn(studentExamAPI, 'saveAnswer').mockRejectedValue(mockError);
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
       await act(async () => {
-        await result.current.submitAnswer('q1', 'answer');
+        await expect(result.current.saveAnswer('q1', 'answer')).rejects.toThrow(
+          'Failed to save answer'
+        );
       });
 
       await waitFor(() => {
-        expect(result.current.isSubmittingAnswer).toBe(false);
+        expect(result.current.isSavingAnswer).toBe(false);
       });
 
       expect(result.current.submissionError).toEqual(mockError);
-      expect(result.current.answers['q1']).toBeUndefined();
+      expect(result.current.savedAnswers['q1']).toBeUndefined();
     });
 
     it('should store multiple answers', async () => {
-      const answer1: StudentAnswer = { ...mockAnswer, id: 'a1', questionId: 'q1' };
-      const answer2: StudentAnswer = {
-        ...mockAnswer,
-        id: 'a2',
-        questionId: 'q2',
-        answer: 'Answer 2',
-      };
-
-      vi.spyOn(studentExamAPI, 'submitAnswer')
-        .mockResolvedValueOnce({ answer: answer1, message: 'ok' })
-        .mockResolvedValueOnce({ answer: answer2, message: 'ok' });
+      vi.spyOn(studentExamAPI, 'saveAnswer')
+        .mockResolvedValueOnce({ saved: true, questionId: 'q1' })
+        .mockResolvedValueOnce({ saved: true, questionId: 'q2' });
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
       await act(async () => {
-        await result.current.submitAnswer('q1', 'Answer 1');
+        await result.current.saveAnswer('q1', 'Answer 1');
       });
 
       await act(async () => {
-        await result.current.submitAnswer('q2', 'Answer 2');
+        await result.current.saveAnswer('q2', 'Answer 2');
       });
 
-      expect(Object.keys(result.current.answers)).toHaveLength(2);
-      expect(result.current.answers['q1']).toEqual(answer1);
-      expect(result.current.answers['q2']).toEqual(answer2);
+      expect(Object.keys(result.current.savedAnswers)).toHaveLength(2);
+      expect(result.current.savedAnswers['q1']).toBe('Answer 1');
+      expect(result.current.savedAnswers['q2']).toBe('Answer 2');
     });
   });
 
@@ -193,6 +172,11 @@ describe('useExamSubmission', () => {
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
+      // First save an answer
+      await act(async () => {
+        await result.current.saveAnswer('q1', 'Answer text');
+      });
+
       await act(async () => {
         await result.current.submitExam();
       });
@@ -203,7 +187,9 @@ describe('useExamSubmission', () => {
 
       expect(result.current.isExamSubmitted).toBe(true);
       expect(result.current.submissionError).toBeNull();
-      expect(submitExamMock).toHaveBeenCalledWith(mockAssignmentId);
+      expect(submitExamMock).toHaveBeenCalledWith(mockAssignmentId, [
+        { questionId: 'q1', answerText: 'Answer text' },
+      ]);
     });
 
     it('should set isSubmittingExam while submitting', async () => {
@@ -215,6 +201,11 @@ describe('useExamSubmission', () => {
       vi.spyOn(studentExamAPI, 'submitExam').mockReturnValue(delayedPromise);
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
+
+      // First save an answer
+      await act(async () => {
+        await result.current.saveAnswer('q1', 'Answer text');
+      });
 
       act(() => {
         result.current.submitExam();
@@ -239,8 +230,13 @@ describe('useExamSubmission', () => {
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
+      // First save an answer
       await act(async () => {
-        await result.current.submitExam();
+        await result.current.saveAnswer('q1', 'Answer text');
+      });
+
+      await act(async () => {
+        await expect(result.current.submitExam()).rejects.toThrow('Failed to submit exam');
       });
 
       await waitFor(() => {
@@ -250,20 +246,28 @@ describe('useExamSubmission', () => {
       expect(result.current.submissionError).toEqual(mockError);
       expect(result.current.isExamSubmitted).toBe(false);
     });
+
+    it('should throw error when submitting with no answers', async () => {
+      const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
+
+      await expect(result.current.submitExam()).rejects.toThrow(
+        'No answers to submit. Please answer at least one question.'
+      );
+    });
   });
 
   describe('getAnswerForQuestion', () => {
     it('should return answer for a specific question', async () => {
-      vi.spyOn(studentExamAPI, 'submitAnswer').mockResolvedValue(mockSubmitAnswerResponse);
+      vi.spyOn(studentExamAPI, 'saveAnswer').mockResolvedValue(mockSaveAnswerResponse);
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
       await act(async () => {
-        await result.current.submitAnswer('q1', 'The answer is 4');
+        await result.current.saveAnswer('q1', 'The answer is 4');
       });
 
       const answer = result.current.getAnswerForQuestion('q1');
-      expect(answer).toEqual(mockAnswer);
+      expect(answer).toBe('The answer is 4');
     });
 
     it('should return undefined for unanswered question', () => {
@@ -276,25 +280,22 @@ describe('useExamSubmission', () => {
 
   describe('answeredCount', () => {
     it('should track number of answered questions', async () => {
-      const answer1: StudentAnswer = { ...mockAnswer, id: 'a1', questionId: 'q1' };
-      const answer2: StudentAnswer = { ...mockAnswer, id: 'a2', questionId: 'q2' };
-
-      vi.spyOn(studentExamAPI, 'submitAnswer')
-        .mockResolvedValueOnce({ answer: answer1, message: 'ok' })
-        .mockResolvedValueOnce({ answer: answer2, message: 'ok' });
+      vi.spyOn(studentExamAPI, 'saveAnswer')
+        .mockResolvedValueOnce({ saved: true, questionId: 'q1' })
+        .mockResolvedValueOnce({ saved: true, questionId: 'q2' });
 
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
       expect(result.current.answeredCount).toBe(0);
 
       await act(async () => {
-        await result.current.submitAnswer('q1', 'Answer 1');
+        await result.current.saveAnswer('q1', 'Answer 1');
       });
 
       expect(result.current.answeredCount).toBe(1);
 
       await act(async () => {
-        await result.current.submitAnswer('q2', 'Answer 2');
+        await result.current.saveAnswer('q2', 'Answer 2');
       });
 
       expect(result.current.answeredCount).toBe(2);

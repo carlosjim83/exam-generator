@@ -28,7 +28,7 @@ vi.mock('react-i18next', () => ({
         'auth.withGoogle': 'with Google',
         'auth.with': 'with',
         cancel: 'Cancel',
-        'common.clickToContinue': 'Click to continue',
+        clickToContinue: 'Click to continue',
         'common.with': 'with',
         'common.or': 'or',
         close: 'Close',

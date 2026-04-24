@@ -11,7 +11,7 @@ import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { ExamTaking } from '../ExamTaking';
 import { useExamAssignment, useExamSubmission } from '../../hooks';
-import type { ExamAssignment, ExamWithQuestions, Question, StudentAnswer } from '../../types';
+import type { ExamAssignment, ExamWithQuestions, Question } from '../../types';
 
 // Mock the hooks
 vi.mock('../../hooks', () => ({
@@ -49,9 +49,21 @@ describe('ExamTaking', () => {
   const mockAssignmentId = 'assignment-123';
 
   const mockQuestions: Question[] = [
-    { id: 'q1', text: 'What is 2 + 2?', order: 1 },
-    { id: 'q2', text: 'What is the capital of France?', order: 2 },
-    { id: 'q3', text: 'Explain the theory of relativity.', order: 3 },
+    { id: 'q1', text: 'What is 2 + 2?', order: 1, type: 'SHORT_ANSWER', options: [] },
+    {
+      id: 'q2',
+      text: 'What is the capital of France?',
+      order: 2,
+      type: 'SHORT_ANSWER',
+      options: [],
+    },
+    {
+      id: 'q3',
+      text: 'Explain the theory of relativity.',
+      order: 3,
+      type: 'SHORT_ANSWER',
+      options: [],
+    },
   ];
 
   const mockExam: ExamWithQuestions = {
@@ -97,13 +109,13 @@ describe('ExamTaking', () => {
   };
 
   const defaultExamSubmissionReturn = {
-    answers: {},
+    savedAnswers: {},
     answeredCount: 0,
-    isSubmittingAnswer: false,
+    isSavingAnswer: false,
     isSubmittingExam: false,
     isExamSubmitted: false,
     submissionError: null,
-    submitAnswer: vi.fn(),
+    saveAnswer: vi.fn(),
     submitExam: vi.fn(),
     getAnswerForQuestion: vi.fn().mockReturnValue(undefined),
   };
@@ -237,14 +249,6 @@ describe('ExamTaking', () => {
     });
 
     it('should pre-fill answer if already answered', () => {
-      const existingAnswer: StudentAnswer = {
-        id: 'answer-1',
-        questionId: 'q1',
-        answer: 'The answer is 4',
-        createdAt: '2024-01-15T10:05:00Z',
-        updatedAt: '2024-01-15T10:05:00Z',
-      };
-
       mockUseExamAssignment.mockReturnValue({
         ...defaultExamAssignmentReturn,
         assignment: mockAssignment,
@@ -254,8 +258,8 @@ describe('ExamTaking', () => {
       });
       mockUseExamSubmission.mockReturnValue({
         ...defaultExamSubmissionReturn,
-        answers: { q1: existingAnswer },
-        getAnswerForQuestion: vi.fn().mockReturnValue(existingAnswer),
+        savedAnswers: { q1: 'The answer is 4' },
+        getAnswerForQuestion: vi.fn().mockReturnValue('The answer is 4'),
       });
 
       render(<ExamTaking assignmentId={mockAssignmentId} token={mockToken} />);
@@ -280,8 +284,8 @@ describe('ExamTaking', () => {
       expect(screen.getByRole('button', { name: /save answer/i })).toBeInTheDocument();
     });
 
-    it('should call submitAnswer when save button is clicked', async () => {
-      const submitAnswerMock = vi.fn();
+    it('should call saveAnswer when save button is clicked', async () => {
+      const saveAnswerMock = vi.fn();
       mockUseExamAssignment.mockReturnValue({
         ...defaultExamAssignmentReturn,
         assignment: mockAssignment,
@@ -291,7 +295,7 @@ describe('ExamTaking', () => {
       });
       mockUseExamSubmission.mockReturnValue({
         ...defaultExamSubmissionReturn,
-        submitAnswer: submitAnswerMock,
+        saveAnswer: saveAnswerMock,
       });
 
       render(<ExamTaking assignmentId={mockAssignmentId} token={mockToken} />);
@@ -302,7 +306,7 @@ describe('ExamTaking', () => {
       const saveButton = screen.getByRole('button', { name: /save answer/i });
       await userEvent.click(saveButton);
 
-      expect(submitAnswerMock).toHaveBeenCalledWith('q1', 'My answer is 4');
+      expect(saveAnswerMock).toHaveBeenCalledWith('q1', 'My answer is 4');
     });
 
     it('should disable save button while submitting answer', () => {
@@ -315,7 +319,7 @@ describe('ExamTaking', () => {
       });
       mockUseExamSubmission.mockReturnValue({
         ...defaultExamSubmissionReturn,
-        isSubmittingAnswer: true,
+        isSavingAnswer: true,
       });
 
       render(<ExamTaking assignmentId={mockAssignmentId} token={mockToken} />);
@@ -446,14 +450,6 @@ describe('ExamTaking', () => {
     });
 
     it('should highlight answered questions in navigation dots', () => {
-      const answeredQuestion: StudentAnswer = {
-        id: 'answer-1',
-        questionId: 'q1',
-        answer: '4',
-        createdAt: '2024-01-15T10:05:00Z',
-        updatedAt: '2024-01-15T10:05:00Z',
-      };
-
       mockUseExamAssignment.mockReturnValue({
         ...defaultExamAssignmentReturn,
         assignment: mockAssignment,
@@ -464,7 +460,7 @@ describe('ExamTaking', () => {
       });
       mockUseExamSubmission.mockReturnValue({
         ...defaultExamSubmissionReturn,
-        answers: { q1: answeredQuestion },
+        savedAnswers: { q1: '4' },
         answeredCount: 1,
       });
 

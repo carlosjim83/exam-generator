@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formydable - TFM Presentación</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/white.css">
+    <style>
+        :root {
+            --r-background-color: #ffffff;
+            --r-main-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --r-heading-font: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --r-main-color: #1a1a1a;
+            --r-heading-color: #111827;
+            --r-link-color: #2563eb;
+        }
+        .reveal {
+            font-size: 32px;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            text-transform: none;
+        }
+        .reveal h1 { font-size: 2.2em; }
+        .reveal h2 { font-size: 1.6em; }
+        .reveal h3 { font-size: 1.2em; }
+        .reveal ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .reveal ul li {
+            position: relative;
+            padding-left: 1.2em;
+            margin-bottom: 0.5em;
+        }
+        .reveal ul li::before {
+            content: "▸";
+            position: absolute;
+            left: 0;
+            color: #2563eb;
+        }
+        .reveal pre {
+            font-size: 0.55em;
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 1em;
+        }
+        .reveal code {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            color: #e2e8f0;
+        }
+        .reveal .badge {
+            display: inline-block;
+            padding: 0.2em 0.6em;
+            border-radius: 9999px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-right: 0.3em;
+        }
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-purple { background: #f3e8ff; color: #6b21a8; }
+        .badge-orange { background: #ffedd5; color: #9a3412; }
+        .reveal .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2em;
+            text-align: left;
+        }
+        .reveal .center-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+        .reveal .highlight-box {
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+            padding: 1em 1.5em;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+        }
+        .reveal .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.8em;
+            text-align: left;
+            font-size: 0.85em;
+        }
+        .reveal .stack-card {
+            background: #f8fafc;
+            padding: 0.8em;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .reveal .stack-card strong {
+            display: block;
+            color: #1e40af;
+            margin-bottom: 0.3em;
+        }
+        .reveal section {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="slides">
+
+            <!-- PORTADA -->
+            <section>
+                <div class="center-content">
+                    <h1 style="margin-bottom: 0.2em;">Formydable</h1>
+                    <p style="font-size: 1.1em; color: #475569; margin-bottom: 1.5em;">
+                        Generador de exámenes con IA y RAG
+                    </p>
+                    <p style="font-size: 0.9em; color: #64748b;">
+                        <span class="badge badge-blue">TFM</span>
+                        <span class="badge badge-green">Máster IA para Programadores</span>
+                    </p>
+                    <p style="font-size: 0.8em; color: #94a3b8; margin-top: 2em;">
+                        🌐 <a href="https://formydable.es" target="_blank">formydable.es</a>
+                    </p>
+                </div>
+            </section>
+
+            <!-- PROBLEMA -->
+            <section>
+                <h2>El Problema</h2>
+                <div class="highlight-box" style="margin-bottom: 1em;">
+                    <p><strong>Los profesores dedican horas a crear exámenes manualmente</strong> a partir de documentos de clase, apuntes y libros.</p>
+                </div>
+                <ul>
+                    <li>Búsqueda manual de contenido relevante</li>
+                    <li>Redacción de preguntas y respuestas</li>
+                    <li>Revisión y corrección de exámenes</li>
+                    <li>Poco tiempo para personalizar según el nivel del alumno</li>
+                </ul>
+                <p style="margin-top: 1em; font-size: 0.9em; color: #475569;">
+                    <strong>Solución:</strong> Automatizar la generación de exámenes usando IA con contexto real de los documentos del profesor.
+                </p>
+            </section>
+
+            <!-- SOLUCIÓN -->
+            <section>
+                <h2>La Solución</h2>
+                <p style="font-size: 1.1em; margin-bottom: 1em;">
+                    Una plataforma web que permite a los profesores:
+                </p>
+                <ul>
+                    <li><strong>Subir documentos</strong> (PDF, DOCX)</li>
+                    <li><strong>Generar exámenes automáticamente</strong> con IA</li>
+                    <li><strong>Revisar y editar</strong> las preguntas antes de publicar</li>
+                    <li><strong>Gestionar clases y alumnos</strong></li>
+                    <li><strong>Corregir automáticamente</strong> exámenes de test</li>
+                    <li><strong>Recibir feedback</strong> sobre el rendimiento</li>
+                </ul>
+            </section>
+
+            <!-- DEMO -->
+            <section>
+                <div class="center-content">
+                    <h2>Demo en Vivo</h2>
+                    <p style="font-size: 1.2em; margin: 1em 0;">
+                        🌐 <a href="https://formydable.es" target="_blank" style="font-weight: 600;">formydable.es</a>
+                    </p>
+                    <p style="color: #64748b; font-size: 0.9em;">
+                        Regístrate con Google o crea una cuenta para probar la aplicación
+                    </p>
+                </div>
+            </section>
+
+            <!-- STACK -->
+            <section>
+                <h2>Stack Tecnológico</h2>
+                <div class="stack-grid">
+                    <div class="stack-card">
+                        <strong>Frontend</strong>
+                        Next.js 15 · React 19 · TypeScript · Tailwind CSS · shadcn/ui
+                    </div>
+                    <div class="stack-card">
+                        <strong>Backend</strong>
+                        Fastify · TypeScript · Prisma ORM · Passport.js
+                    </div>
+                    <div class="stack-card">
+                        <strong>AI & RAG</strong>
+                        Azure OpenAI GPT-4o · pgvector · Firebase Genkit
+                    </div>
+                    <div class="stack-card">
+                        <strong>Base de Datos</strong>
+                        PostgreSQL 16 · Redis (BullMQ)
+                    </div>
+                    <div class="stack-card">
+                        <strong>Infraestructura</strong>
+                        Azure Container Apps · Terraform · Docker
+                    </div>
+                    <div class="stack-card">
+                        <strong>Testing</strong>
+                        Vitest · Playwright · TDD
+                    </div>
+                </div>
+            </section>
+
+            <!-- ARQUITECTURA -->
+            <section>
+                <h2>Arquitectura</h2>
+                <p style="text-align: left; margin-bottom: 0.8em;"><strong>Clean Architecture + DDD</strong></p>
+                <div class="two-column" style="font-size: 0.85em;">
+                    <div>
+                        <h3 style="font-size: 1em;">Backend</h3>
+                        <ul>
+                            <li><strong>Domain:</strong> Entidades e interfaces</li>
+                            <li><strong>Application:</strong> Casos de uso</li>
+                            <li><strong>Infrastructure:</strong> Prisma, Azure, AI</li>
+                            <li><strong>Routes:</strong> Handlers HTTP</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1em;">Frontend</h3>
+                        <ul>
+                            <li><strong>App Router:</strong> Rutas Next.js</li>
+                            <li><strong>Features:</strong> Módulos independientes</li>
+                            <li><strong>Components:</strong> UI compartida</li>
+                            <li><strong>Lib:</strong> Utilidades, i18n, API</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RAG -->
+            <section>
+                <h2>Pipeline RAG</h2>
+                <pre><code>Documento PDF/DOCX
+    ↓
+Azure Blob Storage
+    ↓
+Worker BullMQ: Extracción + Chunks
+    ↓
+Azure OpenAI Embeddings
+    ↓
+PostgreSQL + pgvector
+    ↓
+Búsqueda por similitud (cosine)
+    ↓
+GPT-4o genera preguntas contextualizadas</code></pre>
+                <p style="font-size: 0.85em; color: #475569; margin-top: 0.5em;">
+                    Las preguntas se generan <strong>únicamente</strong> a partir del contenido de los documentos subidos.
+                </p>
+            </section>
+
+            <!-- FUNCIONALIDADES -->
+            <section>
+                <h2>Funcionalidades Principales</h2>
+                <div class="two-column" style="font-size: 0.9em;">
+                    <div>
+                        <h3 style="font-size: 1em;">Profesor</h3>
+                        <ul>
+                            <li>Gestión de documentos</li>
+                            <li>Generación de exámenes con IA</li>
+                            <li>Editor de preguntas</li>
+                            <li>Gestión de clases y alumnos</li>
+                            <li>Invitaciones por email</li>
+                            <li>Dashboard de estadísticas</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1em;">Alumno</h3>
+                        <ul>
+                            <li>Ver exámenes asignados</li>
+                            <li>Realizar exámenes online</li>
+                            <li>Corrección automática</li>
+                            <li>Ver puntuación y feedback</li>
+                            <li>Historial de resultados</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DISEÑO -->
+            <section>
+                <h2>Diseño y UX</h2>
+                <ul>
+                    <li><strong>Interfaz limpia</strong> con Tailwind CSS y shadcn/ui</li>
+                    <li><strong>Accesibilidad</strong> (ARIA, navegación por teclado)</li>
+                    <li><strong>Responsive</strong> (desktop y tablet)</li>
+                    <li><strong>Dark mode</strong> soportado</li>
+                    <li><strong>Internacionalización</strong> (i18n) preparada</li>
+                </ul>
+            </section>
+
+            <!-- TESTING -->
+            <section>
+                <h2>Testing y Calidad</h2>
+                <ul>
+                    <li><strong>TDD:</strong> Test-Driven Development desde el inicio</li>
+                    <li><strong>Backend:</strong> Tests unitarios e integración con Vitest</li>
+                    <li><strong>Frontend:</strong> Tests de componentes y hooks</li>
+                    <li><strong>E2E:</strong> Playwright para flujos completos</li>
+                    <li><strong>CI/CD:</strong> GitHub Actions para lint, test y build</li>
+                    <li><strong>Type safety:</strong> TypeScript estricto end-to-end</li>
+                </ul>
+            </section>
+
+            <!-- DESPLIEGUE -->
+            <section>
+                <h2>Despliegue</h2>
+                <p style="text-align: left; margin-bottom: 0.8em;"><strong>Infraestructura como Código con Terraform/OpenTofu</strong></p>
+                <div class="two-column" style="font-size: 0.85em;">
+                    <div>
+                        <ul>
+                            <li>Azure Container Apps (frontend + backend)</li>
+                            <li>Azure PostgreSQL Flexible Server</li>
+                            <li>Azure Cache for Redis</li>
+                            <li>Azure Blob Storage</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <ul>
+                            <li>Azure Container Registry</li>
+                            <li>Azure Key Vault</li>
+                            <li>Application Insights</li>
+                            <li>GitHub Actions CI/CD</li>
+                        </ul>
+                    </div>
+                </div>
+                <p style="margin-top: 0.8em; font-size: 0.9em;">
+                    🌐 <strong>Producción:</strong> <a href="https://formydable.es" target="_blank">formydable.es</a>
+                </p>
+            </section>
+
+            <!-- APRENDIZAJE -->
+            <section>
+                <h2>Aprendizajes Clave</h2>
+                <ul>
+                    <li>Implementación completa de <strong>RAG</strong> con vectores</li>
+                    <li>Arquitectura <strong>Clean/DDD</strong> en proyectos reales</li>
+                    <li>Orquestación de <strong>workflows de IA</strong> con Genkit</li>
+                    <li>Gestión de <strong>jobs asíncronos</strong> con BullMQ</li>
+                    <li><strong>Infraestructura como Código</strong> con Terraform</li>
+                    <li>Monorepo profesional con <strong>pnpm + Turborepo</strong></li>
+                </ul>
+            </section>
+
+            <!-- CONCLUSIÓN -->
+            <section>
+                <div class="center-content">
+                    <h2 style="margin-bottom: 0.5em;">¡Gracias!</h2>
+                    <p style="font-size: 1.1em; color: #475569; margin-bottom: 1.5em;">
+                        Formydable - Generador de exámenes con IA
+                    </p>
+                    <p style="font-size: 0.9em;">
+                        🌐 <a href="https://formydable.es" target="_blank">formydable.es</a>
+                    </p>
+                    <p style="font-size: 0.85em; color: #94a3b8; margin-top: 2em;">
+                        <em>"Concepts over code. Understand what you build."</em>
+                    </p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            slideNumber: 'c/t',
+            transition: 'slide',
+            transitionSpeed: 'default',
+            backgroundTransition: 'fade',
+            center: true,
+            width: 1280,
+            height: 720,
+            margin: 0.04
+        });
+    </script>
+</body>
+</html>
