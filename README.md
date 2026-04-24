@@ -2,6 +2,10 @@
 
 AI-powered exam generator using RAG (Retrieval-Augmented Generation) for teachers to create exams from uploaded documents.
 
+🌐 **Despliegue en producción**: [https://formydable.es](https://formydable.es)
+
+📊 **Slides de presentación**: [https://formydable.es/slides/](https://formydable.es/slides/)
+
 ## 🎯 Features
 
 - 📄 **Document Upload**: Upload PDF and DOCX files to Azure Blob Storage
@@ -117,8 +121,8 @@ pnpm dev
 
 ### Access (Production)
 
-- **Frontend**: `https://<your-frontend-app>.azurecontainerapps.io`
-- **Backend API**: `https://<your-backend-app>.azurecontainerapps.io`
+- **Frontend**: [https://formydable.es](https://formydable.es)
+- **Backend API**: `https://backend.formydable.es/api`
 
 ## 🧪 Testing
 
