@@ -1,8 +1,9 @@
 import AdminJS from 'adminjs';
 import { Database, Resource, getModelByName } from '@adminjs/prisma';
-import { PrismaClient } from '@prisma/client';
+import { container } from '@config/container.js';
 
-const prisma = new PrismaClient();
+// Reuse the PrismaClient from the container to avoid duplicate connections
+const prisma = container.prisma;
 AdminJS.registerAdapter({ Database, Resource });
 
 export const admin = new AdminJS({
