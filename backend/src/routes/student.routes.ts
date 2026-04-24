@@ -443,6 +443,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
         if (
           error.message.includes('only view your own') ||
+          error.message.includes('only access your own') ||
           error.message.includes('only start your own') ||
           error.message.includes('belong to')
         ) {

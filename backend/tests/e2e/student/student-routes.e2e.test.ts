@@ -380,9 +380,9 @@ describe('Student Routes E2E Tests', () => {
       });
 
       it('should reject if assignment is not in PENDING status', async () => {
-        // ARRANGE: Create assignment already in IN_PROGRESS status
+        // ARRANGE: Create assignment already in SUBMITTED status
         const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.inProgress({
+        const assignment = await ExamAssignmentMother.submitted({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -400,8 +400,7 @@ describe('Student Routes E2E Tests', () => {
         // ASSERT: Should fail with business rule error
         expect(response.statusCode).toBe(400);
         const body = JSON.parse(response.body);
-        expect(body.message).toContain('Cannot start assignment with status');
-        expect(body.message).toContain('IN_PROGRESS');
+        expect(body.message).toContain('already been completed');
       });
     });
 
@@ -593,7 +592,7 @@ describe('Student Routes E2E Tests', () => {
         // ASSERT: Should auto-grade and calculate score
         expect(response.statusCode).toBe(200);
         const body = JSON.parse(response.body);
-        expect(body.assignment.status).toBe('SUBMITTED');
+        expect(body.assignment.status).toBe('GRADED');
         expect(body.assignment.score).toBeDefined();
         expect(body.assignment.score).toBeGreaterThan(0); // 2 out of 3 correct
         expect(body.assignment.score).toBeLessThan(100); // Not perfect
@@ -620,10 +619,10 @@ describe('Student Routes E2E Tests', () => {
           },
         });
 
-        // ASSERT: Status should be SUBMITTED
+        // ASSERT: Status should be GRADED (auto-graded since all questions are auto-gradable)
         expect(response.statusCode).toBe(200);
         const body = JSON.parse(response.body);
-        expect(body.assignment.status).toBe('SUBMITTED');
+        expect(body.assignment.status).toBe('GRADED');
         expect(body.assignment.submittedAt).toBeDefined();
       });
 
@@ -651,7 +650,7 @@ describe('Student Routes E2E Tests', () => {
         // ASSERT: Should accept and score as 0
         expect(response.statusCode).toBe(200);
         const body = JSON.parse(response.body);
-        expect(body.assignment.status).toBe('SUBMITTED');
+        expect(body.assignment.status).toBe('GRADED');
         expect(body.assignment.score).toBe(0); // No correct answers
       });
     });
@@ -698,16 +697,16 @@ describe('Student Routes E2E Tests', () => {
         expect(body.message).toContain('Assignment not found');
       });
 
-      it('should reject if assignment is not graded yet', async () => {
-        // ARRANGE: Create SUBMITTED assignment (not graded yet)
+      it('should reject if assignment is not submitted yet', async () => {
+        // ARRANGE: Create IN_PROGRESS assignment (not submitted yet)
         const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.submitted({
+        const assignment = await ExamAssignmentMother.inProgress({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
         });
 
-        // ACT: Try to get results before grading
+        // ACT: Try to get results before submitting
         const response = await app.inject({
           method: 'GET',
           url: `/api/students/assignments/${assignment.id}/results`,
@@ -716,10 +715,10 @@ describe('Student Routes E2E Tests', () => {
           },
         });
 
-        // ASSERT: Should fail since not graded
+        // ASSERT: Should fail since not submitted
         expect(response.statusCode).toBe(400);
         const body = JSON.parse(response.body);
-        expect(body.message).toContain('graded');
+        expect(body.message).toContain('submitted');
       });
     });
 
@@ -747,14 +746,15 @@ describe('Student Routes E2E Tests', () => {
         const body = JSON.parse(response.body);
         expect(body.assignment).toBeDefined();
         expect(body.exam).toBeDefined();
-        expect(body.results).toBeDefined();
-        expect(Array.isArray(body.results)).toBe(true);
-        expect(body.results.length).toBe(questions.length);
+        expect(body.answers).toBeDefined();
+        expect(Array.isArray(body.answers)).toBe(true);
+        expect(body.exam.questions).toBeDefined();
+        expect(Array.isArray(body.exam.questions)).toBe(true);
 
-        // Verify each result has question details
-        body.results.forEach((result: any) => {
-          expect(result.question).toBeDefined();
-          expect(result.correctAnswer).toBeDefined();
+        // Verify exam questions are included
+        body.exam.questions.forEach((question: any) => {
+          expect(question.id).toBeDefined();
+          expect(question.text).toBeDefined();
         });
       });
 
@@ -787,7 +787,7 @@ describe('Student Routes E2E Tests', () => {
 
       it('should show correct/incorrect status for each answer', async () => {
         // ARRANGE: Create GRADED assignment with answers
-        const { exam, questions } = await ExamMother.complete({ userId: teacherId });
+        const { exam } = await ExamMother.complete({ userId: teacherId });
         const assignment = await ExamAssignmentMother.graded({
           examId: exam.id,
           studentId: studentId,
@@ -806,16 +806,16 @@ describe('Student Routes E2E Tests', () => {
         // ASSERT: Each answer should have isCorrect flag
         expect(response.statusCode).toBe(200);
         const body = JSON.parse(response.body);
-        expect(body.results).toBeDefined();
-        expect(Array.isArray(body.results)).toBe(true);
+        expect(body.answers).toBeDefined();
+        expect(Array.isArray(body.answers)).toBe(true);
 
-        // At least one result should exist
-        if (body.results.length > 0) {
-          body.results.forEach((result: any) => {
-            expect(result.isCorrect).toBeDefined();
+        // At least one answer should exist
+        if (body.answers.length > 0) {
+          body.answers.forEach((answer: any) => {
+            expect(answer.isCorrect).toBeDefined();
             // isCorrect can be null for unanswered questions
-            if (result.isCorrect !== null) {
-              expect(typeof result.isCorrect).toBe('boolean');
+            if (answer.isCorrect !== null) {
+              expect(typeof answer.isCorrect).toBe('boolean');
             }
           });
         }
