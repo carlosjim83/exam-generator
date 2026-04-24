@@ -72,7 +72,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const {
         page = 1,
         limit = 20,
@@ -148,7 +148,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { id } = request.params as { id: string };
 
       const command = new GetClassDetailsCommand(id, userId);
@@ -284,7 +284,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const teacherId = (request as any).user.userId;
+      const teacherId = request.user!.userId;
       const { name, description, color } = request.body as {
         name: string;
         description?: string;
@@ -331,7 +331,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { id } = request.params as { id: string };
 
       const command = new DeleteClassCommand(id, userId);
@@ -452,7 +452,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId, studentId } = request.params as { classId: string; studentId: string };
 
       const command = new RemoveStudentFromClassCommand(classId, studentId, userId);
@@ -491,7 +491,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
 
       const command = new StudentJoinClassCommand(classId, userId);
@@ -554,7 +554,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
       const { emails } = request.body as { emails: string[] };
 
@@ -612,7 +612,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
       const { csvContent } = request.body as { csvContent: string };
 
@@ -668,7 +668,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
 
       const command = new GetClassInvitationsCommand(classId, userId);
@@ -712,7 +712,7 @@ export async function classRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       const { token } = request.params as { token: string };
-      const userId = (request as any).user?.userId;
+      const userId = request.user!.userId;
 
       const command = new StudentJoinClassWithInvitationCommand(token, userId);
 
@@ -750,7 +750,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { token } = request.params as { token: string };
 
       // Find invitation by token first to get the invitationId
@@ -836,7 +836,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
 
       try {
@@ -949,7 +949,7 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
 
       try {
@@ -1031,8 +1031,8 @@ export async function classRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
-      const userRole = (request as any).user.role;
+      const userId = request.user!.userId;
+      const userRole = request.user!.role;
 
       // Only students can access this endpoint
       if (userRole !== 'STUDENT') {

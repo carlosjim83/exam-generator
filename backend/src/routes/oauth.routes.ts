@@ -29,8 +29,22 @@ export async function oauthRoutes(fastify: FastifyInstance) {
       const role = (request.query as any).role || 'TEACHER';
       return JSON.stringify({ role, timestamp: Date.now() });
     },
-    // Custom state checker
-    checkStateFunction: () => true, // We trust our own state
+    // Custom state checker - validates state from query param
+    checkStateFunction(request) {
+      try {
+        const state = (request.query as any).state;
+        const stateData = JSON.parse(state);
+        // Basic validation: state must have role and timestamp
+        return (
+          stateData &&
+          typeof stateData.role === 'string' &&
+          typeof stateData.timestamp === 'number' &&
+          Date.now() - stateData.timestamp < 10 * 60 * 1000 // 10 min expiry
+        );
+      } catch {
+        return false;
+      }
+    },
   });
 
   // GET /api/auth/google/callback - Handle OAuth callback
@@ -134,21 +148,20 @@ export async function oauthRoutes(fastify: FastifyInstance) {
       const email = Email.create(user.email);
       const tokens = container.tokenService.generateTokenPair(userId, email, user.role as UserRole);
 
-      // Redirect to frontend with tokens in URL params
-      // Frontend will extract tokens and store them
+      // Redirect to frontend with tokens in URL hash fragment
+      // Hash fragments are NOT sent to the server, avoiding logs/history exposure
       const frontendUrl = env.FRONTEND_URL || 'http://localhost:3000';
-      const redirectUrl =
-        `${frontendUrl}/auth/callback?` +
-        new URLSearchParams({
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          userId: user.id,
-          email: user.email,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          role: user.role,
-          provider: user.provider,
-        }).toString();
+      const hashParams = new URLSearchParams({
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        userId: user.id,
+        email: user.email,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        role: user.role,
+        provider: user.provider,
+      }).toString();
+      const redirectUrl = `${frontendUrl}/auth/callback#${hashParams}`;
 
       return reply.redirect(redirectUrl);
     } catch (error: any) {
@@ -214,20 +227,19 @@ export async function oauthRoutes(fastify: FastifyInstance) {
           user.role as UserRole
         );
 
-        // Redirect to frontend
+        // Redirect to frontend with tokens in URL hash fragment
         const frontendUrl = env.FRONTEND_URL || 'http://localhost:3000';
-        const redirectUrl =
-          `${frontendUrl}/auth/callback?` +
-          new URLSearchParams({
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-            userId: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            role: user.role,
-            provider: user.provider,
-          }).toString();
+        const hashParams = new URLSearchParams({
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          userId: user.id,
+          email: user.email,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          role: user.role,
+          provider: user.provider,
+        }).toString();
+        const redirectUrl = `${frontendUrl}/auth/callback#${hashParams}`;
 
         return reply.redirect(redirectUrl);
       } catch (error: any) {

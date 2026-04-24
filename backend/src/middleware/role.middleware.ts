@@ -8,7 +8,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 export function authorizeRoles(allowedRoles: string[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     // Get user from request (attached by authenticateUser)
-    const user = (request as any).user;
+    const user = request.user;
 
     if (!user) {
       return reply.status(401).send({

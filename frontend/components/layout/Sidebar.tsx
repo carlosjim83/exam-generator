@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
+import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import {
@@ -141,7 +142,13 @@ export function Sidebar() {
       {/* Logo */}
       <div className="flex h-16 items-center border-b border-border px-6">
         <Link href={getLogoLink()} className="flex items-center gap-2">
-          <img src="/logo.png" alt="Formydable" className="h-9 w-9 rounded-lg object-cover" />
+          <Image
+            src="/logo.png"
+            alt="Formydable"
+            className="h-9 w-9 rounded-lg object-cover"
+            width={36}
+            height={36}
+          />
           <div>
             <h1 className="text-lg font-bold text-card-foreground">Formydable</h1>
           </div>

@@ -51,7 +51,7 @@ export async function protectedRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const jwtUser = (request as any).user;
+      const jwtUser = request.user!;
 
       // Load complete user data from database
       const userRepository = container.userRepository;

@@ -120,7 +120,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
 
         // Execute UploadDocumentUseCase
         const result = await container.uploadDocumentUseCase.execute({
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
           title,
           filename,
           mimetype,
@@ -130,7 +130,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         // 🔥 Add document to processing queue
         // The worker will fetch the document from DB and get all necessary data
         try {
-          const userId = (request as any).user.userId;
+          const userId = request.user!.userId;
           await queueDocumentProcessing({
             documentId: result.document.id,
             userId,
@@ -238,7 +238,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
       try {
         // Execute ListDocumentsUseCase
         const result = await container.listDocumentsUseCase.execute({
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         return reply.status(200).send({
@@ -343,7 +343,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         // Execute GetDocumentUseCase
         const result = await container.getDocumentUseCase.execute({
           documentId: id,
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         return reply.status(200).send({
@@ -474,7 +474,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
         // Execute ProcessDocumentUseCase (RAG + embeddings)
         const result = await container.processDocumentUseCase.execute({
           documentId: id,
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         return reply.status(200).send({
@@ -610,7 +610,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
 
         const result = await container.reprocessDocumentUseCase.execute({
           documentId: id,
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         // Also try to retry the queue job if it exists and failed
@@ -622,7 +622,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
             // If no failed job exists, queue a new one
             await queueDocumentProcessing({
               documentId: id,
-              userId: (request as any).user.userId,
+              userId: request.user!.userId,
             });
             fastify.log.info(`Queued new job for document: ${id}`);
           }
@@ -788,7 +788,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
 
         const result = await container.queryDocumentUseCase.execute({
           documentId,
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
           query,
           topK: topK || 5,
         });
@@ -908,7 +908,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
 
         const result = await container.deleteDocumentUseCase.execute({
           documentId: id,
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         return reply.status(200).send(result);
@@ -1016,7 +1016,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
 
         const result = await container.downloadDocumentUseCase.execute({
           documentId: id,
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         // Set headers for file download
@@ -1172,7 +1172,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
       try {
         const { documentId } = request.params as { documentId: string };
         const body = request.body as { classIds: string[]; isVisible?: boolean };
-        const userId = (request as any).user.userId;
+        const userId = request.user!.userId;
 
         const results = [];
         for (const classId of body.classIds) {
@@ -1315,7 +1315,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
           documentId: string;
           classId: string;
         };
-        const userId = (request as any).user.userId;
+        const userId = request.user!.userId;
 
         await container.unshareDocumentUseCase.execute({
           documentId,
@@ -1434,7 +1434,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const { documentId } = request.params as { documentId: string };
-        const userId = (request as any).user.userId;
+        const userId = request.user!.userId;
 
         const result = await container.getDocumentSharesUseCase.execute({
           documentId,
@@ -1566,7 +1566,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
           classId: string;
         };
         const { isVisible } = request.body as { isVisible: boolean };
-        const userId = (request as any).user.userId;
+        const userId = request.user!.userId;
 
         const result = await container.updateDocumentVisibilityUseCase.execute({
           documentId,

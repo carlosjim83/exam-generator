@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import Image from 'next/image';
 import { useAuth } from '../context/AuthContext';
 import { ApiError } from '../services/api.service';
 import { AlertCircle } from 'lucide-react';
@@ -49,7 +50,13 @@ export function LoginForm() {
           href="/"
           className="flex items-center justify-center gap-2 mb-8 hover:opacity-80 transition-opacity"
         >
-          <img src="/logo.png" alt="Formydable" className="h-12 w-12 rounded-xl object-cover" />
+          <Image
+            src="/logo.png"
+            alt="Formydable"
+            className="h-12 w-12 rounded-xl object-cover"
+            width={48}
+            height={48}
+          />
           <h1 className="text-3xl font-bold">Formydable</h1>
         </Link>
 

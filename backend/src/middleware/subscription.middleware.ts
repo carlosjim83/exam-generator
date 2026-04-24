@@ -23,7 +23,7 @@ const checkLimitUseCase = new CheckSubscriptionLimitUseCase();
 export function checkSubscriptionLimit(limitType: LimitType) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     try {
-      const userId = (request as any).user?.userId;
+      const userId = request.user?.userId;
       if (!userId) {
         return reply.status(401).send({ error: 'Unauthorized' });
       }
@@ -78,11 +78,8 @@ export function checkSubscriptionLimit(limitType: LimitType) {
           remaining: result.remaining,
         });
       }
-
-      // Attach limit info to request for potential use in handlers
-      (request as any).subscriptionLimit = result;
     } catch (error) {
-      console.error('Error checking subscription limit:', error);
+      request.log.error({ err: error }, 'Error checking subscription limit');
       return reply.status(500).send({ error: 'Failed to check subscription limits' });
     }
   };
@@ -93,7 +90,7 @@ export function checkSubscriptionLimit(limitType: LimitType) {
  */
 export async function requireActiveSubscription(request: FastifyRequest, reply: FastifyReply) {
   try {
-    const userId = (request as any).user?.userId;
+    const userId = request.user?.userId;
     if (!userId) {
       return reply.status(401).send({ error: 'Unauthorized' });
     }
@@ -114,11 +111,8 @@ export async function requireActiveSubscription(request: FastifyRequest, reply: 
           : 'Your subscription is not active.',
       });
     }
-
-    // Attach subscription info to request
-    (request as any).subscription = subscription;
   } catch (error) {
-    console.error('Error checking subscription status:', error);
+    request.log.error({ err: error }, 'Error checking subscription status');
     return reply.status(500).send({ error: 'Failed to check subscription status' });
   }
 }

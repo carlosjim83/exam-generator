@@ -13,6 +13,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -60,6 +61,7 @@ const documentService = new ApiDocumentService();
 const examService = new ApiExamService();
 
 export function ExamGenerationWizard() {
+  const router = useRouter();
   const { t } = useTranslation('common');
   const [currentStep, setCurrentStep] = useState<WizardStep>(1);
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -590,8 +592,7 @@ export function ExamGenerationWizard() {
                   </Button>
                   <Button
                     onClick={() => {
-                      // TODO: Navigate to exam details page
-                      window.location.href = `/dashboard/exams/${generatedExam.exam.id}`;
+                      router.push(`/dashboard/exams/${generatedExam.exam.id}`);
                     }}
                     className="flex-1"
                   >

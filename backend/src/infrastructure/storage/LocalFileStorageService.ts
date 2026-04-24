@@ -76,6 +76,29 @@ export class LocalFileStorageService implements IStorageService {
   }
 
   /**
+   * Sanitize filename to prevent path traversal
+   * Removes path separators and unsafe characters
+   */
+  private sanitizeFilename(filename: string): string {
+    return path.basename(filename).replaceAll(/[\\/:*?"<>|]/g, '_');
+  }
+
+  /**
+   * Verify that a resolved path stays within the storage directory
+   */
+  private assertWithinStorage(targetPath: string): void {
+    const resolvedTarget = path.resolve(targetPath);
+    const resolvedStorage = path.resolve(this.storageDir);
+
+    const isWithin =
+      resolvedTarget === resolvedStorage || resolvedTarget.startsWith(resolvedStorage + path.sep);
+
+    if (!isWithin) {
+      throw new Error('Access denied: file path is outside storage directory');
+    }
+  }
+
+  /**
    * Upload file to local storage
    * @param filename - Original filename
    * @param buffer - File buffer
@@ -85,10 +108,14 @@ export class LocalFileStorageService implements IStorageService {
     // Ensure storage directory exists
     await this.ensureStorageDir();
 
-    // Generate unique filename (timestamp + original filename)
+    // Generate unique filename (timestamp + sanitized original filename)
     const timestamp = Date.now();
-    const uniqueFilename = `${timestamp}-${filename}`;
+    const safeFilename = this.sanitizeFilename(filename);
+    const uniqueFilename = `${timestamp}-${safeFilename}`;
     const filePath = path.join(this.storageDir, uniqueFilename);
+
+    // Validate the resolved path stays within storage
+    this.assertWithinStorage(filePath);
 
     // Write file to disk
     await fs.writeFile(filePath, buffer);
@@ -142,6 +169,12 @@ export class LocalFileStorageService implements IStorageService {
     }
 
     // Remove 'file://' prefix
-    return url.replace('file://', '');
+    const filePath = url.slice('file://'.length);
+    const resolvedPath = path.resolve(filePath);
+
+    // Validate the resolved path stays within storage
+    this.assertWithinStorage(resolvedPath);
+
+    return resolvedPath;
   }
 }

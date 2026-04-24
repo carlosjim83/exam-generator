@@ -35,7 +35,7 @@ export async function authenticateUser(request: FastifyRequest, reply: FastifyRe
     const payload = container.tokenService.verifyAccessToken(token);
 
     // Attach user info to request
-    (request as any).user = payload;
+    request.user = payload;
   } catch (error: any) {
     // Handle JWT errors
     return reply.status(401).send({
@@ -54,7 +54,7 @@ export async function authenticateUser(request: FastifyRequest, reply: FastifyRe
 export function requireRoles(allowedRoles: string[]) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     // Get user from request (attached by authenticateUser)
-    const user = (request as any).user;
+    const user = request.user;
 
     if (!user) {
       return reply.status(401).send({

@@ -28,6 +28,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
   const router = useRouter();
 
+  // Listen for session expired events from API client
+  useEffect(() => {
+    const handleSessionExpired = () => {
+      apiClient.logout();
+      setAuthState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+      });
+      router.push('/login?error=session_expired');
+    };
+
+    window.addEventListener('api:session-expired', handleSessionExpired);
+    return () => window.removeEventListener('api:session-expired', handleSessionExpired);
+  }, [router]);
+
   // Check if user is already authenticated on mount
   useEffect(() => {
     const initAuth = async () => {

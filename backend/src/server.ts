@@ -50,7 +50,7 @@ const fastify = Fastify({
         ? { target: 'pino-pretty', options: { colorize: true } }
         : undefined,
   },
-  trustProxy: true,
+  trustProxy: env.TRUST_PROXY_HOPS,
   bodyLimit: MAX_FILE_SIZE,
 });
 

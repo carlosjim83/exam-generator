@@ -61,7 +61,7 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const userId = (request as any).user.userId;
+        const userId = request.user!.userId;
 
         // Execute GetDashboardStatsUseCase
         const result = await container.getDashboardStatsUseCase.execute({ userId });
@@ -159,7 +159,7 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const userId = (request as any).user.userId;
+        const userId = request.user!.userId;
         const query = request.query as { limit?: number };
         const limit = query.limit ? Math.min(Math.max(query.limit, 1), 50) : 10;
 

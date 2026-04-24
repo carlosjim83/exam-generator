@@ -138,7 +138,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         };
 
         const result = await container.assignExamToStudentUseCase.execute({
-          teacherId: (request as any).user.userId,
+          teacherId: request.user!.userId,
           examId: body.examId,
           studentId: body.studentId,
           dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
@@ -271,7 +271,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         const query = request.query as { status?: string };
 
         const result = await container.getAssignedExamsUseCase.execute({
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
           status: query.status as any,
         });
 
@@ -422,7 +422,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
         const result = await container.startExamUseCase.execute({
           assignmentId: id,
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
         });
 
         // Serialize entities for JSON response
@@ -594,7 +594,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
         const result = await container.submitExamAnswersUseCase.execute({
           assignmentId: id,
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
           answers: body.answers,
         });
 
@@ -720,7 +720,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
           assignmentId: id,
           questionId: body.questionId,
           answerText: body.answerText,
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
         });
 
         return reply.status(200).send(result);
@@ -904,7 +904,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
         const result = await container.getExamResultsUseCase.execute({
           assignmentId: id,
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
         });
 
         // Transform the use case result to match frontend expectations

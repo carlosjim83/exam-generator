@@ -1,44 +1,35 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Sparkles, Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 
 function AuthCallbackContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { setUser } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Processing authentication...');
 
   useEffect(() => {
+    const timeouts: ReturnType<typeof setTimeout>[] = [];
+
     const handleCallback = () => {
       try {
-        console.log('[OAuth Callback] Starting...');
-        console.log('[OAuth Callback] SearchParams:', searchParams.toString());
+        // Extract tokens and user data from URL hash fragment
+        const hash = window.location.hash.slice(1); // Remove leading '#'
+        const params = new URLSearchParams(hash);
 
-        // Extract tokens and user data from URL params
-        const accessToken = searchParams.get('accessToken');
-        const refreshToken = searchParams.get('refreshToken');
-        const userId = searchParams.get('userId');
-        const email = searchParams.get('email');
-        const firstName = searchParams.get('firstName');
-        const lastName = searchParams.get('lastName');
-        const role = searchParams.get('role') as 'TEACHER' | 'STUDENT';
-        const provider = searchParams.get('provider');
-
-        console.log('[OAuth Callback] Extracted data:', {
-          hasAccessToken: !!accessToken,
-          hasRefreshToken: !!refreshToken,
-          userId,
-          email,
-          firstName,
-          lastName,
-          role,
-          provider,
-        });
+        const accessToken = params.get('accessToken');
+        const refreshToken = params.get('refreshToken');
+        const userId = params.get('userId');
+        const email = params.get('email');
+        const firstName = params.get('firstName');
+        const lastName = params.get('lastName');
+        const role = params.get('role') as 'TEACHER' | 'STUDENT';
+        const provider = params.get('provider');
 
         // Validate required params
         if (
@@ -53,12 +44,10 @@ function AuthCallbackContent() {
           throw new Error('Missing required authentication parameters');
         }
 
-        console.log('[OAuth Callback] Storing tokens...');
-        // Store tokens in localStorage (using correct keys)
+        // Store tokens in localStorage
         localStorage.setItem('access_token', accessToken);
         localStorage.setItem('refresh_token', refreshToken);
 
-        console.log('[OAuth Callback] Updating auth context...');
         // Update auth context
         setUser({
           id: userId,
@@ -71,35 +60,48 @@ function AuthCallbackContent() {
           updatedAt: new Date().toISOString(),
         });
 
-        console.log('[OAuth Callback] Success! Redirecting to dashboard...');
         setStatus('success');
         setMessage(`Welcome, ${firstName}!`);
 
         // Redirect to dashboard after 1.5 seconds
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 1500);
+        timeouts.push(
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 1500)
+        );
       } catch (error: any) {
         console.error('[OAuth Callback] Error:', error);
         setStatus('error');
         setMessage(error.message || 'Authentication failed. Please try again.');
 
         // Redirect to login after 3 seconds
-        setTimeout(() => {
-          router.push('/login');
-        }, 3000);
+        timeouts.push(
+          setTimeout(() => {
+            router.push('/login');
+          }, 3000)
+        );
       }
     };
 
     handleCallback();
-  }, [searchParams, setUser, router]);
+
+    return () => {
+      timeouts.forEach(clearTimeout);
+    };
+  }, [setUser, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <img src="/logo.png" alt="Formydable" className="h-12 w-12 rounded-xl object-cover" />
+          <Image
+            src="/logo.png"
+            alt="Formydable"
+            className="h-12 w-12 rounded-xl object-cover"
+            width={48}
+            height={48}
+          />
           <h1 className="text-3xl font-bold">Formydable</h1>
         </div>
 

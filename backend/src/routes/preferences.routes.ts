@@ -39,7 +39,7 @@ export async function preferencesRoutes(fastify: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const userId = (request as any).user.userId;
+        const userId = request.user!.userId;
 
         // Get or create preferences
         let preferences = await prisma.userPreferences.findUnique({
@@ -129,7 +129,7 @@ export async function preferencesRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const { language, theme } = request.body as { language?: string; theme?: string };
-        const userId = (request as any).user.userId;
+        const userId = request.user!.userId;
 
         // Validate at least one field is provided
         if (!language && !theme) {
