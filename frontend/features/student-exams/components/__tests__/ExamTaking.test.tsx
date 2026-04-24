@@ -49,9 +49,21 @@ describe('ExamTaking', () => {
   const mockAssignmentId = 'assignment-123';
 
   const mockQuestions: Question[] = [
-    { id: 'q1', text: 'What is 2 + 2?', order: 1 },
-    { id: 'q2', text: 'What is the capital of France?', order: 2 },
-    { id: 'q3', text: 'Explain the theory of relativity.', order: 3 },
+    { id: 'q1', text: 'What is 2 + 2?', order: 1, type: 'SHORT_ANSWER', options: [] },
+    {
+      id: 'q2',
+      text: 'What is the capital of France?',
+      order: 2,
+      type: 'SHORT_ANSWER',
+      options: [],
+    },
+    {
+      id: 'q3',
+      text: 'Explain the theory of relativity.',
+      order: 3,
+      type: 'SHORT_ANSWER',
+      options: [],
+    },
   ];
 
   const mockExam: ExamWithQuestions = {

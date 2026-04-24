@@ -83,7 +83,7 @@ jobs:
 
       - name: Run tests
         working-directory: ./frontend
-        run: pnpm test || echo "⚠️ Tests not configured yet - skipping"
+        run: pnpm test
         env:
           NODE_ENV: test
 

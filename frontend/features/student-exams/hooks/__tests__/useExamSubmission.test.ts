@@ -130,7 +130,9 @@ describe('useExamSubmission', () => {
       const { result } = renderHook(() => useExamSubmission(mockAssignmentId));
 
       await act(async () => {
-        await result.current.saveAnswer('q1', 'answer');
+        await expect(result.current.saveAnswer('q1', 'answer')).rejects.toThrow(
+          'Failed to save answer'
+        );
       });
 
       await waitFor(() => {
@@ -234,7 +236,7 @@ describe('useExamSubmission', () => {
       });
 
       await act(async () => {
-        await result.current.submitExam();
+        await expect(result.current.submitExam()).rejects.toThrow('Failed to submit exam');
       });
 
       await waitFor(() => {
