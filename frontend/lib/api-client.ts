@@ -183,7 +183,7 @@ export class ApiClient {
         if (response.status === 401) {
           TokenManager.clearTokens();
           if (typeof window !== 'undefined') {
-            window.location.href = '/login?error=session_expired';
+            window.dispatchEvent(new CustomEvent('api:session-expired'));
           }
           throw new ApiError(response.status, data.message || 'Session expired');
         }

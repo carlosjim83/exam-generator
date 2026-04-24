@@ -8,6 +8,24 @@ import type { FastifyInstance } from 'fastify';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 import { authorizeRoles } from '@middleware/role.middleware.js';
+import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+
+function serializeAssignment(assignment: ExamAssignment) {
+  return {
+    id: assignment.id.value,
+    examId: assignment.examId,
+    studentId: assignment.studentId.value,
+    teacherId: assignment.teacherId.value,
+    status: assignment.status,
+    dueDate: assignment.dueDate?.toISOString() || null,
+    startedAt: assignment.startedAt?.toISOString() || null,
+    submittedAt: assignment.submittedAt?.toISOString() || null,
+    score: assignment.score,
+    feedback: assignment.feedback,
+    createdAt: assignment.createdAt.toISOString(),
+    updatedAt: assignment.updatedAt.toISOString(),
+  };
+}
 
 export async function studentRoutes(fastify: FastifyInstance) {
   // POST /api/students/assignments - Assign exam to student (teacher only)
@@ -50,9 +68,15 @@ export async function studentRoutes(fastify: FastifyInstance) {
                   id: { type: 'string' },
                   examId: { type: 'string' },
                   studentId: { type: 'string' },
+                  teacherId: { type: 'string' },
                   status: { type: 'string' },
-                  dueDate: { type: 'string' },
+                  dueDate: { type: 'string', nullable: true },
+                  startedAt: { type: 'string', nullable: true },
+                  submittedAt: { type: 'string', nullable: true },
+                  score: { type: 'number', nullable: true },
+                  feedback: { type: 'string', nullable: true },
                   createdAt: { type: 'string' },
+                  updatedAt: { type: 'string' },
                 },
               },
             },
@@ -114,13 +138,13 @@ export async function studentRoutes(fastify: FastifyInstance) {
         };
 
         const result = await container.assignExamToStudentUseCase.execute({
-          teacherId: (request as any).user.userId,
+          teacherId: request.user!.userId,
           examId: body.examId,
           studentId: body.studentId,
           dueDate: body.dueDate ? new Date(body.dueDate) : undefined,
         });
 
-        return reply.status(201).send({ assignment: result });
+        return reply.status(201).send({ assignment: serializeAssignment(result) });
       } catch (error: any) {
         fastify.log.error('Assign exam error:', error);
 
@@ -247,7 +271,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         const query = request.query as { status?: string };
 
         const result = await container.getAssignedExamsUseCase.execute({
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
           status: query.status as any,
         });
 
@@ -308,8 +332,17 @@ export async function studentRoutes(fastify: FastifyInstance) {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
+                  examId: { type: 'string' },
+                  studentId: { type: 'string' },
+                  teacherId: { type: 'string' },
                   status: { type: 'string' },
-                  startedAt: { type: 'string' },
+                  dueDate: { type: 'string', nullable: true },
+                  startedAt: { type: 'string', nullable: true },
+                  submittedAt: { type: 'string', nullable: true },
+                  score: { type: 'number', nullable: true },
+                  feedback: { type: 'string', nullable: true },
+                  createdAt: { type: 'string' },
+                  updatedAt: { type: 'string' },
                 },
               },
               exam: {
@@ -389,12 +422,12 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
         const result = await container.startExamUseCase.execute({
           assignmentId: id,
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
         });
 
         // Serialize entities for JSON response
         return reply.status(200).send({
-          assignment: result.assignment.toObject(),
+          assignment: serializeAssignment(result.assignment),
           exam: result.exam,
         });
       } catch (error: any) {
@@ -410,6 +443,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
         if (
           error.message.includes('only view your own') ||
+          error.message.includes('only access your own') ||
           error.message.includes('only start your own') ||
           error.message.includes('belong to')
         ) {
@@ -489,9 +523,17 @@ export async function studentRoutes(fastify: FastifyInstance) {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
+                  examId: { type: 'string' },
+                  studentId: { type: 'string' },
+                  teacherId: { type: 'string' },
                   status: { type: 'string' },
-                  submittedAt: { type: 'string' },
-                  score: { type: 'number' },
+                  dueDate: { type: 'string', nullable: true },
+                  startedAt: { type: 'string', nullable: true },
+                  submittedAt: { type: 'string', nullable: true },
+                  score: { type: 'number', nullable: true },
+                  feedback: { type: 'string', nullable: true },
+                  createdAt: { type: 'string' },
+                  updatedAt: { type: 'string' },
                 },
               },
             },
@@ -553,11 +595,11 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
         const result = await container.submitExamAnswersUseCase.execute({
           assignmentId: id,
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
           answers: body.answers,
         });
 
-        return reply.status(200).send({ assignment: result });
+        return reply.status(200).send({ assignment: serializeAssignment(result) });
       } catch (error: any) {
         fastify.log.error('Submit exam error:', error);
 
@@ -679,7 +721,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
           assignmentId: id,
           questionId: body.questionId,
           answerText: body.answerText,
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
         });
 
         return reply.status(200).send(result);
@@ -753,9 +795,17 @@ export async function studentRoutes(fastify: FastifyInstance) {
                 type: 'object',
                 properties: {
                   id: { type: 'string' },
+                  examId: { type: 'string' },
+                  studentId: { type: 'string' },
+                  teacherId: { type: 'string' },
                   status: { type: 'string' },
-                  score: { type: 'number' },
-                  submittedAt: { type: 'string' },
+                  dueDate: { type: 'string', nullable: true },
+                  startedAt: { type: 'string', nullable: true },
+                  submittedAt: { type: 'string', nullable: true },
+                  score: { type: 'number', nullable: true },
+                  feedback: { type: 'string', nullable: true },
+                  createdAt: { type: 'string' },
+                  updatedAt: { type: 'string' },
                 },
               },
               exam: {
@@ -855,7 +905,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
 
         const result = await container.getExamResultsUseCase.execute({
           assignmentId: id,
-          studentId: (request as any).user.userId,
+          studentId: request.user!.userId,
         });
 
         // Transform the use case result to match frontend expectations
@@ -887,7 +937,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
 
         return reply.status(200).send({
-          assignment: result.assignment.toObject(),
+          assignment: serializeAssignment(result.assignment),
           exam: {
             id: result.exam.id,
             title: result.exam.title,

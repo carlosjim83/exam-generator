@@ -174,9 +174,9 @@ export function StudentSection() {
               viewport={{ once: true }}
               className="mb-10 space-y-5"
             >
-              {benefits.map((benefit, index) => (
+              {benefits.map((benefit) => (
                 <motion.li
-                  key={index}
+                  key={benefit}
                   variants={itemVariants}
                   className="flex items-start gap-4 group"
                 >

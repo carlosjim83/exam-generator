@@ -81,8 +81,9 @@ export async function examRoutes(fastify: FastifyInstance) {
                 properties: {
                   id: { type: 'string' },
                   title: { type: 'string' },
-                  description: { type: 'string' },
+                  description: { type: 'string', nullable: true },
                   questionCount: { type: 'integer' },
+                  documentCount: { type: 'integer' },
                   createdAt: { type: 'string' },
                 },
               },
@@ -165,7 +166,7 @@ export async function examRoutes(fastify: FastifyInstance) {
         };
 
         const result = await container.generateExamUseCase.execute({
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
           documentIds: body.documentIds,
           title: body.title,
           description: body.description,
@@ -271,7 +272,7 @@ export async function examRoutes(fastify: FastifyInstance) {
     async (request, reply) => {
       try {
         const result = await container.listExamsUseCase.execute({
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         return reply.status(200).send(result);
@@ -376,7 +377,7 @@ export async function examRoutes(fastify: FastifyInstance) {
 
         const result = await container.getExamUseCase.execute({
           examId: id,
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         return reply.status(200).send(result);
@@ -470,7 +471,7 @@ export async function examRoutes(fastify: FastifyInstance) {
 
         const result = await container.deleteExamUseCase.execute({
           examId: id,
-          userId: (request as any).user.userId,
+          userId: request.user!.userId,
         });
 
         return reply.status(200).send(result);

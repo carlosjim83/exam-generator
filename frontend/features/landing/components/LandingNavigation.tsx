@@ -1,8 +1,10 @@
 'use client';
 
 import { useTranslation } from 'react-i18next';
+import Link from 'next/link';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 import { Globe, MoreVertical, Menu, X } from 'lucide-react';
 import {
   DropdownMenu,
@@ -90,10 +92,16 @@ export function LandingNavigation() {
             whileTap={{ scale: 0.95 }}
             className="flex items-center gap-2"
           >
-            <a href="/" className="flex items-center gap-3">
-              <img src="/logo.png" alt="Formydable" className="h-9 w-9 rounded-xl object-cover" />
+            <Link href="/" className="flex items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="Formydable"
+                className="h-9 w-9 rounded-xl object-cover"
+                width={36}
+                height={36}
+              />
               <span className="text-xl font-semibold text-white">Formydable</span>
-            </a>
+            </Link>
           </motion.div>
 
           {/* Desktop Navigation Links */}
@@ -194,7 +202,7 @@ export function LandingNavigation() {
                     className="text-black font-medium px-4 hover:opacity-90 transition-opacity"
                     style={{ backgroundColor: colors.logo.bg }}
                   >
-                    <a href="/login">{t('common:auth.signIn')}</a>
+                    <Link href="/login">{t('common:auth.signIn')}</Link>
                   </Button>
                 </motion.div>
               )}

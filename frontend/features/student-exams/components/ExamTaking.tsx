@@ -80,7 +80,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
       const existingAnswer = getAnswerForQuestion(currentQuestion.id);
       setCurrentAnswer(existingAnswer ?? '');
     }
-  }, [currentQuestion, getAnswerForQuestion]);
+  }, [currentQuestion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Call onComplete when exam is submitted
   useEffect(() => {

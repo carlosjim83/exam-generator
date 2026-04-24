@@ -23,6 +23,7 @@ describe('GetAssignedExamsUseCase', () => {
       update: vi.fn(),
       delete: vi.fn(),
       findAll: vi.fn(),
+      findAllWithExam: vi.fn(),
     } as any;
 
     useCase = new GetAssignedExamsUseCase(mockAssignmentRepo);
@@ -41,7 +42,7 @@ describe('GetAssignedExamsUseCase', () => {
   describe('🟢 GREEN: Success cases', () => {
     it('should return empty array when student has no assignments', async () => {
       // Arrange
-      vi.mocked(mockAssignmentRepo.findAll).mockResolvedValue([]);
+      vi.mocked(mockAssignmentRepo.findAllWithExam).mockResolvedValue([]);
 
       // Act
       const result = await useCase.execute({ studentId });
@@ -49,7 +50,7 @@ describe('GetAssignedExamsUseCase', () => {
       // Assert
       expect(result.assignments).toEqual([]);
       expect(result.total).toBe(0);
-      expect(mockAssignmentRepo.findAll).toHaveBeenCalledWith(
+      expect(mockAssignmentRepo.findAllWithExam).toHaveBeenCalledWith(
         expect.objectContaining({
           studentId: expect.objectContaining({ value: studentId }),
         })
@@ -88,7 +89,22 @@ describe('GetAssignedExamsUseCase', () => {
         updatedAt: new Date('2026-02-10T14:30:00Z'),
       });
 
-      vi.mocked(mockAssignmentRepo.findAll).mockResolvedValue([assignment1, assignment2]);
+      vi.mocked(mockAssignmentRepo.findAllWithExam).mockResolvedValue([
+        {
+          assignment: assignment1,
+          exam: {
+            id: examId1,
+            title: 'Exam 1',
+            description: null,
+            questionCount: 10,
+            maxScore: 100,
+          },
+        },
+        {
+          assignment: assignment2,
+          exam: { id: examId2, title: 'Exam 2', description: null, questionCount: 5, maxScore: 50 },
+        },
+      ]);
 
       // Act
       const result = await useCase.execute({ studentId });
@@ -96,8 +112,8 @@ describe('GetAssignedExamsUseCase', () => {
       // Assert
       expect(result.assignments).toHaveLength(2);
       expect(result.total).toBe(2);
-      expect(result.assignments[0].status).toBe('PENDING');
-      expect(result.assignments[1].status).toBe('IN_PROGRESS');
+      expect(result.assignments[0].assignment.status).toBe('PENDING');
+      expect(result.assignments[1].assignment.status).toBe('IN_PROGRESS');
     });
 
     it('should filter assignments by status', async () => {
@@ -117,7 +133,18 @@ describe('GetAssignedExamsUseCase', () => {
         updatedAt: new Date(),
       });
 
-      vi.mocked(mockAssignmentRepo.findAll).mockResolvedValue([pendingAssignment]);
+      vi.mocked(mockAssignmentRepo.findAllWithExam).mockResolvedValue([
+        {
+          assignment: pendingAssignment,
+          exam: {
+            id: examId1,
+            title: 'Exam 1',
+            description: null,
+            questionCount: 10,
+            maxScore: 100,
+          },
+        },
+      ]);
 
       // Act
       const result = await useCase.execute({
@@ -127,8 +154,8 @@ describe('GetAssignedExamsUseCase', () => {
 
       // Assert
       expect(result.assignments).toHaveLength(1);
-      expect(result.assignments[0].status).toBe('PENDING');
-      expect(mockAssignmentRepo.findAll).toHaveBeenCalledWith(
+      expect(result.assignments[0].assignment.status).toBe('PENDING');
+      expect(mockAssignmentRepo.findAllWithExam).toHaveBeenCalledWith(
         expect.objectContaining({
           studentId: expect.objectContaining({ value: studentId }),
           status: ExamAssignmentStatus.PENDING,
@@ -153,13 +180,24 @@ describe('GetAssignedExamsUseCase', () => {
         updatedAt: new Date('2026-02-20T11:30:00Z'),
       });
 
-      vi.mocked(mockAssignmentRepo.findAll).mockResolvedValue([submittedAssignment]);
+      vi.mocked(mockAssignmentRepo.findAllWithExam).mockResolvedValue([
+        {
+          assignment: submittedAssignment,
+          exam: {
+            id: examId1,
+            title: 'Exam 1',
+            description: null,
+            questionCount: 10,
+            maxScore: 100,
+          },
+        },
+      ]);
 
       // Act
       const result = await useCase.execute({ studentId });
 
       // Assert
-      expect(result.assignments[0]).toMatchObject({
+      expect(result.assignments[0].assignment).toMatchObject({
         status: 'SUBMITTED',
         startedAt: expect.any(Date),
         submittedAt: expect.any(Date),
@@ -184,13 +222,24 @@ describe('GetAssignedExamsUseCase', () => {
         updatedAt: new Date('2026-02-21T09:00:00Z'),
       });
 
-      vi.mocked(mockAssignmentRepo.findAll).mockResolvedValue([gradedAssignment]);
+      vi.mocked(mockAssignmentRepo.findAllWithExam).mockResolvedValue([
+        {
+          assignment: gradedAssignment,
+          exam: {
+            id: examId1,
+            title: 'Exam 1',
+            description: null,
+            questionCount: 10,
+            maxScore: 100,
+          },
+        },
+      ]);
 
       // Act
       const result = await useCase.execute({ studentId });
 
       // Assert
-      expect(result.assignments[0]).toMatchObject({
+      expect(result.assignments[0].assignment).toMatchObject({
         status: 'GRADED',
         score: 85.5,
         feedback: 'Good work!',

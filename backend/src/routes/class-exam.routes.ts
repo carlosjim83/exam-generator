@@ -68,7 +68,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
       const body = request.body as {
         examId: string;
@@ -155,7 +155,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
 
       const input: GetClassExamsInput = {
@@ -240,7 +240,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId } = request.params as { classId: string };
 
       const input: GetStudentClassExamsInput = {
@@ -316,7 +316,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
 
       const input: GetStudentExamsInput = {
         studentId: userId,
@@ -392,7 +392,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId, classExamId } = request.params as { classId: string; classExamId: string };
       const body = request.body as Partial<{
         availableAt: string;
@@ -474,7 +474,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId, classExamId } = request.params as { classId: string; classExamId: string };
       const { isPublished } = request.body as { isPublished: boolean };
 
@@ -555,7 +555,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId, classExamId } = request.params as { classId: string; classExamId: string };
 
       const result = await container.getClassExamResultsUseCase.execute({
@@ -662,7 +662,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId, classExamId, studentId } = request.params as {
         classId: string;
         classExamId: string;
@@ -720,7 +720,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const userId = (request as any).user.userId;
+      const userId = request.user!.userId;
       const { classId, classExamId } = request.params as { classId: string; classExamId: string };
 
       await container.deleteClassExamUseCase.execute({

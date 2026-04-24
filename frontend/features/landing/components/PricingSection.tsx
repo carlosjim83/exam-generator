@@ -66,7 +66,7 @@ export function PricingSection({ id }: PricingSectionProps) {
                     <ul className="mb-8 space-y-4">
                       {freeFeatures.map((feature, index) => (
                         <motion.li
-                          key={index}
+                          key={feature}
                           initial={{ opacity: 0, x: -10 }}
                           whileInView={{ opacity: 1, x: 0 }}
                           viewport={{ once: true }}
@@ -133,7 +133,7 @@ export function PricingSection({ id }: PricingSectionProps) {
                     <ul className="mb-8 space-y-4">
                       {proFeatures.map((feature, index) => (
                         <motion.li
-                          key={index}
+                          key={feature}
                           initial={{ opacity: 0, x: -10 }}
                           whileInView={{ opacity: 1, x: 0 }}
                           viewport={{ once: true }}
@@ -186,7 +186,7 @@ export function PricingSection({ id }: PricingSectionProps) {
                     <ul className="mb-8 space-y-4">
                       {enterpriseFeatures.map((feature, index) => (
                         <motion.li
-                          key={index}
+                          key={feature}
                           initial={{ opacity: 0, x: -10 }}
                           whileInView={{ opacity: 1, x: 0 }}
                           viewport={{ once: true }}

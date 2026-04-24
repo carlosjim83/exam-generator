@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { Search, Bell, Sparkles, LogOut, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -28,7 +29,13 @@ export function TopNavigation() {
       <div className="container flex h-16 items-center px-4 md:px-6">
         {/* Logo */}
         <div className="flex items-center gap-2 mr-8">
-          <img src="/logo.png" alt="Formydable" className="h-8 w-8 rounded-lg object-cover" />
+          <Image
+            src="/logo.png"
+            alt="Formydable"
+            className="h-8 w-8 rounded-lg object-cover"
+            width={32}
+            height={32}
+          />
           <Link
             href={user?.role === 'STUDENT' ? '/student/exams' : '/dashboard'}
             className="font-semibold text-lg"

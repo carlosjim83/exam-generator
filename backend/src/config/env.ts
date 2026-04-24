@@ -8,6 +8,7 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '3001', 10),
   HOST: process.env.HOST || '0.0.0.0',
+  TRUST_PROXY_HOPS: parseInt(process.env.TRUST_PROXY_HOPS || '1', 10),
 
   // CORS
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
