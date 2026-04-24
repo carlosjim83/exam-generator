@@ -137,9 +137,30 @@ export const admin = new AdminJS({
         },
         listProperties: ['type', 'difficulty', 'questionText', 'orderIndex'],
         filterProperties: ['type', 'difficulty'],
+        editProperties: [
+          'type',
+          'difficulty',
+          'questionText',
+          'options',
+          'correctAnswer',
+          'explanation',
+          'points',
+          'orderIndex',
+        ],
         properties: {
           exam: { reference: 'Exam' },
           questionText: {
+            type: 'textarea',
+          },
+          options: {
+            isArray: true,
+            description: 'Enter options as JSON array: ["Option A", "Option B", "Option C"]',
+          },
+          correctAnswer: {
+            type: 'textarea',
+            description: 'The correct answer (should match one of the options)',
+          },
+          explanation: {
             type: 'textarea',
           },
         },
