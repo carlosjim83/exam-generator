@@ -52,7 +52,10 @@ describe('UploadDocumentUseCase', () => {
     it('should upload PDF document successfully', async () => {
       // Arrange
       const userId = randomUUID();
-      const fileBuffer = Buffer.from('PDF content');
+      const fileBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.from(' PDF content'),
+      ]);
       const filename = 'test-document.pdf';
       const blobUrl = 'file://uploads/test-document-12345.pdf';
 
@@ -107,7 +110,10 @@ describe('UploadDocumentUseCase', () => {
     it('should upload DOCX document successfully', async () => {
       // Arrange
       const userId = randomUUID();
-      const fileBuffer = Buffer.from('DOCX content');
+      const fileBuffer = Buffer.concat([
+        Buffer.from([0x50, 0x4b, 0x03, 0x04]), // ZIP/DOCX magic number
+        Buffer.from(' DOCX content'),
+      ]);
       const filename = 'presentation.docx';
       const blobUrl = 'file://uploads/presentation-67890.docx';
 
@@ -148,7 +154,10 @@ describe('UploadDocumentUseCase', () => {
     it('should auto-generate title from filename if not provided', async () => {
       // Arrange
       const userId = randomUUID();
-      const fileBuffer = Buffer.from('PDF content');
+      const fileBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.from(' PDF content'),
+      ]);
       const filename = 'my-awesome-document.pdf';
       const blobUrl = 'file://uploads/my-awesome-document-12345.pdf';
 
@@ -211,13 +220,16 @@ describe('UploadDocumentUseCase', () => {
           mimetype: 'application/pdf',
           buffer: emptyBuffer,
         })
-      ).rejects.toThrow('File size must be greater than zero');
+      ).rejects.toThrow('Invalid file: file is too small');
     });
 
     it('should reject file larger than 10MB', async () => {
       // Arrange
       const userId = randomUUID();
-      const largeBuffer = Buffer.alloc(11 * 1024 * 1024); // 11 MB
+      const largeBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.alloc(11 * 1024 * 1024 - 4), // Fill rest to reach 11MB
+      ]);
 
       // Mock validation failure
       vi.mocked(mockStorageService.validateFile).mockReturnValue({
@@ -260,10 +272,47 @@ describe('UploadDocumentUseCase', () => {
       ).rejects.toThrow('Invalid file type. Only PDF and DOCX are allowed');
     });
 
+    it('should reject PDF with invalid magic number (mimetype spoofing)', async () => {
+      // Arrange
+      const userId = randomUUID();
+      const fakePdfBuffer = Buffer.from('This is not a real PDF');
+
+      // Act & Assert
+      await expect(
+        useCase.execute({
+          userId,
+          title: 'Fake PDF',
+          filename: 'fake.pdf',
+          mimetype: 'application/pdf',
+          buffer: fakePdfBuffer,
+        })
+      ).rejects.toThrow('Invalid PDF file: file header does not match PDF format');
+    });
+
+    it('should reject DOCX with invalid magic number (mimetype spoofing)', async () => {
+      // Arrange
+      const userId = randomUUID();
+      const fakeDocxBuffer = Buffer.from('This is not a real DOCX');
+
+      // Act & Assert
+      await expect(
+        useCase.execute({
+          userId,
+          title: 'Fake DOCX',
+          filename: 'fake.docx',
+          mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          buffer: fakeDocxBuffer,
+        })
+      ).rejects.toThrow('Invalid DOCX file: file header does not match ZIP/DOCX format');
+    });
+
     it('should reject invalid user ID', async () => {
       // Arrange
       const invalidUserId = 'not-a-uuid';
-      const fileBuffer = Buffer.from('PDF content');
+      const fileBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.from(' PDF content'),
+      ]);
 
       // Act & Assert
       await expect(
@@ -282,7 +331,10 @@ describe('UploadDocumentUseCase', () => {
     it('should throw error if storage upload fails', async () => {
       // Arrange
       const userId = randomUUID();
-      const fileBuffer = Buffer.from('PDF content');
+      const fileBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.from(' PDF content'),
+      ]);
 
       vi.mocked(mockStorageService.upload).mockRejectedValue(
         new Error('Storage service unavailable')
@@ -306,7 +358,10 @@ describe('UploadDocumentUseCase', () => {
     it('should throw error if database save fails', async () => {
       // Arrange
       const userId = randomUUID();
-      const fileBuffer = Buffer.from('PDF content');
+      const fileBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.from(' PDF content'),
+      ]);
       const blobUrl = 'file://uploads/test.pdf';
 
       vi.mocked(mockStorageService.upload).mockResolvedValue(blobUrl);
@@ -331,7 +386,10 @@ describe('UploadDocumentUseCase', () => {
     it('should handle maximum file size (10MB)', async () => {
       // Arrange
       const userId = randomUUID();
-      const maxBuffer = Buffer.alloc(10 * 1024 * 1024); // Exactly 10 MB
+      const maxBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.alloc(10 * 1024 * 1024 - 4), // Fill rest to reach exactly 10MB
+      ]);
       const blobUrl = 'file://uploads/large.pdf';
 
       const mockDocument = Document.create({
@@ -369,7 +427,10 @@ describe('UploadDocumentUseCase', () => {
     it('should handle special characters in filename', async () => {
       // Arrange
       const userId = randomUUID();
-      const fileBuffer = Buffer.from('PDF content');
+      const fileBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.from(' PDF content'),
+      ]);
       const filename = 'test file (with special chars).pdf';
       const blobUrl = 'file://uploads/test-file-12345.pdf';
 

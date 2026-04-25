@@ -9,6 +9,7 @@ import Fastify from 'fastify';
 import { authenticate } from './admin/auth.js';
 import { admin } from './admin/index.js';
 import { env, validateEnv } from './config/env.js';
+import { DomainError } from './domain/errors/DomainError.js';
 import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 import { authRoutes } from './routes/auth.routes.js';
 import { classExamRoutes } from './routes/class-exam.routes.js';
@@ -52,6 +53,81 @@ const fastify = Fastify({
   },
   trustProxy: env.TRUST_PROXY_HOPS,
   bodyLimit: MAX_FILE_SIZE,
+});
+
+// Global error handler: sanitize unexpected errors (e.g. DB crashes)
+// while preserving domain errors that carry the correct status code.
+fastify.setErrorHandler((error, _request, reply) => {
+  // Domain errors are expected and safe to expose
+  if (error instanceof DomainError) {
+    return reply.status(error.statusCode).send({
+      statusCode: error.statusCode,
+      error: error.name.replace('Error', ''),
+      message: error.message,
+    });
+  }
+
+  const err = error as Error;
+  const msg = (err.message || '').toLowerCase();
+
+  // Temporary mapping for legacy domain errors that use plain Error.
+  // These will be migrated to DomainError subclasses over time.
+  if (msg.includes('not found')) {
+    return reply.status(404).send({
+      statusCode: 404,
+      error: 'Not Found',
+      message: err.message,
+    });
+  }
+
+  if (
+    msg.includes('unauthorized') ||
+    msg.includes('access denied') ||
+    msg.includes('permission') ||
+    msg.includes('only access your own') ||
+    msg.includes('not enrolled') ||
+    msg.includes('not a member') ||
+    msg.includes('not the teacher')
+  ) {
+    return reply.status(403).send({
+      statusCode: 403,
+      error: 'Forbidden',
+      message: err.message,
+    });
+  }
+
+  if (msg.includes('already') || msg.includes('duplicate') || msg.includes('exists')) {
+    return reply.status(409).send({
+      statusCode: 409,
+      error: 'Conflict',
+      message: err.message,
+    });
+  }
+
+  if (
+    msg.includes('required') ||
+    msg.includes('invalid') ||
+    msg.includes('must be') ||
+    msg.includes('cannot be') ||
+    msg.includes('expired') ||
+    msg.includes('too large') ||
+    msg.includes('unsupported')
+  ) {
+    return reply.status(400).send({
+      statusCode: 400,
+      error: 'Bad Request',
+      message: err.message,
+    });
+  }
+
+  // For everything else (Prisma errors, unexpected crashes, etc.)
+  // log the real error and send a generic message so DB details never leak.
+  fastify.log.error(error);
+  return reply.status(500).send({
+    statusCode: 500,
+    error: 'Internal Server Error',
+    message: 'Internal server error',
+  });
 });
 
 // Register CORS plugin

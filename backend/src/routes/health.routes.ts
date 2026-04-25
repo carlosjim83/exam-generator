@@ -236,7 +236,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
         fastify.log.error('Get job metrics error:', error);
 
         return reply.status(500).send({
-          error: error.message || 'Failed to get job metrics',
+          error: 'Failed to get job metrics',
         });
       }
     }

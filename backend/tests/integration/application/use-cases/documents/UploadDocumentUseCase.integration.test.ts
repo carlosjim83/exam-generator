@@ -112,7 +112,10 @@ describe('UploadDocumentUseCase [Integration]', () => {
 
     it('should upload DOCX document', async () => {
       // Arrange
-      const docxBuffer = Buffer.from('PK fake docx content'); // DOCX is a ZIP file
+      const docxBuffer = Buffer.concat([
+        Buffer.from([0x50, 0x4b, 0x03, 0x04]), // ZIP/DOCX magic number
+        Buffer.from(' fake docx content'),
+      ]);
       const input = {
         userId: testUserId,
         filename: 'document.docx',
@@ -181,12 +184,18 @@ describe('UploadDocumentUseCase [Integration]', () => {
       };
 
       // Act & Assert
-      await expect(uploadDocumentUseCase.execute(input)).rejects.toThrow('File is empty');
+      // Magic number check runs first and catches empty files
+      await expect(uploadDocumentUseCase.execute(input)).rejects.toThrow(
+        'Invalid file: file is too small'
+      );
     });
 
     it('should reject file larger than 10MB', async () => {
       // Arrange
-      const largeBuffer = Buffer.alloc(11 * 1024 * 1024); // 11MB
+      const largeBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.alloc(11 * 1024 * 1024 - 4), // Fill rest to reach 11MB
+      ]);
       const input = {
         userId: testUserId,
         filename: 'huge.pdf',
@@ -230,7 +239,10 @@ describe('UploadDocumentUseCase [Integration]', () => {
   describe('Edge cases', () => {
     it('should handle maximum allowed file size (10MB)', async () => {
       // Arrange
-      const maxBuffer = Buffer.alloc(10 * 1024 * 1024); // Exactly 10MB
+      const maxBuffer = Buffer.concat([
+        Buffer.from([0x25, 0x50, 0x44, 0x46]), // PDF magic number
+        Buffer.alloc(10 * 1024 * 1024 - 4), // Fill rest to reach exactly 10MB
+      ]);
       const input = {
         userId: testUserId,
         filename: 'max-size.pdf',

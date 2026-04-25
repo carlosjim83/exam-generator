@@ -47,13 +47,43 @@ export class UploadDocumentUseCase {
   ) {}
 
   /**
+   * Validate file magic numbers to ensure content matches declared type.
+   * Prevents bypassing mimetype checks by renaming file extensions.
+   */
+  private validateMagicNumbers(buffer: Buffer, mimetype: string): void {
+    const PDF_HEADER = Buffer.from([0x25, 0x50, 0x44, 0x46]); // %PDF
+    const ZIP_HEADER = Buffer.from([0x50, 0x4b, 0x03, 0x04]); // PK\x03\x04 (DOCX)
+
+    if (buffer.length < 4) {
+      throw new Error('Invalid file: file is too small');
+    }
+
+    const header = buffer.subarray(0, 4);
+
+    if (mimetype === 'application/pdf') {
+      if (!header.equals(PDF_HEADER)) {
+        throw new Error('Invalid PDF file: file header does not match PDF format');
+      }
+    } else if (
+      mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ) {
+      if (!header.equals(ZIP_HEADER)) {
+        throw new Error('Invalid DOCX file: file header does not match ZIP/DOCX format');
+      }
+    }
+  }
+
+  /**
    * Execute document upload
    * @param input - Upload input data
    * @returns Document metadata
    * @throws Error if validation fails or upload fails
    */
   async execute(input: UploadDocumentInput): Promise<UploadDocumentOutput> {
-    // 1. Validate file
+    // 1. Validate file magic numbers (security: prevent mimetype spoofing)
+    this.validateMagicNumbers(input.buffer, input.mimetype);
+
+    // 2. Validate file metadata
     const validation = this.storageService.validateFile({
       filename: input.filename,
       mimetype: input.mimetype,

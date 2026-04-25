@@ -91,6 +91,8 @@ Requirements:
 - Each question must have a detailed explanation
 - Questions should test understanding, not just memorization
 - Avoid questions that can be answered with "it depends" or "both"
+- Options must ONLY contain the actual answer choices, never JSON keys or property names like "correctAnswer", "explanation", etc.
+- Each option must be a valid answer that a student could select, not metadata or schema fragments
 
 Question Types:
 ${typeInstructions}
@@ -154,6 +156,45 @@ interface RawQuestion {
 }
 
 /**
+ * Check if an option looks like an LLM artifact/template marker.
+ * Only detects obvious JSON/template fragments, not valid answer text.
+ *
+ * Patterns detected:
+ * - Property names with JSON punctuation: "correctAnswer]:", "explanation":
+ * - Standalone property names that aren't sentences
+ * - JSON structure fragments
+ */
+export function isLLMArtifact(option: string): boolean {
+  const trimmed = option.trim();
+
+  // Pattern 1: Property name followed by JSON punctuation ]: or ]:
+  // e.g., "correctAnswer]:", "explanation]:", "options]:
+  if (/^\w+\]\s*:$/.test(trimmed)) return true;
+
+  // Pattern 2: Standalone property names (exact match, case insensitive)
+  // e.g., "correctAnswer", "explanation", "questionText" alone
+  const standaloneProperties = [
+    'correctanswer',
+    'explanation',
+    'questiontext',
+    'difficulty',
+    'points',
+    'options',
+    'type',
+  ];
+  if (standaloneProperties.includes(trimmed.toLowerCase())) return true;
+
+  // Pattern 3: Property with JSON quotes and colon
+  // e.g., '"correctAnswer":', '"explanation":'
+  if (/^"\w+"\s*:$/.test(trimmed)) return true;
+
+  // Pattern 4: Opening/closing braces alone (JSON structure fragments)
+  if (/^[{}]\s*$/.test(trimmed)) return true;
+
+  return false;
+}
+
+/**
  * Validate and normalize generated questions
  */
 function validateAndNormalizeQuestions(
@@ -188,6 +229,18 @@ function validateAndNormalizeQuestions(
       // Normalize options for TRUE_FALSE
       if (q.type === QuestionType.TRUE_FALSE) {
         q.options = ['True', 'False'];
+      }
+
+      // Filter out LLM artifacts from options
+      if (q.options && Array.isArray(q.options)) {
+        q.options = q.options.filter((opt) => {
+          if (typeof opt !== 'string') return false;
+          if (isLLMArtifact(opt)) {
+            console.warn(`Filtered out LLM artifact from options: "${opt}"`);
+            return false;
+          }
+          return true;
+        });
       }
 
       // Validate with Zod

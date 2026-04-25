@@ -183,7 +183,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to assign exam',
+          message: 'Failed to assign exam',
         });
       }
     }
@@ -300,7 +300,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to get assigned exams',
+          message: 'Failed to get assigned exams',
         });
       }
     }
@@ -473,7 +473,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to start exam',
+          message: 'Failed to start exam',
         });
       }
     }
@@ -630,7 +630,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to submit exam',
+          message: 'Failed to submit exam',
         });
       }
     }
@@ -763,7 +763,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to save answer',
+          message: 'Failed to save answer',
         });
       }
     }
@@ -982,7 +982,7 @@ export async function studentRoutes(fastify: FastifyInstance) {
         return reply.status(500).send({
           statusCode: 500,
           error: 'Internal Server Error',
-          message: error.message || 'Failed to get exam results',
+          message: 'Failed to get exam results',
         });
       }
     }

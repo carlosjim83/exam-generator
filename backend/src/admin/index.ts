@@ -1,8 +1,9 @@
 import AdminJS from 'adminjs';
 import { Database, Resource, getModelByName } from '@adminjs/prisma';
-import { PrismaClient } from '@prisma/client';
+import { container } from '@config/container.js';
 
-const prisma = new PrismaClient();
+// Reuse the PrismaClient from the container to avoid duplicate connections
+const prisma = container.prisma;
 AdminJS.registerAdapter({ Database, Resource });
 
 export const admin = new AdminJS({
@@ -137,9 +138,30 @@ export const admin = new AdminJS({
         },
         listProperties: ['type', 'difficulty', 'questionText', 'orderIndex'],
         filterProperties: ['type', 'difficulty'],
+        editProperties: [
+          'type',
+          'difficulty',
+          'questionText',
+          'options',
+          'correctAnswer',
+          'explanation',
+          'points',
+          'orderIndex',
+        ],
         properties: {
           exam: { reference: 'Exam' },
           questionText: {
+            type: 'textarea',
+          },
+          options: {
+            isArray: true,
+            description: 'Enter options as JSON array: ["Option A", "Option B", "Option C"]',
+          },
+          correctAnswer: {
+            type: 'textarea',
+            description: 'The correct answer (should match one of the options)',
+          },
+          explanation: {
             type: 'textarea',
           },
         },
