@@ -146,7 +146,12 @@ export async function oauthRoutes(fastify: FastifyInstance) {
       // Generate JWT tokens using container
       const userId = UserId.create(user.id);
       const email = Email.create(user.email);
-      const tokens = container.tokenService.generateTokenPair(userId, email, user.role as UserRole);
+      const tokens = container.tokenService.generateTokenPair(
+        userId,
+        email,
+        user.role as UserRole,
+        user.refreshTokenVersion ?? 0
+      );
 
       // Redirect to frontend with tokens in URL hash fragment
       // Hash fragments are NOT sent to the server, avoiding logs/history exposure
@@ -224,7 +229,8 @@ export async function oauthRoutes(fastify: FastifyInstance) {
         const tokens = container.tokenService.generateTokenPair(
           userId,
           userEmail,
-          user.role as UserRole
+          user.role as UserRole,
+          user.refreshTokenVersion ?? 0
         );
 
         // Redirect to frontend with tokens in URL hash fragment

@@ -23,6 +23,7 @@ export interface DecodedToken {
 
 export interface DecodedRefreshToken {
   userId: string;
+  version: number;
   iat: number;
   exp: number;
 }
@@ -36,7 +37,12 @@ export interface ITokenService {
   /**
    * Generate access and refresh token pair
    */
-  generateTokenPair(userId: UserId, email: Email, role: UserRole): TokenPair;
+  generateTokenPair(
+    userId: UserId,
+    email: Email,
+    role: UserRole,
+    refreshTokenVersion?: number
+  ): TokenPair;
 
   /**
    * Verify and decode an access token

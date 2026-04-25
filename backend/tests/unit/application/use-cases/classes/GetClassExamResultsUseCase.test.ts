@@ -240,6 +240,7 @@ describe('GetClassExamResultsUseCase', () => {
         role: UserRole.STUDENT,
         provider: AuthProvider.GOOGLE,
         providerId: 'google-123',
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -253,6 +254,7 @@ describe('GetClassExamResultsUseCase', () => {
         role: UserRole.STUDENT,
         provider: AuthProvider.GOOGLE,
         providerId: 'google-456',
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -473,6 +475,7 @@ describe('GetClassExamResultsUseCase', () => {
           role: UserRole.STUDENT,
           provider: AuthProvider.GOOGLE,
           providerId: 'google-' + id.value.slice(0, 3),
+          refreshTokenVersion: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -561,6 +564,7 @@ describe('GetClassExamResultsUseCase', () => {
         role: UserRole.STUDENT,
         provider: AuthProvider.GOOGLE,
         providerId: 'google-test',
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -646,6 +650,7 @@ describe('GetClassExamResultsUseCase', () => {
         role: UserRole.STUDENT,
         provider: AuthProvider.GOOGLE,
         providerId: 'google-test',
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -726,6 +731,7 @@ describe('GetClassExamResultsUseCase', () => {
         role: UserRole.STUDENT,
         provider: AuthProvider.GOOGLE,
         providerId: 'google-test',
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

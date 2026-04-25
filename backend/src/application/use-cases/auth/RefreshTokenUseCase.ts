@@ -50,10 +50,26 @@ export class RefreshTokenUseCase {
       throw new Error('User not found');
     }
 
-    // 4. Generate new token pair
-    const tokens = this.tokenService.generateTokenPair(user.id, user.email, user.role);
+    // 4. Verify refresh token version (rotation check)
+    //    If the token's version doesn't match the user's current version,
+    //    it means the token was already used or revoked.
+    if (decoded.version !== user.refreshTokenVersion) {
+      throw new Error('Refresh token has been revoked');
+    }
 
-    // 5. Return new tokens
+    // 5. Rotate: increment version to invalidate this token
+    user.rotateRefreshToken();
+    await this.userRepository.update(user);
+
+    // 6. Generate new token pair with the updated version
+    const tokens = this.tokenService.generateTokenPair(
+      user.id,
+      user.email,
+      user.role,
+      user.refreshTokenVersion
+    );
+
+    // 7. Return new tokens
     return { tokens };
   }
 }

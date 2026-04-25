@@ -64,6 +64,7 @@ describe('LoginUserUseCase', () => {
         role: UserRole.TEACHER,
         provider: AuthProvider.LOCAL,
         providerId: null,
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -110,7 +111,8 @@ describe('LoginUserUseCase', () => {
       expect(mockTokenService.generateTokenPair).toHaveBeenCalledWith(
         expect.objectContaining({ value: mockUserId }),
         expect.objectContaining({ value: 'test@example.com' }),
-        UserRole.TEACHER
+        UserRole.TEACHER,
+        0
       );
     });
 
@@ -130,6 +132,7 @@ describe('LoginUserUseCase', () => {
         role: UserRole.STUDENT,
         provider: AuthProvider.LOCAL,
         providerId: null,
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -185,6 +188,7 @@ describe('LoginUserUseCase', () => {
         role: UserRole.TEACHER,
         provider: AuthProvider.LOCAL,
         providerId: null,
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -217,6 +221,7 @@ describe('LoginUserUseCase', () => {
         role: UserRole.TEACHER,
         provider: AuthProvider.GOOGLE,
         providerId: 'google-123',
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -282,6 +287,7 @@ describe('LoginUserUseCase', () => {
         role: UserRole.TEACHER,
         provider: AuthProvider.LOCAL,
         providerId: null,
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -319,6 +325,7 @@ describe('LoginUserUseCase', () => {
         role: UserRole.TEACHER,
         provider: AuthProvider.LOCAL,
         providerId: null,
+        refreshTokenVersion: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       });

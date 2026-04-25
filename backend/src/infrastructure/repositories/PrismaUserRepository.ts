@@ -64,6 +64,7 @@ export class PrismaUserRepository implements IUserRepository {
         role: user.role,
         provider: user.provider,
         providerId: user.providerId,
+        refreshTokenVersion: user.refreshTokenVersion,
       },
     });
 
@@ -97,6 +98,7 @@ export class PrismaUserRepository implements IUserRepository {
       role: prismaUser.role as UserRole,
       provider: prismaUser.provider as AuthProvider,
       providerId: prismaUser.providerId,
+      refreshTokenVersion: prismaUser.refreshTokenVersion ?? 0,
       createdAt: prismaUser.createdAt,
       updatedAt: prismaUser.updatedAt,
     });

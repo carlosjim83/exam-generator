@@ -46,7 +46,12 @@ export class JWTTokenService implements ITokenService {
    * @param role - User role
    * @returns Token pair (accessToken, refreshToken)
    */
-  generateTokenPair(userId: UserId, email: Email, role: UserRole): TokenPair {
+  generateTokenPair(
+    userId: UserId,
+    email: Email,
+    role: UserRole,
+    refreshTokenVersion = 0
+  ): TokenPair {
     const payload: TokenPayload = {
       userId: userId.value,
       email: email.value,
@@ -58,10 +63,14 @@ export class JWTTokenService implements ITokenService {
       expiresIn: this.accessTokenExpiresIn as any,
     });
 
-    // Generate refresh token (long-lived, minimal info)
-    const refreshToken = jwt.sign({ userId: userId.value }, this.refreshTokenSecret, {
-      expiresIn: this.refreshTokenExpiresIn as any,
-    });
+    // Generate refresh token (long-lived, includes version for rotation)
+    const refreshToken = jwt.sign(
+      { userId: userId.value, version: refreshTokenVersion },
+      this.refreshTokenSecret,
+      {
+        expiresIn: this.refreshTokenExpiresIn as any,
+      }
+    );
 
     return { accessToken, refreshToken };
   }
@@ -107,6 +116,9 @@ export class JWTTokenService implements ITokenService {
       // Validate required fields exist
       if (!decoded.userId) {
         throw new Error('Invalid refresh token payload: missing userId');
+      }
+      if (typeof decoded.version !== 'number') {
+        throw new Error('Invalid refresh token payload: missing version');
       }
 
       return decoded;

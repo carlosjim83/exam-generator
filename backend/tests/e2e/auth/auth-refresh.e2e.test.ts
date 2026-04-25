@@ -115,7 +115,7 @@ describe('POST /auth/refresh', () => {
     it('should return 401 for expired refresh token', async () => {
       // Create expired refresh token (already expired)
       const expiredToken = jwt.sign(
-        { userId: 'test-user-id' },
+        { userId: 'test-user-id', version: 0 },
         env.JWT_REFRESH_SECRET,
         { expiresIn: '-1s' } // Negative expiration = already expired
       );
@@ -137,9 +137,11 @@ describe('POST /auth/refresh', () => {
     it('should return 401 for refresh token with non-existent user', async () => {
       // Create valid token but for non-existent user (use unique UUID that doesn't exist)
       const nonExistentUserId = '12345678-1234-1234-1234-123456789012';
-      const nonExistentToken = jwt.sign({ userId: nonExistentUserId }, env.JWT_REFRESH_SECRET, {
-        expiresIn: '7d',
-      });
+      const nonExistentToken = jwt.sign(
+        { userId: nonExistentUserId, version: 0 },
+        env.JWT_REFRESH_SECRET,
+        { expiresIn: '7d' }
+      );
 
       const response = await app.inject({
         method: 'POST',
