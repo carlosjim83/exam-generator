@@ -72,7 +72,12 @@ export class LoginUserUseCase {
     }
 
     // 5. Generate JWT tokens
-    const tokens = this.tokenService.generateTokenPair(user.id, user.email, user.role);
+    const tokens = this.tokenService.generateTokenPair(
+      user.id,
+      user.email,
+      user.role,
+      user.refreshTokenVersion
+    );
 
     // 6. Return DTO (Data Transfer Object)
     return {

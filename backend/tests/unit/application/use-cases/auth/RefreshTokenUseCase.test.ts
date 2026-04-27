@@ -3,9 +3,8 @@ import { randomUUID } from 'crypto';
 import { RefreshTokenUseCase } from '@application/use-cases/auth/RefreshTokenUseCase.js';
 import { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { ITokenService, DecodedRefreshToken } from '@domain/services/ITokenService.js';
-import { User, UserRole, AuthProvider } from '@domain/entities/User.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import { Email } from '@domain/value-objects/Email.js';
+import { UserRole } from '@domain/entities/User.js';
+import { DomainUserMother } from '@tests/helpers/factories/DomainUserMother.js';
 
 describe('RefreshTokenUseCase', () => {
   let refreshTokenUseCase: RefreshTokenUseCase;
@@ -41,27 +40,17 @@ describe('RefreshTokenUseCase', () => {
         refreshToken: 'valid_refresh_token',
       };
 
-      // Mock: decode refresh token
+      // Mock: decode refresh token (version matches user)
       const decodedToken: DecodedRefreshToken = {
         userId: mockUserId,
+        version: 0,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 3600,
       };
       vi.mocked(mockTokenService.verifyRefreshToken).mockReturnValue(decodedToken);
 
       // Mock: user exists
-      const mockUser = User.create({
-        id: UserId.create(mockUserId),
-        email: Email.create('test@example.com'),
-        passwordHash: 'hashed_password',
-        firstName: 'John',
-        lastName: 'Doe',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      const mockUser = DomainUserMother.teacher({ id: mockUserId });
       vi.mocked(mockUserRepository.findById).mockResolvedValue(mockUser);
 
       // Mock: new token pair
@@ -87,7 +76,8 @@ describe('RefreshTokenUseCase', () => {
       expect(mockTokenService.generateTokenPair).toHaveBeenCalledWith(
         expect.objectContaining({ value: mockUserId }),
         expect.objectContaining({ value: 'test@example.com' }),
-        UserRole.TEACHER
+        UserRole.TEACHER,
+        1 // version incremented after rotation
       );
     });
 
@@ -100,23 +90,13 @@ describe('RefreshTokenUseCase', () => {
 
       const decodedToken: DecodedRefreshToken = {
         userId: mockUserId,
+        version: 0,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 3600,
       };
       vi.mocked(mockTokenService.verifyRefreshToken).mockReturnValue(decodedToken);
 
-      const mockUser = User.create({
-        id: UserId.create(mockUserId),
-        email: Email.create('student@example.com'),
-        passwordHash: 'hashed',
-        firstName: 'Jane',
-        lastName: 'Smith',
-        role: UserRole.STUDENT,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      const mockUser = DomainUserMother.student({ id: mockUserId, email: 'student@example.com' });
       vi.mocked(mockUserRepository.findById).mockResolvedValue(mockUser);
 
       vi.mocked(mockTokenService.generateTokenPair).mockReturnValue({
@@ -132,7 +112,8 @@ describe('RefreshTokenUseCase', () => {
       expect(mockTokenService.generateTokenPair).toHaveBeenCalledWith(
         expect.objectContaining({ value: mockUserId }),
         expect.objectContaining({ value: 'student@example.com' }),
-        UserRole.STUDENT
+        UserRole.STUDENT,
+        1
       );
     });
   });
@@ -231,24 +212,14 @@ describe('RefreshTokenUseCase', () => {
 
       const decodedToken: DecodedRefreshToken = {
         userId: mockUserId,
+        version: 0,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 3600,
       };
       vi.mocked(mockTokenService.verifyRefreshToken).mockReturnValue(decodedToken);
 
       // OAuth user (no password)
-      const mockOAuthUser = User.create({
-        id: UserId.create(mockUserId),
-        email: Email.create('oauth@example.com'),
-        passwordHash: null, // OAuth users have no password
-        firstName: 'OAuth',
-        lastName: 'User',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.GOOGLE,
-        providerId: 'google-123',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      const mockOAuthUser = DomainUserMother.oauth({ id: mockUserId, email: 'oauth@example.com' });
       vi.mocked(mockUserRepository.findById).mockResolvedValue(mockOAuthUser);
 
       vi.mocked(mockTokenService.generateTokenPair).mockReturnValue({
@@ -264,7 +235,8 @@ describe('RefreshTokenUseCase', () => {
       expect(mockTokenService.generateTokenPair).toHaveBeenCalledWith(
         expect.objectContaining({ value: mockUserId }),
         expect.objectContaining({ value: 'oauth@example.com' }),
-        UserRole.TEACHER
+        UserRole.TEACHER,
+        1
       );
     });
 
@@ -277,23 +249,13 @@ describe('RefreshTokenUseCase', () => {
 
       const decodedToken: DecodedRefreshToken = {
         userId: mockUserId,
+        version: 0,
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + 3600,
       };
       vi.mocked(mockTokenService.verifyRefreshToken).mockReturnValue(decodedToken);
 
-      const mockUser = User.create({
-        id: UserId.create(mockUserId),
-        email: Email.create('test@example.com'),
-        passwordHash: 'hashed',
-        firstName: 'Test',
-        lastName: 'User',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
+      const mockUser = DomainUserMother.teacher({ id: mockUserId });
       vi.mocked(mockUserRepository.findById).mockResolvedValue(mockUser);
 
       vi.mocked(mockTokenService.generateTokenPair).mockReturnValue({

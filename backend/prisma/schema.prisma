@@ -28,6 +28,9 @@ model User {
   // OAuth fields
   providerId String? @map("provider_id") // ID from OAuth provider
 
+  // Refresh token rotation version
+  refreshTokenVersion Int @default(0) @map("refresh_token_version")
+
   // Timestamps
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

@@ -91,7 +91,8 @@ export class RegisterUserUseCase {
     const tokens = this.tokenService.generateTokenPair(
       savedUser.id,
       savedUser.email,
-      savedUser.role
+      savedUser.role,
+      savedUser.refreshTokenVersion
     );
 
     // 6. Automatically create Free tier subscription for teachers

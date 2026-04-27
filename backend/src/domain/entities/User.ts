@@ -22,6 +22,7 @@ export interface UserProps {
   role: UserRole;
   provider: AuthProvider;
   providerId: string | null;
+  refreshTokenVersion: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -96,6 +97,10 @@ export class User {
     return this.props.providerId;
   }
 
+  get refreshTokenVersion(): number {
+    return this.props.refreshTokenVersion;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -119,6 +124,14 @@ export class User {
 
   hasPassword(): boolean {
     return this.props.passwordHash !== null;
+  }
+
+  /**
+   * Increment the refresh token version to invalidate all existing refresh tokens.
+   * Call this when rotating refresh tokens.
+   */
+  rotateRefreshToken(): void {
+    this.props.refreshTokenVersion += 1;
   }
 
   // Convert to plain object (for serialization)
