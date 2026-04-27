@@ -164,7 +164,7 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
                   <div className="space-y-2">
                     {question.options.map((option, i) => (
                       <div
-                        key={i}
+                        key={`option-${option}`}
                         className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
                           option === question.correctAnswer
                             ? 'border-green-500 bg-green-500/10 dark:bg-green-500/20'

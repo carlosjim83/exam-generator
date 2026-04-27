@@ -72,7 +72,7 @@ export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
+          <Card key={`class-exam-skeleton-${i}`}>
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-muted rounded-lg animate-pulse" />

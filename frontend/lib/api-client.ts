@@ -122,6 +122,9 @@ export class ApiError extends Error {
  * API Client - Centralized HTTP client with authentication
  */
 export class ApiClient {
+  private isRefreshing = false;
+  private refreshPromise: Promise<void> | null = null;
+
   /**
    * Get the base URL for API requests
    */
@@ -130,9 +133,20 @@ export class ApiClient {
   }
 
   /**
-   * Make an authenticated HTTP request
+   * Make an authenticated HTTP request with automatic token refresh on 401
    */
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    return this.requestWithAuth<T>(endpoint, options);
+  }
+
+  /**
+   * Core request logic that supports retry after token refresh
+   */
+  private async requestWithAuth<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    retryCount = 0
+  ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
     const headers: Record<string, string> = {};
 
@@ -179,13 +193,28 @@ export class ApiClient {
         if (response.status === 400 && data.errors) {
           throw new ApiError(response.status, data.message, data.errors);
         }
-        // Handle JWT expired or unauthorized
+        // Handle JWT expired or unauthorized - attempt refresh once
         if (response.status === 401) {
-          TokenManager.clearTokens();
-          if (typeof window !== 'undefined') {
-            window.dispatchEvent(new CustomEvent('api:session-expired'));
+          if (retryCount > 0) {
+            // Already retried after refresh, fail permanently
+            TokenManager.clearTokens();
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('api:session-expired'));
+            }
+            throw new ApiError(response.status, data.message || 'Session expired');
           }
-          throw new ApiError(response.status, data.message || 'Session expired');
+
+          // Avoid infinite loops on the refresh endpoint itself
+          if (endpoint === '/api/auth/refresh') {
+            TokenManager.clearTokens();
+            if (typeof window !== 'undefined') {
+              window.dispatchEvent(new CustomEvent('api:session-expired'));
+            }
+            throw new ApiError(response.status, data.message || 'Session expired');
+          }
+
+          await this.performRefresh();
+          return this.requestWithAuth<T>(endpoint, options, retryCount + 1);
         }
         throw new ApiError(response.status, data.message || 'Request failed');
       }
@@ -196,6 +225,56 @@ export class ApiClient {
         throw error;
       }
       throw new ApiError(500, 'Network error. Please try again.');
+    }
+  }
+
+  /**
+   * Perform token refresh, deduplicating concurrent requests
+   */
+  private async performRefresh(): Promise<void> {
+    if (this.isRefreshing && this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = this.doRefresh();
+
+    try {
+      await this.refreshPromise;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+    }
+  }
+
+  /**
+   * Execute the actual refresh request
+   */
+  private async doRefresh(): Promise<void> {
+    const refreshToken = TokenManager.getRefreshToken();
+    if (!refreshToken) {
+      throw new ApiError(401, 'No refresh token available');
+    }
+
+    try {
+      const response = await fetch(`${this.baseURL}/api/auth/refresh`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        throw new ApiError(response.status, 'Refresh failed');
+      }
+
+      const data = (await response.json()) as RefreshTokenResponse;
+      TokenManager.setTokens(data.accessToken, data.refreshToken);
+    } catch (error) {
+      TokenManager.clearTokens();
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('api:session-expired'));
+      }
+      throw error;
     }
   }
 

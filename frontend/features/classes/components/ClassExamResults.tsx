@@ -125,7 +125,7 @@ export function ClassExamResults({ classId, classExamId }: ClassExamResultsProps
           <CardContent>
             <div className="grid grid-cols-4 gap-4">
               {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-24" />
+                <Skeleton key={`stat-skeleton-${i}`} className="h-24" />
               ))}
             </div>
           </CardContent>

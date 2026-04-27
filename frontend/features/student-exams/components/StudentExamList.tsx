@@ -41,7 +41,7 @@ export function StudentExamList({ onExamSelect }: StudentExamListProps) {
     return (
       <div className="space-y-4" data-testid="student-exam-list-loading">
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
+          <Card key={`student-exam-skeleton-${i}`}>
             <CardContent className="p-6">
               <Skeleton className="h-6 w-3/4 mb-2" />
               <Skeleton className="h-4 w-1/2" />

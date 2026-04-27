@@ -57,7 +57,11 @@ export function StudentList({ students, loading = false, onRemoveStudent }: Stud
     setIsDeleting(true);
     try {
       await onRemoveStudent(studentToDelete.id);
-      toast.success(t('studentList.success.removed', { name: `${studentToDelete.firstName} ${studentToDelete.lastName}` }));
+      toast.success(
+        t('studentList.success.removed', {
+          name: `${studentToDelete.firstName} ${studentToDelete.lastName}`,
+        })
+      );
       setDeleteDialogOpen(false);
       setStudentToDelete(null);
     } catch (error) {
@@ -72,7 +76,10 @@ export function StudentList({ students, loading = false, onRemoveStudent }: Stud
     return (
       <div className="space-y-3">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
+          <div
+            key={`student-skeleton-${i}`}
+            className="flex items-center gap-4 p-4 border rounded-lg"
+          >
             <Skeleton className="h-10 w-10 rounded-full" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-1/3" />
@@ -103,9 +110,7 @@ export function StudentList({ students, loading = false, onRemoveStudent }: Stud
             <User className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="text-lg font-semibold mb-2">{t('studentList.noStudents')}</h3>
             <p className="text-muted-foreground">
-              {searchTerm
-                ? t('studentList.noSearchResults')
-                : t('studentList.noStudentsYet')}
+              {searchTerm ? t('studentList.noSearchResults') : t('studentList.noStudentsYet')}
             </p>
           </div>
         ) : (
@@ -153,7 +158,9 @@ export function StudentList({ students, loading = false, onRemoveStudent }: Stud
           <AlertDialogHeader>
             <AlertDialogTitle>{t('studentList.removeConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t('studentList.removeConfirmDescription', { name: `${studentToDelete?.firstName} ${studentToDelete?.lastName}` })}
+              {t('studentList.removeConfirmDescription', {
+                name: `${studentToDelete?.firstName} ${studentToDelete?.lastName}`,
+              })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
