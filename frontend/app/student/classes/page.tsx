@@ -64,7 +64,7 @@ export default function StudentClassesPage() {
           <PageHeader title={t('title')} subtitle={t('subtitle')} name={user?.firstName} />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-64 bg-muted rounded-lg animate-pulse" />
+              <div key={`class-skeleton-${i}`} className="h-64 bg-muted rounded-lg animate-pulse" />
             ))}
           </div>
         </div>

@@ -56,7 +56,7 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
           </CardContent>
         </Card>
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
+          <Card key={`exam-result-skeleton-${i}`}>
             <CardContent className="p-6">
               <Skeleton className="h-6 w-3/4 mb-4" />
               <Skeleton className="h-4 w-full" />

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dialog,
@@ -43,8 +43,18 @@ export function UploadDocumentDialog({
   const [error, setError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const documentService = useRef(new ApiDocumentService()).current;
+
+  // Cleanup timeout on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -134,7 +144,7 @@ export function UploadDocumentDialog({
       setUploadStatus('success');
 
       // Call success callback after a short delay to show success state
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         onUploadSuccess?.();
         handleClose();
       }, 1500);
@@ -146,6 +156,11 @@ export function UploadDocumentDialog({
 
   const handleClose = () => {
     if (uploadStatus === 'uploading') return; // Prevent closing during upload
+
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
 
     setFile(null);
     setTitle('');

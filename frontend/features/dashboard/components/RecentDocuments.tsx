@@ -107,18 +107,16 @@ function DocumentItem({
 
       <div className="min-w-0 flex-1 overflow-hidden">
         <div className="mb-1 flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <h4 className="truncate text-sm font-medium max-w-[300px] lg:max-w-[500px]">
-                  {document.title}
-                </h4>
-              </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-md">
-                <p className="break-words">{document.title}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <h4 className="truncate text-sm font-medium max-w-[300px] lg:max-w-[500px]">
+                {document.title}
+              </h4>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-md">
+              <p className="break-words">{document.title}</p>
+            </TooltipContent>
+          </Tooltip>
           <DocumentStatusBadge status={document.status} />
         </div>
         <p className="truncate text-xs text-muted-foreground">
@@ -209,51 +207,53 @@ export function RecentDocuments() {
   );
 
   return (
-    <div className="overflow-hidden">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">{t('dashboard:recentDocuments.title')}</h2>
-        <Link href="/dashboard/documents">
-          <Button variant="link" className="text-primary">
-            {t('dashboard:recentDocuments.viewAll')}
-          </Button>
-        </Link>
+    <TooltipProvider>
+      <div className="overflow-hidden">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold">{t('dashboard:recentDocuments.title')}</h2>
+          <Link href="/dashboard/documents">
+            <Button variant="link" className="text-primary">
+              {t('dashboard:recentDocuments.viewAll')}
+            </Button>
+          </Link>
+        </div>
+
+        <div className="space-y-2">
+          {loading && (
+            <>
+              <DocumentItemSkeleton />
+              <DocumentItemSkeleton />
+            </>
+          )}
+
+          {error && (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-sm text-destructive">{t('common:error')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {!loading && !error && documents.length === 0 && (
+            <Card>
+              <CardContent className="p-6 text-center">
+                <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">{t('noContent.noDocuments')}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {t('dashboard.uploadFirstDocument')}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {!loading &&
+            !error &&
+            documents.map((doc) => (
+              <DocumentItem key={doc.id} document={doc} onRetry={handleRetry} />
+            ))}
+        </div>
       </div>
-
-      <div className="space-y-2">
-        {loading && (
-          <>
-            <DocumentItemSkeleton />
-            <DocumentItemSkeleton />
-          </>
-        )}
-
-        {error && (
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-sm text-destructive">{t('common:error')}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{error.message}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {!loading && !error && documents.length === 0 && (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <FileText className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{t('noContent.noDocuments')}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('dashboard.uploadFirstDocument')}
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {!loading &&
-          !error &&
-          documents.map((doc) => (
-            <DocumentItem key={doc.id} document={doc} onRetry={handleRetry} />
-          ))}
-      </div>
-    </div>
+    </TooltipProvider>
   );
 }

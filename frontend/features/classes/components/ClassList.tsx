@@ -34,7 +34,7 @@ export function ClassList({ classes = [], loading = false, onRefresh }: ClassLis
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <Card key={i}>
+          <Card key={`class-skeleton-${i}`}>
             <CardContent className="p-6">
               <div className="h-6 w-3/4 bg-muted rounded mb-2" />
               <div className="h-4 w-1/2 bg-muted rounded" />

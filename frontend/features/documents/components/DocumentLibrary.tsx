@@ -230,7 +230,7 @@ export function DocumentLibrary() {
     return (
       <div className="space-y-4">
         {[1, 2, 3, 4, 5].map((i) => (
-          <Card key={i}>
+          <Card key={`doc-skeleton-${i}`}>
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <Skeleton className="h-12 w-12 rounded-lg" />
@@ -248,92 +248,92 @@ export function DocumentLibrary() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            type="text"
-            placeholder={t('documents:searchPlaceholder')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+    <TooltipProvider>
+      <div className="space-y-6">
+        {/* Search */}
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              type="text"
+              placeholder={t('documents:searchPlaceholder')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Button variant="outline" size="sm" onClick={fetchDocuments}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            {t('documents:refresh')}
+          </Button>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchDocuments}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          {t('documents:refresh')}
-        </Button>
-      </div>
 
-      {/* Stats */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">{documents.length}</div>
-            <div className="text-sm text-muted-foreground">{t('documents:totalDocuments')}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {documents.filter((d) => d.status === 'COMPLETED').length}
-            </div>
-            <div className="text-sm text-muted-foreground">{t('documents:ready')}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {documents.filter((d) => d.status === 'PROCESSING').length}
-            </div>
-            <div className="text-sm text-muted-foreground">{t('documents:processing')}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold">
-              {documents.filter((d) => d.status === 'FAILED').length}
-            </div>
-            <div className="text-sm text-muted-foreground">{t('documents:failed')}</div>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">{documents.length}</div>
+              <div className="text-sm text-muted-foreground">{t('documents:totalDocuments')}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">
+                {documents.filter((d) => d.status === 'COMPLETED').length}
+              </div>
+              <div className="text-sm text-muted-foreground">{t('documents:ready')}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">
+                {documents.filter((d) => d.status === 'PROCESSING').length}
+              </div>
+              <div className="text-sm text-muted-foreground">{t('documents:processing')}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold">
+                {documents.filter((d) => d.status === 'FAILED').length}
+              </div>
+              <div className="text-sm text-muted-foreground">{t('documents:failed')}</div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Documents List */}
-      {filteredDocuments.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <FileText className="mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-semibold">{t('documents:noDocumentsFound')}</h3>
-            <p className="text-sm text-muted-foreground">
-              {searchQuery ? t('documents:adjustSearch') : t('documents:noDocumentsDescription')}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {filteredDocuments.map((doc) => {
-            const fileSize = (doc.fileSize / (1024 * 1024)).toFixed(1) + ' MB';
-            const uploadDate = new Intl.DateTimeFormat('en-US', {
-              month: 'short',
-              day: 'numeric',
-              year: 'numeric',
-            }).format(new Date(doc.uploadedAt));
+        {/* Documents List */}
+        {filteredDocuments.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <FileText className="mb-4 h-12 w-12 text-gray-400" />
+              <h3 className="mb-2 text-lg font-semibold">{t('documents:noDocumentsFound')}</h3>
+              <p className="text-sm text-muted-foreground">
+                {searchQuery ? t('documents:adjustSearch') : t('documents:noDocumentsDescription')}
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {filteredDocuments.map((doc) => {
+              const fileSize = (doc.fileSize / (1024 * 1024)).toFixed(1) + ' MB';
+              const uploadDate = new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              }).format(new Date(doc.uploadedAt));
 
-            const timeSinceUpload = Date.now() - new Date(doc.uploadedAt).getTime();
-            const minutesSinceUpload = Math.floor(timeSinceUpload / 60000);
+              const timeSinceUpload = Date.now() - new Date(doc.uploadedAt).getTime();
+              const minutesSinceUpload = Math.floor(timeSinceUpload / 60000);
 
-            return (
-              <Card key={doc.id} className="transition-shadow hover:shadow-md">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <DocumentIcon mimeType={doc.mimeType} />
+              return (
+                <Card key={doc.id} className="transition-shadow hover:shadow-md">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-4">
+                      <DocumentIcon mimeType={doc.mimeType} />
 
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-1 flex items-center gap-2">
-                        <TooltipProvider>
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <h3 className="truncate text-base font-semibold">{doc.title}</h3>
@@ -342,36 +342,34 @@ export function DocumentLibrary() {
                               <p className="max-w-md">{doc.title}</p>
                             </TooltipContent>
                           </Tooltip>
-                        </TooltipProvider>
-                        <DocumentStatusBadge status={doc.status} />
+                          <DocumentStatusBadge status={doc.status} />
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span>{fileSize}</span>
+                          <span>•</span>
+                          <span>
+                            {t('documents:uploadedAt')} {uploadDate}
+                          </span>
+                          {doc.status === 'PROCESSING' && minutesSinceUpload > 0 && (
+                            <>
+                              <span>•</span>
+                              <span>
+                                {t('documents:processingFor', { minutes: minutesSinceUpload })}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{fileSize}</span>
-                        <span>•</span>
-                        <span>
-                          {t('documents:uploadedAt')} {uploadDate}
-                        </span>
-                        {doc.status === 'PROCESSING' && minutesSinceUpload > 0 && (
-                          <>
-                            <span>•</span>
-                            <span>
-                              {t('documents:processingFor', { minutes: minutesSinceUpload })}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      {(doc.status === 'FAILED' ||
-                        (doc.status === 'PROCESSING' && minutesSinceUpload > 5)) && (
-                        <Button variant="outline" size="sm" onClick={() => handleRetry(doc.id)}>
-                          <RefreshCw className="mr-2 h-4 w-4" />
-                          {t('documents:retry')}
-                        </Button>
-                      )}
-                      {doc.status === 'COMPLETED' && (
-                        <TooltipProvider>
+                      <div className="flex items-center gap-2">
+                        {(doc.status === 'FAILED' ||
+                          (doc.status === 'PROCESSING' && minutesSinceUpload > 5)) && (
+                          <Button variant="outline" size="sm" onClick={() => handleRetry(doc.id)}>
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                            {t('documents:retry')}
+                          </Button>
+                        )}
+                        {doc.status === 'COMPLETED' && (
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button
@@ -391,9 +389,7 @@ export function DocumentLibrary() {
                               <p>{t('documents:share.title')}</p>
                             </TooltipContent>
                           </Tooltip>
-                        </TooltipProvider>
-                      )}
-                      <TooltipProvider>
+                        )}
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -417,8 +413,6 @@ export function DocumentLibrary() {
                             </p>
                           </TooltipContent>
                         </Tooltip>
-                      </TooltipProvider>
-                      <TooltipProvider>
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -433,35 +427,35 @@ export function DocumentLibrary() {
                             <p>{t('documents:delete')}</p>
                           </TooltipContent>
                         </Tooltip>
-                      </TooltipProvider>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
 
-      {/* Delete Confirmation Dialog */}
-      <DeleteDocumentDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        onConfirm={confirmDelete}
-        documentTitle={documentToDelete?.title || ''}
-        isDeleting={isDeleting}
-      />
-
-      {/* Share Document Modal */}
-      {documentToShare && (
-        <ShareDocumentModal
-          open={shareModalOpen}
-          onOpenChange={setShareModalOpen}
-          documentId={documentToShare.id}
-          documentTitle={documentToShare.title}
-          onSuccess={handleShareSuccess}
+        {/* Delete Confirmation Dialog */}
+        <DeleteDocumentDialog
+          open={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={confirmDelete}
+          documentTitle={documentToDelete?.title || ''}
+          isDeleting={isDeleting}
         />
-      )}
-    </div>
+
+        {/* Share Document Modal */}
+        {documentToShare && (
+          <ShareDocumentModal
+            open={shareModalOpen}
+            onOpenChange={setShareModalOpen}
+            documentId={documentToShare.id}
+            documentTitle={documentToShare.title}
+            onSuccess={handleShareSuccess}
+          />
+        )}
+      </div>
+    </TooltipProvider>
   );
 }

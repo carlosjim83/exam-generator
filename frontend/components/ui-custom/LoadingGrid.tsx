@@ -23,7 +23,7 @@ export function LoadingGrid({ columns = 3, rows = 1 }: LoadingGridProps) {
   return (
     <div className={`grid ${gridCols} gap-4`}>
       {Array.from({ length: columns * rows }).map((_, i) => (
-        <Card key={i}>
+        <Card key={`loading-grid-${i}`}>
           <CardHeader>
             <Skeleton className="h-6 w-3/4" />
           </CardHeader>
