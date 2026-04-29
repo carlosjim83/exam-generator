@@ -1,3 +1,4 @@
+import { ConflictError, ValidationError } from '@domain/errors/DomainError.js';
 import type { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
 
@@ -33,7 +34,7 @@ export class ExamAssignment {
   static create(props: ExamAssignmentProps): ExamAssignment {
     // Validate initial status
     if (props.status !== ExamAssignmentStatus.PENDING && !props.startedAt) {
-      throw new Error('Non-pending assignments must have a startedAt date');
+      throw new ValidationError('Non-pending assignments must have a startedAt date');
     }
 
     // Validate submitted/graded assignments
@@ -42,12 +43,12 @@ export class ExamAssignment {
         props.status === ExamAssignmentStatus.GRADED) &&
       !props.submittedAt
     ) {
-      throw new Error('Submitted/graded assignments must have a submittedAt date');
+      throw new ValidationError('Submitted/graded assignments must have a submittedAt date');
     }
 
     // Validate score
     if (props.score !== null && (props.score < 0 || props.score > 100)) {
-      throw new Error('Score must be between 0 and 100');
+      throw new ValidationError('Score must be between 0 and 100');
     }
 
     return new ExamAssignment(props);
@@ -124,7 +125,7 @@ export class ExamAssignment {
 
   start(): ExamAssignment {
     if (!this.canStart()) {
-      throw new Error(`Cannot start assignment with status ${this.props.status}`);
+      throw new ConflictError(`Cannot start assignment with status ${this.props.status}`);
     }
 
     return ExamAssignment.create({
@@ -137,7 +138,7 @@ export class ExamAssignment {
 
   submit(score: number): ExamAssignment {
     if (!this.canSubmit()) {
-      throw new Error(`Cannot submit assignment with status ${this.props.status}`);
+      throw new ConflictError(`Cannot submit assignment with status ${this.props.status}`);
     }
 
     return ExamAssignment.create({
@@ -151,7 +152,7 @@ export class ExamAssignment {
 
   addFeedback(feedback: string): ExamAssignment {
     if (!this.isGraded()) {
-      throw new Error('Can only add feedback to graded assignments');
+      throw new ConflictError('Can only add feedback to graded assignments');
     }
 
     return ExamAssignment.create({
@@ -163,7 +164,7 @@ export class ExamAssignment {
 
   markAsGraded(): ExamAssignment {
     if (!this.isCompleted()) {
-      throw new Error(`Cannot mark as graded assignment with status ${this.props.status}`);
+      throw new ConflictError(`Cannot mark as graded assignment with status ${this.props.status}`);
     }
 
     return ExamAssignment.create({

@@ -1,5 +1,6 @@
 import type { IMessageBroker } from '@application/ports/IMessageBroker.js';
 import { DocumentStatus } from '@domain/entities/Document.js';
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -28,11 +29,11 @@ export class ReprocessDocumentUseCase {
     const document = await this.documentRepository.findById(documentId);
 
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     if (!document.isOwnedBy(userId)) {
-      throw new Error('Unauthorized: Document does not belong to user');
+      throw new ForbiddenError('Unauthorized: Document does not belong to user');
     }
 
     // Allow reprocessing for documents that are:
@@ -50,7 +51,7 @@ export class ReprocessDocumentUseCase {
 
       if (!isStuck) {
         const minutesLeft = Math.ceil((processingTimeoutMs - timeSinceUpdate) / 60000);
-        throw new Error(
+        throw new ConflictError(
           `Document is currently being processed. Please wait ~${minutesLeft} minute(s) or try again later.`
         );
       }

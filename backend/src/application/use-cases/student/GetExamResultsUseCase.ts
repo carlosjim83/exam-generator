@@ -2,6 +2,7 @@ import type { Exam } from '@domain/entities/Exam.js';
 import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
 import type { Question } from '@domain/entities/Question.js';
 import type { StudentAnswer } from '@domain/entities/StudentAnswer.js';
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
@@ -38,28 +39,28 @@ export class GetExamResultsUseCase {
     const assignment = await this.assignmentRepo.findById(AssignmentId.create(input.assignmentId));
 
     if (!assignment) {
-      throw new Error('Assignment not found');
+      throw new NotFoundError('Assignment not found');
     }
 
     // Verify ownership
     if (assignment.studentId.value !== input.studentId) {
-      throw new Error('You can only view your own results');
+      throw new ForbiddenError('You can only view your own results');
     }
 
     // Verify submitted or graded
     if (!assignment.isCompleted()) {
-      throw new Error('Exam has not been submitted yet');
+      throw new ConflictError('Exam has not been submitted yet');
     }
 
     // Get exam with questions
     const exam = await this.examRepo.findByIdWithQuestions(assignment.examId);
 
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundError('Exam not found');
     }
 
     if (!exam.questions || exam.questions.length === 0) {
-      throw new Error('Exam has no questions');
+      throw new ConflictError('Exam has no questions');
     }
 
     // Get student answers

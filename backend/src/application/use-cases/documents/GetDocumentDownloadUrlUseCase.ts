@@ -1,4 +1,5 @@
 import { DocumentStatus } from '@domain/entities/Document.js';
+import { NotFoundError, ConflictError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
@@ -43,12 +44,12 @@ export class GetDocumentDownloadUrlUseCase {
     // 1. Find document
     const document = await this.documentRepository.findById(documentId);
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     // 2. Validate document is completed
     if (document.status !== DocumentStatus.COMPLETED) {
-      throw new Error('Document is not ready for download');
+      throw new ConflictError('Document is not ready for download');
     }
 
     // 3. Find all classes where this document is shared (visible)
@@ -56,7 +57,7 @@ export class GetDocumentDownloadUrlUseCase {
     const visibleClassDocuments = classDocuments.filter((cd) => cd.isVisible);
 
     if (visibleClassDocuments.length === 0) {
-      throw new Error('This document is not publicly available');
+      throw new ForbiddenError('This document is not publicly available');
     }
 
     // 4. Check if student is enrolled in any of these classes
@@ -73,7 +74,7 @@ export class GetDocumentDownloadUrlUseCase {
     }
 
     if (!isAuthorized) {
-      throw new Error('You do not have access to this document');
+      throw new ForbiddenError('You do not have access to this document');
     }
 
     // 5. Return document blob URL (in production, this would be a SAS URL)

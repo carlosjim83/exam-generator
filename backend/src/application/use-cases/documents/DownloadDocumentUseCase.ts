@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
@@ -42,7 +43,7 @@ export class DownloadDocumentUseCase {
     const document = await this.documentRepository.findById(documentId);
 
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     // Check access: owner or student with visible share
@@ -55,7 +56,7 @@ export class DownloadDocumentUseCase {
     }
 
     if (!hasAccess) {
-      throw new Error('Unauthorized: You do not have access to this document');
+      throw new ForbiddenError('Unauthorized: You do not have access to this document');
     }
 
     // Download file from storage

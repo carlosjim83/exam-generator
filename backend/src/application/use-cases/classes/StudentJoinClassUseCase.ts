@@ -1,10 +1,11 @@
+import { FREE_TIER_LIMITS, LIMIT_ERRORS } from '@config/subscription-limits.js';
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
 import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
+import { NotFoundError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
-import { FREE_TIER_LIMITS, LIMIT_ERRORS } from '@config/subscription-limits.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -31,7 +32,7 @@ export class StudentJoinClassUseCase {
     // Find the class
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     // Check if student is already enrolled
@@ -41,7 +42,7 @@ export class StudentJoinClassUseCase {
     );
     if (existingEnrollment) {
       if (existingEnrollment.isActive) {
-        throw new Error('Already enrolled in this class');
+        throw new ConflictError('Already enrolled in this class');
       }
 
       // Re-enroll (reactivate)
@@ -117,7 +118,7 @@ export class StudentJoinClassUseCase {
           ? LIMIT_ERRORS.STUDENT_LIMIT.FREE
           : LIMIT_ERRORS.STUDENT_LIMIT.PRO;
 
-      throw new Error(errorMessage);
+      throw new ConflictError(errorMessage);
     }
   }
 
@@ -128,7 +129,7 @@ export class StudentJoinClassUseCase {
     const totalStudents = await this.enrollmentRepository.countTotalByTeacherId(teacherId);
 
     if (totalStudents >= FREE_TIER_LIMITS.MAX_STUDENTS) {
-      throw new Error(LIMIT_ERRORS.STUDENT_LIMIT.FREE);
+      throw new ConflictError(LIMIT_ERRORS.STUDENT_LIMIT.FREE);
     }
   }
 

@@ -3,6 +3,7 @@ import { writeFile, unlink, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 
 import { DocumentStatus } from '@domain/entities/Document.js';
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
@@ -66,11 +67,11 @@ export class ProcessDocumentUseCase {
       // 2. Find document and verify ownership
       const document = await this.documentRepository.findById(documentId);
       if (!document) {
-        throw new Error('Document not found');
+        throw new NotFoundError('Document not found');
       }
 
       if (document.userId.value !== userId.value) {
-        throw new Error('Unauthorized: Document does not belong to user');
+        throw new ForbiddenError('Unauthorized: Document does not belong to user');
       }
 
       // 3. Check if already processed (idempotent)

@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { Email } from '@domain/value-objects/Email.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
 
@@ -37,20 +38,20 @@ export class User {
   static create(props: UserProps): User {
     // Validation rules
     if (!props.firstName || props.firstName.trim().length === 0) {
-      throw new Error('First name is required');
+      throw new ValidationError('First name is required');
     }
     if (!props.lastName || props.lastName.trim().length === 0) {
-      throw new Error('Last name is required');
+      throw new ValidationError('Last name is required');
     }
 
     // OAuth users must not have password
     if (props.provider !== AuthProvider.LOCAL && props.passwordHash !== null) {
-      throw new Error('OAuth users cannot have a password');
+      throw new ValidationError('OAuth users cannot have a password');
     }
 
     // Local users must have password
     if (props.provider === AuthProvider.LOCAL && props.passwordHash === null) {
-      throw new Error('Local users must have a password');
+      throw new ValidationError('Local users must have a password');
     }
 
     return new User(props);

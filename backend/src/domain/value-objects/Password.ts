@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 /**
  * Password Value Object
  * Represents a valid password (minimum 8 characters)
@@ -5,7 +6,7 @@
 export class Password {
   private constructor(public readonly value: string) {
     if (!Password.isValid(value)) {
-      throw new Error('Password must be at least 8 characters long');
+      throw new ValidationError('Password must be at least 8 characters long');
     }
   }
 

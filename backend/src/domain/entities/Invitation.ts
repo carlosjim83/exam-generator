@@ -1,3 +1,4 @@
+import { ConflictError, ValidationError } from '@domain/errors/DomainError.js';
 import type { ClassId } from '@domain/value-objects/ClassId.js';
 import type { InvitationId } from '@domain/value-objects/InvitationId.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
@@ -41,11 +42,11 @@ export class Invitation {
 
   private validate(): void {
     if (!this.email || !this.isValidEmail(this.email)) {
-      throw new Error('Invalid email address');
+      throw new ValidationError('Invalid email address');
     }
 
     if (!this.token || this.token.length < 10) {
-      throw new Error('Token must be at least 10 characters');
+      throw new ValidationError('Token must be at least 10 characters');
     }
 
     // Validate expiration for PENDING and ACCEPTED invitations
@@ -53,7 +54,7 @@ export class Invitation {
     // For testing purposes, we create invitations with status PENDING but
     // allowed to have expiration in the past - isExpired() should check this
     if (this._status === 'ACCEPTED' && this.expiresAt <= new Date()) {
-      throw new Error('Expiration time must be in the future');
+      throw new ValidationError('Expiration time must be in the future');
     }
   }
 
@@ -74,12 +75,12 @@ export class Invitation {
   // Business methods
   accept(): void {
     if (this._status !== 'PENDING') {
-      throw new Error('Invitation is not pending');
+      throw new ConflictError('Invitation is not pending');
     }
 
     if (this.isExpired()) {
       this._status = 'EXPIRED';
-      throw new Error('Invitation has expired');
+      throw new ConflictError('Invitation has expired');
     }
 
     this._status = 'ACCEPTED';
@@ -88,7 +89,7 @@ export class Invitation {
 
   revoke(): void {
     if (this._status === 'ACCEPTED') {
-      throw new Error('Cannot revoke accepted invitation');
+      throw new ConflictError('Cannot revoke accepted invitation');
     }
 
     this._status = 'REVOKED';

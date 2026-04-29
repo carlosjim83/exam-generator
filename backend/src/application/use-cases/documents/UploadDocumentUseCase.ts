@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { DocumentUploadedEvent } from '@domain/events/DocumentEvents.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
@@ -55,20 +56,20 @@ export class UploadDocumentUseCase {
     const ZIP_HEADER = Buffer.from([0x50, 0x4b, 0x03, 0x04]); // PK\x03\x04 (DOCX)
 
     if (buffer.length < 4) {
-      throw new Error('Invalid file: file is too small');
+      throw new ValidationError('Invalid file: file is too small');
     }
 
     const header = buffer.subarray(0, 4);
 
     if (mimetype === 'application/pdf') {
       if (!header.equals(PDF_HEADER)) {
-        throw new Error('Invalid PDF file: file header does not match PDF format');
+        throw new ValidationError('Invalid PDF file: file header does not match PDF format');
       }
     } else if (
       mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
     ) {
       if (!header.equals(ZIP_HEADER)) {
-        throw new Error('Invalid DOCX file: file header does not match ZIP/DOCX format');
+        throw new ValidationError('Invalid DOCX file: file header does not match ZIP/DOCX format');
       }
     }
   }
@@ -91,7 +92,7 @@ export class UploadDocumentUseCase {
     });
 
     if (!validation.valid) {
-      throw new Error(validation.error || 'Invalid file');
+      throw new ValidationError(validation.error || 'Invalid file');
     }
 
     // 2. Upload to cloud storage

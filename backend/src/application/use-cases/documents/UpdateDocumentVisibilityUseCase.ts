@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -43,21 +44,21 @@ export class UpdateDocumentVisibilityUseCase {
     // 1. Verify document exists and belongs to user
     const document = await this.documentRepository.findById(documentId);
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     if (!document.isOwnedBy(userId)) {
-      throw new Error('You do not have permission to update this document');
+      throw new ForbiddenError('You do not have permission to update this document');
     }
 
     // 2. Verify class exists and belongs to user
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     if (!classEntity.teacherId.equals(userId)) {
-      throw new Error('You do not have permission to update visibility for this class');
+      throw new ForbiddenError('You do not have permission to update visibility for this class');
     }
 
     // 3. Find the ClassDocument relationship
@@ -66,7 +67,7 @@ export class UpdateDocumentVisibilityUseCase {
       documentId
     );
     if (!classDocument) {
-      throw new Error('Document is not shared with this class');
+      throw new ConflictError('Document is not shared with this class');
     }
 
     // 4. Update visibility

@@ -1,4 +1,5 @@
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
+import { NotFoundError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
@@ -22,16 +23,16 @@ export class StudentJoinClassWithInvitationUseCase {
     const invitation = await this.invitationRepository.findByToken(command.token);
 
     if (!invitation) {
-      throw new Error('Invitation not found');
+      throw new NotFoundError('Invitation not found');
     }
 
     if (invitation.isExpired()) {
       await this.invitationRepository.save(invitation);
-      throw new Error('Invitation has expired');
+      throw new ConflictError('Invitation has expired');
     }
 
     if (invitation.status !== 'PENDING') {
-      throw new Error('Invitation is no longer valid');
+      throw new ConflictError('Invitation is no longer valid');
     }
 
     const classId = new ClassId(invitation.classId.value);
@@ -43,7 +44,7 @@ export class StudentJoinClassWithInvitationUseCase {
     );
     if (existingEnrollment) {
       if (existingEnrollment.isActive) {
-        throw new Error('Already enrolled in this class');
+        throw new ConflictError('Already enrolled in this class');
       }
 
       const reactivatedEnrollment = new StudentEnrollment(

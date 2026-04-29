@@ -1,3 +1,4 @@
+import { ConflictError } from '@domain/errors/DomainError.js';
 import type { ClassId } from '@domain/value-objects/ClassId.js';
 import type { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
@@ -36,7 +37,7 @@ export class StudentEnrollment {
 
   leave(): void {
     if (!this._isActive) {
-      throw new Error('Student already left the class');
+      throw new ConflictError('Student already left the class');
     }
     this._leftAt = new Date();
     this._isActive = false;

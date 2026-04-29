@@ -1,6 +1,6 @@
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
-import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface StudentExamItem {

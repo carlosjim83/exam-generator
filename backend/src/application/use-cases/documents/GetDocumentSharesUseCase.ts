@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -41,11 +42,11 @@ export class GetDocumentSharesUseCase {
     // 1. Verify document exists and belongs to user
     const document = await this.documentRepository.findById(documentId);
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     if (!document.isOwnedBy(userId)) {
-      throw new Error("You do not have permission to view this document's shares");
+      throw new ForbiddenError("You do not have permission to view this document's shares");
     }
 
     // 2. Get all class-document relationships for this document

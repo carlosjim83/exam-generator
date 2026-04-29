@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 
 export interface StudentAnswerProps {
@@ -19,7 +20,7 @@ export class StudentAnswer {
 
   static create(props: StudentAnswerProps): StudentAnswer {
     if (!props.answerText || props.answerText.trim().length === 0) {
-      throw new Error('Answer text cannot be empty');
+      throw new ValidationError('Answer text cannot be empty');
     }
 
     return new StudentAnswer(props);

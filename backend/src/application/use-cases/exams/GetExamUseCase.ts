@@ -1,11 +1,12 @@
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import { ExamId } from '@domain/value-objects/ExamId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+
 /**
  * GetExamUseCase
  * Retrieves an exam with all its questions
  */
-
-import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
-import { ExamId } from '@domain/value-objects/ExamId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface GetExamInput {
   examId: string;
@@ -45,12 +46,12 @@ export class GetExamUseCase {
     const exam = await this.examRepository.findById(examId.value);
 
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundError('Exam not found');
     }
 
     // Authorization check
     if (exam.userId !== userId.value) {
-      throw new Error('Unauthorized: Exam does not belong to user');
+      throw new ForbiddenError('Unauthorized: Exam does not belong to user');
     }
 
     return {

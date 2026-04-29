@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { ClassDocumentId } from '@domain/value-objects/ClassDocumentId.js';
 import type { ClassId } from '@domain/value-objects/ClassId.js';
 import type { DocumentId } from '@domain/value-objects/DocumentId.js';
@@ -56,10 +57,10 @@ export class ClassDocument {
   }): ClassDocument {
     // Validation
     if (!props.classId) {
-      throw new Error('ClassId is required');
+      throw new ValidationError('ClassId is required');
     }
     if (!props.documentId) {
-      throw new Error('DocumentId is required');
+      throw new ValidationError('DocumentId is required');
     }
 
     // If isVisible is true and no publishedAt, set it to now
@@ -113,7 +114,7 @@ export class ClassDocument {
 
   updateOrder(newOrderIndex: number): void {
     if (newOrderIndex < 0) {
-      throw new Error('Order index cannot be negative');
+      throw new ValidationError('Order index cannot be negative');
     }
     this._orderIndex = newOrderIndex;
     this._updatedAt = new Date();

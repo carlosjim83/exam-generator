@@ -1,4 +1,5 @@
 import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
@@ -43,12 +44,12 @@ export class StartExamUseCase {
     const assignment = await this.assignmentRepo.findById(assignmentId);
 
     if (!assignment) {
-      throw new Error('Assignment not found');
+      throw new NotFoundError('Assignment not found');
     }
 
     // Verify ownership
     if (assignment.studentId.value !== input.studentId) {
-      throw new Error('You can only access your own assignments');
+      throw new ForbiddenError('You can only access your own assignments');
     }
 
     let finalAssignment: ExamAssignment;
@@ -62,13 +63,13 @@ export class StartExamUseCase {
       finalAssignment = assignment;
     } else {
       // SUBMITTED or GRADED - cannot resume
-      throw new Error(`This exam has already been completed. Status: ${assignment.status}`);
+      throw new ConflictError(`This exam has already been completed. Status: ${assignment.status}`);
     }
 
     // Get exam with questions
     const exam = await this.examRepo.findById(assignment.examId);
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundError('Exam not found');
     }
 
     // Get questions (they might not be loaded)

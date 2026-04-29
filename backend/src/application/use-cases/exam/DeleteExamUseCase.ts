@@ -1,3 +1,8 @@
+import { NotFoundError, ValidationError, ForbiddenError } from '@domain/errors/DomainError.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import { ExamId } from '@domain/value-objects/ExamId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+
 /**
  * DeleteExamUseCase
  *
@@ -6,10 +11,6 @@
  * - Verifies user owns the exam
  * - Deletes exam (cascade deletes questions via Prisma)
  */
-
-import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
-import { ExamId } from '@domain/value-objects/ExamId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface DeleteExamInput {
   examId: string;
@@ -27,10 +28,10 @@ export class DeleteExamUseCase {
   async execute(input: DeleteExamInput): Promise<DeleteExamOutput> {
     // Validate input
     if (!input.examId) {
-      throw new Error('examId is required');
+      throw new ValidationError('examId is required');
     }
     if (!input.userId) {
-      throw new Error('userId is required');
+      throw new ValidationError('userId is required');
     }
 
     const examId = ExamId.create(input.examId);
@@ -40,12 +41,12 @@ export class DeleteExamUseCase {
     const exam = await this.examRepository.findById(examId.value);
 
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundError('Exam not found');
     }
 
     // Verify ownership
     if (exam.userId !== userId.value) {
-      throw new Error('Unauthorized: You do not have access to this exam');
+      throw new ForbiddenError('Unauthorized: You do not have access to this exam');
     }
 
     // Delete exam (cascade deletes questions)

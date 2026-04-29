@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { DocumentDeletedEvent } from '@domain/events/DocumentEvents.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
@@ -25,12 +26,12 @@ export class DeleteDocumentUseCase {
     const document = await this.documentRepository.findById(documentId);
 
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     // Check ownership
     if (document.userId.value !== userId.value) {
-      throw new Error('Unauthorized: Document does not belong to user');
+      throw new ForbiddenError('Unauthorized: Document does not belong to user');
     }
 
     // Store metadata before deletion for the event

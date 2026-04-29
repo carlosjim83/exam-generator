@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { InvitationId } from '@domain/value-objects/InvitationId.js';
@@ -23,17 +24,17 @@ export class ResendInvitationUseCase {
     // Find invitation
     const invitation = await this.invitationRepository.findById(invitationId);
     if (!invitation) {
-      throw new Error('Invitation not found');
+      throw new NotFoundError('Invitation not found');
     }
 
     // Validate class ownership
     const classEntity = await this.classRepository.findById(invitation.classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     if (classEntity.teacherId.toString() !== userId.toString()) {
-      throw new Error('You do not have permission for this class');
+      throw new ForbiddenError('You do not have permission for this class');
     }
 
     // Note: In a real implementation, you would:

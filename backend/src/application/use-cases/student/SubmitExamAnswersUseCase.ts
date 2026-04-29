@@ -1,8 +1,14 @@
 import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
-import type { IAnswerGradingService } from '@domain/services/IAnswerGradingService.js';
+import {
+  NotFoundError,
+  ForbiddenError,
+  ConflictError,
+  ValidationError,
+} from '@domain/errors/DomainError.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
+import type { IAnswerGradingService } from '@domain/services/IAnswerGradingService.js';
 import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
 
 export interface SubmitExamAnswersInput {
@@ -27,31 +33,31 @@ export class SubmitExamAnswersUseCase {
     const assignment = await this.assignmentRepo.findById(AssignmentId.create(input.assignmentId));
 
     if (!assignment) {
-      throw new Error('Assignment not found');
+      throw new NotFoundError('Assignment not found');
     }
 
     // Verify ownership
     if (assignment.studentId.value !== input.studentId) {
-      throw new Error('Assignment does not belong to student');
+      throw new ForbiddenError('Assignment does not belong to student');
     }
 
     // Validate assignment can be submitted
     if (!assignment.canSubmit()) {
-      throw new Error(`Cannot submit assignment with status ${assignment.status}`);
+      throw new ConflictError(`Cannot submit assignment with status ${assignment.status}`);
     }
 
     // Get exam with questions
     const exam = await this.examRepo.findByIdWithQuestions(assignment.examId);
 
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundError('Exam not found');
     }
 
     // Validate all questions belong to exam
     const examQuestionIds = exam.questions?.map((q) => q.id) || [];
     for (const answer of input.answers) {
       if (!examQuestionIds.includes(answer.questionId)) {
-        throw new Error(`Question ${answer.questionId} does not belong to exam`);
+        throw new ValidationError(`Question ${answer.questionId} does not belong to exam`);
       }
     }
 

@@ -1,9 +1,10 @@
+import { FREE_TIER_LIMITS, LIMIT_ERRORS } from '@config/subscription-limits.js';
 import { Class } from '@domain/entities/Class.js';
+import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
+import { ConflictError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
-import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
-import { FREE_TIER_LIMITS, LIMIT_ERRORS } from '@config/subscription-limits.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
@@ -96,7 +97,7 @@ export class CreateClassUseCase {
       const errorMessage =
         subscription.tier === 'FREE' ? LIMIT_ERRORS.CLASS_LIMIT.FREE : LIMIT_ERRORS.CLASS_LIMIT.PRO;
 
-      throw new Error(errorMessage);
+      throw new ConflictError(errorMessage);
     }
   }
 
@@ -107,7 +108,7 @@ export class CreateClassUseCase {
     const currentClasses = await this.classRepository.countByTeacherId(teacherUserId);
 
     if (currentClasses >= FREE_TIER_LIMITS.MAX_CLASSES) {
-      throw new Error(LIMIT_ERRORS.CLASS_LIMIT.FREE);
+      throw new ConflictError(LIMIT_ERRORS.CLASS_LIMIT.FREE);
     }
   }
 

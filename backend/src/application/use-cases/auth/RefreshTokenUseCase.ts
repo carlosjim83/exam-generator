@@ -1,3 +1,4 @@
+import { NotFoundError, UnauthorizedError } from '@domain/errors/DomainError.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import type { ITokenService, TokenPair } from '@domain/services/ITokenService.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -41,20 +42,20 @@ export class RefreshTokenUseCase {
     try {
       userId = UserId.create(decoded.userId);
     } catch {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     // 3. Find user (ensure user still exists)
     const user = await this.userRepository.findById(userId);
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     // 4. Verify refresh token version (rotation check)
     //    If the token's version doesn't match the user's current version,
     //    it means the token was already used or revoked.
     if (decoded.version !== user.refreshTokenVersion) {
-      throw new Error('Refresh token has been revoked');
+      throw new UnauthorizedError('Refresh token has been revoked');
     }
 
     // 5. Rotate: increment version to invalidate this token

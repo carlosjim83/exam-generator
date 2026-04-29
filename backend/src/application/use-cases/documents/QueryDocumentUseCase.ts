@@ -1,3 +1,17 @@
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+  ForbiddenError,
+} from '@domain/errors/DomainError.js';
+import type {
+  IDocumentRepository,
+  QueryDocumentResult,
+} from '@domain/repositories/IDocumentRepository.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
+
 /**
  * QueryDocumentUseCase
  *
@@ -9,14 +23,6 @@
  * 3. Search similar chunks in pgvector database
  * 4. Return top K most relevant chunks with similarity scores
  */
-
-import type {
-  IDocumentRepository,
-  QueryDocumentResult,
-} from '@domain/repositories/IDocumentRepository.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 
 export interface QueryDocumentInput {
   documentId: string;
@@ -47,27 +53,29 @@ export class QueryDocumentUseCase {
     const topK = input.topK ?? 5;
 
     if (!input.query || input.query.trim().length === 0) {
-      throw new Error('Query cannot be empty');
+      throw new ValidationError('Query cannot be empty');
     }
 
     if (topK < 1 || topK > 50) {
-      throw new Error('topK must be between 1 and 50');
+      throw new ValidationError('topK must be between 1 and 50');
     }
 
     // 2. Verify document exists and user owns it
     const document = await this.documentRepository.findById(documentId);
 
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     if (document.userId.value !== userId.value) {
-      throw new Error('Unauthorized: Document does not belong to user');
+      throw new ForbiddenError('Unauthorized: Document does not belong to user');
     }
 
     // 3. Check document is processed
     if (!document.isCompleted()) {
-      throw new Error(`Document is not ready for querying. Current status: ${document.status}`);
+      throw new ConflictError(
+        `Document is not ready for querying. Current status: ${document.status}`
+      );
     }
 
     // 4. Generate embedding for the query

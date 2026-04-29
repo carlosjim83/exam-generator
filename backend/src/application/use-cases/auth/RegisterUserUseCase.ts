@@ -1,15 +1,16 @@
+import { Subscription } from '@domain/entities/Subscription.js';
+import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
 import type { UserRole } from '@domain/entities/User.js';
 import { AuthProvider } from '@domain/entities/User.js';
+import { ConflictError } from '@domain/errors/DomainError.js';
+import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import type { ITokenService, TokenPair } from '@domain/services/ITokenService.js';
 import { Email } from '@domain/value-objects/Email.js';
 import { Password } from '@domain/value-objects/Password.js';
-import { Subscription } from '@domain/entities/Subscription.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
-import { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
-import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
 
 /**
  * RegisterUserUseCase
@@ -70,7 +71,7 @@ export class RegisterUserUseCase {
     // 2. Check if email already exists
     const existingUser = await this.userRepository.findByEmail(email);
     if (existingUser) {
-      throw new Error('Email already exists');
+      throw new ConflictError('Email already exists');
     }
 
     // 3. Hash password

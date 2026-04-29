@@ -1,9 +1,9 @@
-import { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
-import { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
-import { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { Subscription } from '@domain/entities/Subscription.js';
 import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
-import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
+import type { UsageMetrics } from '@domain/entities/UsageMetrics.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 /**

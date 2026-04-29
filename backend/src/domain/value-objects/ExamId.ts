@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 /**
  * ExamId - Value Object
  * Represents a unique identifier for an Exam
@@ -8,7 +9,7 @@ import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 export class ExamId {
   private constructor(public readonly value: string) {
     if (!uuidValidate(value)) {
-      throw new Error(`Invalid ExamId: ${value} must be a valid UUID`);
+      throw new ValidationError(`Invalid ExamId: ${value} must be a valid UUID`);
     }
   }
 

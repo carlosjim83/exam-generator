@@ -1,4 +1,5 @@
 import type { Class } from '@domain/entities/Class.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
@@ -25,12 +26,12 @@ export class GetClassDetailsUseCase {
 
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     const teacher = await this.userRepository.findById(classEntity.teacherId);
     if (!teacher) {
-      throw new Error('Teacher not found');
+      throw new NotFoundError('Teacher not found');
     }
 
     const studentCount = await this.classRepository.countStudents(classId);

@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { ClassExamId } from '@domain/value-objects/ClassExamId.js';
@@ -38,22 +39,22 @@ export class PublishClassExamUseCase {
     // Verify class exists and teacher owns it
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     if (!classEntity.teacherId.equals(teacherId)) {
-      throw new Error('You are not the teacher of this class');
+      throw new ForbiddenError('You are not the teacher of this class');
     }
 
     // Get the class exam
     const classExam = await this.classExamRepository.findById(classExamId);
     if (!classExam) {
-      throw new Error('Class exam not found');
+      throw new NotFoundError('Class exam not found');
     }
 
     // Verify class exam belongs to this class
     if (!classExam.classId.equals(classId)) {
-      throw new Error('Class exam does not belong to this class');
+      throw new ConflictError('Class exam does not belong to this class');
     }
 
     // Publish or unpublish

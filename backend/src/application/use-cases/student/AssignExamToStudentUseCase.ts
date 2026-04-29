@@ -1,4 +1,10 @@
 import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import {
+  NotFoundError,
+  ForbiddenError,
+  ValidationError,
+  ConflictError,
+} from '@domain/errors/DomainError.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
@@ -22,21 +28,21 @@ export class AssignExamToStudentUseCase {
     // Validate exam exists and belongs to teacher
     const exam = await this.examRepo.findById(input.examId);
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundError('Exam not found');
     }
 
     if (exam.userId !== input.teacherId) {
-      throw new Error('You can only assign your own exams');
+      throw new ForbiddenError('You can only assign your own exams');
     }
 
     // Validate student exists and has STUDENT role
     const student = await this.userRepo.findById(UserId.create(input.studentId));
     if (!student) {
-      throw new Error('Student not found');
+      throw new NotFoundError('Student not found');
     }
 
     if (!student.isStudent()) {
-      throw new Error('User is not a student');
+      throw new ValidationError('User is not a student');
     }
 
     // Check if assignment already exists
@@ -46,7 +52,7 @@ export class AssignExamToStudentUseCase {
     );
 
     if (existingAssignment) {
-      throw new Error('Exam already assigned to this student');
+      throw new ConflictError('Exam already assigned to this student');
     }
 
     // Create assignment

@@ -1,3 +1,24 @@
+import { FREE_TIER_LIMITS, LIMIT_ERRORS, EXAM_LIMITS } from '@config/subscription-limits.js';
+import { QuestionType, QuestionDifficulty } from '@domain/entities/ExamTypes.js';
+import { SubscriptionTier } from '@domain/entities/Subscription.js';
+import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
+import type { UsageMetrics } from '@domain/entities/UsageMetrics.js';
+import {
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+  ForbiddenError,
+} from '@domain/errors/DomainError.js';
+import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IExamRepository, CreateQuestionDTO } from '@domain/repositories/IExamRepository.js';
+import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { DocumentId } from '@domain/value-objects/DocumentId.js';
+import { ExamId } from '@domain/value-objects/ExamId.js';
+import { UserId } from '@domain/value-objects/UserId.js';
+import type { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
+import { generateExamFlow } from '@infrastructure/ai/flows/generateExam.flow.js';
+
 /**
  * GenerateExamUseCase
  * Orchestrates exam generation using RAG + GPT-4o
@@ -12,21 +33,6 @@
  * - Single document exams
  * - Multi-document exams (up to 10 documents)
  */
-
-import { QuestionType, QuestionDifficulty } from '@domain/entities/ExamTypes.js';
-import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import type { IExamRepository, CreateQuestionDTO } from '@domain/repositories/IExamRepository.js';
-import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
-import { SubscriptionTier } from '@domain/entities/Subscription.js';
-import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
-import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
-import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
-import { FREE_TIER_LIMITS, LIMIT_ERRORS, EXAM_LIMITS } from '@config/subscription-limits.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
-import { ExamId } from '@domain/value-objects/ExamId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import type { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
-import { generateExamFlow } from '@infrastructure/ai/flows/generateExam.flow.js';
 
 export interface GenerateExamInput {
   userId: string;
@@ -184,15 +190,15 @@ export class GenerateExamUseCase {
         const document = await this.documentRepository.findById(docId);
 
         if (!document) {
-          throw new Error(`Document not found: ${docId.value}`);
+          throw new NotFoundError(`Document not found: ${docId.value}`);
         }
 
         if (document.userId.value !== userId.value) {
-          throw new Error(`Unauthorized: Document ${docId.value} does not belong to user`);
+          throw new ForbiddenError(`Unauthorized: Document ${docId.value} does not belong to user`);
         }
 
         if (document.status !== 'COMPLETED') {
-          throw new Error(
+          throw new ConflictError(
             `Document ${docId.value} not ready for exam generation. Status: ${document.status}`
           );
         }
@@ -352,49 +358,51 @@ export class GenerateExamUseCase {
    */
   private validateInput(input: GenerateExamInput): void {
     if (!input.title || input.title.trim().length === 0) {
-      throw new Error('Exam title is required');
+      throw new ValidationError('Exam title is required');
     }
 
     // Validate documentIds array
     if (!input.documentIds || !Array.isArray(input.documentIds)) {
-      throw new Error('documentIds must be a non-empty array');
+      throw new ValidationError('documentIds must be a non-empty array');
     }
 
     if (input.documentIds.length === 0) {
-      throw new Error('At least one document must be provided');
+      throw new ValidationError('At least one document must be provided');
     }
 
     if (input.documentIds.length > EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM) {
-      throw new Error(`Maximum ${EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM} documents allowed per exam`);
+      throw new ValidationError(
+        `Maximum ${EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM} documents allowed per exam`
+      );
     }
 
     // Validate no duplicate document IDs
     const uniqueIds = new Set(input.documentIds);
     if (uniqueIds.size !== input.documentIds.length) {
-      throw new Error('Duplicate document IDs are not allowed');
+      throw new ConflictError('Duplicate document IDs are not allowed');
     }
 
     if (
       input.numQuestions < EXAM_LIMITS.MIN_QUESTIONS_PER_EXAM ||
       input.numQuestions > EXAM_LIMITS.MAX_QUESTIONS_PER_EXAM
     ) {
-      throw new Error(
+      throw new ValidationError(
         `Number of questions must be between ${EXAM_LIMITS.MIN_QUESTIONS_PER_EXAM} and ${EXAM_LIMITS.MAX_QUESTIONS_PER_EXAM}`
       );
     }
 
     if (!['EASY', 'MEDIUM', 'HARD', 'MIXED'].includes(input.difficulty)) {
-      throw new Error('Invalid difficulty level');
+      throw new ValidationError('Invalid difficulty level');
     }
 
     if (!input.questionTypes || input.questionTypes.length === 0) {
-      throw new Error('At least one question type must be specified');
+      throw new ValidationError('At least one question type must be specified');
     }
 
     const validTypes = ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER'];
     for (const type of input.questionTypes) {
       if (!validTypes.includes(type)) {
-        throw new Error(`Invalid question type: ${type}`);
+        throw new ValidationError(`Invalid question type: ${type}`);
       }
     }
   }
@@ -438,7 +446,7 @@ export class GenerateExamUseCase {
           ? LIMIT_ERRORS.EXAM_LIMIT.FREE
           : LIMIT_ERRORS.EXAM_LIMIT.PRO;
 
-      throw new Error(errorMessage);
+      throw new ConflictError(errorMessage);
     }
   }
 
@@ -453,7 +461,7 @@ export class GenerateExamUseCase {
       usageMetrics &&
       usageMetrics.examsCreatedThisMonth >= FREE_TIER_LIMITS.MAX_EXAMS_PER_MONTH
     ) {
-      throw new Error(LIMIT_ERRORS.EXAM_LIMIT.FREE);
+      throw new ConflictError(LIMIT_ERRORS.EXAM_LIMIT.FREE);
     }
   }
 

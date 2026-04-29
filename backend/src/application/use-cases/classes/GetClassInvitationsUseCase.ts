@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
@@ -31,11 +32,11 @@ export class GetClassInvitationsUseCase {
     // Validate class exists and belongs to teacher
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     if (classEntity.teacherId.toString() !== userId.toString()) {
-      throw new Error('You do not have permission for this class');
+      throw new ForbiddenError('You do not have permission for this class');
     }
 
     const result = await this.invitationRepository.findByClassId(classId, {
