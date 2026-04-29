@@ -156,6 +156,9 @@ importers:
       fastify:
         specifier: ^5.7.2
         version: 5.7.4
+      file-type:
+        specifier: ^22.0.1
+        version: 22.0.1
       genkit:
         specifier: ^1.28.0
         version: 1.28.0(@google-cloud/firestore@7.11.6)(firebase-admin@13.6.1)
@@ -2270,6 +2273,13 @@ packages:
         integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==,
       }
     dev: true
+
+  /@borewit/text-codec@0.2.2:
+    resolution:
+      {
+        integrity: sha512-DDaRehssg1aNrH4+2hnj1B7vnUGEjU6OIlyRdkMd0aUdIUvKXrJfXsy8LVtXAy7DRvYVluWbMspsRhz2lcW0mQ==,
+      }
+    dev: false
 
   /@cfworker/json-schema@4.1.1:
     resolution:
@@ -8785,6 +8795,26 @@ packages:
       '@tiptap/pm': 2.27.2
     dev: false
 
+  /@tokenizer/inflate@0.4.1:
+    resolution:
+      {
+        integrity: sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA==,
+      }
+    engines: { node: '>=18' }
+    dependencies:
+      debug: 4.4.3(supports-color@5.5.0)
+      token-types: 6.1.2
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@tokenizer/token@0.3.0:
+    resolution:
+      {
+        integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==,
+      }
+    dev: false
+
   /@tootallnate/once@2.0.0:
     resolution:
       {
@@ -9917,7 +9947,7 @@ packages:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 1.2.0
-      vitest: 2.1.9(@types/node@22.19.11)(@vitest/ui@2.1.9)(happy-dom@20.6.2)(jsdom@27.4.0)(msw@2.12.10)
+      vitest: 2.1.9(@types/node@20.19.33)(@vitest/ui@2.1.9)
     dev: true
 
   /@vitest/utils@2.1.9:
@@ -13076,6 +13106,21 @@ packages:
     dependencies:
       flat-cache: 4.0.1
     dev: true
+
+  /file-type@22.0.1:
+    resolution:
+      {
+        integrity: sha512-ww5Mhre0EE+jmBvOXTmXAbEMuZE7uX4a3+oRCQFNj8w++g3ev913N6tXQz0XTXbueQ5TWQfm6BdaViEHHn8bhA==,
+      }
+    engines: { node: '>=22' }
+    dependencies:
+      '@tokenizer/inflate': 0.4.1
+      strtok3: 10.3.5
+      token-types: 6.1.2
+      uint8array-extras: 1.5.0
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
 
   /fill-range@7.1.1:
     resolution:
@@ -19483,6 +19528,16 @@ packages:
       }
     dev: false
 
+  /strtok3@10.3.5:
+    resolution:
+      {
+        integrity: sha512-ki4hZQfh5rX0QDLLkOCj+h+CVNkqmp/CMf8v8kZpkNVK6jGQooMytqzLZYUVYIZcFZ6yDB70EfD8POcFXiF5oA==,
+      }
+    engines: { node: '>=18' }
+    dependencies:
+      '@tokenizer/token': 0.3.0
+    dev: false
+
   /stubs@3.0.0:
     resolution:
       {
@@ -19945,6 +20000,18 @@ packages:
     engines: { node: '>=0.6' }
     dev: false
 
+  /token-types@6.1.2:
+    resolution:
+      {
+        integrity: sha512-dRXchy+C0IgK8WPC6xvCHFRIWYUbqqdEIKPaKo/AcTUNzwLTK6AH7RjdLWsEZcAN/TBdtfUw3PYEgPr5VPr6ww==,
+      }
+    engines: { node: '>=14.16' }
+    dependencies:
+      '@borewit/text-codec': 0.2.2
+      '@tokenizer/token': 0.3.0
+      ieee754: 1.2.1
+    dev: false
+
   /totalist@3.0.1:
     resolution:
       {
@@ -20283,6 +20350,14 @@ packages:
     requiresBuild: true
     dev: false
     optional: true
+
+  /uint8array-extras@1.5.0:
+    resolution:
+      {
+        integrity: sha512-rvKSBiC5zqCCiDZ9kAOszZcDvdAHwwIKJG33Ykj43OKcWsnmcBRL09YTU4nOeHZ8Y2a7l1MgTd08SBe9A8Qj6A==,
+      }
+    engines: { node: '>=18' }
+    dev: false
 
   /unbox-primitive@1.1.0:
     resolution:

@@ -1,4 +1,5 @@
 import type { UserRole } from '@domain/entities/User.js';
+import { UnauthorizedError } from '@domain/errors/DomainError.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import type { ITokenService, TokenPair } from '@domain/services/ITokenService.js';
@@ -56,19 +57,21 @@ export class LoginUserUseCase {
     // 2. Find user by email
     const user = await this.userRepository.findByEmail(email);
     if (!user) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     // 3. Check if user has a password (OAuth users don't have passwords)
     if (!user.password) {
-      throw new Error('This account uses OAuth authentication. Please sign in with your provider.');
+      throw new UnauthorizedError(
+        'This account uses OAuth authentication. Please sign in with your provider.'
+      );
     }
 
     // 4. Verify password
     const isPasswordValid = await this.passwordHasher.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new UnauthorizedError('Invalid credentials');
     }
 
     // 5. Generate JWT tokens

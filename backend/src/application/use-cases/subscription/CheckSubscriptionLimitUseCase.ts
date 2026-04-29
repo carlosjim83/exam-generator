@@ -1,10 +1,10 @@
-import type { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
-import type { UsageMetrics } from '@domain/entities/UsageMetrics.js';
 import {
   UPGRADE_TRIGGERS,
   UPGRADE_MESSAGES,
   WARNING_THRESHOLD,
 } from '@config/subscription-limits.js';
+import type { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
+import type { UsageMetrics } from '@domain/entities/UsageMetrics.js';
 
 /**
  * Result type for subscription limit checks

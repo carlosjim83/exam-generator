@@ -1,3 +1,4 @@
+import { ConflictError, ValidationError } from '@domain/errors/DomainError.js';
 import { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
@@ -56,22 +57,22 @@ export class Subscription {
   static create(props: SubscriptionProps): Subscription {
     // Validation rules
     if (!props.currentPeriodStart) {
-      throw new Error('Current period start is required');
+      throw new ValidationError('Current period start is required');
     }
     if (!props.currentPeriodEnd) {
-      throw new Error('Current period end is required');
+      throw new ValidationError('Current period end is required');
     }
 
     // Free tier subscriptions should not have Stripe IDs
     if (props.tier === SubscriptionTier.FREE) {
       if (props.stripeSubscriptionId || props.stripeCustomerId) {
-        throw new Error('Free tier cannot have Stripe IDs');
+        throw new ValidationError('Free tier cannot have Stripe IDs');
       }
     }
 
     // Paid tiers should have Stripe customer ID (subscription ID is created after checkout)
     if (props.tier !== SubscriptionTier.FREE && !props.stripeCustomerId) {
-      throw new Error('Paid tiers require a Stripe customer ID');
+      throw new ValidationError('Paid tiers require a Stripe customer ID');
     }
 
     return new Subscription(props);
@@ -204,7 +205,7 @@ export class Subscription {
     currentPeriodEnd: Date
   ): Subscription {
     if (newTier === this.props.tier) {
-      throw new Error('New tier must be different from current tier');
+      throw new ConflictError('New tier must be different from current tier');
     }
 
     return new Subscription({

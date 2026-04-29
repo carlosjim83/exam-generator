@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { ClassId } from '@domain/value-objects/ClassId.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
 
@@ -34,23 +35,23 @@ export class Class {
 
   private validate(): void {
     if (!this._name || this._name.trim().length === 0) {
-      throw new Error('Class name cannot be empty');
+      throw new ValidationError('Class name cannot be empty');
     }
 
     if (this._name.length > 255) {
-      throw new Error('Class name cannot exceed 255 characters');
+      throw new ValidationError('Class name cannot exceed 255 characters');
     }
 
     if (!this._code || this._code.length < 6 || this._code.length > 8) {
-      throw new Error('Class code must be 6-8 characters');
+      throw new ValidationError('Class code must be 6-8 characters');
     }
 
     if (this._color && !this._isValidColor(this._color)) {
-      throw new Error('Invalid color format. Use #RRGGBB');
+      throw new ValidationError('Invalid color format. Use #RRGGBB');
     }
 
     if (this._description && this._description.length > 5000) {
-      throw new Error('Description cannot exceed 5000 characters');
+      throw new ValidationError('Description cannot exceed 5000 characters');
     }
   }
 

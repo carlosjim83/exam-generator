@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
 /**
@@ -7,11 +8,11 @@ import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 export class UserId {
   private constructor(public readonly value: string) {
     if (!value || value.trim().length === 0) {
-      throw new Error('UserId cannot be empty');
+      throw new ValidationError('UserId cannot be empty');
     }
 
     if (!uuidValidate(value)) {
-      throw new Error('UserId must be a valid UUID');
+      throw new ValidationError('UserId must be a valid UUID');
     }
   }
 

@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 import { Invitation } from '@domain/entities/Invitation.js';
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { InvitationId } from '@domain/value-objects/InvitationId.js';
@@ -21,7 +22,7 @@ export class CreateEmailInvitationsUseCase {
     const maxEmails = 50;
 
     if (command.emails.length > maxEmails) {
-      throw new Error(`Cannot invite more than ${maxEmails} students at once`);
+      throw new ValidationError(`Cannot invite more than ${maxEmails} students at once`);
     }
 
     // Deduplicate and validate emails

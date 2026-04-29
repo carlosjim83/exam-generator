@@ -1,5 +1,6 @@
 import { ClassDocument } from '@domain/entities/ClassDocument.js';
 import { DocumentStatus } from '@domain/entities/Document.js';
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -45,34 +46,34 @@ export class ShareDocumentWithClassUseCase {
     // 1. Find the document
     const document = await this.documentRepository.findById(documentId);
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     // 2. Validate document ownership
     if (!document.userId.equals(userId)) {
-      throw new Error('You do not have permission to share this document');
+      throw new ForbiddenError('You do not have permission to share this document');
     }
 
     // 3. Validate document is completed
     if (document.status !== DocumentStatus.COMPLETED) {
-      throw new Error('Document must be processed before sharing');
+      throw new ConflictError('Document must be processed before sharing');
     }
 
     // 4. Find the class
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     // 5. Validate class ownership
     if (!classEntity.teacherId.equals(userId)) {
-      throw new Error('You do not have permission to share to this class');
+      throw new ForbiddenError('You do not have permission to share to this class');
     }
 
     // 6. Check if already shared
     const alreadyShared = await this.classDocumentRepository.isSharedWithClass(classId, documentId);
     if (alreadyShared) {
-      throw new Error('Document is already shared with this class');
+      throw new ConflictError('Document is already shared with this class');
     }
 
     // 7. Create ClassDocument relationship

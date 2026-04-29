@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 /**
  * Email Value Object
  * Represents a valid email address
@@ -5,7 +6,7 @@
 export class Email {
   private constructor(public readonly value: string) {
     if (!Email.isValid(value)) {
-      throw new Error('Invalid email format');
+      throw new ValidationError('Invalid email format');
     }
   }
 

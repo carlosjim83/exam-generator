@@ -1,4 +1,5 @@
 import type { Class } from '@domain/entities/Class.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 
@@ -23,7 +24,7 @@ export class GetClassByCodeUseCase {
 
     const teacher = await this.userRepository.findById(classEntity.teacherId);
     if (!teacher) {
-      throw new Error('Teacher not found');
+      throw new NotFoundError('Teacher not found');
     }
 
     return {

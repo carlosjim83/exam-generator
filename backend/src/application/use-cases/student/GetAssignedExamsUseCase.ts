@@ -1,4 +1,5 @@
 import type { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type {
   IExamAssignmentRepository,
   FindAssignmentsFilters,
@@ -30,7 +31,7 @@ export class GetAssignedExamsUseCase {
   async execute(input: GetAssignedExamsInput): Promise<GetAssignedExamsOutput> {
     // Validate studentId
     if (!input.studentId || input.studentId.trim().length === 0) {
-      throw new Error('studentId is required');
+      throw new ValidationError('studentId is required');
     }
 
     const filters: FindAssignmentsFilters = {

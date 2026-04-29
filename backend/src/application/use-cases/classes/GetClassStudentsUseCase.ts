@@ -1,3 +1,4 @@
+import { NotFoundError } from '@domain/errors/DomainError.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
@@ -40,7 +41,7 @@ export class GetClassStudentsUseCase {
       result.enrollments.map(async (enrollment) => {
         const user = await this.userRepository.findById(enrollment.studentId);
         if (!user) {
-          throw new Error(`User not found for enrollment ${enrollment.id.value}`);
+          throw new NotFoundError(`User not found for enrollment ${enrollment.id.value}`);
         }
 
         return {

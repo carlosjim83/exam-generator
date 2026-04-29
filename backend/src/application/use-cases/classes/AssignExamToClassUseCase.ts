@@ -1,9 +1,10 @@
+import { ClassExam } from '@domain/entities/ClassExam.js';
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import { ClassExam } from '@domain/entities/ClassExam.js';
 import { ClassExamId } from '@domain/value-objects/ClassExamId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -49,21 +50,21 @@ export class AssignExamToClassUseCase {
     // Verify class exists and teacher owns it
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     if (!classEntity.teacherId.equals(teacherId)) {
-      throw new Error('You are not the teacher of this class');
+      throw new ForbiddenError('You are not the teacher of this class');
     }
 
     // Verify exam exists and teacher owns it
     const exam = await this.examRepository.findById(input.examId);
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundError('Exam not found');
     }
 
     if (exam.userId !== teacherId.toString()) {
-      throw new Error('You are not the owner of this exam');
+      throw new ForbiddenError('You are not the owner of this exam');
     }
 
     // Check if exam is already assigned to this class
@@ -72,7 +73,7 @@ export class AssignExamToClassUseCase {
       input.examId
     );
     if (existingClassExam) {
-      throw new Error('Exam is already assigned to this class');
+      throw new ConflictError('Exam is already assigned to this class');
     }
 
     // Create ClassExam

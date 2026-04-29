@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -50,12 +51,12 @@ export class GetDocumentUseCase {
     const document = await this.documentRepository.findById(documentId);
 
     if (!document) {
-      throw new Error('Document not found');
+      throw new NotFoundError('Document not found');
     }
 
     // 3. Verify ownership
     if (!document.isOwnedBy(userId)) {
-      throw new Error('Access denied');
+      throw new ForbiddenError('Access denied');
     }
 
     // 4. Return DTO

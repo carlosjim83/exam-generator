@@ -1,7 +1,8 @@
+import { NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
-import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
-import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
@@ -50,7 +51,7 @@ export class GetStudentClassExamsUseCase {
     // Verify student is enrolled in this class
     const cls = await this.classRepository.findById(classId);
     if (!cls) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     // Get published class exams for this class

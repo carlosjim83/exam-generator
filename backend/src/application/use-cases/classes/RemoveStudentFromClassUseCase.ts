@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
@@ -24,11 +25,11 @@ export class RemoveStudentFromClassUseCase {
 
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     if (classEntity.teacherId.toString() !== teacherId) {
-      throw new Error('You do not have permission to remove students from this class');
+      throw new ForbiddenError('You do not have permission to remove students from this class');
     }
 
     const enrollment = await this.studentEnrollmentRepository.findByClassAndStudent(
@@ -36,7 +37,7 @@ export class RemoveStudentFromClassUseCase {
       studentId
     );
     if (!enrollment) {
-      throw new Error('Student not enrolled in this class');
+      throw new ConflictError('Student not enrolled in this class');
     }
 
     await this.studentEnrollmentRepository.delete(enrollment.id);

@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { DocumentId } from '@domain/value-objects/DocumentId.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
 
@@ -48,19 +49,19 @@ export class Document {
   static create(props: DocumentProps): Document {
     // Validation rules
     if (!props.title || props.title.trim().length === 0) {
-      throw new Error('Document title is required');
+      throw new ValidationError('Document title is required');
     }
 
     if (!props.filename || props.filename.trim().length === 0) {
-      throw new Error('Document filename is required');
+      throw new ValidationError('Document filename is required');
     }
 
     if (props.fileSize <= 0) {
-      throw new Error('Document file size must be greater than zero');
+      throw new ValidationError('Document file size must be greater than zero');
     }
 
     if (!props.blobUrl || props.blobUrl.trim().length === 0) {
-      throw new Error('Document blob URL is required');
+      throw new ValidationError('Document blob URL is required');
     }
 
     // Validate mime type
@@ -69,7 +70,7 @@ export class Document {
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
     if (!allowedMimeTypes.includes(props.mimeType)) {
-      throw new Error('Invalid document mime type. Only PDF and DOCX are allowed');
+      throw new ValidationError('Invalid document mime type. Only PDF and DOCX are allowed');
     }
 
     return new Document(props);

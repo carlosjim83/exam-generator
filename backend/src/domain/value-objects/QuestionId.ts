@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 /**
  * QuestionId - Value Object
  * Represents a unique identifier for a Question
@@ -8,7 +9,7 @@ import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 export class QuestionId {
   private constructor(public readonly value: string) {
     if (!uuidValidate(value)) {
-      throw new Error(`Invalid QuestionId: ${value} must be a valid UUID`);
+      throw new ValidationError(`Invalid QuestionId: ${value} must be a valid UUID`);
     }
   }
 

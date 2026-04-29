@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import { SubscriptionTier } from './Subscription.js';
 import { FREE_TIER_LIMITS, AI_MODELS, EXAM_LIMITS } from '@config/subscription-limits.js';
 
@@ -56,22 +57,22 @@ export class SubscriptionLimits {
   static create(props: SubscriptionLimitsProps): SubscriptionLimits {
     // Validation: null means unlimited
     if (props.maxClasses !== null && props.maxClasses < 0) {
-      throw new Error('maxClasses must be null (unlimited) or >= 0');
+      throw new ValidationError('maxClasses must be null (unlimited) or >= 0');
     }
     if (props.maxStudents !== null && props.maxStudents < 0) {
-      throw new Error('maxStudents must be null (unlimited) or >= 0');
+      throw new ValidationError('maxStudents must be null (unlimited) or >= 0');
     }
     if (props.maxExamsPerMonth !== null && props.maxExamsPerMonth < 0) {
-      throw new Error('maxExamsPerMonth must be null (unlimited) or >= 0');
+      throw new ValidationError('maxExamsPerMonth must be null (unlimited) or >= 0');
     }
     if (props.maxQuestionsPerExam !== null && props.maxQuestionsPerExam < 0) {
-      throw new Error('maxQuestionsPerExam must be null (unlimited) or >= 0');
+      throw new ValidationError('maxQuestionsPerExam must be null (unlimited) or >= 0');
     }
     if (props.maxDocumentsPerExam !== null && props.maxDocumentsPerExam < 0) {
-      throw new Error('maxDocumentsPerExam must be null (unlimited) or >= 0');
+      throw new ValidationError('maxDocumentsPerExam must be null (unlimited) or >= 0');
     }
     if (props.maxTeamMembers !== null && props.maxTeamMembers < 0) {
-      throw new Error('maxTeamMembers must be null (unlimited) or >= 0');
+      throw new ValidationError('maxTeamMembers must be null (unlimited) or >= 0');
     }
 
     return new SubscriptionLimits(props);
@@ -163,7 +164,7 @@ export class SubscriptionLimits {
         });
 
       default:
-        throw new Error(`Unknown tier: ${tier}`);
+        throw new ValidationError(`Unknown tier: ${tier}`);
     }
   }
 

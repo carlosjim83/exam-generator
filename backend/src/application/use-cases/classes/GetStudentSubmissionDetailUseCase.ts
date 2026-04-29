@@ -1,7 +1,8 @@
+import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
+import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { ClassExamId } from '@domain/value-objects/ClassExamId.js';
@@ -81,34 +82,34 @@ export class GetStudentSubmissionDetailUseCase {
     // Verify class exists and teacher owns it
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     if (!classEntity.teacherId.equals(teacherId)) {
-      throw new Error('You are not the teacher of this class');
+      throw new ForbiddenError('You are not the teacher of this class');
     }
 
     // Get the class exam
     const classExam = await this.classExamRepository.findById(classExamId);
     if (!classExam) {
-      throw new Error('Class exam not found');
+      throw new NotFoundError('Class exam not found');
     }
 
     // Verify class exam belongs to this class
     if (!classExam.classId.equals(classId)) {
-      throw new Error('Class exam does not belong to this class');
+      throw new ConflictError('Class exam does not belong to this class');
     }
 
     // Get exam details with questions
     const exam = await this.examRepository.findByIdWithQuestions(classExam.examId);
     if (!exam) {
-      throw new Error('Exam not found');
+      throw new NotFoundError('Exam not found');
     }
 
     // Get student info
     const student = await this.userRepository.findById(studentId);
     if (!student) {
-      throw new Error('Student not found');
+      throw new NotFoundError('Student not found');
     }
 
     // Get assignment for this student and class exam
@@ -116,7 +117,7 @@ export class GetStudentSubmissionDetailUseCase {
     const assignment = assignments.find((a) => a.studentId.equals(studentId));
 
     if (!assignment) {
-      throw new Error('Student has not been assigned this exam');
+      throw new ConflictError('Student has not been assigned this exam');
     }
 
     // Get student's answers

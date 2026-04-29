@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
@@ -27,22 +28,22 @@ export class UsageMetrics {
   static create(props: UsageMetricsProps): UsageMetrics {
     // Validation
     if (props.currentClasses < 0) {
-      throw new Error('currentClasses must be >= 0');
+      throw new ValidationError('currentClasses must be >= 0');
     }
     if (props.currentStudents < 0) {
-      throw new Error('currentStudents must be >= 0');
+      throw new ValidationError('currentStudents must be >= 0');
     }
     if (props.examsCreatedThisMonth < 0) {
-      throw new Error('examsCreatedThisMonth must be >= 0');
+      throw new ValidationError('examsCreatedThisMonth must be >= 0');
     }
     if (props.examsCreatedTotal < 0) {
-      throw new Error('examsCreatedTotal must be >= 0');
+      throw new ValidationError('examsCreatedTotal must be >= 0');
     }
 
     // Period must be first day of month
     const periodDate = new Date(props.period);
     if (periodDate.getDate() !== 1) {
-      throw new Error('Period must be the first day of the month');
+      throw new ValidationError('Period must be the first day of the month');
     }
 
     return new UsageMetrics(props);
@@ -203,7 +204,7 @@ export class UsageMetrics {
 
   updateClassCount(count: number): UsageMetrics {
     if (count < 0) {
-      throw new Error('Class count must be >= 0');
+      throw new ValidationError('Class count must be >= 0');
     }
     return new UsageMetrics({
       ...this.props,
@@ -214,7 +215,7 @@ export class UsageMetrics {
 
   updateStudentCount(count: number): UsageMetrics {
     if (count < 0) {
-      throw new Error('Student count must be >= 0');
+      throw new ValidationError('Student count must be >= 0');
     }
 
     const newPeak = Math.max(this.props.peakConcurrentStudents, count);

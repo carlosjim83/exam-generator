@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { ClassExamId } from '@domain/value-objects/ClassExamId.js';
 import type { ClassId } from '@domain/value-objects/ClassId.js';
 import type { UserId } from '@domain/value-objects/UserId.js';
@@ -27,17 +28,17 @@ export class ClassExam {
   static create(props: ClassExamProps): ClassExam {
     // Validate time limit
     if (props.timeLimit !== null && props.timeLimit < 1) {
-      throw new Error('Time limit must be at least 1 minute');
+      throw new ValidationError('Time limit must be at least 1 minute');
     }
 
     // Validate max attempts
     if (props.maxAttempts < 1) {
-      throw new Error('Max attempts must be at least 1');
+      throw new ValidationError('Max attempts must be at least 1');
     }
 
     // Validate dates
     if (props.availableAt && props.dueDate && props.availableAt >= props.dueDate) {
-      throw new Error('Available date must be before due date');
+      throw new ValidationError('Available date must be before due date');
     }
 
     return new ClassExam(props);

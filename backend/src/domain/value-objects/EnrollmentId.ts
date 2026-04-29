@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import { v4 as uuidv4, validate as uuidValidate } from 'uuid';
 
 export class EnrollmentId {
@@ -7,7 +8,7 @@ export class EnrollmentId {
     this.value = value || uuidv4();
 
     if (value && !uuidValidate(value)) {
-      throw new Error('Invalid EnrollmentId: must be a valid UUID');
+      throw new ValidationError('Invalid EnrollmentId: must be a valid UUID');
     }
   }
 

@@ -1,3 +1,4 @@
+import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -52,13 +53,13 @@ export class GetClassDocumentsForStudentUseCase {
     // 1. Verify class exists
     const classEntity = await this.classRepository.findById(classId);
     if (!classEntity) {
-      throw new Error('Class not found');
+      throw new NotFoundError('Class not found');
     }
 
     // 2. Verify student is enrolled
     const enrollment = await this.enrollmentRepository.findByClassAndStudent(classId, studentId);
     if (!enrollment || !enrollment.isActive) {
-      throw new Error('You are not enrolled in this class');
+      throw new ForbiddenError('You are not enrolled in this class');
     }
 
     // 3. Get all visible class documents

@@ -1,3 +1,4 @@
+import { ValidationError } from '@domain/errors/DomainError.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -35,7 +36,7 @@ export class GetDashboardStatsUseCase {
   async execute(input: GetDashboardStatsInput): Promise<GetDashboardStatsOutput> {
     // Validate input
     if (!input.userId) {
-      throw new Error('userId is required');
+      throw new ValidationError('userId is required');
     }
 
     const userId = UserId.create(input.userId);
