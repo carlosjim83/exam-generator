@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { randomUUID } from 'crypto';
 import { RegisterUserUseCase } from '@application/use-cases/auth/RegisterUserUseCase.js';
 import { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
 import { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import { ITokenService } from '@domain/services/ITokenService.js';
 import { User, UserRole, AuthProvider } from '@domain/entities/User.js';
@@ -13,6 +15,8 @@ describe('RegisterUserUseCase', () => {
   let mockUserRepository: IUserRepository;
   let mockPasswordHasher: IPasswordHasher;
   let mockTokenService: ITokenService;
+  let mockSubscriptionRepository: ISubscriptionRepository;
+  let mockUsageMetricsRepository: IUsageMetricsRepository;
 
   beforeEach(() => {
     // Create mocks for dependencies
@@ -36,11 +40,51 @@ describe('RegisterUserUseCase', () => {
       verifyRefreshToken: vi.fn(),
     };
 
+    mockSubscriptionRepository = {
+      create: vi.fn(),
+      findByTeacherId: vi.fn(),
+      findById: vi.fn(),
+      update: vi.fn(),
+      updateStatus: vi.fn(),
+      markForCancellation: vi.fn(),
+      revertCancellation: vi.fn(),
+      findSubscriptionsToDowngrade: vi.fn(),
+      findPastDueSubscriptions: vi.fn(),
+      findByStripeSubscriptionId: vi.fn(),
+      findByStripeCustomerId: vi.fn(),
+      delete: vi.fn(),
+      countByTier: vi.fn(),
+      findByTier: vi.fn(),
+    };
+
+    mockUsageMetricsRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findCurrentByTeacherId: vi.fn(),
+      findByTeacherIdAndPeriod: vi.fn(),
+      update: vi.fn(),
+      getOrCreateCurrent: vi.fn(),
+      incrementClassCount: vi.fn(),
+      decrementClassCount: vi.fn(),
+      incrementStudentCount: vi.fn(),
+      decrementStudentCount: vi.fn(),
+      incrementExamCount: vi.fn(),
+      updateClassCount: vi.fn(),
+      updateStudentCount: vi.fn(),
+      findMetricsNeedingReset: vi.fn(),
+      delete: vi.fn(),
+      deleteByTeacherId: vi.fn(),
+      getHistory: vi.fn(),
+      countByTeacherId: vi.fn(),
+    };
+
     // Instantiate use case with mocks
     registerUserUseCase = new RegisterUserUseCase(
       mockUserRepository,
       mockPasswordHasher,
-      mockTokenService
+      mockTokenService,
+      mockSubscriptionRepository,
+      mockUsageMetricsRepository
     );
   });
 

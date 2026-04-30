@@ -127,6 +127,8 @@ describe('GenerateExamUseCase', () => {
   let mockExamRepository: IExamRepository;
   let mockEmbeddingService: IEmbeddingService;
   let mockExamGenerator: IExamGenerator;
+  let mockSubscriptionRepository: ISubscriptionRepository;
+  let mockUsageMetricsRepository: IUsageMetricsRepository;
 
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
@@ -221,11 +223,52 @@ describe('GenerateExamUseCase', () => {
       }),
     };
 
+    // Mock subscription/usage repositories with permissive defaults
+    mockSubscriptionRepository = {
+      findByTeacherId: vi.fn().mockResolvedValue(null),
+      create: vi.fn(),
+      update: vi.fn(),
+      findById: vi.fn(),
+      updateStatus: vi.fn(),
+      markForCancellation: vi.fn(),
+      revertCancellation: vi.fn(),
+      findSubscriptionsToDowngrade: vi.fn(),
+      findPastDueSubscriptions: vi.fn(),
+      findByStripeSubscriptionId: vi.fn(),
+      findByStripeCustomerId: vi.fn(),
+      delete: vi.fn(),
+      countByTier: vi.fn(),
+      findByTier: vi.fn(),
+    };
+
+    mockUsageMetricsRepository = {
+      create: vi.fn(),
+      findById: vi.fn(),
+      findCurrentByTeacherId: vi.fn().mockResolvedValue(null),
+      findByTeacherIdAndPeriod: vi.fn(),
+      update: vi.fn(),
+      getOrCreateCurrent: vi.fn(),
+      incrementClassCount: vi.fn(),
+      decrementClassCount: vi.fn(),
+      incrementStudentCount: vi.fn(),
+      decrementStudentCount: vi.fn(),
+      incrementExamCount: vi.fn(),
+      updateClassCount: vi.fn(),
+      updateStudentCount: vi.fn(),
+      findMetricsNeedingReset: vi.fn(),
+      delete: vi.fn(),
+      deleteByTeacherId: vi.fn(),
+      getHistory: vi.fn(),
+      countByTeacherId: vi.fn(),
+    };
+
     generateExamUseCase = new GenerateExamUseCase(
       mockDocumentRepository,
       mockExamRepository,
       mockEmbeddingService,
-      mockExamGenerator
+      mockExamGenerator,
+      mockSubscriptionRepository,
+      mockUsageMetricsRepository
     );
   });
 

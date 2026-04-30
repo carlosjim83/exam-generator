@@ -72,17 +72,15 @@ export class GenerateExamUseCase {
     private readonly examRepository: IExamRepository,
     private readonly embeddingService: IEmbeddingService,
     private readonly examGenerator: IExamGenerator,
-    private readonly subscriptionRepository: ISubscriptionRepository | null = null,
-    private readonly usageMetricsRepository: IUsageMetricsRepository | null = null
+    private readonly subscriptionRepository: ISubscriptionRepository,
+    private readonly usageMetricsRepository: IUsageMetricsRepository
   ) {}
 
   async execute(input: GenerateExamInput): Promise<GenerateExamOutput> {
     const startTime = Date.now();
 
-    // Check subscription limit if repositories are available
-    if (this.subscriptionRepository && this.usageMetricsRepository) {
-      await this.enforceExamLimit(input.userId);
-    }
+    // Check subscription limit
+    await this.enforceExamLimit(input.userId);
 
     // Validation
     this.validateInput(input);
@@ -416,7 +414,7 @@ export class GenerateExamUseCase {
     const teacherUserId = UserId.create(teacherId);
 
     // Get subscription
-    const subscription = await this.subscriptionRepository!.findByTeacherId(teacherUserId);
+    const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId);
 
     if (!subscription) {
       // Free tier user - check usage metrics
@@ -433,7 +431,7 @@ export class GenerateExamUseCase {
     }
 
     // Get current usage
-    const usageMetrics = await this.usageMetricsRepository!.findCurrentByTeacherId(teacherUserId);
+    const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
 
     if (!usageMetrics) {
       // No usage metrics yet - user can create exam
@@ -456,7 +454,7 @@ export class GenerateExamUseCase {
    * Free tier: 10 exams per month
    */
   private async checkFreeTierExamLimit(teacherUserId: UserId): Promise<void> {
-    const usageMetrics = await this.usageMetricsRepository!.findCurrentByTeacherId(teacherUserId);
+    const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
 
     if (
       usageMetrics &&
@@ -475,14 +473,14 @@ export class GenerateExamUseCase {
       const teacherUserId = UserId.create(teacherId);
 
       // Try to get existing subscription
-      const subscription = await this.subscriptionRepository!.findByTeacherId(teacherUserId);
+      const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId);
 
       // Free tier users don't have subscriptions for metrics
       // We need to find or create usage metrics
       let usageMetrics: ReturnType<typeof UsageMetrics.createInitial> | null = null;
 
       if (subscription) {
-        usageMetrics = await this.usageMetricsRepository!.getOrCreateCurrent(
+        usageMetrics = await this.usageMetricsRepository.getOrCreateCurrent(
           teacherUserId,
           subscription.id
         );
@@ -491,7 +489,7 @@ export class GenerateExamUseCase {
         // This is a design limitation - metrics require subscriptionId
         // In practice, metrics are created during registration
         const existingMetrics =
-          await this.usageMetricsRepository!.findCurrentByTeacherId(teacherUserId);
+          await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
 
         if (!existingMetrics) {
           // No metrics for this user yet - this shouldn't happen if properly initialized
@@ -499,11 +497,11 @@ export class GenerateExamUseCase {
           return;
         }
 
-        await this.usageMetricsRepository!.incrementExamCount(existingMetrics.id);
+        await this.usageMetricsRepository.incrementExamCount(existingMetrics.id);
         return;
       }
 
-      await this.usageMetricsRepository!.incrementExamCount(usageMetrics.id);
+      await this.usageMetricsRepository.incrementExamCount(usageMetrics.id);
     } catch (error) {
       // Don't fail exam creation if metrics update fails
       console.error('Failed to update exam usage metrics:', error);

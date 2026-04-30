@@ -20,15 +20,13 @@ export class CreateClassCommand {
 export class CreateClassUseCase {
   constructor(
     private readonly classRepository: IClassRepository,
-    private readonly subscriptionRepository: ISubscriptionRepository | null = null,
-    private readonly usageMetricsRepository: IUsageMetricsRepository | null = null
+    private readonly subscriptionRepository: ISubscriptionRepository,
+    private readonly usageMetricsRepository: IUsageMetricsRepository
   ) {}
 
   async execute(command: CreateClassCommand): Promise<Class> {
-    // Check subscription limits if repositories are available
-    if (this.subscriptionRepository && this.usageMetricsRepository) {
-      await this.enforceClassLimit(command.teacherId);
-    }
+    // Check subscription limits
+    await this.enforceClassLimit(command.teacherId);
 
     // Generate unique class code
     let code: string;
@@ -55,10 +53,8 @@ export class CreateClassUseCase {
 
     await this.classRepository.save(classEntity);
 
-    // Update usage metrics if repositories are available
-    if (this.usageMetricsRepository) {
-      await this.updateUsageMetrics(command.teacherId);
-    }
+    // Update usage metrics
+    await this.updateUsageMetrics(command.teacherId);
 
     return classEntity;
   }
@@ -70,7 +66,7 @@ export class CreateClassUseCase {
     const teacherUserId = UserId.create(teacherId);
 
     // Get subscription
-    const subscription = await this.subscriptionRepository!.findByTeacherId(teacherUserId);
+    const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId);
     if (!subscription) {
       // Free tier by default, check usage
       await this.checkFreeTierLimit(teacherUserId);
@@ -86,7 +82,7 @@ export class CreateClassUseCase {
     }
 
     // Get current usage
-    const usageMetrics = await this.usageMetricsRepository!.findCurrentByTeacherId(teacherUserId);
+    const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
     if (!usageMetrics) {
       // No metrics yet, allow creation (will be created on first action)
       return;
@@ -118,19 +114,19 @@ export class CreateClassUseCase {
   private async updateUsageMetrics(teacherId: string): Promise<void> {
     try {
       const teacherUserId = UserId.create(teacherId);
-      const subscription = await this.subscriptionRepository!.findByTeacherId(teacherUserId);
+      const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId);
 
       if (!subscription) {
         // No subscription yet, skip metric update
         return;
       }
 
-      const usageMetrics = await this.usageMetricsRepository!.getOrCreateCurrent(
+      const usageMetrics = await this.usageMetricsRepository.getOrCreateCurrent(
         teacherUserId,
         subscription.id
       );
 
-      await this.usageMetricsRepository!.incrementClassCount(usageMetrics.id);
+      await this.usageMetricsRepository.incrementClassCount(usageMetrics.id);
     } catch (error) {
       // Log error but don't fail class creation
       console.error('Failed to update class usage metrics:', error);
