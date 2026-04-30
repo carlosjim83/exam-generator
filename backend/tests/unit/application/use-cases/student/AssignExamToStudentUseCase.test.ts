@@ -3,11 +3,7 @@ import { AssignExamToStudentUseCase } from '@application/use-cases/student/Assig
 import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { IUserRepository } from '@domain/repositories/IUserRepository.js';
-import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
-import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import { Exam } from '@domain/entities/Exam.js';
-import { User } from '@domain/entities/User.js';
+import { ExamAssignmentMother } from '@tests/helpers/factories/ExamAssignmentMother.js';
 
 describe('AssignExamToStudentUseCase', () => {
   let useCase: AssignExamToStudentUseCase;
@@ -133,19 +129,11 @@ describe('AssignExamToStudentUseCase', () => {
         isStudent: () => true,
       } as any;
 
-      const mockAssignment = ExamAssignment.create({
-        id: AssignmentId.create('assignment-id-1'),
+      const mockAssignment = ExamAssignmentMother.pending({
+        id: 'assignment-id-1',
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: 'PENDING',
-        dueDate: null,
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        studentId,
+        teacherId,
       });
 
       vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam);
@@ -200,19 +188,12 @@ describe('AssignExamToStudentUseCase', () => {
         isStudent: () => true,
       } as any;
 
-      const mockAssignment = ExamAssignment.create({
-        id: AssignmentId.create('assignment-id-2'),
+      const mockAssignment = ExamAssignmentMother.pending({
+        id: 'assignment-id-2',
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: 'PENDING',
+        studentId,
+        teacherId,
         dueDate,
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockExamRepo.findById).mockResolvedValue(mockExam);

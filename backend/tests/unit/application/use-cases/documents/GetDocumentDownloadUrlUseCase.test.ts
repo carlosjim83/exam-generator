@@ -10,14 +10,9 @@ import { GetDocumentDownloadUrlUseCase } from '@application/use-cases/documents/
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
-import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
-import { ClassDocument } from '@domain/entities/ClassDocument.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
-import { ClassDocumentId } from '@domain/value-objects/ClassDocumentId.js';
+import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
+import { ClassDocumentMother } from '@tests/helpers/factories/ClassDocumentMother.js';
+import { StudentEnrollmentMother } from '@tests/helpers/factories/StudentEnrollmentMother.js';
 
 const mockClassDocumentRepository: IClassDocumentRepository = {
   findById: vi.fn(),
@@ -76,9 +71,9 @@ describe('GetDocumentDownloadUrlUseCase', () => {
   });
 
   it('should return download URL for enrolled student', async () => {
-    const document = createMockDocument(documentId, teacherId);
-    const classDocument = createMockClassDocument(classId, documentId, true);
-    const enrollment = createMockEnrollment(classId, studentId);
+    const document = DocumentMother.completed({ id: documentId, userId: teacherId });
+    const classDocument = ClassDocumentMother.visible({ classId, documentId });
+    const enrollment = StudentEnrollmentMother.active({ classId, studentId });
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
     vi.mocked(mockClassDocumentRepository.findByDocumentId).mockResolvedValue([classDocument]);
@@ -87,7 +82,7 @@ describe('GetDocumentDownloadUrlUseCase', () => {
     const result = await useCase.execute({ documentId, studentId });
 
     expect(result.downloadUrl).toBe(document.blobUrl);
-    expect(result.filename).toBe('test.pdf');
+    expect(result.filename).toBe(document.filename);
     expect(result.expiresIn).toBe(3600);
   });
 
@@ -98,7 +93,7 @@ describe('GetDocumentDownloadUrlUseCase', () => {
   });
 
   it('should throw error if document is not completed', async () => {
-    const document = createMockDocument(documentId, teacherId, DocumentStatus.PENDING);
+    const document = DocumentMother.pending({ id: documentId, userId: teacherId });
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
 
@@ -108,8 +103,8 @@ describe('GetDocumentDownloadUrlUseCase', () => {
   });
 
   it('should throw error if document not publicly available', async () => {
-    const document = createMockDocument(documentId, teacherId);
-    const classDocument = createMockClassDocument(classId, documentId, false); // Not visible
+    const document = DocumentMother.completed({ id: documentId, userId: teacherId });
+    const classDocument = ClassDocumentMother.hidden({ classId, documentId }); // Not visible
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
     vi.mocked(mockClassDocumentRepository.findByDocumentId).mockResolvedValue([classDocument]);
@@ -120,8 +115,8 @@ describe('GetDocumentDownloadUrlUseCase', () => {
   });
 
   it('should throw error if student not enrolled', async () => {
-    const document = createMockDocument(documentId, teacherId);
-    const classDocument = createMockClassDocument(classId, documentId, true);
+    const document = DocumentMother.completed({ id: documentId, userId: teacherId });
+    const classDocument = ClassDocumentMother.visible({ classId, documentId });
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
     vi.mocked(mockClassDocumentRepository.findByDocumentId).mockResolvedValue([classDocument]);
@@ -132,45 +127,3 @@ describe('GetDocumentDownloadUrlUseCase', () => {
     );
   });
 });
-
-function createMockDocument(
-  id: string,
-  userId: string,
-  status: DocumentStatus = DocumentStatus.COMPLETED
-): Document {
-  return Document.create({
-    id: DocumentId.create(id),
-    userId: UserId.create(userId),
-    title: 'Test Document',
-    filename: 'test.pdf',
-    fileSize: 1024,
-    mimeType: 'application/pdf',
-    blobUrl: 'https://example.com/test.pdf',
-    status,
-  });
-}
-
-function createMockClassDocument(
-  classId: string,
-  documentId: string,
-  isVisible: boolean
-): ClassDocument {
-  return ClassDocument.create({
-    id: new ClassDocumentId(),
-    classId: ClassId.create(classId),
-    documentId: DocumentId.create(documentId),
-    isVisible,
-    publishedAt: isVisible ? new Date() : null,
-  });
-}
-
-function createMockEnrollment(classId: string, studentId: string): StudentEnrollment {
-  return new StudentEnrollment(
-    new EnrollmentId(),
-    ClassId.create(classId),
-    UserId.create(studentId),
-    new Date(),
-    null,
-    true
-  );
-}

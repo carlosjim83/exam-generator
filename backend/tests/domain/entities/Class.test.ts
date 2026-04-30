@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Class } from '@domain/entities/Class.js';
-import { ClassMother } from '@tests/helpers/mothers/ClassMother.js';
+import { ClassMother } from '@tests/helpers/factories/ClassMother.js';
 
 describe('Class Entity', () => {
   describe('Creation', () => {

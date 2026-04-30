@@ -6,9 +6,8 @@ import { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepos
 import { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
 import { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import { ITokenService } from '@domain/services/ITokenService.js';
-import { User, UserRole, AuthProvider } from '@domain/entities/User.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import { Email } from '@domain/value-objects/Email.js';
+import { UserRole, AuthProvider } from '@domain/entities/User.js';
+import { UserMother } from '../../../../helpers/factories/UserMother.js';
 
 describe('RegisterUserUseCase', () => {
   let registerUserUseCase: RegisterUserUseCase;
@@ -107,18 +106,12 @@ describe('RegisterUserUseCase', () => {
 
       // Mock: user creation
       const mockUserId = randomUUID();
-      const mockUser = User.create({
-        id: UserId.create(mockUserId),
-        email: Email.create(input.email),
+      const mockUser = UserMother.teacher({
+        id: mockUserId,
+        email: input.email,
         passwordHash: 'hashed_password_123',
         firstName: input.firstName,
         lastName: input.lastName,
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
       vi.mocked(mockUserRepository.create).mockResolvedValue(mockUser);
 
@@ -184,18 +177,11 @@ describe('RegisterUserUseCase', () => {
       vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(null);
       vi.mocked(mockPasswordHasher.hash).mockResolvedValue('hashed_student_pass');
 
-      const mockUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create(input.email),
+      const mockUser = UserMother.student({
+        email: input.email,
         passwordHash: 'hashed_student_pass',
         firstName: input.firstName,
         lastName: input.lastName,
-        role: UserRole.STUDENT,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
       vi.mocked(mockUserRepository.create).mockResolvedValue(mockUser);
 
@@ -224,18 +210,11 @@ describe('RegisterUserUseCase', () => {
         role: 'TEACHER' as const,
       };
 
-      const existingUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create(input.email),
+      const existingUser = UserMother.teacher({
+        email: input.email,
         passwordHash: 'hashed',
         firstName: 'Existing',
         lastName: 'User',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
       vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(existingUser);
 
@@ -292,18 +271,11 @@ describe('RegisterUserUseCase', () => {
       vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(null);
       vi.mocked(mockPasswordHasher.hash).mockResolvedValue('hashed');
 
-      const mockUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create('test@example.com'),
+      const mockUser = UserMother.teacher({
+        email: 'test@example.com',
         passwordHash: 'hashed',
         firstName: 'Test',
         lastName: 'User',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
       vi.mocked(mockUserRepository.create).mockResolvedValue(mockUser);
       vi.mocked(mockTokenService.generateTokenPair).mockReturnValue({
@@ -334,18 +306,11 @@ describe('RegisterUserUseCase', () => {
       vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(null);
       vi.mocked(mockPasswordHasher.hash).mockResolvedValue('hashed');
 
-      const mockUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create(input.email),
+      const mockUser = UserMother.teacher({
+        email: input.email,
         passwordHash: 'hashed',
         firstName: input.firstName,
         lastName: input.lastName,
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
       vi.mocked(mockUserRepository.create).mockResolvedValue(mockUser);
       vi.mocked(mockTokenService.generateTokenPair).mockReturnValue({

@@ -4,7 +4,7 @@ import { RefreshTokenUseCase } from '@application/use-cases/auth/RefreshTokenUse
 import { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { ITokenService, DecodedRefreshToken } from '@domain/services/ITokenService.js';
 import { UserRole } from '@domain/entities/User.js';
-import { DomainUserMother } from '@tests/helpers/factories/DomainUserMother.js';
+import { UserMother } from '@tests/helpers/factories/UserMother.js';
 
 describe('RefreshTokenUseCase', () => {
   let refreshTokenUseCase: RefreshTokenUseCase;
@@ -50,7 +50,7 @@ describe('RefreshTokenUseCase', () => {
       vi.mocked(mockTokenService.verifyRefreshToken).mockReturnValue(decodedToken);
 
       // Mock: user exists
-      const mockUser = DomainUserMother.teacher({ id: mockUserId });
+      const mockUser = UserMother.teacher({ id: mockUserId });
       vi.mocked(mockUserRepository.findById).mockResolvedValue(mockUser);
 
       // Mock: new token pair
@@ -96,7 +96,7 @@ describe('RefreshTokenUseCase', () => {
       };
       vi.mocked(mockTokenService.verifyRefreshToken).mockReturnValue(decodedToken);
 
-      const mockUser = DomainUserMother.student({ id: mockUserId, email: 'student@example.com' });
+      const mockUser = UserMother.student({ id: mockUserId, email: 'student@example.com' });
       vi.mocked(mockUserRepository.findById).mockResolvedValue(mockUser);
 
       vi.mocked(mockTokenService.generateTokenPair).mockReturnValue({
@@ -219,7 +219,7 @@ describe('RefreshTokenUseCase', () => {
       vi.mocked(mockTokenService.verifyRefreshToken).mockReturnValue(decodedToken);
 
       // OAuth user (no password)
-      const mockOAuthUser = DomainUserMother.oauth({ id: mockUserId, email: 'oauth@example.com' });
+      const mockOAuthUser = UserMother.oauth({ id: mockUserId, email: 'oauth@example.com' });
       vi.mocked(mockUserRepository.findById).mockResolvedValue(mockOAuthUser);
 
       vi.mocked(mockTokenService.generateTokenPair).mockReturnValue({
@@ -255,7 +255,7 @@ describe('RefreshTokenUseCase', () => {
       };
       vi.mocked(mockTokenService.verifyRefreshToken).mockReturnValue(decodedToken);
 
-      const mockUser = DomainUserMother.teacher({ id: mockUserId });
+      const mockUser = UserMother.teacher({ id: mockUserId });
       vi.mocked(mockUserRepository.findById).mockResolvedValue(mockUser);
 
       vi.mocked(mockTokenService.generateTokenPair).mockReturnValue({

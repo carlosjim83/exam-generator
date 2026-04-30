@@ -4,9 +4,8 @@ import { ProcessDocumentUseCase } from '@application/use-cases/documents/Process
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
 import type { IDocumentProcessor } from '@domain/services/IDocumentProcessor.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import { DocumentStatus } from '@domain/entities/Document.js';
+import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
 
 /**
  * ProcessDocumentUseCase Unit Tests
@@ -94,20 +93,12 @@ describe('ProcessDocumentUseCase', () => {
       const userId = randomUUID();
       const differentUserId = randomUUID();
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(documentId),
-        userId: UserId.create(differentUserId), // Different user!
+      const mockDocument = DocumentMother.pending({
+        id: documentId,
+        userId: differentUserId,
         title: 'Test Document',
         filename: 'test.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'file://uploads/test.pdf',
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
@@ -160,18 +151,14 @@ describe('ProcessDocumentUseCase', () => {
       const documentId = randomUUID();
       const userId = randomUUID();
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.completed({
+        id: documentId,
+        userId: userId,
         title: 'Completed Document',
         filename: 'completed.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'file://uploads/completed.pdf',
-        status: DocumentStatus.COMPLETED,
         pageCount: 10,
         wordCount: 5000,
-        errorMessage: null,
         uploadedAt: new Date('2026-01-01'),
         processedAt: new Date('2026-01-02'),
       });
@@ -204,30 +191,22 @@ describe('ProcessDocumentUseCase', () => {
       const userId = randomUUID();
       const blobUrl = 'file://uploads/test.pdf';
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.pending({
+        id: documentId,
+        userId: userId,
         title: 'Test Document',
         filename: 'test.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl,
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
       vi.mocked(mockStorageService.download).mockResolvedValue(Buffer.from('PDF content'));
 
       // Mock updateStatus to return updated document
-      const processingDocument = Document.create({
+      const processingDocument = DocumentMother.create({
         ...mockDocument.toObject(),
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+        id: documentId,
+        userId: userId,
         status: DocumentStatus.PROCESSING,
       });
       vi.mocked(mockDocumentRepository.updateStatus).mockResolvedValue(processingDocument);
@@ -266,20 +245,12 @@ describe('ProcessDocumentUseCase', () => {
       const documentId = randomUUID();
       const userId = randomUUID();
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.pending({
+        id: documentId,
+        userId: userId,
         title: 'Test Document',
         filename: 'test.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'file://uploads/test.pdf',
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
@@ -289,19 +260,22 @@ describe('ProcessDocumentUseCase', () => {
         new Error('Storage service unavailable')
       );
 
-      const processingDocument = Document.create({
+      const processingDocument = DocumentMother.create({
         ...mockDocument.toObject(),
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+        id: documentId,
+        userId: userId,
         status: DocumentStatus.PROCESSING,
       });
 
-      const failedDocument = Document.create({
-        ...mockDocument.toObject(),
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
-        status: DocumentStatus.FAILED,
+      const failedDocument = DocumentMother.failed({
+        id: documentId,
+        userId: userId,
+        title: mockDocument.title,
+        filename: mockDocument.filename,
+        fileSize: mockDocument.fileSize,
+        blobUrl: mockDocument.blobUrl,
         errorMessage: 'Storage service unavailable',
+        uploadedAt: mockDocument.uploadedAt,
       });
 
       vi.mocked(mockDocumentRepository.updateStatus)
@@ -343,20 +317,12 @@ describe('ProcessDocumentUseCase', () => {
       const userId = randomUUID();
       const differentUserId = randomUUID();
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(documentId),
-        userId: UserId.create(differentUserId),
+      const mockDocument = DocumentMother.pending({
+        id: documentId,
+        userId: differentUserId,
         title: 'Test Document',
         filename: 'test.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'file://uploads/test.pdf',
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
@@ -375,29 +341,21 @@ describe('ProcessDocumentUseCase', () => {
       const documentId = randomUUID();
       const userId = randomUUID();
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.pending({
+        id: documentId,
+        userId: userId,
         title: 'PDF Document',
         filename: 'test.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'file://uploads/test.pdf',
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
       vi.mocked(mockStorageService.download).mockResolvedValue(Buffer.from('PDF'));
 
-      const processingDocument = Document.create({
+      const processingDocument = DocumentMother.create({
         ...mockDocument.toObject(),
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+        id: documentId,
+        userId: userId,
         status: DocumentStatus.PROCESSING,
       });
       vi.mocked(mockDocumentRepository.updateStatus).mockResolvedValue(processingDocument);
@@ -418,29 +376,23 @@ describe('ProcessDocumentUseCase', () => {
       const documentId = randomUUID();
       const userId = randomUUID();
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.pending({
+        id: documentId,
+        userId: userId,
         title: 'DOCX Document',
         filename: 'test.docx',
         fileSize: 2048,
         mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         blobUrl: 'file://uploads/test.docx',
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
       vi.mocked(mockStorageService.download).mockResolvedValue(Buffer.from('DOCX'));
 
-      const processingDocument = Document.create({
+      const processingDocument = DocumentMother.create({
         ...mockDocument.toObject(),
-        id: DocumentId.create(documentId),
-        userId: UserId.create(userId),
+        id: documentId,
+        userId: userId,
         status: DocumentStatus.PROCESSING,
       });
       vi.mocked(mockDocumentRepository.updateStatus).mockResolvedValue(processingDocument);

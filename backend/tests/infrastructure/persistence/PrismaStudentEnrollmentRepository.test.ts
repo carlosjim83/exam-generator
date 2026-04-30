@@ -4,7 +4,7 @@ import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { PrismaStudentEnrollmentRepository } from '@infrastructure/persistence/PrismaStudentEnrollmentRepository.js';
-import { StudentEnrollmentMother } from '@tests/helpers/mothers/StudentEnrollmentMother.js';
+import { StudentEnrollmentMother } from '@tests/helpers/factories/StudentEnrollmentMother.js';
 import { prisma } from '@config/prisma.js';
 
 describe('PrismaStudentEnrollmentRepository Integration Tests', () => {

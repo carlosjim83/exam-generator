@@ -49,9 +49,7 @@ import type { IDocumentRepository } from '@domain/repositories/IDocumentReposito
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
-import { Exam } from '@domain/entities/Exam.js';
-import { Question, QuestionType, QuestionDifficulty } from '@domain/entities/Question.js';
+import { QuestionType, QuestionDifficulty } from '@domain/entities/Question.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
@@ -59,8 +57,11 @@ import { QuestionId } from '@domain/value-objects/QuestionId.js';
 import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
 import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
-import { SubscriptionMother } from '@tests/helpers/mothers/SubscriptionMother.js';
-import { UsageMetricsMother } from '@tests/helpers/mothers/UsageMetricsMother.js';
+import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
+import { ExamMother } from '@tests/helpers/factories/ExamMother.js';
+import { QuestionMother } from '@tests/helpers/factories/QuestionMother.js';
+import { SubscriptionMother } from '@tests/helpers/factories/SubscriptionMother.js';
+import { UsageMetricsMother } from '@tests/helpers/factories/UsageMetricsMother.js';
 
 // Mock the embedding service
 vi.mock('@infrastructure/ai/AzureOpenAIEmbeddingService.js', () => {
@@ -133,19 +134,15 @@ describe('GenerateExamUseCase', () => {
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
 
-  const mockCompletedDocument = Document.create({
-    id: mockDocumentId,
-    userId: mockUserId,
+  const mockCompletedDocument = DocumentMother.completed({
+    id: mockDocumentId.value,
+    userId: mockUserId.value,
     title: 'Test Document',
     filename: 'test.pdf',
     fileSize: 1024,
-    mimeType: 'application/pdf',
     blobUrl: 'https://storage.example.com/test.pdf',
-    status: DocumentStatus.COMPLETED,
     pageCount: 10,
     wordCount: 1000,
-    errorMessage: null,
-    uploadedAt: new Date(),
     processedAt: new Date(),
   });
 
@@ -372,20 +369,12 @@ describe('GenerateExamUseCase', () => {
     });
 
     it('should throw error if document is not COMPLETED', async () => {
-      const pendingDoc = Document.create({
-        id: mockDocumentId,
-        userId: mockUserId,
+      const pendingDoc = DocumentMother.pending({
+        id: mockDocumentId.value,
+        userId: mockUserId.value,
         title: 'Test Document',
         filename: 'test.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'https://storage.example.com/test.pdf',
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(pendingDoc);
 
@@ -427,9 +416,9 @@ describe('GenerateExamUseCase', () => {
         async (examData, questionsData) => {
           const examId = ExamId.create();
           const questions = questionsData.map((q, index) =>
-            Question.create({
-              id: QuestionId.create(),
-              examId,
+            QuestionMother.create({
+              id: QuestionId.create().value,
+              examId: examId.value,
               type: q.type,
               difficulty: q.difficulty,
               questionText: q.questionText,
@@ -442,15 +431,13 @@ describe('GenerateExamUseCase', () => {
             })
           );
 
-          return Exam.create({
-            id: examId,
-            userId: examData.userId,
+          return ExamMother.create({
+            id: examId.value,
+            userId: examData.userId.value,
             title: examData.title,
             description: examData.description,
             generatedFrom: examData.generatedFrom,
             promptUsed: examData.promptUsed,
-            createdAt: new Date(),
-            updatedAt: new Date(),
             questions,
           });
         }
@@ -562,19 +549,14 @@ describe('GenerateExamUseCase', () => {
     beforeEach(() => {
       // Create second document
       mockDocumentId2 = DocumentId.create(randomUUID());
-      mockDocument2 = Document.create({
-        id: mockDocumentId2,
-        userId: mockUserId,
+      mockDocument2 = DocumentMother.completed({
+        id: mockDocumentId2.value,
+        userId: mockUserId.value,
         title: 'Test Document 2',
         filename: 'test2.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'https://storage.example.com/test2.pdf',
-        status: DocumentStatus.COMPLETED,
         pageCount: 8,
         wordCount: 800,
-        errorMessage: null,
-        uploadedAt: new Date(),
         processedAt: new Date(),
       });
 
@@ -606,9 +588,9 @@ describe('GenerateExamUseCase', () => {
         async (examData, questionsData) => {
           const examId = ExamId.create();
           const questions = questionsData.map((q, index) =>
-            Question.create({
-              id: QuestionId.create(),
-              examId,
+            QuestionMother.create({
+              id: QuestionId.create().value,
+              examId: examId.value,
               type: q.type,
               difficulty: q.difficulty,
               questionText: q.questionText,
@@ -621,15 +603,13 @@ describe('GenerateExamUseCase', () => {
             })
           );
 
-          return Exam.create({
-            id: examId,
-            userId: examData.userId,
+          return ExamMother.create({
+            id: examId.value,
+            userId: examData.userId.value,
             title: examData.title,
             description: examData.description,
             generatedFrom: examData.generatedFrom,
             promptUsed: examData.promptUsed,
-            createdAt: new Date(),
-            updatedAt: new Date(),
             questions,
           });
         }
@@ -704,20 +684,12 @@ describe('GenerateExamUseCase', () => {
     });
 
     it('should throw error if any document is not COMPLETED', async () => {
-      const pendingDoc = Document.create({
-        id: mockDocumentId2,
-        userId: mockUserId,
+      const pendingDoc = DocumentMother.pending({
+        id: mockDocumentId2.value,
+        userId: mockUserId.value,
         title: 'Pending Doc',
         filename: 'pending.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'https://storage.example.com/pending.pdf',
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockImplementation(async (id: DocumentId) => {
@@ -755,19 +727,14 @@ describe('GenerateExamUseCase', () => {
 
     it('should throw error if user does not own one of the documents', async () => {
       const anotherUserId = UserId.create(randomUUID());
-      const unauthorizedDoc = Document.create({
-        id: mockDocumentId2,
-        userId: anotherUserId, // Different user
+      const unauthorizedDoc = DocumentMother.completed({
+        id: mockDocumentId2.value,
+        userId: anotherUserId.value, // Different user
         title: 'Unauthorized Doc',
         filename: 'unauthorized.pdf',
-        fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'https://storage.example.com/unauthorized.pdf',
-        status: DocumentStatus.COMPLETED,
         pageCount: 5,
         wordCount: 500,
-        errorMessage: null,
-        uploadedAt: new Date(),
         processedAt: new Date(),
       });
 

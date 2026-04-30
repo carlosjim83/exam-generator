@@ -8,7 +8,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { ExamMother } from './ExamMother.js';
+import { DbExamMother } from './DbExamMother.js';
 
 const prisma = new PrismaClient();
 
@@ -28,7 +28,7 @@ export interface ExamAssignmentMotherOptions {
 /**
  * ExamAssignment Mother - Creates test assignments in different states
  */
-export class ExamAssignmentMother {
+export class DbExamAssignmentMother {
   /**
    * Creates a pending assignment (just assigned, not started)
    */
@@ -107,7 +107,7 @@ export class ExamAssignmentMother {
     let teacherId = options.teacherId;
 
     if (!examId) {
-      const { exam } = await ExamMother.complete({ userId: teacherId });
+      const { exam } = await DbExamMother.complete({ userId: teacherId });
       examId = exam.id;
       teacherId = exam.userId;
     }

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
-import { StudentEnrollmentMother } from '@tests/helpers/mothers/StudentEnrollmentMother.js';
+import { StudentEnrollmentMother } from '@tests/helpers/factories/StudentEnrollmentMother.js';
 
 describe('StudentEnrollment Entity', () => {
   describe('Creation', () => {

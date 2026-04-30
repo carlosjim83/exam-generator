@@ -14,7 +14,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { PrismaClient } from '@prisma/client';
 import { createTestServer } from '@tests/helpers/test-server.js';
-import { UserMother } from '@tests/helpers/mothers/index.js';
+import { ApiUserMother } from '@tests/helpers/mothers/index.js';
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,7 @@ describe('Document Processing Integration Tests', () => {
     app = await createTestServer();
 
     // Create user via UserMother
-    const { user, tokens } = await UserMother.teacher(app);
+    const { user, tokens } = await ApiUserMother.teacher(app);
     accessToken = tokens.accessToken;
     userId = user.id;
   });
@@ -102,7 +102,7 @@ describe('Document Processing Integration Tests', () => {
 
     it("should return 403 when trying to process another user's document", async () => {
       // ARRANGE: Create another user via UserMother
-      const { user: otherUser } = await UserMother.teacher(app);
+      const { user: otherUser } = await ApiUserMother.teacher(app);
 
       // Create document owned by other user
       const document = await prisma.document.create({

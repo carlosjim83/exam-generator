@@ -2,7 +2,11 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { createTestServer } from '@tests/helpers/test-server.js';
 import { ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
-import { UserMother, ExamMother, ExamAssignmentMother } from '@tests/helpers/mothers/index.js';
+import {
+  ApiUserMother,
+  DbExamMother,
+  DbExamAssignmentMother,
+} from '@tests/helpers/mothers/index.js';
 
 /**
  * E2E Tests for Student Routes
@@ -165,7 +169,7 @@ describe('Student Routes E2E Tests', () => {
     describe('🟢 GREEN: Success cases', () => {
       it('should assign exam to student successfully', async () => {
         // Create exam using Object Mother
-        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
 
         const response = await app.inject({
           method: 'POST',
@@ -188,7 +192,7 @@ describe('Student Routes E2E Tests', () => {
 
       it('should assign exam with optional due date', async () => {
         // Create exam using Object Mother
-        const { exam } = await ExamMother.complete({ userId: teacherId });
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
         const dueDate = new Date(Date.now() + 86400000 * 7); // 7 days from now
 
         const response = await app.inject({
@@ -246,7 +250,7 @@ describe('Student Routes E2E Tests', () => {
     describe('🟢 GREEN: Success cases', () => {
       it('should return empty array when student has no assignments', async () => {
         // ARRANGE: Create a NEW student who has no assignments yet
-        const freshStudent = await UserMother.student(app);
+        const freshStudent = await ApiUserMother.student(app);
 
         // ACT: Fetch assignments for this fresh student
         const response = await app.inject({
@@ -281,9 +285,9 @@ describe('Student Routes E2E Tests', () => {
 
       it('should return all assignments with exam details', async () => {
         // ARRANGE: Create a NEW student and assignment
-        const freshStudent = await UserMother.student(app);
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.pending({
+        const freshStudent = await ApiUserMother.student(app);
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.pending({
           examId: exam.id,
           studentId: freshStudent.user.id,
           teacherId: teacherId,
@@ -356,9 +360,9 @@ describe('Student Routes E2E Tests', () => {
 
       it('should reject if assignment does not belong to student', async () => {
         // ARRANGE: Create another student and assignment for them
-        const otherStudent = await UserMother.student(app);
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.pending({
+        const otherStudent = await ApiUserMother.student(app);
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.pending({
           examId: exam.id,
           studentId: otherStudent.user.id, // Different student
           teacherId: teacherId,
@@ -381,8 +385,8 @@ describe('Student Routes E2E Tests', () => {
 
       it('should reject if assignment is not in PENDING status', async () => {
         // ARRANGE: Create assignment already in SUBMITTED status
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.submitted({
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.submitted({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -407,8 +411,8 @@ describe('Student Routes E2E Tests', () => {
     describe('🟢 GREEN: Success cases', () => {
       it('should start exam successfully and return IN_PROGRESS status', async () => {
         // ARRANGE: Create pending assignment
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.pending({
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.pending({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -432,8 +436,8 @@ describe('Student Routes E2E Tests', () => {
 
       it('should set startedAt timestamp', async () => {
         // ARRANGE: Create pending assignment
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.pending({
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.pending({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -533,8 +537,8 @@ describe('Student Routes E2E Tests', () => {
 
       it('should reject if assignment is not IN_PROGRESS', async () => {
         // ARRANGE: Create PENDING assignment (not started)
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.pending({
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.pending({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -563,8 +567,8 @@ describe('Student Routes E2E Tests', () => {
     describe('🟢 GREEN: Success cases', () => {
       it('should submit answers and auto-grade multiple-choice questions', async () => {
         // ARRANGE: Create exam and start it
-        const { exam, questions } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.inProgress({
+        const { exam, questions } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.inProgress({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -600,8 +604,8 @@ describe('Student Routes E2E Tests', () => {
 
       it('should transition to SUBMITTED status', async () => {
         // ARRANGE: Create exam and start it
-        const { exam, questions } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.inProgress({
+        const { exam, questions } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.inProgress({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -628,8 +632,8 @@ describe('Student Routes E2E Tests', () => {
 
       it('should allow submitting with empty answers array', async () => {
         // ARRANGE: Create exam and start it
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.inProgress({
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.inProgress({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -699,8 +703,8 @@ describe('Student Routes E2E Tests', () => {
 
       it('should reject if assignment is not submitted yet', async () => {
         // ARRANGE: Create IN_PROGRESS assignment (not submitted yet)
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.inProgress({
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.inProgress({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -725,8 +729,8 @@ describe('Student Routes E2E Tests', () => {
     describe('🟢 GREEN: Success cases', () => {
       it('should return exam results with all question details', async () => {
         // ARRANGE: Create GRADED assignment with answers
-        const { exam, questions } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.graded({
+        const { exam, questions } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.graded({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -760,8 +764,8 @@ describe('Student Routes E2E Tests', () => {
 
       it('should include score and feedback', async () => {
         // ARRANGE: Create GRADED assignment
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.graded({
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.graded({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,
@@ -787,8 +791,8 @@ describe('Student Routes E2E Tests', () => {
 
       it('should show correct/incorrect status for each answer', async () => {
         // ARRANGE: Create GRADED assignment with answers
-        const { exam } = await ExamMother.complete({ userId: teacherId });
-        const assignment = await ExamAssignmentMother.graded({
+        const { exam } = await DbExamMother.complete({ userId: teacherId });
+        const assignment = await DbExamAssignmentMother.graded({
           examId: exam.id,
           studentId: studentId,
           teacherId: teacherId,

@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { env } from '@config/env.js';
 import jwt from 'jsonwebtoken';
 import { createTestServer } from '@tests/helpers/test-server.js';
-import { UserMother } from '@tests/helpers/mothers/index.js';
+import { ApiUserMother } from '@tests/helpers/mothers/index.js';
 
 describe('Auth Integration Tests', () => {
   let app: FastifyInstance;
@@ -19,7 +19,7 @@ describe('Auth Integration Tests', () => {
   describe('Happy Path: Full Authentication Flow', () => {
     it('should complete full flow: register → login → access protected route', async () => {
       // ARRANGE: Create user via UserMother
-      const { user, tokens } = await UserMother.teacher(app);
+      const { user, tokens } = await ApiUserMother.teacher(app);
 
       const registerToken = tokens.accessToken;
 
@@ -71,7 +71,7 @@ describe('Auth Integration Tests', () => {
 
     it('should access teacher-only route after teacher registration', async () => {
       // ARRANGE: Create teacher using UserMother
-      const { tokens } = await UserMother.teacher(app);
+      const { tokens } = await ApiUserMother.teacher(app);
 
       // Access teacher dashboard
       const dashboardResponse = await app.inject({
@@ -92,7 +92,7 @@ describe('Auth Integration Tests', () => {
   describe('Error Cases: Authentication Failures', () => {
     it('should reject login with wrong password', async () => {
       // ARRANGE: Create user via UserMother
-      const { user } = await UserMother.teacher(app);
+      const { user } = await ApiUserMother.teacher(app);
 
       // Try to login with wrong password
       const loginResponse = await app.inject({
@@ -128,7 +128,7 @@ describe('Auth Integration Tests', () => {
 
     it('should reject duplicate registration with same email', async () => {
       // ARRANGE: Create first user
-      const email = UserMother.uniqueEmail('duplicate-test');
+      const email = ApiUserMother.uniqueEmail('duplicate-test');
 
       // First registration (should succeed)
       const firstRegister = await app.inject({
@@ -228,7 +228,7 @@ describe('Auth Integration Tests', () => {
   describe('Role-Based Access Control', () => {
     it('should allow TEACHER to access teacher-only routes', async () => {
       // ARRANGE: Create teacher via UserMother
-      const { tokens } = await UserMother.teacher(app);
+      const { tokens } = await ApiUserMother.teacher(app);
 
       // ACT: Access teacher dashboard
       const dashboardResponse = await app.inject({
@@ -245,7 +245,7 @@ describe('Auth Integration Tests', () => {
 
     it('should reject STUDENT access to teacher-only routes', async () => {
       // ARRANGE: Create student via UserMother
-      const { tokens } = await UserMother.student(app);
+      const { tokens } = await ApiUserMother.student(app);
 
       // ACT: Try to access teacher dashboard
       const dashboardResponse = await app.inject({
@@ -266,8 +266,8 @@ describe('Auth Integration Tests', () => {
 
     it('should allow both TEACHER and STUDENT to access general protected routes', async () => {
       // ARRANGE: Create both teacher and student via UserMother
-      const { tokens: teacherTokens } = await UserMother.teacher(app);
-      const { tokens: studentTokens } = await UserMother.student(app);
+      const { tokens: teacherTokens } = await ApiUserMother.teacher(app);
+      const { tokens: studentTokens } = await ApiUserMother.student(app);
 
       // ACT: Both should access /api/profile
       const teacherProfile = await app.inject({

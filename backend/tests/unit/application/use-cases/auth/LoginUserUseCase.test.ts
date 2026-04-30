@@ -4,9 +4,8 @@ import { LoginUserUseCase } from '@application/use-cases/auth/LoginUserUseCase.j
 import { IUserRepository } from '@domain/repositories/IUserRepository.js';
 import { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import { ITokenService } from '@domain/services/ITokenService.js';
-import { User, UserRole, AuthProvider } from '@domain/entities/User.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import { Email } from '@domain/value-objects/Email.js';
+import { UserRole, AuthProvider } from '@domain/entities/User.js';
+import { UserMother } from '../../../../helpers/factories/UserMother.js';
 // Password imported but not used - keeping for potential future use
 // import { Password } from '@domain/value-objects/Password.js';
 
@@ -55,18 +54,12 @@ describe('LoginUserUseCase', () => {
       };
 
       const mockUserId = randomUUID();
-      const mockUser = User.create({
-        id: UserId.create(mockUserId),
-        email: Email.create(input.email),
+      const mockUser = UserMother.teacher({
+        id: mockUserId,
+        email: input.email,
         passwordHash: 'hashed_password',
         firstName: 'John',
         lastName: 'Doe',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Mock: user exists
@@ -123,18 +116,11 @@ describe('LoginUserUseCase', () => {
         password: 'StudentPass456!',
       };
 
-      const mockUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create(input.email),
+      const mockUser = UserMother.student({
+        email: input.email,
         passwordHash: 'hashed_student_pass',
         firstName: 'Jane',
         lastName: 'Smith',
-        role: UserRole.STUDENT,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(mockUser);
@@ -179,18 +165,11 @@ describe('LoginUserUseCase', () => {
         password: 'WrongPassword123!',
       };
 
-      const mockUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create(input.email),
+      const mockUser = UserMother.teacher({
+        email: input.email,
         passwordHash: 'hashed_password',
         firstName: 'John',
         lastName: 'Doe',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Mock: user exists but password doesn't match
@@ -212,18 +191,11 @@ describe('LoginUserUseCase', () => {
       };
 
       // Create OAuth user (no passwordHash)
-      const mockOAuthUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create(input.email),
-        passwordHash: null, // OAuth users have no password
+      const mockOAuthUser = UserMother.oauth({
+        email: input.email,
+        providerId: 'google-123',
         firstName: 'OAuth',
         lastName: 'User',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.GOOGLE,
-        providerId: 'google-123',
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(mockOAuthUser);
@@ -278,18 +250,11 @@ describe('LoginUserUseCase', () => {
         password: 'Pass123!',
       };
 
-      const mockUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create('test@example.com'),
+      const mockUser = UserMother.teacher({
+        email: 'test@example.com',
         passwordHash: 'hashed',
         firstName: 'Test',
         lastName: 'User',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(mockUser);
@@ -316,18 +281,11 @@ describe('LoginUserUseCase', () => {
         password: 'Pass123!',
       };
 
-      const mockUser = User.create({
-        id: UserId.create(randomUUID()),
-        email: Email.create('test@example.com'), // Stored as lowercase
+      const mockUser = UserMother.teacher({
+        email: 'test@example.com',
         passwordHash: 'hashed',
         firstName: 'Test',
         lastName: 'User',
-        role: UserRole.TEACHER,
-        provider: AuthProvider.LOCAL,
-        providerId: null,
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockUserRepository.findByEmail).mockResolvedValue(mockUser);

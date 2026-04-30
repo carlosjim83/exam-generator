@@ -2,9 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { randomUUID } from 'crypto';
 import { ListDocumentsUseCase } from '@application/use-cases/documents/ListDocumentsUseCase.js';
 import { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import { DocumentStatus } from '@domain/entities/Document.js';
+import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
 
 describe('ListDocumentsUseCase', () => {
   let listDocumentsUseCase: ListDocumentsUseCase;
@@ -39,35 +38,27 @@ describe('ListDocumentsUseCase', () => {
       };
 
       const mockDocuments = [
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.completed({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Document 1',
           filename: 'doc1.pdf',
           fileSize: 1024,
-          mimeType: 'application/pdf',
           blobUrl: 'https://storage.example.com/doc1.pdf',
-          status: DocumentStatus.COMPLETED,
           pageCount: 5,
           wordCount: 250,
-          errorMessage: null,
           uploadedAt: new Date('2026-01-01'),
           processedAt: new Date('2026-01-02'),
         }),
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.pending({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Document 2',
           filename: 'doc2.docx',
           fileSize: 2048,
           mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           blobUrl: 'https://storage.example.com/doc2.docx',
-          status: DocumentStatus.PENDING,
-          pageCount: null,
-          wordCount: null,
-          errorMessage: null,
           uploadedAt: new Date('2026-01-03'),
-          processedAt: null,
         }),
       ];
 
@@ -134,24 +125,18 @@ describe('ListDocumentsUseCase', () => {
       };
 
       const mockDocuments = [
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.pending({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Pending Doc',
           filename: 'pending.pdf',
           fileSize: 1024,
-          mimeType: 'application/pdf',
           blobUrl: 'https://storage.example.com/pending.pdf',
-          status: DocumentStatus.PENDING,
-          pageCount: null,
-          wordCount: null,
-          errorMessage: null,
           uploadedAt: new Date(),
-          processedAt: null,
         }),
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.create({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Processing Doc',
           filename: 'processing.pdf',
           fileSize: 1024,
@@ -164,35 +149,27 @@ describe('ListDocumentsUseCase', () => {
           uploadedAt: new Date(),
           processedAt: null,
         }),
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.completed({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Completed Doc',
           filename: 'completed.pdf',
           fileSize: 1024,
-          mimeType: 'application/pdf',
           blobUrl: 'https://storage.example.com/completed.pdf',
-          status: DocumentStatus.COMPLETED,
           pageCount: 10,
           wordCount: 500,
-          errorMessage: null,
           uploadedAt: new Date(),
           processedAt: new Date(),
         }),
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.failed({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Failed Doc',
           filename: 'failed.pdf',
           fileSize: 1024,
-          mimeType: 'application/pdf',
           blobUrl: 'https://storage.example.com/failed.pdf',
-          status: DocumentStatus.FAILED,
-          pageCount: null,
-          wordCount: null,
           errorMessage: 'Processing error',
           uploadedAt: new Date(),
-          processedAt: null,
         }),
       ];
 
@@ -235,18 +212,15 @@ describe('ListDocumentsUseCase', () => {
       };
 
       const mockDocuments = [
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.completed({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Only Document',
           filename: 'only.pdf',
           fileSize: 1024,
-          mimeType: 'application/pdf',
           blobUrl: 'https://storage.example.com/only.pdf',
-          status: DocumentStatus.COMPLETED,
           pageCount: 1,
           wordCount: 50,
-          errorMessage: null,
           uploadedAt: new Date(),
           processedAt: new Date(),
         }),
@@ -271,18 +245,15 @@ describe('ListDocumentsUseCase', () => {
 
       // Create 50 mock documents
       const mockDocuments = Array.from({ length: 50 }, (_, i) =>
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.completed({
+          id: randomUUID(),
+          userId: mockUserId,
           title: `Document ${i + 1}`,
           filename: `doc${i + 1}.pdf`,
           fileSize: 1024,
-          mimeType: 'application/pdf',
           blobUrl: `https://storage.example.com/doc${i + 1}.pdf`,
-          status: DocumentStatus.COMPLETED,
           pageCount: 10,
           wordCount: 500,
-          errorMessage: null,
           uploadedAt: new Date(),
           processedAt: new Date(),
         })
@@ -307,18 +278,15 @@ describe('ListDocumentsUseCase', () => {
       };
 
       const mockDocuments = [
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.completed({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Huge Document',
           filename: 'huge.pdf',
           fileSize: 52428800, // 50MB
-          mimeType: 'application/pdf',
           blobUrl: 'https://storage.example.com/huge.pdf',
-          status: DocumentStatus.COMPLETED,
           pageCount: 1000,
           wordCount: 100000,
-          errorMessage: null,
           uploadedAt: new Date(),
           processedAt: new Date(),
         }),
@@ -341,33 +309,27 @@ describe('ListDocumentsUseCase', () => {
       };
 
       const mockDocuments = [
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.completed({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'PDF Document',
           filename: 'document.pdf',
           fileSize: 1024,
-          mimeType: 'application/pdf',
           blobUrl: 'https://storage.example.com/document.pdf',
-          status: DocumentStatus.COMPLETED,
           pageCount: 5,
           wordCount: 250,
-          errorMessage: null,
           uploadedAt: new Date(),
           processedAt: new Date(),
         }),
-        Document.create({
-          id: DocumentId.create(randomUUID()),
-          userId: UserId.create(mockUserId),
+        DocumentMother.docx({
+          id: randomUUID(),
+          userId: mockUserId,
           title: 'Word Document',
           filename: 'document.docx',
           fileSize: 2048,
-          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           blobUrl: 'https://storage.example.com/document.docx',
-          status: DocumentStatus.COMPLETED,
           pageCount: 3,
           wordCount: 150,
-          errorMessage: null,
           uploadedAt: new Date(),
           processedAt: new Date(),
         }),

@@ -3,13 +3,11 @@ import { UpdateDocumentVisibilityUseCase } from '@application/use-cases/document
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import { ClassDocument } from '@domain/entities/ClassDocument.js';
-import { Document } from '@domain/entities/Document.js';
 import { Class } from '@domain/entities/Class.js';
-import { ClassDocumentId } from '@domain/value-objects/ClassDocumentId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
+import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
+import { ClassDocumentMother } from '@tests/helpers/factories/ClassDocumentMother.js';
 
 describe('UpdateDocumentVisibilityUseCase', () => {
   let useCase: UpdateDocumentVisibilityUseCase;
@@ -22,20 +20,6 @@ describe('UpdateDocumentVisibilityUseCase', () => {
   const classId = '123e4567-e89b-42d3-a456-426614174003';
   const documentId = '123e4567-e89b-42d3-a456-426614174004';
 
-  // Helper to create document entity
-  const createDocument = (ownerId: string): Document => {
-    return Document.create({
-      id: DocumentId.create(documentId),
-      userId: UserId.create(ownerId),
-      title: 'Test Document',
-      filename: 'test.pdf',
-      fileSize: 1024,
-      mimeType: 'application/pdf',
-      status: 'COMPLETED',
-      blobUrl: 'file://test.pdf',
-    });
-  };
-
   // Helper to create class entity
   const createClass = (ownerId: string): Class => {
     return new Class(
@@ -47,17 +31,6 @@ describe('UpdateDocumentVisibilityUseCase', () => {
       null,
       new Date()
     );
-  };
-
-  // Helper to create class-document entity
-  const createClassDocument = (visible: boolean = false): ClassDocument => {
-    return ClassDocument.create({
-      id: ClassDocumentId.create(),
-      classId: ClassId.create(classId),
-      documentId: DocumentId.create(documentId),
-      isVisible: visible,
-      publishedAt: visible ? new Date() : null,
-    });
   };
 
   beforeEach(() => {
@@ -103,9 +76,9 @@ describe('UpdateDocumentVisibilityUseCase', () => {
 
   describe('Publish document (isVisible: true)', () => {
     it('should publish a shared document', async () => {
-      const document = createDocument(teacherId);
+      const document = DocumentMother.completed({ id: documentId, userId: teacherId });
       const classEntity = createClass(teacherId);
-      const classDocument = createClassDocument(false);
+      const classDocument = ClassDocumentMother.hidden({ classId, documentId });
 
       vi.mocked(mockDocumentRepo.findById).mockResolvedValue(document);
       vi.mocked(mockClassRepo.findById).mockResolvedValue(classEntity);
@@ -125,9 +98,9 @@ describe('UpdateDocumentVisibilityUseCase', () => {
     });
 
     it('should set publishedAt when publishing for the first time', async () => {
-      const document = createDocument(teacherId);
+      const document = DocumentMother.completed({ id: documentId, userId: teacherId });
       const classEntity = createClass(teacherId);
-      const unpublishedDoc = createClassDocument(false);
+      const unpublishedDoc = ClassDocumentMother.hidden({ classId, documentId });
 
       vi.mocked(mockDocumentRepo.findById).mockResolvedValue(document);
       vi.mocked(mockClassRepo.findById).mockResolvedValue(classEntity);
@@ -148,9 +121,9 @@ describe('UpdateDocumentVisibilityUseCase', () => {
 
   describe('Unpublish document (isVisible: false)', () => {
     it('should unpublish a shared document', async () => {
-      const document = createDocument(teacherId);
+      const document = DocumentMother.completed({ id: documentId, userId: teacherId });
       const classEntity = createClass(teacherId);
-      const publishedDoc = createClassDocument(true);
+      const publishedDoc = ClassDocumentMother.visible({ classId, documentId });
 
       vi.mocked(mockDocumentRepo.findById).mockResolvedValue(document);
       vi.mocked(mockClassRepo.findById).mockResolvedValue(classEntity);
@@ -184,7 +157,7 @@ describe('UpdateDocumentVisibilityUseCase', () => {
     });
 
     it('should throw error if user is not document owner', async () => {
-      const document = createDocument(teacherId);
+      const document = DocumentMother.completed({ id: documentId, userId: teacherId });
       vi.mocked(mockDocumentRepo.findById).mockResolvedValue(document);
 
       await expect(
@@ -198,7 +171,7 @@ describe('UpdateDocumentVisibilityUseCase', () => {
     });
 
     it('should throw error if class not found', async () => {
-      const document = createDocument(teacherId);
+      const document = DocumentMother.completed({ id: documentId, userId: teacherId });
       vi.mocked(mockDocumentRepo.findById).mockResolvedValue(document);
       vi.mocked(mockClassRepo.findById).mockResolvedValue(null);
 
@@ -213,7 +186,7 @@ describe('UpdateDocumentVisibilityUseCase', () => {
     });
 
     it('should throw error if user is not class teacher', async () => {
-      const document = createDocument(teacherId);
+      const document = DocumentMother.completed({ id: documentId, userId: teacherId });
       const classWithOtherTeacher = createClass(otherUserId);
       vi.mocked(mockDocumentRepo.findById).mockResolvedValue(document);
       vi.mocked(mockClassRepo.findById).mockResolvedValue(classWithOtherTeacher);
@@ -231,7 +204,7 @@ describe('UpdateDocumentVisibilityUseCase', () => {
 
   describe('Validation', () => {
     it('should throw error if document is not shared with class', async () => {
-      const document = createDocument(teacherId);
+      const document = DocumentMother.completed({ id: documentId, userId: teacherId });
       const classEntity = createClass(teacherId);
       vi.mocked(mockDocumentRepo.findById).mockResolvedValue(document);
       vi.mocked(mockClassRepo.findById).mockResolvedValue(classEntity);

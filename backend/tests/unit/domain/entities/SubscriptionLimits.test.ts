@@ -7,6 +7,7 @@ import {
 } from '@domain/entities/SubscriptionLimits.js';
 import { SubscriptionTier } from '@domain/entities/Subscription.js';
 import { FREE_TIER_LIMITS, EXAM_LIMITS } from '@config/subscription-limits.js';
+import { SubscriptionLimitsMother } from '../../../helpers/factories/SubscriptionLimitsMother.js';
 
 describe('SubscriptionLimits', () => {
   describe('getForTier', () => {
@@ -218,24 +219,7 @@ describe('SubscriptionLimits', () => {
     });
 
     it('should allow null for unlimited', () => {
-      const limits = SubscriptionLimits.create({
-        tier: SubscriptionTier.PRO,
-        maxClasses: null,
-        maxStudents: null,
-        maxExamsPerMonth: null,
-        maxQuestionsPerExam: null,
-        maxDocumentsPerExam: null,
-        maxTeamMembers: null,
-        analyticsLevel: AnalyticsLevel.ADVANCED,
-        supportLevel: SupportLevel.PRIORITY,
-        aiModel: AIModel.GPT_4O,
-        customBranding: true,
-        exportFeatures: true,
-        lmsIntegrations: [],
-        apiAccess: false,
-        sso: false,
-        complianceFeatures: [],
-      });
+      const limits = SubscriptionLimitsMother.pro();
 
       expect(limits.maxClasses).toBeNull();
       expect(limits.maxStudents).toBeNull();

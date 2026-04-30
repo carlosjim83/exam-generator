@@ -33,7 +33,7 @@ export interface UserMotherResult {
 /**
  * User Mother - Creates test users with authentication
  */
-export class UserMother {
+export class ApiUserMother {
   /**
    * Creates a teacher user (default)
    */
