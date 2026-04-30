@@ -264,8 +264,7 @@ describe('Auth Integration Tests', () => {
       expect(body.message).toContain('TEACHER');
     });
 
-    // SKIPPED: Route /api/profile does not exist yet
-    it.skip('should allow both TEACHER and STUDENT to access general protected routes', async () => {
+    it('should allow both TEACHER and STUDENT to access general protected routes', async () => {
       // ARRANGE: Create both teacher and student via UserMother
       const { tokens: teacherTokens } = await UserMother.teacher(app);
       const { tokens: studentTokens } = await UserMother.student(app);
