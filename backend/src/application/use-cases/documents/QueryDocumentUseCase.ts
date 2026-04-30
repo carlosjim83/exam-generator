@@ -8,9 +8,9 @@ import type {
   IDocumentRepository,
   QueryDocumentResult,
 } from '@domain/repositories/IDocumentRepository.js';
+import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 
 /**
  * QueryDocumentUseCase
@@ -40,11 +40,10 @@ export interface QueryDocumentOutput {
 }
 
 export class QueryDocumentUseCase {
-  private readonly embeddingService: AzureOpenAIEmbeddingService;
-
-  constructor(private readonly documentRepository: IDocumentRepository) {
-    this.embeddingService = new AzureOpenAIEmbeddingService();
-  }
+  constructor(
+    private readonly documentRepository: IDocumentRepository,
+    private readonly embeddingService: IEmbeddingService
+  ) {}
 
   async execute(input: QueryDocumentInput): Promise<QueryDocumentOutput> {
     // 1. Validate input

@@ -56,6 +56,8 @@ import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
 import { QuestionId } from '@domain/value-objects/QuestionId.js';
+import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
+import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 import { SubscriptionMother } from '@tests/helpers/mothers/SubscriptionMother.js';
 import { UsageMetricsMother } from '@tests/helpers/mothers/UsageMetricsMother.js';
@@ -123,7 +125,8 @@ describe('GenerateExamUseCase', () => {
   let generateExamUseCase: GenerateExamUseCase;
   let mockDocumentRepository: IDocumentRepository;
   let mockExamRepository: IExamRepository;
-  let mockEmbeddingService: AzureOpenAIEmbeddingService;
+  let mockEmbeddingService: IEmbeddingService;
+  let mockExamGenerator: IExamGenerator;
 
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
@@ -174,10 +177,55 @@ describe('GenerateExamUseCase', () => {
     // Mock embedding service
     mockEmbeddingService = new AzureOpenAIEmbeddingService();
 
+    // Mock exam generator
+    mockExamGenerator = {
+      generate: vi.fn(async ({ numQuestions, difficulty, questionTypes }: any) => {
+        const questions = [];
+        const types = questionTypes || [QuestionType.MULTIPLE_CHOICE];
+
+        for (let i = 0; i < numQuestions; i++) {
+          const type = types[i % types.length];
+          const diff =
+            difficulty === 'MIXED'
+              ? [QuestionDifficulty.EASY, QuestionDifficulty.MEDIUM, QuestionDifficulty.HARD][i % 3]
+              : difficulty;
+
+          questions.push({
+            type,
+            difficulty: diff,
+            questionText: `Mock question ${i + 1}`,
+            options:
+              type === QuestionType.MULTIPLE_CHOICE
+                ? ['A', 'B', 'C', 'D']
+                : type === QuestionType.TRUE_FALSE
+                  ? ['True', 'False']
+                  : [],
+            correctAnswer:
+              type === QuestionType.MULTIPLE_CHOICE
+                ? 'A'
+                : type === QuestionType.TRUE_FALSE
+                  ? 'True'
+                  : 'Mock answer',
+            explanation: `Mock explanation ${i + 1}`,
+            points:
+              diff === QuestionDifficulty.EASY ? 1 : diff === QuestionDifficulty.MEDIUM ? 2 : 3,
+          });
+        }
+
+        return {
+          questions,
+          promptTokens: 1000,
+          completionTokens: 500,
+          totalTokens: 1500,
+        };
+      }),
+    };
+
     generateExamUseCase = new GenerateExamUseCase(
       mockDocumentRepository,
       mockExamRepository,
-      mockEmbeddingService
+      mockEmbeddingService,
+      mockExamGenerator
     );
   });
 
@@ -311,10 +359,7 @@ describe('GenerateExamUseCase', () => {
     });
   });
 
-  // SKIPPED: These tests depend on external infrastructure (Genkit + Azure OpenAI)
-  // They should be converted to integration tests instead of unit tests
-  // The mocks for @azure/openai don't work properly due to module loading order
-  describe.skip('Exam Generation', () => {
+  describe('Exam Generation', () => {
     beforeEach(() => {
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockCompletedDocument);
       vi.mocked(mockDocumentRepository.searchSimilarChunks).mockResolvedValue([
@@ -334,37 +379,39 @@ describe('GenerateExamUseCase', () => {
         },
       ]);
 
-      // Mock exam repository create
-      vi.mocked(mockExamRepository.create).mockImplementation(async (examData, questionsData) => {
-        const examId = ExamId.create();
-        const questions = questionsData.map((q, index) =>
-          Question.create({
-            id: QuestionId.create(),
-            examId,
-            type: q.type,
-            difficulty: q.difficulty,
-            questionText: q.questionText,
-            options: q.options,
-            correctAnswer: q.correctAnswer,
-            explanation: q.explanation,
-            points: q.points,
-            orderIndex: index,
-            sourceChunkIds: [],
-          })
-        );
+      // Mock exam repository createWithQuestions
+      vi.mocked(mockExamRepository.createWithQuestions).mockImplementation(
+        async (examData, questionsData) => {
+          const examId = ExamId.create();
+          const questions = questionsData.map((q, index) =>
+            Question.create({
+              id: QuestionId.create(),
+              examId,
+              type: q.type,
+              difficulty: q.difficulty,
+              questionText: q.questionText,
+              options: q.options,
+              correctAnswer: q.correctAnswer,
+              explanation: q.explanation,
+              points: q.points,
+              orderIndex: index,
+              sourceChunkIds: [],
+            })
+          );
 
-        return Exam.create({
-          id: examId,
-          userId: examData.userId,
-          title: examData.title,
-          description: examData.description,
-          generatedFrom: examData.generatedFrom,
-          promptUsed: examData.promptUsed,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          questions,
-        });
-      });
+          return Exam.create({
+            id: examId,
+            userId: examData.userId,
+            title: examData.title,
+            description: examData.description,
+            generatedFrom: examData.generatedFrom,
+            promptUsed: examData.promptUsed,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            questions,
+          });
+        }
+      );
     });
 
     it('should successfully generate an exam', async () => {
@@ -391,7 +438,7 @@ describe('GenerateExamUseCase', () => {
       expect(mockDocumentRepository.searchSimilarChunks).toHaveBeenCalled();
 
       // Verify exam was stored
-      expect(mockExamRepository.create).toHaveBeenCalled();
+      expect(mockExamRepository.createWithQuestions).toHaveBeenCalled();
     });
 
     it('should generate questions with correct difficulty', async () => {
@@ -453,7 +500,7 @@ describe('GenerateExamUseCase', () => {
         questionTypes: ['MULTIPLE_CHOICE'],
       });
 
-      expect(mockExamRepository.create).toHaveBeenCalledWith(
+      expect(mockExamRepository.createWithQuestions).toHaveBeenCalledWith(
         expect.objectContaining({
           userId: mockUserId,
           title: 'Metadata Test',
@@ -511,41 +558,42 @@ describe('GenerateExamUseCase', () => {
         },
       ]);
 
-      // Mock exam repository create
-      vi.mocked(mockExamRepository.create).mockImplementation(async (examData, questionsData) => {
-        const examId = ExamId.create();
-        const questions = questionsData.map((q, index) =>
-          Question.create({
-            id: QuestionId.create(),
-            examId,
-            type: q.type,
-            difficulty: q.difficulty,
-            questionText: q.questionText,
-            options: q.options,
-            correctAnswer: q.correctAnswer,
-            explanation: q.explanation,
-            points: q.points,
-            orderIndex: index,
-            sourceChunkIds: [],
-          })
-        );
+      // Mock exam repository createWithQuestions
+      vi.mocked(mockExamRepository.createWithQuestions).mockImplementation(
+        async (examData, questionsData) => {
+          const examId = ExamId.create();
+          const questions = questionsData.map((q, index) =>
+            Question.create({
+              id: QuestionId.create(),
+              examId,
+              type: q.type,
+              difficulty: q.difficulty,
+              questionText: q.questionText,
+              options: q.options,
+              correctAnswer: q.correctAnswer,
+              explanation: q.explanation,
+              points: q.points,
+              orderIndex: index,
+              sourceChunkIds: [],
+            })
+          );
 
-        return Exam.create({
-          id: examId,
-          userId: examData.userId,
-          title: examData.title,
-          description: examData.description,
-          generatedFrom: examData.generatedFrom,
-          promptUsed: examData.promptUsed,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          questions,
-        });
-      });
+          return Exam.create({
+            id: examId,
+            userId: examData.userId,
+            title: examData.title,
+            description: examData.description,
+            generatedFrom: examData.generatedFrom,
+            promptUsed: examData.promptUsed,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            questions,
+          });
+        }
+      );
     });
 
-    // SKIPPED: Depends on Genkit + Azure OpenAI infrastructure
-    it.skip('should generate exam from 2 documents', async () => {
+    it('should generate exam from 2 documents', async () => {
       const result = await generateExamUseCase.execute({
         userId: mockUserId.value,
         documentIds: [mockDocumentId.value, mockDocumentId2.value],
@@ -563,7 +611,7 @@ describe('GenerateExamUseCase', () => {
       expect(mockDocumentRepository.findById).toHaveBeenCalledWith(mockDocumentId2);
 
       // Verify exam was stored with both document IDs
-      expect(mockExamRepository.create).toHaveBeenCalledWith(
+      expect(mockExamRepository.createWithQuestions).toHaveBeenCalledWith(
         expect.objectContaining({
           generatedFrom: [mockDocumentId.value, mockDocumentId2.value],
         }),
@@ -748,6 +796,7 @@ describe('GenerateExamUseCase', () => {
         mockDocumentRepository,
         mockExamRepository,
         mockEmbeddingService,
+        mockExamGenerator,
         mockSubscriptionRepository,
         mockUsageMetricsRepository
       );

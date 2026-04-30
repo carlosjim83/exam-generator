@@ -5,10 +5,10 @@ import path from 'node:path';
 import { DocumentStatus } from '@domain/entities/Document.js';
 import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
+import type { IDocumentProcessor } from '@domain/services/IDocumentProcessor.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { processDocumentFlow } from '@infrastructure/ai/flows/processDocument.flow.js';
 
 /**
  * ProcessDocumentUseCase
@@ -51,7 +51,8 @@ export class ProcessDocumentUseCase {
 
   constructor(
     private readonly documentRepository: IDocumentRepository,
-    private readonly storageService: IStorageService
+    private readonly storageService: IStorageService,
+    private readonly documentProcessor: IDocumentProcessor
   ) {}
 
   async execute(input: ProcessDocumentInput): Promise<ProcessDocumentOutput> {
@@ -77,8 +78,7 @@ export class ProcessDocumentUseCase {
       // 3. Check if already processed (idempotent)
       if (document.isCompleted()) {
         // Count existing chunks
-        const { getChunkCount } = await import('@infrastructure/ai/indexers/pgvector.indexer.js');
-        const chunksCreated = await getChunkCount(documentId.value);
+        const chunksCreated = await this.documentProcessor.getChunkCount(documentId.value);
 
         return {
           document: {
@@ -108,8 +108,8 @@ export class ProcessDocumentUseCase {
       tempFilePath = path.join(this.tempDir, tempFileName);
       await writeFile(tempFilePath, fileBuffer);
 
-      // 7. Call Genkit flow for processing
-      const result = await processDocumentFlow({
+      // 7. Call document processor for processing
+      const result = await this.documentProcessor.process({
         documentId: documentId.value,
         filePath: tempFilePath,
         mimeType: document.mimeType,

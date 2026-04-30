@@ -27,55 +27,6 @@ describe('Document Upload Route', () => {
     container.cleanup();
   });
 
-  // SKIPPED: Flaky E2E test - sometimes 500, sometimes 201
-  // Depends on worker/queue infrastructure being ready
-  it.skip('should upload a document and store it using the StorageService', async () => {
-    // Spy on the storage service to ensure it's called without writing to disk
-    const storageSpy = vi
-      .spyOn(storageService, 'upload')
-      .mockResolvedValue('http://localhost:9000/uploads/mock-path.pdf');
-
-    const form = new FormData();
-    const fileContent = 'this is a fake pdf for my test';
-    const fileName = 'test-document.pdf';
-
-    form.append('file', Buffer.from(fileContent), {
-      filename: fileName,
-      contentType: 'application/pdf',
-    });
-
-    const response = await server.inject({
-      method: 'POST',
-      url: '/api/documents/upload',
-      headers: {
-        ...form.getHeaders(),
-        authorization: `Bearer ${authToken}`,
-      },
-      payload: form,
-    });
-
-    // --- Assertions ---
-
-    // 1. HTTP Response is correct
-    expect(response.statusCode).toBe(201);
-    const body = JSON.parse(response.body);
-    expect(body.message).toContain('uploaded successfully');
-
-    // 2. The document metadata in the response is correct
-    expect(body.document.id).toBeDefined();
-    expect(body.document.filename).toBe(fileName);
-    expect(body.document.status).toBe('PENDING'); // Documents start as PENDING until processed
-
-    // 3. Storage service was called correctly
-    expect(storageSpy).toHaveBeenCalledOnce();
-    const [uploadedFileName, uploadedBuffer] = storageSpy.mock.calls[0];
-    expect(uploadedFileName).toContain(fileName.split('.')[0]); // Service might add timestamp
-    expect(uploadedBuffer.toString()).toBe(fileContent);
-
-    // Restore the mock
-    storageSpy.mockRestore();
-  });
-
   it('should return 400 if no file is provided', async () => {
     const response = await server.inject({
       method: 'POST',

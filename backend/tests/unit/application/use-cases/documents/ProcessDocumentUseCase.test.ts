@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import { ProcessDocumentUseCase } from '@application/use-cases/documents/ProcessDocumentUseCase.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
+import type { IDocumentProcessor } from '@domain/services/IDocumentProcessor.js';
 import { Document, DocumentStatus } from '@domain/entities/Document.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -25,6 +26,7 @@ describe('ProcessDocumentUseCase', () => {
   let useCase: ProcessDocumentUseCase;
   let mockDocumentRepository: IDocumentRepository;
   let mockStorageService: IStorageService;
+  let mockDocumentProcessor: IDocumentProcessor;
 
   beforeEach(() => {
     // Mock repository
@@ -51,8 +53,18 @@ describe('ProcessDocumentUseCase', () => {
       validateFile: vi.fn(),
     };
 
+    // Mock document processor
+    mockDocumentProcessor = {
+      process: vi.fn(),
+      getChunkCount: vi.fn().mockResolvedValue(5),
+    };
+
     // Create use case instance
-    useCase = new ProcessDocumentUseCase(mockDocumentRepository, mockStorageService);
+    useCase = new ProcessDocumentUseCase(
+      mockDocumentRepository,
+      mockStorageService,
+      mockDocumentProcessor
+    );
   });
 
   describe('Validation', () => {

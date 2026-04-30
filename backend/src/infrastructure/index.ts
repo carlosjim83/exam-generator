@@ -24,3 +24,7 @@ export { TextExtractorService } from './text-extraction/TextExtractorService.js'
 
 // Infrastructure Layer - Message Broker
 export { BullMQMessageBroker } from './message-broker/BullMQMessageBroker.js';
+
+// Infrastructure Layer - AI Adapters
+export { GenkitDocumentProcessor } from './ai/GenkitDocumentProcessor.js';
+export { GenkitExamGenerator } from './ai/GenkitExamGenerator.js';

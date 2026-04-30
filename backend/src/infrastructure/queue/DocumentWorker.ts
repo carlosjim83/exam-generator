@@ -16,6 +16,7 @@ import { Worker } from 'bullmq';
 
 import { ProcessDocumentUseCase } from '@application/use-cases/documents/ProcessDocumentUseCase.js';
 import { prisma } from '@config/prisma.js';
+import { GenkitDocumentProcessor } from '@infrastructure/ai/GenkitDocumentProcessor.js';
 import { PrismaDocumentRepository } from '@infrastructure/repositories/PrismaDocumentRepository.js';
 import { AzureBlobStorageService } from '@infrastructure/storage/AzureBlobStorageService.js';
 import { LocalFileStorageService } from '@infrastructure/storage/LocalFileStorageService.js';
@@ -42,7 +43,12 @@ if (azureStorageService.isConfigured()) {
   console.log('📁 [Worker] Using Local File Storage for file storage (./uploads)');
 }
 
-const processDocumentUseCase = new ProcessDocumentUseCase(documentRepository, storageService);
+const documentProcessor = new GenkitDocumentProcessor();
+const processDocumentUseCase = new ProcessDocumentUseCase(
+  documentRepository,
+  storageService,
+  documentProcessor
+);
 
 // Initialize Worker Health Service for monitoring
 export const workerHealthService = new WorkerHealthService({

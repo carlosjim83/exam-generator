@@ -32,52 +32,6 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
     authToken = tokens.accessToken;
   });
 
-  // SKIPPED: This E2E test has infrastructure dependencies
-  // It requires proper setup of Azure OpenAI, storage, and worker
-  it.skip('should process document and create embeddings with Genkit', async () => {
-    // Mock the Genkit embedding call to avoid real API calls in tests
-    // We'll mock at the ai.embed level
-    // const mockEmbedding = new Array(768).fill(0).map(() => Math.random());
-
-    // TODO: This will need actual mocking of Genkit's embed function
-    // For now, we'll skip this test if GEMINI_API_KEY is not set
-    if (process.env.AZURE_OPENAI_API_KEY === 'placeholder') {
-      console.log('⚠️  Skipping Genkit test - AZURE_OPENAI_API_KEY not configured');
-      return;
-    }
-
-    // Process the document
-    const response = await server.inject({
-      method: 'POST',
-      url: `/api/documents/${documentId}/process`,
-      headers: {
-        authorization: `Bearer ${authToken}`,
-      },
-    });
-
-    // Should succeed
-    expect(response.statusCode).toBe(200);
-    const body = JSON.parse(response.body);
-    expect(body.document.status).toBe('COMPLETED');
-    expect(body.document.wordCount).toBeGreaterThan(0);
-    expect(body.document.pageCount).toBeGreaterThanOrEqual(1);
-
-    // Verify chunks were created in database
-    const chunks = await prisma.documentChunk.findMany({
-      where: { documentId },
-    });
-
-    expect(chunks.length).toBeGreaterThan(0);
-
-    // Verify first chunk has content and embedding
-    expect(chunks[0].content).toBeTruthy();
-    expect(chunks[0].content.length).toBeGreaterThan(0);
-    // TODO: Fix Prisma type to include embedding field
-    // expect(chunks[0].embedding).toBeTruthy(); // pgvector field
-    expect(chunks[0].wordCount).toBeGreaterThan(0);
-    expect(chunks[0].chunkIndex).toBe(0);
-  });
-
   it('should return 404 for non-existent document', async () => {
     // Use a valid UUIDv4 format that doesn't exist in database
     const fakeId = 'aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';
@@ -98,8 +52,7 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
     expect(response.statusCode).toBe(404);
   });
 
-  // SKIPPED: This test depends on infrastructure and has authorization issues
-  it.skip("should return 403 when trying to process another user's document", async () => {
+  it("should return 403 when trying to process another user's document", async () => {
     // ARRANGE: Create another user via UserMother
     const { user: otherUser } = await UserMother.teacher(server);
 

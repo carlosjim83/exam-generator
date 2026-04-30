@@ -83,11 +83,17 @@ import type { IInvitationRepository } from '@domain/repositories/IInvitationRepo
 import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import type { IAnswerGradingService } from '@domain/services/IAnswerGradingService.js';
+import type { IDocumentProcessor } from '@domain/services/IDocumentProcessor.js';
+import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
+import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
 import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
 import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
 import type { ITokenService } from '@domain/services/ITokenService.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
+import { GenkitDocumentProcessor } from '@infrastructure/ai/GenkitDocumentProcessor.js';
+import { GenkitExamGenerator } from '@infrastructure/ai/GenkitExamGenerator.js';
 import {
   PrismaUserRepository,
   PrismaDocumentRepository,
@@ -113,7 +119,6 @@ import { GetStudentClassExamsUseCase } from '@application/use-cases/classes/GetS
 import { GetStudentSubmissionDetailUseCase } from '@application/use-cases/classes/GetStudentSubmissionDetailUseCase.js';
 import { ISubscriptionRepository } from '@/domain/repositories/ISubscriptionRepository';
 import { IUsageMetricsRepository } from '@/domain/repositories/IUsageMetricsRepository';
-import type { IAnswerGradingService } from '@domain/services/IAnswerGradingService.js';
 import { AzureOpenAIGradingService } from '@infrastructure/ai/AzureOpenAIGradingService.js';
 
 /**
@@ -135,7 +140,9 @@ export class Container {
   private readonly _storageService: IStorageService;
   private readonly _textExtractor: ITextExtractor;
   private readonly _messageBroker: IMessageBroker; // Added
-  private readonly _embeddingService: AzureOpenAIEmbeddingService;
+  private readonly _embeddingService: IEmbeddingService;
+  private readonly _documentProcessor: IDocumentProcessor;
+  private readonly _examGenerator: IExamGenerator;
 
   // Classes & Invitations Repositories
   private readonly _classRepository: IClassRepository;
@@ -264,6 +271,8 @@ export class Container {
 
     // AI Services
     this._embeddingService = new AzureOpenAIEmbeddingService();
+    this._documentProcessor = new GenkitDocumentProcessor();
+    this._examGenerator = new GenkitExamGenerator();
     this._gradingService = new AzureOpenAIGradingService();
 
     // Classes & Invitations Repositories
@@ -310,7 +319,8 @@ export class Container {
 
     this._processDocumentUseCase = new ProcessDocumentUseCase(
       this._documentRepository,
-      this._storageService
+      this._storageService,
+      this._documentProcessor
     );
 
     this._reprocessDocumentUseCase = new ReprocessDocumentUseCase(
@@ -318,7 +328,10 @@ export class Container {
       this._messageBroker
     );
 
-    this._queryDocumentUseCase = new QueryDocumentUseCase(this._documentRepository);
+    this._queryDocumentUseCase = new QueryDocumentUseCase(
+      this._documentRepository,
+      this._embeddingService
+    );
 
     this._deleteDocumentUseCase = new DeleteDocumentUseCase(this._documentRepository);
 
@@ -339,7 +352,8 @@ export class Container {
     this._generateExamUseCase = new GenerateExamUseCase(
       this._documentRepository,
       this._examRepository,
-      this._embeddingService
+      this._embeddingService,
+      this._examGenerator
     );
 
     this._getExamUseCase = new GetExamUseCase(this._examRepository);
