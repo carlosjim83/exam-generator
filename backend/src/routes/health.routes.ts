@@ -2,6 +2,12 @@ import type { FastifyInstance } from 'fastify';
 
 import { workerHealthService } from '@infrastructure/queue/DocumentWorker.js';
 import { getWorkerMetrics, getJobMetrics } from '@infrastructure/queue/WorkerMetrics.js';
+import {
+  HealthDegradedResponseSchema,
+  HealthStatusResponseSchema,
+  JobMetricsResponseSchema,
+  WorkerHealthResponseSchema,
+} from '@schemas/health.js';
 
 /**
  * Health check routes for monitoring system status
@@ -16,35 +22,8 @@ export async function healthRoutes(fastify: FastifyInstance) {
         summary: 'Basic health check',
         description: 'Check if the API and worker are running',
         response: {
-          200: {
-            description: 'API is healthy',
-            type: 'object',
-            properties: {
-              status: { type: 'string' },
-              timestamp: { type: 'string' },
-              api: {
-                type: 'object',
-                properties: {
-                  status: { type: 'string' },
-                },
-              },
-              worker: {
-                type: 'object',
-                properties: {
-                  status: { type: 'string' },
-                  isOnline: { type: 'boolean' },
-                  uptime: { type: 'number' },
-                  queueBacklog: { type: 'number' },
-                  failureRate: { type: 'number' },
-                },
-              },
-            },
-          },
-          503: {
-            description: 'Service degraded or unhealthy',
-            type: 'object',
-            additionalProperties: true,
-          },
+          200: HealthStatusResponseSchema,
+          503: HealthDegradedResponseSchema,
         },
       },
     },
@@ -100,16 +79,8 @@ export async function healthRoutes(fastify: FastifyInstance) {
         summary: 'Worker health check with metrics',
         description: 'Get detailed worker status, queue metrics, and performance data',
         response: {
-          200: {
-            description: 'Worker metrics',
-            type: 'object',
-            additionalProperties: true, // Allow any properties in response
-          },
-          503: {
-            description: 'Worker unhealthy',
-            type: 'object',
-            additionalProperties: true,
-          },
+          200: WorkerHealthResponseSchema,
+          503: WorkerHealthResponseSchema,
         },
       },
     },
@@ -202,10 +173,7 @@ export async function healthRoutes(fastify: FastifyInstance) {
           required: ['documentId'],
         },
         response: {
-          200: {
-            description: 'Job metrics',
-            type: 'object',
-          },
+          200: JobMetricsResponseSchema,
           500: {
             description: 'Error getting job metrics',
             type: 'object',

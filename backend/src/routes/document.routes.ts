@@ -4,6 +4,26 @@ import '@fastify/multipart'; // Import for type augmentation
 import { container } from '@config/container.js';
 import { queueDocumentProcessing, retryFailedJob } from '@infrastructure/queue/DocumentQueue.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
+import {
+  BadRequestResponseSchema,
+  ConflictResponseSchema,
+  ErrorResponseSchema,
+  ForbiddenResponseSchema,
+  MessageResponseSchema,
+  NotFoundResponseSchema,
+  UnauthorizedResponseSchema,
+} from '@schemas/common.js';
+import {
+  DocumentDetailResponseSchema,
+  DocumentListResponseSchema,
+  DocumentProcessResponseSchema,
+  DocumentQueryResponseSchema,
+  DocumentReprocessResponseSchema,
+  DocumentShareResponseSchema,
+  DocumentSharesResponseSchema,
+  DocumentUploadResponseSchema,
+  DocumentVisibilityResponseSchema,
+} from '@schemas/document.js';
 
 export async function documentRoutes(fastify: FastifyInstance) {
   // POST /api/documents/upload - Upload a document (PDF or DOCX)
@@ -19,52 +39,10 @@ export async function documentRoutes(fastify: FastifyInstance) {
         security: [{ bearerAuth: [] }],
         consumes: ['multipart/form-data'],
         response: {
-          201: {
-            description: 'Document uploaded successfully',
-            type: 'object',
-            properties: {
-              document: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  title: { type: 'string' },
-                  filename: { type: 'string' },
-                  fileSize: { type: 'number' },
-                  mimeType: { type: 'string' },
-                  status: { type: 'string' },
-                  uploadedAt: { type: 'string' },
-                },
-              },
-              message: { type: 'string' },
-            },
-          },
-          400: {
-            description: 'Bad request (invalid file)',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          201: DocumentUploadResponseSchema,
+          400: BadRequestResponseSchema,
+          401: UnauthorizedResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -127,7 +105,7 @@ export async function documentRoutes(fastify: FastifyInstance) {
           buffer,
         });
 
-        // 🔥 Add document to processing queue
+        // Add document to processing queue
         // The worker will fetch the document from DB and get all necessary data
         try {
           const userId = request.user!.userId;
@@ -198,39 +176,8 @@ export async function documentRoutes(fastify: FastifyInstance) {
         description: 'Get all documents uploaded by the authenticated user',
         security: [{ bearerAuth: [] }],
         response: {
-          200: {
-            description: 'List of documents',
-            type: 'object',
-            properties: {
-              documents: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    title: { type: 'string' },
-                    filename: { type: 'string' },
-                    fileSize: { type: 'number' },
-                    mimeType: { type: 'string' },
-                    status: { type: 'string' },
-                    pageCount: { type: 'number', nullable: true },
-                    wordCount: { type: 'number', nullable: true },
-                    uploadedAt: { type: 'string' },
-                    processedAt: { type: 'string', nullable: true },
-                  },
-                },
-              },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DocumentListResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -285,54 +232,10 @@ export async function documentRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            description: 'Document details',
-            type: 'object',
-            properties: {
-              document: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  title: { type: 'string' },
-                  filename: { type: 'string' },
-                  fileSize: { type: 'number' },
-                  mimeType: { type: 'string' },
-                  status: { type: 'string' },
-                  pageCount: { type: 'number', nullable: true },
-                  wordCount: { type: 'number', nullable: true },
-                  uploadedAt: { type: 'string' },
-                  processedAt: { type: 'string', nullable: true },
-                },
-              },
-            },
-          },
-          404: {
-            description: 'Document not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Access denied',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DocumentDetailResponseSchema,
+          404: NotFoundResponseSchema,
+          403: ForbiddenResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -409,61 +312,11 @@ export async function documentRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            description: 'Document processed successfully',
-            type: 'object',
-            properties: {
-              document: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  title: { type: 'string' },
-                  status: { type: 'string' },
-                  pageCount: { type: 'number', nullable: true },
-                  wordCount: { type: 'number', nullable: true },
-                  processedAt: { type: 'string', nullable: true },
-                },
-              },
-              processingTimeMs: { type: 'number' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Document not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          400: {
-            description: 'Bad request (invalid ID format)',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Access denied',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Processing failed',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DocumentProcessResponseSchema,
+          400: BadRequestResponseSchema,
+          404: NotFoundResponseSchema,
+          403: ForbiddenResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -556,51 +409,11 @@ export async function documentRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            description: 'Document re-processing initiated successfully',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              status: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          400: {
-            description: 'Bad Request (e.g., invalid document ID or status)',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Access denied',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Document not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal Server Error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DocumentReprocessResponseSchema,
+          400: BadRequestResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -710,74 +523,12 @@ export async function documentRoutes(fastify: FastifyInstance) {
           required: ['query'],
         },
         response: {
-          200: {
-            description: 'Query results',
-            type: 'object',
-            properties: {
-              documentId: { type: 'string' },
-              documentTitle: { type: 'string' },
-              query: { type: 'string' },
-              totalResults: { type: 'integer' },
-              results: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    chunkIndex: { type: 'integer' },
-                    content: { type: 'string' },
-                    similarity: { type: 'number' },
-                    wordCount: { type: 'integer' },
-                    pageNumber: { type: 'integer', nullable: true },
-                  },
-                },
-              },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Document not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DocumentQueryResponseSchema,
+          400: BadRequestResponseSchema,
+          401: UnauthorizedResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -856,49 +607,11 @@ export async function documentRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            description: 'Document deleted successfully',
-            type: 'object',
-            properties: {
-              message: { type: 'string' },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Document not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: MessageResponseSchema,
+          400: BadRequestResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -971,42 +684,10 @@ export async function documentRoutes(fastify: FastifyInstance) {
             type: 'string',
             format: 'binary',
           },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Document not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          400: BadRequestResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -1093,78 +774,13 @@ export async function documentRoutes(fastify: FastifyInstance) {
           required: ['classIds'],
         },
         response: {
-          200: {
-            description: 'Document shared successfully',
-            type: 'object',
-            properties: {
-              documentId: { type: 'string' },
-              sharedWith: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    classId: { type: 'string' },
-                    isVisible: { type: 'boolean' },
-                    publishedAt: { type: 'string', nullable: true },
-                  },
-                },
-              },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          409: {
-            description: 'Conflict - Document already shared',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DocumentShareResponseSchema,
+          400: BadRequestResponseSchema,
+          401: UnauthorizedResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          409: ConflictResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -1261,51 +877,11 @@ export async function documentRoutes(fastify: FastifyInstance) {
             description: 'Document unshared successfully',
             type: 'null',
           },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          400: BadRequestResponseSchema,
+          401: UnauthorizedResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -1373,61 +949,11 @@ export async function documentRoutes(fastify: FastifyInstance) {
           required: ['documentId'],
         },
         response: {
-          200: {
-            description: 'Document shares retrieved successfully',
-            type: 'object',
-            properties: {
-              documentId: { type: 'string' },
-              sharedWith: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    classId: { type: 'string' },
-                    className: { type: 'string' },
-                    isVisible: { type: 'boolean' },
-                    publishedAt: { type: 'string', nullable: true },
-                  },
-                },
-              },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DocumentSharesResponseSchema,
+          401: UnauthorizedResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -1500,62 +1026,12 @@ export async function documentRoutes(fastify: FastifyInstance) {
           required: ['isVisible'],
         },
         response: {
-          200: {
-            description: 'Visibility updated successfully',
-            type: 'object',
-            properties: {
-              id: { type: 'string' },
-              classId: { type: 'string' },
-              documentId: { type: 'string' },
-              isVisible: { type: 'boolean' },
-              publishedAt: { type: 'string', nullable: true },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DocumentVisibilityResponseSchema,
+          400: BadRequestResponseSchema,
+          401: UnauthorizedResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },

@@ -21,6 +21,20 @@ import type { GetTeacherClassesWithStatsInput } from '@application/use-cases/cla
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 import { checkSubscriptionLimit } from '@middleware/subscription.middleware.js';
+import { ForbiddenResponseSchema, NotFoundResponseSchema } from '@schemas/common.js';
+import {
+  ClassCreateResponseSchema,
+  ClassDetailResponseSchema,
+  ClassDocumentsResponseSchema,
+  ClassDocumentsTeacherResponseSchema,
+  ClassListResponseSchema,
+  CreateInvitationsResponseSchema,
+  GetInvitationsResponseSchema,
+  ImportCSVResponseSchema,
+  JoinClassResponseSchema,
+  StudentClassesResponseSchema,
+  StudentListResponseSchema,
+} from '@schemas/class.js';
 
 export async function classRoutes(fastify: FastifyInstance) {
   // GET /api/classes - List all classes for authenticated teacher (with stats)
@@ -43,31 +57,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              classes: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    name: { type: 'string' },
-                    code: { type: 'string' },
-                    description: { type: 'string', nullable: true },
-                    color: { type: 'string', nullable: true },
-                    studentCount: { type: 'number' },
-                    documentCount: { type: 'number' },
-                    examCount: { type: 'number' },
-                    createdAt: { type: 'string', format: 'date-time' },
-                  },
-                },
-              },
-              total: { type: 'number' },
-              page: { type: 'number' },
-              limit: { type: 'number' },
-            },
-          },
+          200: ClassListResponseSchema,
         },
       },
     },
@@ -129,21 +119,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', format: 'uuid' },
-              name: { type: 'string' },
-              code: { type: 'string' },
-              description: { type: 'string', nullable: true },
-              color: { type: 'string', nullable: true },
-              teacherId: { type: 'string', format: 'uuid' },
-              createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' },
-              teacherName: { type: 'string' },
-              studentCount: { type: 'number' },
-            },
-          },
+          200: ClassDetailResponseSchema,
         },
       },
     },
@@ -185,28 +161,8 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['code'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              class: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string', format: 'uuid' },
-                  name: { type: 'string' },
-                  code: { type: 'string' },
-                  description: { type: 'string', nullable: true },
-                  color: { type: 'string', nullable: true },
-                },
-              },
-              teacherName: { type: 'string' },
-            },
-          },
-          404: {
-            type: 'object',
-            properties: {
-              message: { type: 'string' },
-            },
-          },
+          200: ClassDetailResponseSchema,
+          404: NotFoundResponseSchema,
         },
       },
     },
@@ -268,18 +224,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          201: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', format: 'uuid' },
-              name: { type: 'string' },
-              code: { type: 'string' },
-              description: { type: 'string', nullable: true },
-              color: { type: 'string', nullable: true },
-              teacherId: { type: 'string', format: 'uuid' },
-              createdAt: { type: 'string', format: 'date-time' },
-            },
-          },
+          201: ClassCreateResponseSchema,
         },
       },
     },
@@ -367,28 +312,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              students: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    email: { type: 'string' },
-                    firstName: { type: 'string' },
-                    lastName: { type: 'string' },
-                    joinedAt: { type: 'string', format: 'date-time' },
-                    isActive: { type: 'boolean' },
-                  },
-                },
-              },
-              total: { type: 'number' },
-              page: { type: 'number' },
-              limit: { type: 'number' },
-            },
-          },
+          200: StudentListResponseSchema,
         },
       },
     },
@@ -480,13 +404,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['classId'],
         },
         response: {
-          201: {
-            type: 'object',
-            properties: {
-              classId: { type: 'string', format: 'uuid' },
-              joinedAt: { type: 'string', format: 'date-time' },
-            },
-          },
+          201: JoinClassResponseSchema,
         },
       },
     },
@@ -534,22 +452,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              invitations: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    email: { type: 'string' },
-                    status: { type: 'string', enum: ['PENDING'] },
-                    expiresAt: { type: 'string', format: 'date-time' },
-                  },
-                },
-              },
-            },
-          },
+          200: CreateInvitationsResponseSchema,
         },
       },
     },
@@ -597,17 +500,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['file'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              imported: { type: 'integer' },
-              failed: { type: 'integer' },
-              errors: {
-                type: 'array',
-                items: { type: 'string' },
-              },
-            },
-          },
+          200: ImportCSVResponseSchema,
         },
       },
     },
@@ -646,24 +539,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['classId'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              invitations: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    email: { type: 'string' },
-                    status: { type: 'string' },
-                    expiresAt: { type: 'string', format: 'date-time' },
-                    acceptedAt: { type: 'string', format: 'date-time', nullable: true },
-                  },
-                },
-              },
-            },
-          },
+          200: GetInvitationsResponseSchema,
         },
       },
     },
@@ -697,13 +573,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['token'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              classId: { type: 'string', format: 'uuid' },
-              joinedAt: { type: 'string', format: 'date-time' },
-            },
-          },
+          200: JoinClassResponseSchema,
           302: {
             description: 'Redirect to class page',
           },
@@ -786,52 +656,9 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['classId'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              class: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string', format: 'uuid' },
-                  name: { type: 'string' },
-                  description: { type: 'string', nullable: true },
-                },
-              },
-              documents: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    documentId: { type: 'string', format: 'uuid' },
-                    title: { type: 'string' },
-                    filename: { type: 'string' },
-                    fileSize: { type: 'number' },
-                    mimeType: { type: 'string' },
-                    isVisible: { type: 'boolean' },
-                    publishedAt: { type: 'string', format: 'date-time', nullable: true },
-                    orderIndex: { type: 'number' },
-                  },
-                },
-              },
-            },
-          },
-          403: {
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: ClassDocumentsResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
         },
       },
     },
@@ -898,53 +725,9 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['classId'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              class: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string', format: 'uuid' },
-                  name: { type: 'string' },
-                  description: { type: 'string', nullable: true },
-                },
-              },
-              documents: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    documentId: { type: 'string', format: 'uuid' },
-                    title: { type: 'string' },
-                    filename: { type: 'string' },
-                    fileSize: { type: 'number' },
-                    mimeType: { type: 'string' },
-                    isVisible: { type: 'boolean' },
-                    publishedAt: { type: 'string', format: 'date-time', nullable: true },
-                    orderIndex: { type: 'number' },
-                    sharedAt: { type: 'string', format: 'date-time' },
-                  },
-                },
-              },
-            },
-          },
-          403: {
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: ClassDocumentsTeacherResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
         },
       },
     },
@@ -1005,28 +788,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           'Get all classes the current student is enrolled in with student and document counts',
         security: [{ bearerAuth: [] }],
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              classes: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    name: { type: 'string' },
-                    code: { type: 'string' },
-                    description: { type: 'string', nullable: true },
-                    color: { type: 'string', nullable: true },
-                    studentCount: { type: 'number' },
-                    documentCount: { type: 'number' },
-                    examCount: { type: 'number' },
-                    createdAt: { type: 'string', format: 'date-time' },
-                  },
-                },
-              },
-            },
-          },
+          200: StudentClassesResponseSchema,
         },
       },
     },

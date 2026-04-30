@@ -1,102 +1,13 @@
-import { Type } from '@sinclair/typebox';
 import type { FastifyInstance } from 'fastify';
 
 import { container } from '@config/container.js';
-
-// Request/Response Schemas
-const RegisterRequestSchema = Type.Object(
-  {
-    email: Type.String({
-      format: 'email',
-      description: 'User email address (must be unique)',
-      examples: ['teacher@example.com'],
-    }),
-    password: Type.String({
-      minLength: 8,
-      description: 'Password (minimum 8 characters)',
-      examples: ['SecurePass123!'],
-    }),
-    firstName: Type.String({
-      minLength: 1,
-      description: 'User first name',
-      examples: ['John'],
-    }),
-    lastName: Type.String({
-      minLength: 1,
-      description: 'User last name',
-      examples: ['Doe'],
-    }),
-    role: Type.Union([Type.Literal('TEACHER'), Type.Literal('STUDENT')], {
-      description: 'User role (TEACHER or STUDENT)',
-      examples: ['TEACHER'],
-    }),
-  },
-  {
-    description: 'User registration request',
-  }
-);
-
-const LoginRequestSchema = Type.Object(
-  {
-    email: Type.String({
-      format: 'email',
-      description: 'User email address',
-      examples: ['teacher@example.com'],
-    }),
-    password: Type.String({
-      minLength: 1,
-      description: 'User password',
-      examples: ['password123'],
-    }),
-  },
-  {
-    description: 'User login request',
-  }
-);
-
-const AuthResponseSchema = Type.Object(
-  {
-    user: Type.Object({
-      id: Type.String({ description: 'User UUID' }),
-      email: Type.String({ description: 'User email' }),
-      firstName: Type.String({ description: 'User first name' }),
-      lastName: Type.String({ description: 'User last name' }),
-      role: Type.String({ description: 'User role (TEACHER or STUDENT)' }),
-      provider: Type.String({ description: 'Authentication provider (LOCAL, GOOGLE, etc.)' }),
-      createdAt: Type.String({ description: 'User creation timestamp (ISO 8601)' }),
-      updatedAt: Type.String({ description: 'User last update timestamp (ISO 8601)' }),
-    }),
-    accessToken: Type.String({ description: 'JWT access token (15 minutes TTL)' }),
-    refreshToken: Type.String({ description: 'JWT refresh token (7 days TTL)' }),
-  },
-  {
-    description: 'Successful authentication response',
-  }
-);
-
-const RefreshRequestSchema = Type.Object(
-  {
-    refreshToken: Type.String({
-      minLength: 1,
-      description: 'JWT refresh token (7 days TTL)',
-      examples: ['eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'],
-    }),
-  },
-  {
-    description: 'Token refresh request',
-  }
-);
-
-const ErrorResponseSchema = Type.Object(
-  {
-    statusCode: Type.Number({ description: 'HTTP status code' }),
-    error: Type.String({ description: 'Error name' }),
-    message: Type.String({ description: 'Error message' }),
-  },
-  {
-    description: 'Error response',
-  }
-);
+import {
+  AuthResponseSchema,
+  LoginRequestSchema,
+  RefreshRequestSchema,
+  RegisterRequestSchema,
+} from '@schemas/auth.js';
+import { ErrorResponseSchema } from '@schemas/common.js';
 
 export async function authRoutes(fastify: FastifyInstance) {
   // POST /api/auth/register - Register new user

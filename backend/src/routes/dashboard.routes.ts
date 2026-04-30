@@ -2,6 +2,11 @@ import type { FastifyInstance } from 'fastify';
 
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
+import {
+  DashboardStatsResponseSchema,
+  RecentClassExamsResponseSchema,
+} from '@schemas/dashboard.js';
+import { ErrorResponseSchema, UnauthorizedResponseSchema } from '@schemas/common.js';
 
 /**
  * Dashboard Routes
@@ -21,41 +26,9 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
           'Returns comprehensive dashboard stats including document counts, exam counts, and recent activity',
         security: [{ bearerAuth: [] }],
         response: {
-          200: {
-            description: 'Dashboard statistics',
-            type: 'object',
-            properties: {
-              totalDocuments: { type: 'number' },
-              totalExams: { type: 'number' },
-              documentsChange: { type: 'string' },
-              examsChange: { type: 'string' },
-              lastActivity: {
-                type: 'object',
-                properties: {
-                  timestamp: { type: 'string', format: 'date-time' },
-                  description: { type: 'string' },
-                },
-              },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DashboardStatsResponseSchema,
+          401: UnauthorizedResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -112,48 +85,9 @@ export async function dashboardRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
-            description: 'Recent class exams',
-            type: 'object',
-            properties: {
-              classExams: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    examId: { type: 'string' },
-                    classId: { type: 'string' },
-                    examTitle: { type: 'string', nullable: true },
-                    className: { type: 'string', nullable: true },
-                    dueDate: { type: 'string', format: 'date-time', nullable: true },
-                    isPublished: { type: 'boolean' },
-                    questionCount: { type: 'number', nullable: true },
-                    submittedCount: { type: 'number' },
-                    createdAt: { type: 'string', format: 'date-time' },
-                  },
-                },
-              },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: RecentClassExamsResponseSchema,
+          401: UnauthorizedResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },

@@ -8,6 +8,19 @@ import type { FastifyInstance } from 'fastify';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 import { checkSubscriptionLimit } from '@middleware/subscription.middleware.js';
+import {
+  DeleteExamResponseSchema,
+  GenerateExamResponseSchema,
+  GetExamResponseSchema,
+  ListExamsResponseSchema,
+} from '@schemas/exam.js';
+import {
+  BadRequestResponseSchema,
+  ErrorResponseSchema,
+  ForbiddenResponseSchema,
+  NotFoundResponseSchema,
+  UnauthorizedResponseSchema,
+} from '@schemas/common.js';
 
 export async function examRoutes(fastify: FastifyInstance) {
   // POST /api/exams/generate - Generate exam from documents
@@ -72,85 +85,12 @@ export async function examRoutes(fastify: FastifyInstance) {
           required: ['documentIds', 'title'],
         },
         response: {
-          200: {
-            description: 'Exam generated successfully',
-            type: 'object',
-            properties: {
-              exam: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  title: { type: 'string' },
-                  description: { type: 'string', nullable: true },
-                  questionCount: { type: 'integer' },
-                  documentCount: { type: 'integer' },
-                  createdAt: { type: 'string' },
-                },
-              },
-              questions: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    type: { type: 'string' },
-                    difficulty: { type: 'string' },
-                    questionText: { type: 'string' },
-                    options: { type: 'array', items: { type: 'string' } },
-                    correctAnswer: { type: 'string' },
-                    explanation: { type: 'string' },
-                    points: { type: 'integer' },
-                  },
-                },
-              },
-              generationTimeMs: { type: 'integer' },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Document not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: GenerateExamResponseSchema,
+          400: BadRequestResponseSchema,
+          401: UnauthorizedResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -236,36 +176,8 @@ export async function examRoutes(fastify: FastifyInstance) {
         description: 'Get all exams created by the authenticated user',
         security: [{ bearerAuth: [] }],
         response: {
-          200: {
-            description: 'List of exams',
-            type: 'object',
-            properties: {
-              exams: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    title: { type: 'string' },
-                    description: { type: 'string' },
-                    questionCount: { type: 'integer' },
-                    documentCount: { type: 'integer' },
-                    createdAt: { type: 'string' },
-                  },
-                },
-              },
-              total: { type: 'integer' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: ListExamsResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -306,68 +218,10 @@ export async function examRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            description: 'Exam details',
-            type: 'object',
-            properties: {
-              exam: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  title: { type: 'string' },
-                  description: { type: 'string' },
-                  questionCount: { type: 'integer' },
-                  documentCount: { type: 'integer' },
-                  createdAt: { type: 'string' },
-                  updatedAt: { type: 'string' },
-                },
-              },
-              questions: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    type: { type: 'string' },
-                    difficulty: { type: 'string' },
-                    questionText: { type: 'string' },
-                    options: { type: 'array', items: { type: 'string' } },
-                    correctAnswer: { type: 'string' },
-                    explanation: { type: 'string' },
-                    points: { type: 'integer' },
-                    orderIndex: { type: 'integer' },
-                  },
-                },
-              },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Exam not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: GetExamResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -427,41 +281,10 @@ export async function examRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            description: 'Exam deleted successfully',
-            type: 'object',
-            properties: {
-              success: { type: 'boolean' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Exam not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: DeleteExamResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },

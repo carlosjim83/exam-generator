@@ -31,6 +31,7 @@
       "@config/*": ["src/config/*"],
       "@routes/*": ["src/routes/*"],
       "@middleware/*": ["src/middleware/*"],
+      "@schemas/*": ["src/schemas/*"],
       "@tests/*": ["tests/*"]
     }
   },

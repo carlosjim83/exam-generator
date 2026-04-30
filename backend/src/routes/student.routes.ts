@@ -6,9 +6,23 @@
 import type { FastifyInstance } from 'fastify';
 
 import { container } from '@config/container.js';
+import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 import { authorizeRoles } from '@middleware/role.middleware.js';
-import { ExamAssignment } from '@domain/entities/ExamAssignment.js';
+import {
+  BadRequestResponseSchema,
+  ErrorResponseSchema,
+  ForbiddenResponseSchema,
+  NotFoundResponseSchema,
+} from '@schemas/common.js';
+import {
+  AssignedExamsResponseSchema,
+  CreateAssignmentResponseSchema,
+  ExamResultsResponseSchema,
+  SaveAnswerResponseSchema,
+  StartExamResponseSchema,
+  SubmitExamResponseSchema,
+} from '@schemas/student.js';
 
 function serializeAssignment(assignment: ExamAssignment) {
   return {
@@ -58,74 +72,11 @@ export async function studentRoutes(fastify: FastifyInstance) {
           required: ['examId', 'studentId'],
         },
         response: {
-          201: {
-            description: 'Assignment created successfully',
-            type: 'object',
-            properties: {
-              assignment: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  examId: { type: 'string' },
-                  studentId: { type: 'string' },
-                  teacherId: { type: 'string' },
-                  status: { type: 'string' },
-                  dueDate: { type: 'string', nullable: true },
-                  startedAt: { type: 'string', nullable: true },
-                  submittedAt: { type: 'string', nullable: true },
-                  score: { type: 'number', nullable: true },
-                  feedback: { type: 'string', nullable: true },
-                  createdAt: { type: 'string' },
-                  updatedAt: { type: 'string' },
-                },
-              },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Exam or student not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          201: CreateAssignmentResponseSchema,
+          400: BadRequestResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -210,59 +161,8 @@ export async function studentRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
-            description: 'List of assigned exams',
-            type: 'object',
-            properties: {
-              assignments: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    examId: { type: 'string' },
-                    examTitle: { type: 'string' },
-                    examDescription: { type: 'string', nullable: true },
-                    status: { type: 'string' },
-                    questionCount: { type: 'number' },
-                    maxScore: { type: 'number' },
-                    score: { type: 'number', nullable: true },
-                    startedAt: { type: 'string', nullable: true },
-                    submittedAt: { type: 'string', nullable: true },
-                    createdAt: { type: 'string' },
-                  },
-                },
-              },
-              total: { type: 'integer' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: AssignedExamsResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -324,95 +224,11 @@ export async function studentRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            description: 'Exam started/resumed successfully',
-            type: 'object',
-            properties: {
-              assignment: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  examId: { type: 'string' },
-                  studentId: { type: 'string' },
-                  teacherId: { type: 'string' },
-                  status: { type: 'string' },
-                  dueDate: { type: 'string', nullable: true },
-                  startedAt: { type: 'string', nullable: true },
-                  submittedAt: { type: 'string', nullable: true },
-                  score: { type: 'number', nullable: true },
-                  feedback: { type: 'string', nullable: true },
-                  createdAt: { type: 'string' },
-                  updatedAt: { type: 'string' },
-                },
-              },
-              exam: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  title: { type: 'string' },
-                  description: { type: 'string', nullable: true },
-                  questions: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        id: { type: 'string' },
-                        text: { type: 'string' },
-                        order: { type: 'number' },
-                        type: { type: 'string' },
-                        options: { type: 'array', items: { type: 'string' } },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Assignment not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: StartExamResponseSchema,
+          400: BadRequestResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -515,74 +331,11 @@ export async function studentRoutes(fastify: FastifyInstance) {
           required: ['answers'],
         },
         response: {
-          200: {
-            description: 'Exam submitted successfully',
-            type: 'object',
-            properties: {
-              assignment: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  examId: { type: 'string' },
-                  studentId: { type: 'string' },
-                  teacherId: { type: 'string' },
-                  status: { type: 'string' },
-                  dueDate: { type: 'string', nullable: true },
-                  startedAt: { type: 'string', nullable: true },
-                  submittedAt: { type: 'string', nullable: true },
-                  score: { type: 'number', nullable: true },
-                  feedback: { type: 'string', nullable: true },
-                  createdAt: { type: 'string' },
-                  updatedAt: { type: 'string' },
-                },
-              },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Assignment not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: SubmitExamResponseSchema,
+          400: BadRequestResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -662,50 +415,11 @@ export async function studentRoutes(fastify: FastifyInstance) {
           required: ['questionId', 'answerText'],
         },
         response: {
-          200: {
-            description: 'Answer saved successfully',
-            type: 'object',
-            properties: {
-              saved: { type: 'boolean' },
-              questionId: { type: 'string' },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Assignment not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: SaveAnswerResponseSchema,
+          400: BadRequestResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -787,115 +501,11 @@ export async function studentRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: {
-            description: 'Exam results',
-            type: 'object',
-            properties: {
-              assignment: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  examId: { type: 'string' },
-                  studentId: { type: 'string' },
-                  teacherId: { type: 'string' },
-                  status: { type: 'string' },
-                  dueDate: { type: 'string', nullable: true },
-                  startedAt: { type: 'string', nullable: true },
-                  submittedAt: { type: 'string', nullable: true },
-                  score: { type: 'number', nullable: true },
-                  feedback: { type: 'string', nullable: true },
-                  createdAt: { type: 'string' },
-                  updatedAt: { type: 'string' },
-                },
-              },
-              exam: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  title: { type: 'string' },
-                  description: { type: 'string', nullable: true },
-                  documentId: { type: 'string' },
-                  createdBy: { type: 'string' },
-                  createdAt: { type: 'string' },
-                  questions: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        id: { type: 'string' },
-                        text: { type: 'string' },
-                        order: { type: 'number' },
-                        type: { type: 'string' },
-                        options: { type: 'array', items: { type: 'string' } },
-                      },
-                    },
-                  },
-                },
-              },
-              answers: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string' },
-                    questionId: { type: 'string' },
-                    answer: { type: 'string' },
-                    isCorrect: { type: 'boolean', nullable: true },
-                    createdAt: { type: 'string' },
-                    updatedAt: { type: 'string' },
-                  },
-                },
-              },
-              score: { type: 'number' },
-              maxScore: { type: 'number' },
-              percentage: { type: 'number' },
-            },
-          },
-          400: {
-            description: 'Exam not graded yet',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          401: {
-            description: 'Unauthorized',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          403: {
-            description: 'Forbidden',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          404: {
-            description: 'Assignment not found',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: ExamResultsResponseSchema,
+          400: BadRequestResponseSchema,
+          403: ForbiddenResponseSchema,
+          404: NotFoundResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },

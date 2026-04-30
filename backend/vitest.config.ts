@@ -79,6 +79,7 @@ export default defineConfig({
       '@config': path.resolve(__dirname, './src/config'),
       '@routes': path.resolve(__dirname, './src/routes'),
       '@middleware': path.resolve(__dirname, './src/middleware'),
+      '@schemas': path.resolve(__dirname, './src/schemas'),
       '@tests': path.resolve(__dirname, './tests'),
       '@exam-generator/shared': path.resolve(__dirname, '../packages/shared/src'),
     },

@@ -1,35 +1,10 @@
-import { Type } from '@sinclair/typebox';
 import type { FastifyInstance } from 'fastify';
 
 import { container } from '@config/container.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { authenticateUser, requireRoles } from '@middleware/auth.middleware.js';
-
-// Response schemas
-const ProfileResponseSchema = Type.Object({
-  id: Type.String(),
-  email: Type.String(),
-  firstName: Type.String(),
-  lastName: Type.String(),
-  role: Type.String(),
-  provider: Type.String(),
-  createdAt: Type.String(),
-  updatedAt: Type.String(),
-});
-
-const DashboardResponseSchema = Type.Object({
-  message: Type.String(),
-  data: Type.Object({
-    totalDocuments: Type.Number(),
-    totalExams: Type.Number(),
-  }),
-});
-
-const ErrorResponseSchema = Type.Object({
-  statusCode: Type.Number(),
-  error: Type.String(),
-  message: Type.String(),
-});
+import { ErrorResponseSchema } from '@schemas/common.js';
+import { ProfileResponseSchema, TeacherDashboardResponseSchema } from '@schemas/protected.js';
 
 export async function protectedRoutes(fastify: FastifyInstance) {
   // GET /api/profile - Protected route (requires authentication)
@@ -91,7 +66,7 @@ export async function protectedRoutes(fastify: FastifyInstance) {
         description: 'Returns teacher dashboard with statistics. Requires TEACHER role.',
         security: [{ bearerAuth: [] }],
         response: {
-          200: DashboardResponseSchema,
+          200: TeacherDashboardResponseSchema,
           401: ErrorResponseSchema,
           403: ErrorResponseSchema,
         },

@@ -2,6 +2,11 @@ import { PrismaClient } from '@prisma/client';
 import type { FastifyInstance } from 'fastify';
 
 import { authenticateUser } from '@middleware/auth.middleware.js';
+import { BadRequestResponseSchema, ErrorResponseSchema } from '@schemas/common.js';
+import {
+  PreferencesResponseSchema,
+  PreferencesUpdateResponseSchema,
+} from '@schemas/preferences.js';
 
 const prisma = new PrismaClient();
 
@@ -17,23 +22,8 @@ export async function preferencesRoutes(fastify: FastifyInstance) {
         description: 'Get language and theme preferences for the authenticated user',
         security: [{ bearerAuth: [] }],
         response: {
-          200: {
-            description: 'User preferences',
-            type: 'object',
-            properties: {
-              language: { type: 'string' },
-              theme: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: PreferencesResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },
@@ -96,33 +86,9 @@ export async function preferencesRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
-            description: 'Preferences updated successfully',
-            type: 'object',
-            properties: {
-              language: { type: 'string' },
-              theme: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          400: {
-            description: 'Bad request',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
-          500: {
-            description: 'Internal server error',
-            type: 'object',
-            properties: {
-              statusCode: { type: 'number' },
-              error: { type: 'string' },
-              message: { type: 'string' },
-            },
-          },
+          200: PreferencesUpdateResponseSchema,
+          400: BadRequestResponseSchema,
+          500: ErrorResponseSchema,
         },
       },
     },

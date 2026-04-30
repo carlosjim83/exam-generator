@@ -13,6 +13,16 @@ import type { UpdateClassExamSettingsInput } from '@application/use-cases/classe
 import type { GetStudentSubmissionDetailInput } from '@application/use-cases/classes/GetStudentSubmissionDetailUseCase.js';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
+import {
+  AssignExamResponseSchema,
+  ClassExamListResponseSchema,
+  ClassExamResultsResponseSchema,
+  PublishClassExamResponseSchema,
+  StudentClassExamListResponseSchema,
+  StudentExamListResponseSchema,
+  StudentSubmissionDetailResponseSchema,
+  UpdateClassExamResponseSchema,
+} from '@schemas/classExam.js';
 
 export async function classExamRoutes(fastify: FastifyInstance) {
   // POST /api/classes/:classId/exams - Assign exam to class
@@ -54,16 +64,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          201: {
-            type: 'object',
-            properties: {
-              classExamId: { type: 'string', format: 'uuid' },
-              classId: { type: 'string', format: 'uuid' },
-              examId: { type: 'string', format: 'uuid' },
-              assignedStudents: { type: 'number' },
-              alreadyAssigned: { type: 'number' },
-            },
-          },
+          201: AssignExamResponseSchema,
         },
       },
     },
@@ -122,35 +123,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           required: ['classId'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              exams: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    classId: { type: 'string', format: 'uuid' },
-                    examId: { type: 'string', format: 'uuid' },
-                    examTitle: { type: 'string' },
-                    questionCount: { type: 'number' },
-                    availableAt: { type: 'string', format: 'date-time', nullable: true },
-                    dueDate: { type: 'string', format: 'date-time', nullable: true },
-                    timeLimit: { type: 'number', nullable: true },
-                    isPublished: { type: 'boolean' },
-                    maxAttempts: { type: 'number' },
-                    showResultsImmediately: { type: 'boolean' },
-                    startedCount: { type: 'number' },
-                    submittedCount: { type: 'number' },
-                    gradedCount: { type: 'number' },
-                    assignedCount: { type: 'number' },
-                    createdAt: { type: 'string', format: 'date-time' },
-                  },
-                },
-              },
-            },
-          },
+          200: ClassExamListResponseSchema,
         },
       },
     },
@@ -207,35 +180,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           required: ['classId'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              exams: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    classId: { type: 'string', format: 'uuid' },
-                    examId: { type: 'string', format: 'uuid' },
-                    examTitle: { type: 'string' },
-                    questionCount: { type: 'number' },
-                    availableAt: { type: 'string', format: 'date-time', nullable: true },
-                    dueDate: { type: 'string', format: 'date-time', nullable: true },
-                    timeLimit: { type: 'number', nullable: true },
-                    maxAttempts: { type: 'number' },
-                    status: {
-                      type: 'string',
-                      enum: ['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'GRADED'],
-                    },
-                    score: { type: 'number', nullable: true },
-                    attemptNumber: { type: 'number' },
-                    remainingAttempts: { type: 'number' },
-                  },
-                },
-              },
-            },
-          },
+          200: StudentClassExamListResponseSchema,
         },
       },
     },
@@ -282,36 +227,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           'Get all exams available to the current student (published and within availability)',
         security: [{ bearerAuth: [] }],
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              exams: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    id: { type: 'string', format: 'uuid' },
-                    classId: { type: 'string', format: 'uuid' },
-                    className: { type: 'string' },
-                    examId: { type: 'string', format: 'uuid' },
-                    examTitle: { type: 'string' },
-                    questionCount: { type: 'number' },
-                    availableAt: { type: 'string', format: 'date-time', nullable: true },
-                    dueDate: { type: 'string', format: 'date-time', nullable: true },
-                    timeLimit: { type: 'number', nullable: true },
-                    maxAttempts: { type: 'number' },
-                    status: {
-                      type: 'string',
-                      enum: ['NOT_STARTED', 'IN_PROGRESS', 'SUBMITTED', 'GRADED'],
-                    },
-                    score: { type: 'number', nullable: true },
-                    attemptNumber: { type: 'number' },
-                    remainingAttempts: { type: 'number' },
-                  },
-                },
-              },
-            },
-          },
+          200: StudentExamListResponseSchema,
         },
       },
     },
@@ -374,20 +290,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', format: 'uuid' },
-              classId: { type: 'string', format: 'uuid' },
-              examId: { type: 'string', format: 'uuid' },
-              availableAt: { type: 'string', format: 'date-time', nullable: true },
-              dueDate: { type: 'string', format: 'date-time', nullable: true },
-              timeLimit: { type: 'number', nullable: true },
-              maxAttempts: { type: 'number' },
-              showResultsImmediately: { type: 'boolean' },
-              isPublished: { type: 'boolean' },
-            },
-          },
+          200: UpdateClassExamResponseSchema,
         },
       },
     },
@@ -461,15 +364,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           },
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              id: { type: 'string', format: 'uuid' },
-              classId: { type: 'string', format: 'uuid' },
-              examId: { type: 'string', format: 'uuid' },
-              isPublished: { type: 'boolean' },
-            },
-          },
+          200: PublishClassExamResponseSchema,
         },
       },
     },
@@ -515,42 +410,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           required: ['classId', 'classExamId'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              examTitle: { type: 'string' },
-              classExamId: { type: 'string', format: 'uuid' },
-              results: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    studentId: { type: 'string', format: 'uuid' },
-                    studentName: { type: 'string' },
-                    studentEmail: { type: 'string' },
-                    status: { type: 'string' },
-                    startedAt: { type: 'string', format: 'date-time', nullable: true },
-                    submittedAt: { type: 'string', format: 'date-time', nullable: true },
-                    timeTaken: { type: 'number', nullable: true },
-                    score: { type: 'number', nullable: true },
-                    attemptNumber: { type: 'number' },
-                  },
-                },
-              },
-              statistics: {
-                type: 'object',
-                properties: {
-                  totalStudents: { type: 'number' },
-                  startedCount: { type: 'number' },
-                  submittedCount: { type: 'number' },
-                  gradedCount: { type: 'number' },
-                  averageScore: { type: 'number', nullable: true },
-                  highestScore: { type: 'number', nullable: true },
-                  lowestScore: { type: 'number', nullable: true },
-                },
-              },
-            },
-          },
+          200: ClassExamResultsResponseSchema,
         },
       },
     },
@@ -603,61 +463,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           required: ['classId', 'classExamId', 'studentId'],
         },
         response: {
-          200: {
-            type: 'object',
-            properties: {
-              student: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string', format: 'uuid' },
-                  name: { type: 'string' },
-                  email: { type: 'string' },
-                },
-              },
-              exam: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string', format: 'uuid' },
-                  title: { type: 'string' },
-                  description: { type: 'string', nullable: true },
-                },
-              },
-              assignment: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string', format: 'uuid' },
-                  status: { type: 'string' },
-                  startedAt: { type: 'string', format: 'date-time', nullable: true },
-                  submittedAt: { type: 'string', format: 'date-time', nullable: true },
-                  score: { type: 'number', nullable: true },
-                },
-              },
-              questions: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    questionId: { type: 'string', format: 'uuid' },
-                    questionText: { type: 'string' },
-                    questionType: {
-                      type: 'string',
-                      enum: ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER'],
-                    },
-                    options: { type: 'array', items: { type: 'string' }, nullable: true },
-                    correctAnswer: { type: 'string' },
-                    studentAnswer: { type: 'string' },
-                    isCorrect: { type: 'boolean', nullable: true },
-                    pointsEarned: { type: 'number' },
-                    maxPoints: { type: 'number' },
-                    feedback: { type: 'string', nullable: true },
-                  },
-                },
-              },
-              totalScore: { type: 'number' },
-              maxScore: { type: 'number' },
-              percentage: { type: 'number', nullable: true },
-            },
-          },
+          200: StudentSubmissionDetailResponseSchema,
         },
       },
     },
