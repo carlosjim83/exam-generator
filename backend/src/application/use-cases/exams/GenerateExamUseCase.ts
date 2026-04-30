@@ -13,11 +13,11 @@ import type { IDocumentRepository } from '@domain/repositories/IDocumentReposito
 import type { IExamRepository, CreateQuestionDTO } from '@domain/repositories/IExamRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
+import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import type { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
-import { generateExamFlow } from '@infrastructure/ai/flows/generateExam.flow.js';
 
 /**
  * GenerateExamUseCase
@@ -70,7 +70,8 @@ export class GenerateExamUseCase {
   constructor(
     private readonly documentRepository: IDocumentRepository,
     private readonly examRepository: IExamRepository,
-    private readonly embeddingService: AzureOpenAIEmbeddingService,
+    private readonly embeddingService: IEmbeddingService,
+    private readonly examGenerator: IExamGenerator,
     private readonly subscriptionRepository: ISubscriptionRepository | null = null,
     private readonly usageMetricsRepository: IUsageMetricsRepository | null = null
   ) {}
@@ -113,7 +114,7 @@ export class GenerateExamUseCase {
       SHORT_ANSWER: QuestionType.SHORT_ANSWER,
     };
 
-    const generatedQuestions = await generateExamFlow({
+    const generatedQuestions = await this.examGenerator.generate({
       context,
       numQuestions: input.numQuestions,
       difficulty: difficultyMap[input.difficulty] || QuestionDifficulty.MEDIUM,

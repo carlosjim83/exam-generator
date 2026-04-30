@@ -6,6 +6,7 @@ import type {
   QueryDocumentResult,
 } from '@domain/repositories/IDocumentRepository.js';
 import { Document, DocumentStatus } from '@domain/entities/Document.js';
+import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
@@ -25,7 +26,7 @@ vi.mock('@infrastructure/ai/AzureOpenAIEmbeddingService.js', () => {
 describe('QueryDocumentUseCase', () => {
   let queryDocumentUseCase: QueryDocumentUseCase;
   let mockDocumentRepository: IDocumentRepository;
-  let mockEmbeddingService: AzureOpenAIEmbeddingService;
+  let mockEmbeddingService: IEmbeddingService;
 
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
@@ -84,7 +85,7 @@ describe('QueryDocumentUseCase', () => {
       Array.from({ length: 1536 }, () => Math.random()),
     ]);
 
-    queryDocumentUseCase = new QueryDocumentUseCase(mockDocumentRepository);
+    queryDocumentUseCase = new QueryDocumentUseCase(mockDocumentRepository, mockEmbeddingService);
   });
 
   it('should return relevant chunks for a given query', async () => {

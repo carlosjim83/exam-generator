@@ -56,6 +56,8 @@ import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
 import { QuestionId } from '@domain/value-objects/QuestionId.js';
+import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
+import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 import { SubscriptionMother } from '@tests/helpers/mothers/SubscriptionMother.js';
 import { UsageMetricsMother } from '@tests/helpers/mothers/UsageMetricsMother.js';
@@ -123,7 +125,8 @@ describe('GenerateExamUseCase', () => {
   let generateExamUseCase: GenerateExamUseCase;
   let mockDocumentRepository: IDocumentRepository;
   let mockExamRepository: IExamRepository;
-  let mockEmbeddingService: AzureOpenAIEmbeddingService;
+  let mockEmbeddingService: IEmbeddingService;
+  let mockExamGenerator: IExamGenerator;
 
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
@@ -174,10 +177,55 @@ describe('GenerateExamUseCase', () => {
     // Mock embedding service
     mockEmbeddingService = new AzureOpenAIEmbeddingService();
 
+    // Mock exam generator
+    mockExamGenerator = {
+      generate: vi.fn(async ({ numQuestions, difficulty, questionTypes }: any) => {
+        const questions = [];
+        const types = questionTypes || [QuestionType.MULTIPLE_CHOICE];
+
+        for (let i = 0; i < numQuestions; i++) {
+          const type = types[i % types.length];
+          const diff =
+            difficulty === 'MIXED'
+              ? [QuestionDifficulty.EASY, QuestionDifficulty.MEDIUM, QuestionDifficulty.HARD][i % 3]
+              : difficulty;
+
+          questions.push({
+            type,
+            difficulty: diff,
+            questionText: `Mock question ${i + 1}`,
+            options:
+              type === QuestionType.MULTIPLE_CHOICE
+                ? ['A', 'B', 'C', 'D']
+                : type === QuestionType.TRUE_FALSE
+                  ? ['True', 'False']
+                  : [],
+            correctAnswer:
+              type === QuestionType.MULTIPLE_CHOICE
+                ? 'A'
+                : type === QuestionType.TRUE_FALSE
+                  ? 'True'
+                  : 'Mock answer',
+            explanation: `Mock explanation ${i + 1}`,
+            points:
+              diff === QuestionDifficulty.EASY ? 1 : diff === QuestionDifficulty.MEDIUM ? 2 : 3,
+          });
+        }
+
+        return {
+          questions,
+          promptTokens: 1000,
+          completionTokens: 500,
+          totalTokens: 1500,
+        };
+      }),
+    };
+
     generateExamUseCase = new GenerateExamUseCase(
       mockDocumentRepository,
       mockExamRepository,
-      mockEmbeddingService
+      mockEmbeddingService,
+      mockExamGenerator
     );
   });
 
@@ -748,6 +796,7 @@ describe('GenerateExamUseCase', () => {
         mockDocumentRepository,
         mockExamRepository,
         mockEmbeddingService,
+        mockExamGenerator,
         mockSubscriptionRepository,
         mockUsageMetricsRepository
       );
