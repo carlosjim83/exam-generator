@@ -1,11 +1,11 @@
-import { FREE_TIER_LIMITS, LIMIT_ERRORS } from '@config/subscription-limits.js';
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
-import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
-import { NotFoundError, ConflictError } from '@domain/errors/DomainError.js';
+import { SubscriptionTier } from '@domain/entities/Subscription.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { EnrollmentId } from '@domain/value-objects/EnrollmentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -22,7 +22,8 @@ export class StudentJoinClassUseCase {
     private readonly enrollmentRepository: IStudentEnrollmentRepository,
     private readonly classRepository: IClassRepository,
     private readonly subscriptionRepository: ISubscriptionRepository,
-    private readonly usageMetricsRepository: IUsageMetricsRepository
+    private readonly usageMetricsRepository: IUsageMetricsRepository,
+    private readonly subscriptionEnforcementService: SubscriptionEnforcementService
   ) {}
 
   async execute(command: StudentJoinClassCommand): Promise<StudentEnrollment> {
@@ -86,47 +87,18 @@ export class StudentJoinClassUseCase {
   private async enforceStudentLimit(teacherId: UserId): Promise<void> {
     // Get subscription
     const subscription = await this.subscriptionRepository.findByTeacherId(teacherId);
-    if (!subscription) {
-      // Free tier by default, check usage
-      await this.checkFreeTierLimit(teacherId);
-      return;
-    }
-
-    // Get limits for current tier
-    const limits = SubscriptionLimits.getForTier(subscription.tier);
-
-    // If unlimited, skip check
-    if (!limits.hasStudentLimit()) {
-      return;
-    }
+    const tier = subscription?.tier ?? SubscriptionTier.FREE;
 
     // Get current usage
-    const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherId);
-    if (!usageMetrics) {
-      // No metrics yet, allow creation (will be created on first action)
-      return;
+    let currentStudents: number;
+    if (subscription) {
+      const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherId);
+      currentStudents = usageMetrics?.currentStudents ?? 0;
+    } else {
+      currentStudents = (await this.enrollmentRepository.countTotalByTeacherId(teacherId)) ?? 0;
     }
 
-    // Check if can add student
-    if (!limits.canAddStudent(usageMetrics.currentStudents)) {
-      const errorMessage =
-        subscription.tier === 'FREE'
-          ? LIMIT_ERRORS.STUDENT_LIMIT.FREE
-          : LIMIT_ERRORS.STUDENT_LIMIT.PRO;
-
-      throw new ConflictError(errorMessage);
-    }
-  }
-
-  /**
-   * Check Free tier limit (30 students maximum)
-   */
-  private async checkFreeTierLimit(teacherId: UserId): Promise<void> {
-    const totalStudents = await this.enrollmentRepository.countTotalByTeacherId(teacherId);
-
-    if (totalStudents >= FREE_TIER_LIMITS.MAX_STUDENTS) {
-      throw new ConflictError(LIMIT_ERRORS.STUDENT_LIMIT.FREE);
-    }
+    this.subscriptionEnforcementService.enforceStudentLimit(currentStudents, tier);
   }
 
   /**

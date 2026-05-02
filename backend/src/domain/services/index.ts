@@ -10,3 +10,4 @@ export { IPasswordHasher } from './IPasswordHasher';
 export { IStorageService } from './IStorageService';
 export { ITextExtractor } from './ITextExtractor';
 export { ITokenService } from './ITokenService';
+export { SubscriptionEnforcementService } from './SubscriptionEnforcementService';

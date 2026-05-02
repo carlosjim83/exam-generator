@@ -1,9 +1,5 @@
-import {
-  NotFoundError,
-  ValidationError,
-  ConflictError,
-  ForbiddenError,
-} from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError, ValidationError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type {
   IDocumentRepository,
   QueryDocumentResult,
@@ -66,9 +62,7 @@ export class QueryDocumentUseCase {
       throw new NotFoundError('Document not found');
     }
 
-    if (document.userId.value !== userId.value) {
-      throw new ForbiddenError('Unauthorized: Document does not belong to user');
-    }
+    assertOwnership(document.userId, userId, 'Unauthorized: Document does not belong to user');
 
     // 3. Check document is processed
     if (!document.isCompleted()) {

@@ -1,4 +1,5 @@
-import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
@@ -85,9 +86,7 @@ export class GetStudentSubmissionDetailUseCase {
       throw new NotFoundError('Class not found');
     }
 
-    if (!classEntity.teacherId.equals(teacherId)) {
-      throw new ForbiddenError('You are not the teacher of this class');
-    }
+    assertOwnership(classEntity.teacherId, teacherId, 'You are not the teacher of this class');
 
     // Get the class exam
     const classExam = await this.classExamRepository.findById(classExamId);

@@ -1,20 +1,16 @@
-import { FREE_TIER_LIMITS, LIMIT_ERRORS, EXAM_LIMITS } from '@config/subscription-limits.js';
-import { QuestionType, QuestionDifficulty } from '@domain/entities/ExamTypes.js';
+import { EXAM_LIMITS } from '@config/subscription-limits.js';
+import { QuestionDifficulty, QuestionType } from '@domain/entities/ExamTypes.js';
+import type { Exam } from '@domain/entities/Exam.js';
 import { SubscriptionTier } from '@domain/entities/Subscription.js';
-import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
-import type { UsageMetrics } from '@domain/entities/UsageMetrics.js';
-import {
-  NotFoundError,
-  ValidationError,
-  ConflictError,
-  ForbiddenError,
-} from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError, ValidationError } from '@domain/errors/DomainError.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import type { IExamRepository, CreateQuestionDTO } from '@domain/repositories/IExamRepository.js';
+import type { CreateQuestionDTO, IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
 import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
-import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
+import type { GeneratedQuestion, IExamGenerator } from '@domain/services/IExamGenerator.js';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -73,112 +69,115 @@ export class GenerateExamUseCase {
     private readonly embeddingService: IEmbeddingService,
     private readonly examGenerator: IExamGenerator,
     private readonly subscriptionRepository: ISubscriptionRepository,
-    private readonly usageMetricsRepository: IUsageMetricsRepository
+    private readonly usageMetricsRepository: IUsageMetricsRepository,
+    private readonly subscriptionEnforcementService: SubscriptionEnforcementService
   ) {}
 
   async execute(input: GenerateExamInput): Promise<GenerateExamOutput> {
     const startTime = Date.now();
 
-    // Check subscription limit
+    // 1. Check subscription limit
     await this.enforceExamLimit(input.userId);
 
-    // Validation
+    // 2. Validate input parameters
     this.validateInput(input);
 
+    // 3. Resolve domain IDs
     const userId = UserId.create(input.userId);
     const documentIds = input.documentIds.map((id) => DocumentId.create(id));
 
-    // Step 1: Verify all documents exist and user has access
+    // 4. Verify all documents exist and user has access
     console.log(`[GenerateExam] Validating ${documentIds.length} document(s)...`);
     const documents = await this.validateDocuments(userId, documentIds);
 
-    // Step 2: Extract relevant context using RAG (across all documents)
+    // 5. Extract relevant context using RAG (across all documents)
     console.log(`[GenerateExam] Extracting context from ${documents.length} document(s)...`);
     const context = await this.extractMultiDocumentContext(documentIds, input.numQuestions);
 
-    // Step 3: Generate questions using GPT-4o (via Genkit flow)
+    // 6. Generate questions using GPT-4o (via Genkit flow)
     console.log(`[GenerateExam] Generating ${input.numQuestions} questions with GPT-4o...`);
-    // Map string types to enum types for the flow
-    const difficultyMap: Record<string, QuestionDifficulty> = {
-      EASY: QuestionDifficulty.EASY,
-      MEDIUM: QuestionDifficulty.MEDIUM,
-      HARD: QuestionDifficulty.HARD,
-      MIXED: QuestionDifficulty.MIXED,
-    };
+    const generatedQuestions = await this.callExamGenerator(input, context);
 
-    const questionTypeMap: Record<string, QuestionType> = {
-      MULTIPLE_CHOICE: QuestionType.MULTIPLE_CHOICE,
-      TRUE_FALSE: QuestionType.TRUE_FALSE,
-      SHORT_ANSWER: QuestionType.SHORT_ANSWER,
-    };
-
-    const generatedQuestions = await this.examGenerator.generate({
-      context,
-      numQuestions: input.numQuestions,
-      difficulty: difficultyMap[input.difficulty] || QuestionDifficulty.MEDIUM,
-      questionTypes: input.questionTypes
-        .map((t) => questionTypeMap[t])
-        .filter((t): t is QuestionType => Boolean(t)),
-    });
-
-    // Step 4: Store exam + questions in database
+    // 7. Build question DTOs and persist exam
     console.log(`[GenerateExam] Storing exam and questions in database...`);
-    const questionsDTO: CreateQuestionDTO[] = generatedQuestions.questions.map((q, index) => ({
-      examId: ExamId.create(), // Temporary, will be replaced by repository
-      type: q.type,
-      difficulty: q.difficulty,
-      questionText: q.questionText,
-      options: q.options || [],
-      correctAnswer: q.correctAnswer,
-      explanation: q.explanation,
-      points: q.points,
-      orderIndex: index,
-      sourceChunkIds: [], // TODO: Track which chunks were used
-    }));
+    const questionDTOs = this.buildQuestionDTOs(generatedQuestions);
+    const exam = await this.persistExam(userId, input, questionDTOs);
 
-    const exam = await this.examRepository.createWithQuestions(
-      {
-        userId,
-        title: input.title,
-        description: input.description,
-        generatedFrom: input.documentIds,
-        promptUsed: `Generated ${input.numQuestions} ${input.difficulty} questions from ${input.documentIds.length} document(s)`,
-      },
-      questionsDTO
-    );
-
-    // Update usage metrics if repositories are available
+    // 8. Update usage metrics if repositories are available
     if (this.subscriptionRepository && this.usageMetricsRepository) {
       await this.updateUsageMetrics(input.userId);
     }
 
+    // 9. Build and return output
     const generationTime = Date.now() - startTime;
     console.log(
       `[GenerateExam] ✅ Exam generated successfully in ${generationTime}ms from ${input.documentIds.length} document(s)`
     );
 
-    return {
-      exam: {
-        id: exam.id,
-        title: exam.title,
-        description: exam.description,
-        questionCount: exam.questionCount,
-        documentCount: input.documentIds.length,
-        createdAt: exam.createdAt,
-      },
-      questions: (exam.questions || []).map((q) => ({
-        id: q.id,
-        type: q.type,
-        difficulty: q.difficulty,
-        questionText: q.questionText,
-        options: q.options,
-        correctAnswer: q.correctAnswer,
-        explanation: q.explanation,
-        points: q.points,
-      })),
-      generationTimeMs: generationTime,
-    };
+    return this.buildOutput(exam, input, generationTime);
   }
+
+  // ---------------------------------------------------------------------------
+  // Input Validation
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Validate input parameters
+   */
+  private validateInput(input: GenerateExamInput): void {
+    if (!input.title || input.title.trim().length === 0) {
+      throw new ValidationError('Exam title is required');
+    }
+
+    // Validate documentIds array
+    if (!input.documentIds || !Array.isArray(input.documentIds)) {
+      throw new ValidationError('documentIds must be a non-empty array');
+    }
+
+    if (input.documentIds.length === 0) {
+      throw new ValidationError('At least one document must be provided');
+    }
+
+    if (input.documentIds.length > EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM) {
+      throw new ValidationError(
+        `Maximum ${EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM} documents allowed per exam`
+      );
+    }
+
+    // Validate no duplicate document IDs
+    const uniqueIds = new Set(input.documentIds);
+    if (uniqueIds.size !== input.documentIds.length) {
+      throw new ConflictError('Duplicate document IDs are not allowed');
+    }
+
+    if (
+      input.numQuestions < EXAM_LIMITS.MIN_QUESTIONS_PER_EXAM ||
+      input.numQuestions > EXAM_LIMITS.MAX_QUESTIONS_PER_EXAM
+    ) {
+      throw new ValidationError(
+        `Number of questions must be between ${EXAM_LIMITS.MIN_QUESTIONS_PER_EXAM} and ${EXAM_LIMITS.MAX_QUESTIONS_PER_EXAM}`
+      );
+    }
+
+    if (!['EASY', 'MEDIUM', 'HARD', 'MIXED'].includes(input.difficulty)) {
+      throw new ValidationError('Invalid difficulty level');
+    }
+
+    if (!input.questionTypes || input.questionTypes.length === 0) {
+      throw new ValidationError('At least one question type must be specified');
+    }
+
+    const validTypes = ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER'];
+    for (const type of input.questionTypes) {
+      if (!validTypes.includes(type)) {
+        throw new ValidationError(`Invalid question type: ${type}`);
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Document Verification
+  // ---------------------------------------------------------------------------
 
   /**
    * Validate all documents exist, are COMPLETED, and belong to user
@@ -192,9 +191,11 @@ export class GenerateExamUseCase {
           throw new NotFoundError(`Document not found: ${docId.value}`);
         }
 
-        if (document.userId.value !== userId.value) {
-          throw new ForbiddenError(`Unauthorized: Document ${docId.value} does not belong to user`);
-        }
+        assertOwnership(
+          document.userId,
+          userId,
+          `Unauthorized: Document ${docId.value} does not belong to user`
+        );
 
         if (document.status !== 'COMPLETED') {
           throw new ConflictError(
@@ -208,6 +209,10 @@ export class GenerateExamUseCase {
 
     return documents;
   }
+
+  // ---------------------------------------------------------------------------
+  // Context Extraction (RAG)
+  // ---------------------------------------------------------------------------
 
   /**
    * Extract relevant context from multiple documents using RAG
@@ -352,117 +357,193 @@ export class GenerateExamUseCase {
     return distribution;
   }
 
+  // ---------------------------------------------------------------------------
+  // AI Generation
+  // ---------------------------------------------------------------------------
+
   /**
-   * Validate input parameters
+   * Call the AI exam generator with mapped parameters
    */
-  private validateInput(input: GenerateExamInput): void {
-    if (!input.title || input.title.trim().length === 0) {
-      throw new ValidationError('Exam title is required');
+  private async callExamGenerator(
+    input: GenerateExamInput,
+    context: string
+  ): Promise<GeneratedQuestion[]> {
+    const difficulty = this.mapDifficulty(input.difficulty);
+    const questionTypes = this.mapQuestionTypes(input.questionTypes);
+
+    const result = await this.examGenerator.generate({
+      context,
+      numQuestions: input.numQuestions,
+      difficulty,
+      questionTypes,
+    });
+
+    this.validateGeneratedQuestions(result.questions, input.numQuestions);
+
+    return result.questions;
+  }
+
+  /**
+   * Map string difficulty to domain enum
+   */
+  private mapDifficulty(inputDifficulty: string): QuestionDifficulty {
+    const difficultyMap: Record<string, QuestionDifficulty> = {
+      EASY: QuestionDifficulty.EASY,
+      MEDIUM: QuestionDifficulty.MEDIUM,
+      HARD: QuestionDifficulty.HARD,
+      MIXED: QuestionDifficulty.MIXED,
+    };
+
+    return difficultyMap[inputDifficulty] ?? QuestionDifficulty.MEDIUM;
+  }
+
+  /**
+   * Map string question types to domain enums
+   */
+  private mapQuestionTypes(inputTypes: string[]): QuestionType[] {
+    const questionTypeMap: Record<string, QuestionType> = {
+      MULTIPLE_CHOICE: QuestionType.MULTIPLE_CHOICE,
+      TRUE_FALSE: QuestionType.TRUE_FALSE,
+      SHORT_ANSWER: QuestionType.SHORT_ANSWER,
+    };
+
+    return inputTypes.map((t) => questionTypeMap[t]).filter((t): t is QuestionType => Boolean(t));
+  }
+
+  /**
+   * Validate the structure and completeness of AI-generated questions
+   */
+  private validateGeneratedQuestions(questions: GeneratedQuestion[], expectedCount: number): void {
+    if (!questions || questions.length === 0) {
+      throw new ValidationError('AI generator returned no questions');
     }
 
-    // Validate documentIds array
-    if (!input.documentIds || !Array.isArray(input.documentIds)) {
-      throw new ValidationError('documentIds must be a non-empty array');
-    }
-
-    if (input.documentIds.length === 0) {
-      throw new ValidationError('At least one document must be provided');
-    }
-
-    if (input.documentIds.length > EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM) {
-      throw new ValidationError(
-        `Maximum ${EXAM_LIMITS.MAX_DOCUMENTS_PER_EXAM} documents allowed per exam`
+    if (questions.length !== expectedCount) {
+      console.warn(
+        `[GenerateExam] Expected ${expectedCount} questions, but received ${questions.length}`
       );
     }
 
-    // Validate no duplicate document IDs
-    const uniqueIds = new Set(input.documentIds);
-    if (uniqueIds.size !== input.documentIds.length) {
-      throw new ConflictError('Duplicate document IDs are not allowed');
-    }
-
-    if (
-      input.numQuestions < EXAM_LIMITS.MIN_QUESTIONS_PER_EXAM ||
-      input.numQuestions > EXAM_LIMITS.MAX_QUESTIONS_PER_EXAM
-    ) {
-      throw new ValidationError(
-        `Number of questions must be between ${EXAM_LIMITS.MIN_QUESTIONS_PER_EXAM} and ${EXAM_LIMITS.MAX_QUESTIONS_PER_EXAM}`
-      );
-    }
-
-    if (!['EASY', 'MEDIUM', 'HARD', 'MIXED'].includes(input.difficulty)) {
-      throw new ValidationError('Invalid difficulty level');
-    }
-
-    if (!input.questionTypes || input.questionTypes.length === 0) {
-      throw new ValidationError('At least one question type must be specified');
-    }
-
-    const validTypes = ['MULTIPLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER'];
-    for (const type of input.questionTypes) {
-      if (!validTypes.includes(type)) {
-        throw new ValidationError(`Invalid question type: ${type}`);
+    for (const q of questions) {
+      if (!q.questionText || q.questionText.trim().length === 0) {
+        throw new ValidationError('Generated question is missing question text');
+      }
+      if (!q.correctAnswer || q.correctAnswer.trim().length === 0) {
+        throw new ValidationError('Generated question is missing correct answer');
       }
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Persistence
+  // ---------------------------------------------------------------------------
+
   /**
-   * Enforce subscription exam limit
-   * Checks if user can create a new exam based on their tier
+   * Build question DTOs from generated questions
+   */
+  private buildQuestionDTOs(questions: GeneratedQuestion[]): CreateQuestionDTO[] {
+    return questions.map((q, index) => ({
+      examId: ExamId.create(), // Temporary, will be replaced by repository
+      type: q.type,
+      difficulty: q.difficulty,
+      questionText: q.questionText,
+      options: q.options || [],
+      correctAnswer: q.correctAnswer,
+      explanation: q.explanation,
+      points: q.points,
+      orderIndex: index,
+      sourceChunkIds: [], // TODO: Track which chunks were used
+    }));
+  }
+
+  /**
+   * Persist exam metadata and questions to the repository
+   */
+  private async persistExam(
+    userId: UserId,
+    input: GenerateExamInput,
+    questionDTOs: CreateQuestionDTO[]
+  ): Promise<Exam> {
+    return this.examRepository.createWithQuestions(
+      {
+        userId,
+        title: input.title,
+        description: input.description,
+        generatedFrom: input.documentIds,
+        promptUsed: this.buildPromptUsed(input),
+      },
+      questionDTOs
+    );
+  }
+
+  /**
+   * Build the prompt-used description string
+   */
+  private buildPromptUsed(input: GenerateExamInput): string {
+    return `Generated ${input.numQuestions} ${input.difficulty} questions from ${input.documentIds.length} document(s)`;
+  }
+
+  /**
+   * Build the use-case output from persisted exam entity
+   */
+  private buildOutput(
+    exam: Exam,
+    input: GenerateExamInput,
+    generationTimeMs: number
+  ): GenerateExamOutput {
+    return {
+      exam: {
+        id: exam.id,
+        title: exam.title,
+        description: exam.description,
+        questionCount: exam.questionCount,
+        documentCount: input.documentIds.length,
+        createdAt: exam.createdAt,
+      },
+      questions: (exam.questions || []).map((q) => ({
+        id: q.id,
+        type: q.type,
+        difficulty: q.difficulty,
+        questionText: q.questionText,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
+        points: q.points,
+      })),
+      generationTimeMs,
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Subscription Limits
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Enforce subscription exam limit via domain service
    */
   private async enforceExamLimit(teacherId: string): Promise<void> {
     const teacherUserId = UserId.create(teacherId);
-
-    // Get subscription
     const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId);
 
     if (!subscription) {
-      // Free tier user - check usage metrics
-      await this.checkFreeTierExamLimit(teacherUserId);
+      const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
+      this.subscriptionEnforcementService.enforceExamLimit(
+        usageMetrics?.examsCreatedThisMonth ?? 0,
+        SubscriptionTier.FREE
+      );
       return;
     }
 
-    // Get limits for current tier
-    const limits = SubscriptionLimits.getForTier(subscription.tier);
-
-    // If unlimited exams, skip check
-    if (!limits.hasExamLimit()) {
-      return;
-    }
-
-    // Get current usage
     const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
-
-    if (!usageMetrics) {
-      // No usage metrics yet - user can create exam
-      return;
-    }
-
-    // Check if can create exam
-    if (!limits.canCreateExam(usageMetrics.examsCreatedThisMonth)) {
-      const errorMessage =
-        subscription.tier === SubscriptionTier.FREE
-          ? LIMIT_ERRORS.EXAM_LIMIT.FREE
-          : LIMIT_ERRORS.EXAM_LIMIT.PRO;
-
-      throw new ConflictError(errorMessage);
-    }
+    this.subscriptionEnforcementService.enforceExamLimit(
+      usageMetrics?.examsCreatedThisMonth ?? 0,
+      subscription.tier
+    );
   }
 
-  /**
-   * Check Free tier exam limit
-   * Free tier: 10 exams per month
-   */
-  private async checkFreeTierExamLimit(teacherUserId: UserId): Promise<void> {
-    const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
-
-    if (
-      usageMetrics &&
-      usageMetrics.examsCreatedThisMonth >= FREE_TIER_LIMITS.MAX_EXAMS_PER_MONTH
-    ) {
-      throw new ConflictError(LIMIT_ERRORS.EXAM_LIMIT.FREE);
-    }
-  }
+  // ---------------------------------------------------------------------------
+  // Usage Metrics
+  // ---------------------------------------------------------------------------
 
   /**
    * Update usage metrics after exam creation
@@ -477,7 +558,7 @@ export class GenerateExamUseCase {
 
       // Free tier users don't have subscriptions for metrics
       // We need to find or create usage metrics
-      let usageMetrics: ReturnType<typeof UsageMetrics.createInitial> | null = null;
+      let usageMetrics: any | null = null;
 
       if (subscription) {
         usageMetrics = await this.usageMetricsRepository.getOrCreateCurrent(

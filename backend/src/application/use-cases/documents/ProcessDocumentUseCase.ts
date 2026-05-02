@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
-import { writeFile, unlink, mkdir } from 'node:fs/promises';
+import { mkdir, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { DocumentStatus } from '@domain/entities/Document.js';
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IDocumentProcessor } from '@domain/services/IDocumentProcessor.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
@@ -71,9 +72,7 @@ export class ProcessDocumentUseCase {
         throw new NotFoundError('Document not found');
       }
 
-      if (document.userId.value !== userId.value) {
-        throw new ForbiddenError('Unauthorized: Document does not belong to user');
-      }
+      assertOwnership(document.userId, userId, 'Unauthorized: Document does not belong to user');
 
       // 3. Check if already processed (idempotent)
       if (document.isCompleted()) {

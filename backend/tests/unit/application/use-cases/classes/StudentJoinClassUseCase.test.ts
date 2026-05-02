@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  StudentJoinClassUseCase,
   StudentJoinClassCommand,
+  StudentJoinClassUseCase,
 } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { SubscriptionTier } from '@domain/entities/Subscription.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
 import { LIMIT_ERRORS } from '@config/subscription-limits.js';
 import { SubscriptionMother } from '@tests/helpers/factories/SubscriptionMother.js';
 import { UsageMetricsMother } from '@tests/helpers/factories/UsageMetricsMother.js';
@@ -36,6 +36,8 @@ const mockUsageMetricsRepository = {
   incrementStudentCount: vi.fn(),
 } satisfies Partial<IUsageMetricsRepository> as IUsageMetricsRepository;
 
+const subscriptionEnforcementService = new SubscriptionEnforcementService();
+
 describe('StudentJoinClassUseCase', () => {
   let useCase: StudentJoinClassUseCase;
   const classId = '123e4567-e89b-42d3-a456-426614174000';
@@ -47,7 +49,8 @@ describe('StudentJoinClassUseCase', () => {
       mockEnrollmentRepository,
       mockClassRepository,
       mockSubscriptionRepository,
-      mockUsageMetricsRepository
+      mockUsageMetricsRepository,
+      subscriptionEnforcementService
     );
     vi.clearAllMocks();
 

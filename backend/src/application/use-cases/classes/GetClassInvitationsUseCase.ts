@@ -1,8 +1,9 @@
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 
 export class GetClassInvitationsCommand {
   constructor(
@@ -35,9 +36,7 @@ export class GetClassInvitationsUseCase {
       throw new NotFoundError('Class not found');
     }
 
-    if (classEntity.teacherId.toString() !== userId.toString()) {
-      throw new ForbiddenError('You do not have permission for this class');
-    }
+    assertOwnership(classEntity.teacherId, userId, 'You do not have permission for this class');
 
     const result = await this.invitationRepository.findByClassId(classId, {
       page: 1,

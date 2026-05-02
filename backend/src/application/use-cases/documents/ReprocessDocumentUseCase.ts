@@ -1,6 +1,7 @@
 import type { IMessageBroker } from '@application/ports/IMessageBroker.js';
 import { DocumentStatus } from '@domain/entities/Document.js';
-import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -32,9 +33,7 @@ export class ReprocessDocumentUseCase {
       throw new NotFoundError('Document not found');
     }
 
-    if (!document.isOwnedBy(userId)) {
-      throw new ForbiddenError('Unauthorized: Document does not belong to user');
-    }
+    assertOwnership(document.userId, userId, 'Unauthorized: Document does not belong to user');
 
     // Allow reprocessing for documents that are:
     // - FAILED: errored during processing

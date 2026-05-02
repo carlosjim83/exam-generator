@@ -1,4 +1,5 @@
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -50,9 +51,7 @@ export class GetExamUseCase {
     }
 
     // Authorization check
-    if (exam.userId !== userId.value) {
-      throw new ForbiddenError('Unauthorized: Exam does not belong to user');
-    }
+    assertOwnership(exam.userId, userId, 'Unauthorized: Exam does not belong to user');
 
     return {
       exam: {

@@ -1,9 +1,5 @@
-import {
-  NotFoundError,
-  ForbiddenError,
-  ConflictError,
-  ValidationError,
-} from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError, ValidationError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
@@ -46,9 +42,7 @@ export class SaveAnswerUseCase {
     }
 
     // Verify ownership
-    if (assignment.studentId.value !== input.studentId) {
-      throw new ForbiddenError('Assignment does not belong to student');
-    }
+    assertOwnership(assignment.studentId, input.studentId, 'Assignment does not belong to student');
 
     // Validate assignment is in progress
     if (assignment.status !== 'IN_PROGRESS') {

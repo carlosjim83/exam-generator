@@ -1,5 +1,5 @@
 import { ClassExam } from '@domain/entities/ClassExam.js';
-import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
@@ -8,6 +8,7 @@ import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudent
 import { ClassExamId } from '@domain/value-objects/ClassExamId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 
 export interface AssignExamToClassInput {
   classId: string;
@@ -53,9 +54,7 @@ export class AssignExamToClassUseCase {
       throw new NotFoundError('Class not found');
     }
 
-    if (!classEntity.teacherId.equals(teacherId)) {
-      throw new ForbiddenError('You are not the teacher of this class');
-    }
+    assertOwnership(classEntity.teacherId, teacherId, 'You are not the teacher of this class');
 
     // Verify exam exists and teacher owns it
     const exam = await this.examRepository.findById(input.examId);
@@ -63,9 +62,7 @@ export class AssignExamToClassUseCase {
       throw new NotFoundError('Exam not found');
     }
 
-    if (exam.userId !== teacherId.toString()) {
-      throw new ForbiddenError('You are not the owner of this exam');
-    }
+    assertOwnership(exam.userId, teacherId, 'You are not the owner of this exam');
 
     // Check if exam is already assigned to this class
     const existingClassExam = await this.classExamRepository.findByClassAndExam(

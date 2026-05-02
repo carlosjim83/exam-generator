@@ -1,4 +1,5 @@
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -55,9 +56,7 @@ export class GetDocumentUseCase {
     }
 
     // 3. Verify ownership
-    if (!document.isOwnedBy(userId)) {
-      throw new ForbiddenError('Access denied');
-    }
+    assertOwnership(document.userId, userId, 'Access denied');
 
     // 4. Return DTO
     return {

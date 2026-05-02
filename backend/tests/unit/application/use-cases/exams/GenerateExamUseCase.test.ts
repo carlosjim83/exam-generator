@@ -61,6 +61,7 @@ import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
 import { ExamMother } from '@tests/helpers/factories/ExamMother.js';
 import { QuestionMother } from '@tests/helpers/factories/QuestionMother.js';
 import { SubscriptionMother } from '@tests/helpers/factories/SubscriptionMother.js';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
 import { UsageMetricsMother } from '@tests/helpers/factories/UsageMetricsMother.js';
 
 // Mock the embedding service
@@ -130,6 +131,7 @@ describe('GenerateExamUseCase', () => {
   let mockExamGenerator: IExamGenerator;
   let mockSubscriptionRepository: ISubscriptionRepository;
   let mockUsageMetricsRepository: IUsageMetricsRepository;
+  let mockSubscriptionEnforcementService: SubscriptionEnforcementService;
 
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
@@ -259,13 +261,16 @@ describe('GenerateExamUseCase', () => {
       countByTeacherId: vi.fn(),
     };
 
+    mockSubscriptionEnforcementService = new SubscriptionEnforcementService();
+
     generateExamUseCase = new GenerateExamUseCase(
       mockDocumentRepository,
       mockExamRepository,
       mockEmbeddingService,
       mockExamGenerator,
       mockSubscriptionRepository,
-      mockUsageMetricsRepository
+      mockUsageMetricsRepository,
+      mockSubscriptionEnforcementService
     );
   });
 
@@ -808,7 +813,8 @@ describe('GenerateExamUseCase', () => {
         mockEmbeddingService,
         mockExamGenerator,
         mockSubscriptionRepository,
-        mockUsageMetricsRepository
+        mockUsageMetricsRepository,
+        mockSubscriptionEnforcementService
       );
     });
 

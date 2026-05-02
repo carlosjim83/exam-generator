@@ -1,7 +1,8 @@
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
 import type { ClassDeletedEvent } from '@domain/events/DocumentEvents.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import { eventBus } from '@infrastructure/events/EventBus.js';
 
 export class DeleteClassCommand {
@@ -24,9 +25,11 @@ export class DeleteClassUseCase {
       throw new NotFoundError('Class not found');
     }
 
-    if (classEntity.teacherId.toString() !== teacherId) {
-      throw new ForbiddenError('You do not have permission to delete this class');
-    }
+    assertOwnership(
+      classEntity.teacherId,
+      teacherId,
+      'You do not have permission to delete this class'
+    );
 
     // Store metadata before deletion for the event
     const classMetadata = {

@@ -22,38 +22,38 @@ import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/
 import { UnshareDocumentUseCase } from '@application/use-cases/documents/UnshareDocumentUseCase.js';
 import { UpdateDocumentVisibilityUseCase } from '@application/use-cases/documents/UpdateDocumentVisibilityUseCase.js';
 import {
-  RegisterUserUseCase,
-  LoginUserUseCase,
-  RefreshTokenUseCase,
-  UploadDocumentUseCase,
-  GetDocumentUseCase,
-  ListDocumentsUseCase,
-  ProcessDocumentUseCase,
-  ReprocessDocumentUseCase, // Added
-  QueryDocumentUseCase, // Added
-  DeleteDocumentUseCase, // Added
-  DownloadDocumentUseCase, // Added
-  GetDashboardStatsUseCase,
-  GenerateExamUseCase,
-  GetExamUseCase,
-  ListExamsUseCase,
-  DeleteExamUseCase, // Added
-  CreateClassUseCase,
-  CreateEmailInvitationsUseCase,
-  StudentJoinClassUseCase,
-  GetClassesUseCase,
-  GetClassByCodeUseCase,
-  GetClassDetailsUseCase,
-  StudentJoinClassWithInvitationUseCase,
-  GetClassStudentsUseCase,
   AcceptInvitationUseCase,
   AssignExamToClassUseCase,
+  CreateClassUseCase,
+  CreateEmailInvitationsUseCase,
   DeleteClassUseCase,
-  ImportStudentsCSVUseCase,
+  DeleteDocumentUseCase,
+  DeleteExamUseCase,
+  DownloadDocumentUseCase,
+  GenerateExamUseCase,
+  GetClassByCodeUseCase,
+  GetClassDetailsUseCase,
+  GetClassesUseCase,
   GetClassInvitationsUseCase,
-  ResendInvitationUseCase, // Added
-  RemoveStudentFromClassUseCase, // Added
-  GetStudentClassesUseCase, // Added
+  GetClassStudentsUseCase,
+  GetDashboardStatsUseCase,
+  GetDocumentUseCase,
+  GetExamUseCase,
+  GetStudentClassesUseCase,
+  ImportStudentsCSVUseCase,
+  ListDocumentsUseCase,
+  ListExamsUseCase,
+  LoginUserUseCase,
+  ProcessDocumentUseCase,
+  QueryDocumentUseCase,
+  RefreshTokenUseCase,
+  RegisterUserUseCase,
+  RemoveStudentFromClassUseCase,
+  ReprocessDocumentUseCase,
+  ResendInvitationUseCase,
+  StudentJoinClassUseCase,
+  StudentJoinClassWithInvitationUseCase,
+  UploadDocumentUseCase,
 } from '@application/use-cases/index.js';
 import { SaveAnswerUseCase } from '@application/use-cases/student/SaveAnswerUseCase.js';
 import { GetTeacherClassesWithStatsUseCase } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
@@ -95,21 +95,21 @@ import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbed
 import { GenkitDocumentProcessor } from '@infrastructure/ai/GenkitDocumentProcessor.js';
 import { GenkitExamGenerator } from '@infrastructure/ai/GenkitExamGenerator.js';
 import {
-  PrismaUserRepository,
-  PrismaDocumentRepository,
-  BcryptPasswordHasher,
-  JWTTokenService,
   AzureBlobStorageService,
+  BcryptPasswordHasher,
+  BullMQMessageBroker,
+  JWTTokenService,
   LocalFileStorageService,
-  TextExtractorService,
-  BullMQMessageBroker, // Added
-  PrismaClassRepository,
-  PrismaStudentEnrollmentRepository,
-  PrismaInvitationRepository,
   PrismaClassDocumentRepository,
   PrismaClassExamRepository,
+  PrismaClassRepository,
+  PrismaDocumentRepository,
+  PrismaInvitationRepository,
+  PrismaStudentEnrollmentRepository,
   PrismaSubscriptionRepository,
   PrismaUsageMetricsRepository,
+  PrismaUserRepository,
+  TextExtractorService,
 } from '@infrastructure/index.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import { PrismaExamAssignmentRepository } from '@infrastructure/repositories/PrismaExamAssignmentRepository.js';
@@ -119,6 +119,7 @@ import { GetStudentClassExamsUseCase } from '@application/use-cases/classes/GetS
 import { GetStudentSubmissionDetailUseCase } from '@application/use-cases/classes/GetStudentSubmissionDetailUseCase.js';
 import { ISubscriptionRepository } from '@/domain/repositories/ISubscriptionRepository';
 import { IUsageMetricsRepository } from '@/domain/repositories/IUsageMetricsRepository';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
 import { AzureOpenAIGradingService } from '@infrastructure/ai/AzureOpenAIGradingService.js';
 
 /**
@@ -154,6 +155,9 @@ export class Container {
   // Subscription Repositories
   private readonly _subscriptionRepository: ISubscriptionRepository;
   private readonly _usageMetricsRepository: IUsageMetricsRepository;
+
+  // Domain Services
+  private readonly _subscriptionEnforcementService: SubscriptionEnforcementService;
 
   // AI Services
   private readonly _gradingService: IAnswerGradingService;
@@ -286,6 +290,9 @@ export class Container {
     this._subscriptionRepository = PrismaSubscriptionRepository.create(this._prisma);
     this._usageMetricsRepository = PrismaUsageMetricsRepository.create(this._prisma);
 
+    // Domain Services
+    this._subscriptionEnforcementService = new SubscriptionEnforcementService();
+
     // ========================================
     // APPLICATION LAYER - USE CASES
     // ========================================
@@ -355,7 +362,8 @@ export class Container {
       this._embeddingService,
       this._examGenerator,
       this._subscriptionRepository,
-      this._usageMetricsRepository
+      this._usageMetricsRepository,
+      this._subscriptionEnforcementService
     );
 
     this._getExamUseCase = new GetExamUseCase(this._examRepository);
@@ -368,7 +376,8 @@ export class Container {
     this._createClassUseCase = new CreateClassUseCase(
       this._classRepository,
       this._subscriptionRepository,
-      this._usageMetricsRepository
+      this._usageMetricsRepository,
+      this._subscriptionEnforcementService
     );
     this._createEmailInvitationsUseCase = new CreateEmailInvitationsUseCase(
       this._invitationRepository
@@ -377,7 +386,8 @@ export class Container {
       this._studentEnrollmentRepository,
       this._classRepository,
       this._subscriptionRepository,
-      this._usageMetricsRepository
+      this._usageMetricsRepository,
+      this._subscriptionEnforcementService
     );
     this._getClassesUseCase = new GetClassesUseCase(this._classRepository);
     this._getClassByCodeUseCase = new GetClassByCodeUseCase(

@@ -2,7 +2,8 @@ import * as CSV from 'csv-parse/sync';
 import { v4 as uuidv4 } from 'uuid';
 
 import { Invitation } from '@domain/entities/Invitation.js';
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
@@ -41,9 +42,7 @@ export class ImportStudentsCSVUseCase {
       throw new NotFoundError('Class not found');
     }
 
-    if (classEntity.teacherId.toString() !== teacherId.toString()) {
-      throw new ForbiddenError('You do not have permission for this class');
-    }
+    assertOwnership(classEntity.teacherId, teacherId, 'You do not have permission for this class');
 
     // Parse CSV
     const records: any[] = [];
