@@ -46,7 +46,7 @@ model User {
   createdInvitations Invitation[]        @relation("CreatedInvitations")
   taughtExams        ClassExam[]         @relation("TaughtExams")
   subscription       Subscription?
-  usageMetrics       UsageMetrics?
+  usageMetrics       UsageMetrics[]
 
   @@map("users")
 }
@@ -511,7 +511,7 @@ enum BillingCycle {
 
 model UsageMetrics {
   id             String @id @default(uuid())
-  teacherId      String @unique @map("teacher_id")
+  teacherId      String @map("teacher_id")
   teacher        User   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   subscriptionId String @default(uuid()) @map("subscription_id")
 
@@ -533,6 +533,7 @@ model UsageMetrics {
   updatedAt    DateTime     @updatedAt @map("updated_at")
   subscription Subscription @relation(fields: [subscriptionId], references: [id])
 
+  @@unique([teacherId, period])
   @@index([teacherId])
   @@index([period])
   @@map("usage_metrics")

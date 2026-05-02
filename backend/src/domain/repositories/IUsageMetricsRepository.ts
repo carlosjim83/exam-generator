@@ -22,11 +22,6 @@ export interface IUsageMetricsRepository {
   findCurrentByTeacherId(teacherId: UserId): Promise<UsageMetrics | null>;
 
   /**
-   * Find usage metrics by teacher ID and period
-   */
-  findByTeacherIdAndPeriod(teacherId: UserId, period: Date): Promise<UsageMetrics | null>;
-
-  /**
    * Update usage metrics
    */
   update(metrics: UsageMetrics): Promise<UsageMetrics>;
