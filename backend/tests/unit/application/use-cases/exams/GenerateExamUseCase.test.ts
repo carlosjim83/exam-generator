@@ -56,12 +56,19 @@ import { ExamId } from '@domain/value-objects/ExamId.js';
 import { QuestionId } from '@domain/value-objects/QuestionId.js';
 import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
 import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
+import type { IExamInputValidator } from '@domain/services/ExamInputValidator.js';
+import type { IExamPersistenceService } from '@domain/services/ExamPersistenceService.js';
+import type { ILogger } from '@domain/services/ILogger.js';
+import type { IRAGContextExtractor } from '@domain/services/IRAGContextExtractor.js';
+import type { IUsageMetricsUpdater } from '@domain/services/UsageMetricsUpdater.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
 import { ExamMother } from '@tests/helpers/factories/ExamMother.js';
 import { QuestionMother } from '@tests/helpers/factories/QuestionMother.js';
 import { SubscriptionMother } from '@tests/helpers/factories/SubscriptionMother.js';
 import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
+import { ExamInputValidator } from '@domain/services/ExamInputValidator.js';
+import { ExamPersistenceService } from '@domain/services/ExamPersistenceService.js';
 import { UsageMetricsMother } from '@tests/helpers/factories/UsageMetricsMother.js';
 
 // Mock the embedding service
@@ -127,11 +134,15 @@ describe('GenerateExamUseCase', () => {
   let generateExamUseCase: GenerateExamUseCase;
   let mockDocumentRepository: IDocumentRepository;
   let mockExamRepository: IExamRepository;
-  let mockEmbeddingService: IEmbeddingService;
   let mockExamGenerator: IExamGenerator;
   let mockSubscriptionRepository: ISubscriptionRepository;
   let mockUsageMetricsRepository: IUsageMetricsRepository;
   let mockSubscriptionEnforcementService: SubscriptionEnforcementService;
+  let mockInputValidator: IExamInputValidator;
+  let mockRAGContextExtractor: IRAGContextExtractor;
+  let mockPersistenceService: IExamPersistenceService;
+  let mockUsageMetricsUpdater: IUsageMetricsUpdater;
+  let mockLogger: ILogger;
 
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
@@ -167,16 +178,31 @@ describe('GenerateExamUseCase', () => {
     // Mock exam repository
     mockExamRepository = {
       create: vi.fn(),
-      createWithQuestions: vi.fn(),
+      createWithQuestions: vi.fn().mockImplementation((metadata, questions) => {
+        return Promise.resolve(
+          ExamMother.complete({
+            userId: metadata.userId.value,
+            title: metadata.title,
+            description: metadata.description,
+            generatedFrom: metadata.generatedFrom,
+            promptUsed: metadata.promptUsed,
+            questionCount: questions.length,
+            questions: questions.map((q: any, i: number) =>
+              QuestionMother.multipleChoice({
+                id: `00000000-0000-4000-a000-${String(i + 1).padStart(12, '0')}`,
+                examId: metadata.userId.value,
+                orderIndex: i,
+              })
+            ),
+          })
+        );
+      }),
       findById: vi.fn(),
       findByUserId: vi.fn(),
       exists: vi.fn(),
       delete: vi.fn(),
       countByUserId: vi.fn(),
     };
-
-    // Mock embedding service
-    mockEmbeddingService = new AzureOpenAIEmbeddingService();
 
     // Mock exam generator
     mockExamGenerator = {
@@ -261,16 +287,38 @@ describe('GenerateExamUseCase', () => {
       countByTeacherId: vi.fn(),
     };
 
+    mockInputValidator = new ExamInputValidator(mockLogger);
+
+    mockRAGContextExtractor = {
+      extract: vi.fn().mockResolvedValue('Mock context for exam generation'),
+    };
+
+    mockPersistenceService = new ExamPersistenceService(mockExamRepository, mockLogger);
+
+    mockUsageMetricsUpdater = {
+      updateExamCount: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockLogger = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+
     mockSubscriptionEnforcementService = new SubscriptionEnforcementService();
 
     generateExamUseCase = new GenerateExamUseCase(
       mockDocumentRepository,
-      mockExamRepository,
-      mockEmbeddingService,
       mockExamGenerator,
       mockSubscriptionRepository,
       mockUsageMetricsRepository,
-      mockSubscriptionEnforcementService
+      mockSubscriptionEnforcementService,
+      mockInputValidator,
+      mockRAGContextExtractor,
+      mockPersistenceService,
+      mockUsageMetricsUpdater,
+      mockLogger
     );
   });
 
@@ -468,9 +516,8 @@ describe('GenerateExamUseCase', () => {
       // Verify document was checked
       expect(mockDocumentRepository.findById).toHaveBeenCalledWith(mockDocumentId);
 
-      // Verify RAG was performed
-      expect(mockEmbeddingService.generateEmbeddings).toHaveBeenCalled();
-      expect(mockDocumentRepository.searchSimilarChunks).toHaveBeenCalled();
+      // Verify RAG context was extracted
+      expect(mockRAGContextExtractor.extract).toHaveBeenCalled();
 
       // Verify exam was stored
       expect(mockExamRepository.createWithQuestions).toHaveBeenCalled();
@@ -520,8 +567,8 @@ describe('GenerateExamUseCase', () => {
         questionTypes: ['MULTIPLE_CHOICE'],
       });
 
-      // Should perform multiple RAG searches (4 diverse queries)
-      expect(mockDocumentRepository.searchSimilarChunks).toHaveBeenCalledTimes(4);
+      // Should extract RAG context
+      expect(mockRAGContextExtractor.extract).toHaveBeenCalledTimes(1);
     });
 
     it('should store exam with correct metadata', async () => {
@@ -809,12 +856,15 @@ describe('GenerateExamUseCase', () => {
       // Re-create use case with subscription repos
       generateExamUseCase = new GenerateExamUseCase(
         mockDocumentRepository,
-        mockExamRepository,
-        mockEmbeddingService,
         mockExamGenerator,
         mockSubscriptionRepository,
         mockUsageMetricsRepository,
-        mockSubscriptionEnforcementService
+        mockSubscriptionEnforcementService,
+        mockInputValidator,
+        mockRAGContextExtractor,
+        mockPersistenceService,
+        mockUsageMetricsUpdater,
+        mockLogger
       );
     });
 
@@ -842,9 +892,7 @@ describe('GenerateExamUseCase', () => {
         };
 
         // This should NOT throw a limit error (5 < 10 exams/month)
-        // It will fail at document verification since we don't have full mocks
-        // but we're testing that it doesn't fail at the limit check
-        await expect(generateExamUseCase.execute(input)).rejects.not.toThrow(/monthly exam limit/);
+        await expect(generateExamUseCase.execute(input)).resolves.toBeDefined();
       });
 
       it('should block exam generation when FREE tier limit reached (10 exams/month)', async () => {

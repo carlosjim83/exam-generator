@@ -63,8 +63,8 @@ export class ExamMother {
    */
   static create(overrides: ExamMotherOptions = {}): Exam {
     const now = new Date();
-    const id = overrides.id ?? '00000000-0000-0000-0000-000000000003';
-    const userId = overrides.userId ?? '00000000-0000-0000-0000-000000000002';
+    const id = overrides.id ?? '00000000-0000-4000-a000-000000000003';
+    const userId = overrides.userId ?? '00000000-0000-4000-a000-000000000002';
 
     return Exam.create({
       id: ExamId.create(id),
