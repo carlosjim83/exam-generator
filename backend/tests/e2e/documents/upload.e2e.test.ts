@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import FormData from 'form-data';
 import { createTestServer } from '@tests/helpers/test-server.js';
-import { UserMother } from '@tests/helpers/mothers/index.js';
+import { ApiUserMother } from '@tests/helpers/mothers/index.js';
 import { container } from '@config/container.js';
 import { IStorageService } from '@domain/services/IStorageService.js';
 
@@ -18,7 +18,7 @@ describe('Document Upload Route', () => {
     storageService = container.storageService;
 
     // Create user via UserMother
-    const { tokens } = await UserMother.teacher(server);
+    const { tokens } = await ApiUserMother.teacher(server);
     authToken = tokens.accessToken;
   });
 

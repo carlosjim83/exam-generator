@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { createTestServer } from '@tests/helpers/test-server.js';
-import { UserMother } from '@tests/helpers/mothers/index.js';
+import { ApiUserMother } from '@tests/helpers/mothers/index.js';
 import { container } from '@config/container.js';
 import { prisma } from '@config/prisma.js';
 import fs from 'fs/promises';
@@ -28,7 +28,7 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
     server = await createTestServer();
 
     // Create user via UserMother
-    const { tokens } = await UserMother.teacher(server);
+    const { tokens } = await ApiUserMother.teacher(server);
     authToken = tokens.accessToken;
   });
 
@@ -54,7 +54,7 @@ describe('Document Processing with Genkit (RAG/Embeddings)', () => {
 
   it("should return 403 when trying to process another user's document", async () => {
     // ARRANGE: Create another user via UserMother
-    const { user: otherUser } = await UserMother.teacher(server);
+    const { user: otherUser } = await ApiUserMother.teacher(server);
 
     // Create document for other user
     const otherDoc = await prisma.document.create({

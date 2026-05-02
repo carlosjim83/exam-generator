@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { env } from '@config/env.js';
 import jwt from 'jsonwebtoken';
 import { createTestServer } from '@tests/helpers/test-server.js';
-import { UserMother } from '@tests/helpers/mothers/index.js';
+import { ApiUserMother } from '@tests/helpers/mothers/index.js';
 
 describe('POST /auth/refresh', () => {
   let app: FastifyInstance;
@@ -19,7 +19,7 @@ describe('POST /auth/refresh', () => {
   describe('Success Cases', () => {
     it('should generate new token pair with valid refresh token', async () => {
       // ARRANGE: Create user via UserMother
-      const { user, tokens } = await UserMother.teacher(app);
+      const { user, tokens } = await ApiUserMother.teacher(app);
       const oldRefreshToken = tokens.refreshToken;
 
       // ACT: Use refresh token to get new tokens
@@ -64,7 +64,7 @@ describe('POST /auth/refresh', () => {
 
     it('should return user info with new tokens', async () => {
       // ARRANGE: Create student via UserMother
-      const { user, tokens } = await UserMother.student(app);
+      const { user, tokens } = await ApiUserMother.student(app);
 
       // ACT: Refresh tokens
       const refreshResponse = await app.inject({
@@ -159,7 +159,7 @@ describe('POST /auth/refresh', () => {
 
     it('should return 401 for access token used as refresh token', async () => {
       // ARRANGE: Create user via UserMother
-      const { tokens } = await UserMother.teacher(app);
+      const { tokens } = await ApiUserMother.teacher(app);
 
       // ACT: Try to use access token as refresh token
       const response = await app.inject({

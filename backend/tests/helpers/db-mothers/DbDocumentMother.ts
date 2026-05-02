@@ -30,7 +30,7 @@ export interface DocumentMotherOptions {
 /**
  * Document Mother - Creates test documents with sensible defaults
  */
-export class DocumentMother {
+export class DbDocumentMother {
   /**
    * Creates a completed PDF document (most common case)
    */

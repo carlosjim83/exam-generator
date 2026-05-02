@@ -4,7 +4,7 @@ import { ClassDocumentId } from '@domain/value-objects/ClassDocumentId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { PrismaClassDocumentRepository } from '@infrastructure/persistence/PrismaClassDocumentRepository.js';
-import { ClassDocumentMother } from '@tests/helpers/mothers/ClassDocumentMother.js';
+import { ClassDocumentMother } from '@tests/helpers/factories/ClassDocumentMother.js';
 import { prisma } from '@config/prisma.js';
 
 describe('PrismaClassDocumentRepository Integration Tests', () => {

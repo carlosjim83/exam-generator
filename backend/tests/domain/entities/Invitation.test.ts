@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { Invitation } from '@domain/entities/Invitation.js';
-import { InvitationMother } from '@tests/helpers/mothers/InvitationMother.js';
+import { InvitationMother } from '@tests/helpers/factories/InvitationMother.js';
 
 describe('Invitation Entity', () => {
   beforeEach(() => {

@@ -353,7 +353,9 @@ export class Container {
       this._documentRepository,
       this._examRepository,
       this._embeddingService,
-      this._examGenerator
+      this._examGenerator,
+      this._subscriptionRepository,
+      this._usageMetricsRepository
     );
 
     this._getExamUseCase = new GetExamUseCase(this._examRepository);

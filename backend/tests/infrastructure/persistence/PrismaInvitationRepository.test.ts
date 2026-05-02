@@ -4,7 +4,7 @@ import { InvitationId } from '@domain/value-objects/InvitationId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { PrismaInvitationRepository } from '@infrastructure/persistence/PrismaInvitationRepository.js';
-import { InvitationMother } from '@tests/helpers/mothers/InvitationMother.js';
+import { InvitationMother } from '@tests/helpers/factories/InvitationMother.js';
 import { prisma } from '@config/prisma.js';
 
 describe('PrismaInvitationRepository Integration Tests', () => {

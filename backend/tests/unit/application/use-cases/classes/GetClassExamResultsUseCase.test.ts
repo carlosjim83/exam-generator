@@ -3,22 +3,21 @@ import {
   GetClassExamResultsUseCase,
   GetClassExamResultsInput,
 } from '@application/use-cases/classes/GetClassExamResultsUseCase.js';
-import { Class } from '@domain/entities/Class.js';
-import { ClassExam } from '@domain/entities/ClassExam.js';
-import { Exam } from '@domain/entities/Exam.js';
-import { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
-import { User, UserRole, AuthProvider } from '@domain/entities/User.js';
+import { UserRole } from '@domain/entities/User.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { ClassExamId } from '@domain/value-objects/ClassExamId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
-import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
-import { Email } from '@domain/value-objects/Email.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import { ClassMother } from '@tests/helpers/factories/ClassMother.js';
+import { ClassExamMother } from '@tests/helpers/factories/ClassExamMother.js';
+import { ExamMother } from '@tests/helpers/factories/ExamMother.js';
+import { ExamAssignmentMother } from '@tests/helpers/factories/ExamAssignmentMother.js';
+import { UserMother } from '@tests/helpers/factories/UserMother.js';
 
 // Mock repositories
 const mockClassExamRepository = {
@@ -78,7 +77,11 @@ describe('GetClassExamResultsUseCase', () => {
 
     it('should throw error when teacher does not own the class', async () => {
       const otherTeacherId = UserId.create('999e4567-e89b-42d3-a456-426614174000');
-      const classEntity = new Class(classId, otherTeacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(otherTeacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
       vi.mocked(mockClassRepository.findById).mockResolvedValue(classEntity);
 
       const input: GetClassExamResultsInput = {
@@ -91,7 +94,11 @@ describe('GetClassExamResultsUseCase', () => {
     });
 
     it('should throw error when class exam is not found', async () => {
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
       vi.mocked(mockClassRepository.findById).mockResolvedValue(classEntity);
       vi.mocked(mockClassExamRepository.findById).mockResolvedValue(null);
 
@@ -105,26 +112,23 @@ describe('GetClassExamResultsUseCase', () => {
     });
 
     it('should throw error when class exam does not belong to the class', async () => {
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
       const otherClassId = ClassId.create('999e4567-e89b-42d3-a456-426614174000');
-      const classExam = ClassExam.create({
-        id: classExamId,
-        classId: otherClassId,
+      const classExam = ClassExamMother.create({
+        id: classExamId.value,
+        classId: otherClassId.value,
         examId: examId.value,
-        teacherId: teacherId,
-        availableAt: null,
-        dueDate: null,
-        timeLimit: null,
+        teacherId: teacherId.value,
         isPublished: true,
-        maxAttempts: 1,
-        showResultsImmediately: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
       vi.mocked(mockClassRepository.findById).mockResolvedValue(classEntity);
       vi.mocked(mockClassExamRepository.findById).mockResolvedValue(classExam);
 
-      const input: GetClassExamExamResultsInput = {
+      const input: GetClassExamResultsInput = {
         classExamId: classExamId.value,
         classId: classId.value,
         teacherId: teacherId.value,
@@ -136,20 +140,17 @@ describe('GetClassExamResultsUseCase', () => {
     });
 
     it('should throw error when exam is not found', async () => {
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
-      const classExam = ClassExam.create({
-        id: classExamId,
-        classId: classId,
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
+      const classExam = ClassExamMother.create({
+        id: classExamId.value,
+        classId: classId.value,
         examId: examId.value,
-        teacherId: teacherId,
-        availableAt: null,
-        dueDate: null,
-        timeLimit: null,
+        teacherId: teacherId.value,
         isPublished: true,
-        maxAttempts: 1,
-        showResultsImmediately: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
       vi.mocked(mockClassRepository.findById).mockResolvedValue(classEntity);
       vi.mocked(mockClassExamRepository.findById).mockResolvedValue(classExam);
@@ -166,33 +167,28 @@ describe('GetClassExamResultsUseCase', () => {
 
     it('should return results with student info populated from IUserRepository', async () => {
       // Setup class
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
 
       // Setup class exam
-      const classExam = ClassExam.create({
-        id: classExamId,
-        classId: classId,
+      const classExam = ClassExamMother.create({
+        id: classExamId.value,
+        classId: classId.value,
         examId: examId.value,
-        teacherId: teacherId,
-        availableAt: null,
-        dueDate: null,
+        teacherId: teacherId.value,
         timeLimit: 60,
         isPublished: true,
-        maxAttempts: 1,
-        showResultsImmediately: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Setup exam
-      const exam = Exam.create({
-        id: examId,
-        userId: teacherId,
+      const exam = ExamMother.create({
+        id: examId.value,
+        userId: teacherId.value,
         title: 'Math Test',
         description: 'Algebra basics',
-        generatedFrom: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
         questionCount: 10,
       });
 
@@ -200,63 +196,44 @@ describe('GetClassExamResultsUseCase', () => {
       const student1Id = UserId.create('111e4567-e89b-42d3-a456-426614174000');
       const student2Id = UserId.create('222e4567-e89b-42d3-a456-426614174000');
 
-      const assignment1 = ExamAssignment.create({
-        id: AssignmentId.create('assign-1'),
+      const assignment1 = ExamAssignmentMother.graded({
+        id: 'assign-1',
         examId: examId.value,
-        studentId: student1Id,
-        teacherId: teacherId,
-        status: ExamAssignmentStatus.GRADED,
-        dueDate: null,
+        studentId: student1Id.value,
+        teacherId: teacherId.value,
         startedAt: new Date('2025-01-01T10:00:00Z'),
         submittedAt: new Date('2025-01-01T10:45:00Z'),
         score: 85,
         feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const assignment2 = ExamAssignment.create({
-        id: AssignmentId.create('assign-2'),
+      const assignment2 = ExamAssignmentMother.submitted({
+        id: 'assign-2',
         examId: examId.value,
-        studentId: student2Id,
-        teacherId: teacherId,
-        status: ExamAssignmentStatus.SUBMITTED,
-        dueDate: null,
+        studentId: student2Id.value,
+        teacherId: teacherId.value,
         startedAt: new Date('2025-01-01T11:00:00Z'),
         submittedAt: new Date('2025-01-01T11:30:00Z'),
         score: 92,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Setup students (OAuth users don't need password)
-      const student1 = User.create({
-        id: student1Id,
-        email: Email.create('john.doe@example.com'),
-        passwordHash: null,
+      const student1 = UserMother.oauth({
+        id: student1Id.value,
+        email: 'john.doe@example.com',
         firstName: 'John',
         lastName: 'Doe',
         role: UserRole.STUDENT,
-        provider: AuthProvider.GOOGLE,
         providerId: 'google-123',
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const student2 = User.create({
-        id: student2Id,
-        email: Email.create('jane.smith@example.com'),
-        passwordHash: null,
+      const student2 = UserMother.oauth({
+        id: student2Id.value,
+        email: 'jane.smith@example.com',
         firstName: 'Jane',
         lastName: 'Smith',
         role: UserRole.STUDENT,
-        provider: AuthProvider.GOOGLE,
         providerId: 'google-456',
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Mock repository calls
@@ -296,50 +273,36 @@ describe('GetClassExamResultsUseCase', () => {
 
     it('should handle missing student gracefully', async () => {
       // Setup class
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
 
       // Setup class exam
-      const classExam = ClassExam.create({
-        id: classExamId,
-        classId: classId,
+      const classExam = ClassExamMother.create({
+        id: classExamId.value,
+        classId: classId.value,
         examId: examId.value,
-        teacherId: teacherId,
-        availableAt: null,
-        dueDate: null,
-        timeLimit: null,
+        teacherId: teacherId.value,
         isPublished: true,
-        maxAttempts: 1,
-        showResultsImmediately: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Setup exam
-      const exam = Exam.create({
-        id: examId,
-        userId: teacherId,
+      const exam = ExamMother.create({
+        id: examId.value,
+        userId: teacherId.value,
         title: 'Math Test',
-        generatedFrom: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
         questionCount: 5,
       });
 
       // Setup assignment with non-existent student
       const studentId = UserId.create('111e4567-e89b-42d3-a456-426614174000');
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create('assign-1'),
+      const assignment = ExamAssignmentMother.pending({
+        id: 'assign-1',
         examId: examId.value,
-        studentId: studentId,
-        teacherId: teacherId,
-        status: ExamAssignmentStatus.PENDING,
-        dueDate: null,
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        studentId: studentId.value,
+        teacherId: teacherId.value,
       });
 
       // Mock repository calls - student not found
@@ -366,32 +329,26 @@ describe('GetClassExamResultsUseCase', () => {
 
     it('should calculate statistics correctly', async () => {
       // Setup class
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
 
       // Setup class exam
-      const classExam = ClassExam.create({
-        id: classExamId,
-        classId: classId,
+      const classExam = ClassExamMother.create({
+        id: classExamId.value,
+        classId: classId.value,
         examId: examId.value,
-        teacherId: teacherId,
-        availableAt: null,
-        dueDate: null,
-        timeLimit: null,
+        teacherId: teacherId.value,
         isPublished: true,
-        maxAttempts: 1,
-        showResultsImmediately: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Setup exam
-      const exam = Exam.create({
-        id: examId,
-        userId: teacherId,
+      const exam = ExamMother.create({
+        id: examId.value,
+        userId: teacherId.value,
         title: 'Math Test',
-        generatedFrom: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
         questionCount: 5,
       });
 
@@ -403,81 +360,52 @@ describe('GetClassExamResultsUseCase', () => {
 
       const assignments = [
         // PENDING - not started
-        ExamAssignment.create({
-          id: AssignmentId.create('assign-1'),
+        ExamAssignmentMother.pending({
+          id: 'assign-1',
           examId: examId.value,
-          studentId: student1Id,
-          teacherId: teacherId,
-          status: ExamAssignmentStatus.PENDING,
-          dueDate: null,
-          startedAt: null,
-          submittedAt: null,
-          score: null,
-          feedback: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          studentId: student1Id.value,
+          teacherId: teacherId.value,
         }),
         // IN_PROGRESS - started but not submitted
-        ExamAssignment.create({
-          id: AssignmentId.create('assign-2'),
+        ExamAssignmentMother.inProgress({
+          id: 'assign-2',
           examId: examId.value,
-          studentId: student2Id,
-          teacherId: teacherId,
-          status: ExamAssignmentStatus.IN_PROGRESS,
-          dueDate: null,
+          studentId: student2Id.value,
+          teacherId: teacherId.value,
           startedAt: new Date('2025-01-01T10:00:00Z'),
-          submittedAt: null,
-          score: null,
-          feedback: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         }),
         // SUBMITTED - with score
-        ExamAssignment.create({
-          id: AssignmentId.create('assign-3'),
+        ExamAssignmentMother.submitted({
+          id: 'assign-3',
           examId: examId.value,
-          studentId: student3Id,
-          teacherId: teacherId,
-          status: ExamAssignmentStatus.SUBMITTED,
-          dueDate: null,
+          studentId: student3Id.value,
+          teacherId: teacherId.value,
           startedAt: new Date('2025-01-01T11:00:00Z'),
           submittedAt: new Date('2025-01-01T11:30:00Z'),
           score: 75,
-          feedback: null,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         }),
         // GRADED - with score
-        ExamAssignment.create({
-          id: AssignmentId.create('assign-4'),
+        ExamAssignmentMother.graded({
+          id: 'assign-4',
           examId: examId.value,
-          studentId: student4Id,
-          teacherId: teacherId,
-          status: ExamAssignmentStatus.GRADED,
-          dueDate: null,
+          studentId: student4Id.value,
+          teacherId: teacherId.value,
           startedAt: new Date('2025-01-01T12:00:00Z'),
           submittedAt: new Date('2025-01-01T12:45:00Z'),
           score: 95,
           feedback: 'Great job!',
-          createdAt: new Date(),
-          updatedAt: new Date(),
         }),
       ];
 
       // Mock students
       const mockStudent = (id: UserId) =>
-        User.create({
-          id: id,
-          email: Email.create(`student${id.value.slice(0, 3)}@example.com`),
-          passwordHash: null,
+        UserMother.oauth({
+          id: id.value,
+          email: `student${id.value.slice(0, 3)}@example.com`,
           firstName: 'Student',
           lastName: id.value.slice(0, 3),
           role: UserRole.STUDENT,
-          provider: AuthProvider.GOOGLE,
           providerId: 'google-' + id.value.slice(0, 3),
-          refreshTokenVersion: 0,
-          createdAt: new Date(),
-          updatedAt: new Date(),
         });
 
       // Mock repository calls
@@ -509,64 +437,45 @@ describe('GetClassExamResultsUseCase', () => {
 
     it('should return null statistics when no scores are available', async () => {
       // Setup class
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
 
       // Setup class exam
-      const classExam = ClassExam.create({
-        id: classExamId,
-        classId: classId,
+      const classExam = ClassExamMother.create({
+        id: classExamId.value,
+        classId: classId.value,
         examId: examId.value,
-        teacherId: teacherId,
-        availableAt: null,
-        dueDate: null,
-        timeLimit: null,
+        teacherId: teacherId.value,
         isPublished: true,
-        maxAttempts: 1,
-        showResultsImmediately: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Setup exam
-      const exam = Exam.create({
-        id: examId,
-        userId: teacherId,
+      const exam = ExamMother.create({
+        id: examId.value,
+        userId: teacherId.value,
         title: 'Math Test',
-        generatedFrom: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
         questionCount: 5,
       });
 
       // Setup assignments without scores
       const studentId = UserId.create('111e4567-e89b-42d3-a456-426614174000');
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create('assign-1'),
+      const assignment = ExamAssignmentMother.pending({
+        id: 'assign-1',
         examId: examId.value,
-        studentId: studentId,
-        teacherId: teacherId,
-        status: ExamAssignmentStatus.PENDING,
-        dueDate: null,
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        studentId: studentId.value,
+        teacherId: teacherId.value,
       });
 
-      const student = User.create({
-        id: studentId,
-        email: Email.create('student@example.com'),
-        passwordHash: null,
+      const student = UserMother.oauth({
+        id: studentId.value,
+        email: 'student@example.com',
         firstName: 'Test',
         lastName: 'Student',
         role: UserRole.STUDENT,
-        provider: AuthProvider.GOOGLE,
         providerId: 'google-test',
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Mock repository calls
@@ -592,32 +501,26 @@ describe('GetClassExamResultsUseCase', () => {
 
     it('should calculate time taken correctly', async () => {
       // Setup class
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
 
       // Setup class exam
-      const classExam = ClassExam.create({
-        id: classExamId,
-        classId: classId,
+      const classExam = ClassExamMother.create({
+        id: classExamId.value,
+        classId: classId.value,
         examId: examId.value,
-        teacherId: teacherId,
-        availableAt: null,
-        dueDate: null,
-        timeLimit: null,
+        teacherId: teacherId.value,
         isPublished: true,
-        maxAttempts: 1,
-        showResultsImmediately: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Setup exam
-      const exam = Exam.create({
-        id: examId,
-        userId: teacherId,
+      const exam = ExamMother.create({
+        id: examId.value,
+        userId: teacherId.value,
         title: 'Math Test',
-        generatedFrom: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
         questionCount: 5,
       });
 
@@ -626,33 +529,23 @@ describe('GetClassExamResultsUseCase', () => {
       const startedAt = new Date('2025-01-01T10:00:00Z');
       const submittedAt = new Date('2025-01-01T10:30:30Z'); // 30 min 30 sec
 
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create('assign-1'),
+      const assignment = ExamAssignmentMother.submitted({
+        id: 'assign-1',
         examId: examId.value,
-        studentId: studentId,
-        teacherId: teacherId,
-        status: ExamAssignmentStatus.SUBMITTED,
-        dueDate: null,
+        studentId: studentId.value,
+        teacherId: teacherId.value,
         startedAt: startedAt,
         submittedAt: submittedAt,
         score: 85,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const student = User.create({
-        id: studentId,
-        email: Email.create('student@example.com'),
-        passwordHash: null,
+      const student = UserMother.oauth({
+        id: studentId.value,
+        email: 'student@example.com',
         firstName: 'Test',
         lastName: 'Student',
         role: UserRole.STUDENT,
-        provider: AuthProvider.GOOGLE,
         providerId: 'google-test',
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Mock repository calls
@@ -676,64 +569,46 @@ describe('GetClassExamResultsUseCase', () => {
 
     it('should return null timeTaken when not submitted', async () => {
       // Setup class
-      const classEntity = new Class(classId, teacherId, 'Test Class', 'ABC123', null, null);
+      const classEntity = ClassMother.withTeacher(teacherId.value, {
+        id: classId.value,
+        name: 'Test Class',
+        code: 'ABC123',
+      });
 
       // Setup class exam
-      const classExam = ClassExam.create({
-        id: classExamId,
-        classId: classId,
+      const classExam = ClassExamMother.create({
+        id: classExamId.value,
+        classId: classId.value,
         examId: examId.value,
-        teacherId: teacherId,
-        availableAt: null,
-        dueDate: null,
-        timeLimit: null,
+        teacherId: teacherId.value,
         isPublished: true,
-        maxAttempts: 1,
-        showResultsImmediately: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Setup exam
-      const exam = Exam.create({
-        id: examId,
-        userId: teacherId,
+      const exam = ExamMother.create({
+        id: examId.value,
+        userId: teacherId.value,
         title: 'Math Test',
-        generatedFrom: [],
-        createdAt: new Date(),
-        updatedAt: new Date(),
         questionCount: 5,
       });
 
       // Setup assignment - started but not submitted
       const studentId = UserId.create('111e4567-e89b-42d3-a456-426614174000');
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create('assign-1'),
+      const assignment = ExamAssignmentMother.inProgress({
+        id: 'assign-1',
         examId: examId.value,
-        studentId: studentId,
-        teacherId: teacherId,
-        status: ExamAssignmentStatus.IN_PROGRESS,
-        dueDate: null,
+        studentId: studentId.value,
+        teacherId: teacherId.value,
         startedAt: new Date('2025-01-01T10:00:00Z'),
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const student = User.create({
-        id: studentId,
-        email: Email.create('student@example.com'),
-        passwordHash: null,
+      const student = UserMother.oauth({
+        id: studentId.value,
+        email: 'student@example.com',
         firstName: 'Test',
         lastName: 'Student',
         role: UserRole.STUDENT,
-        provider: AuthProvider.GOOGLE,
         providerId: 'google-test',
-        refreshTokenVersion: 0,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       // Mock repository calls

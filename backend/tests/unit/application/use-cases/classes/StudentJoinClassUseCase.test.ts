@@ -12,8 +12,8 @@ import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudent
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
 import { LIMIT_ERRORS } from '@config/subscription-limits.js';
-import { SubscriptionMother } from '@tests/helpers/mothers/SubscriptionMother.js';
-import { UsageMetricsMother } from '@tests/helpers/mothers/UsageMetricsMother.js';
+import { SubscriptionMother } from '@tests/helpers/factories/SubscriptionMother.js';
+import { UsageMetricsMother } from '@tests/helpers/factories/UsageMetricsMother.js';
 
 // Mock repositories
 const mockClassRepository = {

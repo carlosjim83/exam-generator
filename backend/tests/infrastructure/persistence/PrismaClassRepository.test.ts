@@ -3,7 +3,7 @@ import { Class } from '@domain/entities/Class.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { PrismaClassRepository } from '@infrastructure/persistence/PrismaClassRepository.js';
-import { ClassMother } from '@tests/helpers/mothers/ClassMother.js';
+import { ClassMother } from '@tests/helpers/factories/ClassMother.js';
 import { prisma } from '@config/prisma.js';
 
 describe('PrismaClassRepository Integration Tests', () => {

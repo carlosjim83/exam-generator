@@ -52,28 +52,9 @@ export class PrismaUsageMetricsRepository implements IUsageMetricsRepository {
   }
 
   async findCurrentByTeacherId(teacherId: UserId): Promise<UsageMetrics | null> {
-    const now = new Date();
-    const period = new Date(now.getFullYear(), now.getMonth(), 1);
-
     const metrics = await this.prisma.usageMetrics.findFirst({
       where: {
         teacherId: teacherId.value,
-        period,
-      },
-    });
-
-    if (!metrics) {
-      return null;
-    }
-
-    return this.mapToEntity(metrics);
-  }
-
-  async findByTeacherIdAndPeriod(teacherId: UserId, period: Date): Promise<UsageMetrics | null> {
-    const metrics = await this.prisma.usageMetrics.findFirst({
-      where: {
-        teacherId: teacherId.value,
-        period,
       },
     });
 

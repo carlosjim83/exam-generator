@@ -53,8 +53,8 @@ export class RegisterUserUseCase {
     private readonly userRepository: IUserRepository,
     private readonly passwordHasher: IPasswordHasher,
     private readonly tokenService: ITokenService,
-    private readonly subscriptionRepository: ISubscriptionRepository | null = null,
-    private readonly usageMetricsRepository: IUsageMetricsRepository | null = null
+    private readonly subscriptionRepository: ISubscriptionRepository,
+    private readonly usageMetricsRepository: IUsageMetricsRepository
   ) {}
 
   /**
@@ -97,7 +97,7 @@ export class RegisterUserUseCase {
     );
 
     // 6. Automatically create Free tier subscription for teachers
-    if (savedUser.isTeacher() && this.subscriptionRepository && this.usageMetricsRepository) {
+    if (savedUser.isTeacher()) {
       try {
         await this.createFreeSubscriptionForTeacher(savedUser.id.value);
       } catch (error) {
@@ -129,11 +129,11 @@ export class RegisterUserUseCase {
     // Create Free tier subscription
     const subscription = Subscription.createFreeSubscription(UserId.create(userId));
 
-    const savedSubscription = await this.subscriptionRepository!.create(subscription);
+    const savedSubscription = await this.subscriptionRepository.create(subscription);
 
     // Create initial usage metrics
     const usageMetrics = UsageMetrics.createInitial(UserId.create(userId), savedSubscription.id);
 
-    await this.usageMetricsRepository!.create(usageMetrics);
+    await this.usageMetricsRepository.create(usageMetrics);
   }
 }

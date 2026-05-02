@@ -3,9 +3,8 @@ import { randomUUID } from 'crypto';
 import { UploadDocumentUseCase } from '@application/use-cases/documents/UploadDocumentUseCase.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import { DocumentStatus } from '@domain/entities/Document.js';
+import { DocumentMother } from '../../../../helpers/factories/DocumentMother.js';
 
 /**
  * UploadDocumentUseCase Unit Tests
@@ -59,20 +58,12 @@ describe('UploadDocumentUseCase', () => {
       const filename = 'test-document.pdf';
       const blobUrl = 'file://uploads/test-document-12345.pdf';
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(randomUUID()),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.pending({
+        userId,
         title: 'Test Document',
         filename,
         fileSize: fileBuffer.length,
-        mimeType: 'application/pdf',
         blobUrl,
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockStorageService.upload).mockResolvedValue(blobUrl);
@@ -117,20 +108,13 @@ describe('UploadDocumentUseCase', () => {
       const filename = 'presentation.docx';
       const blobUrl = 'file://uploads/presentation-67890.docx';
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(randomUUID()),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.pending({
+        userId,
         title: 'Presentation',
         filename,
         fileSize: fileBuffer.length,
         mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         blobUrl,
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockStorageService.upload).mockResolvedValue(blobUrl);
@@ -161,20 +145,12 @@ describe('UploadDocumentUseCase', () => {
       const filename = 'my-awesome-document.pdf';
       const blobUrl = 'file://uploads/my-awesome-document-12345.pdf';
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(randomUUID()),
-        userId: UserId.create(userId),
-        title: 'my-awesome-document', // Auto-generated from filename
+      const mockDocument = DocumentMother.pending({
+        userId,
+        title: 'my-awesome-document',
         filename,
         fileSize: fileBuffer.length,
-        mimeType: 'application/pdf',
         blobUrl,
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockStorageService.upload).mockResolvedValue(blobUrl);
@@ -392,20 +368,12 @@ describe('UploadDocumentUseCase', () => {
       ]);
       const blobUrl = 'file://uploads/large.pdf';
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(randomUUID()),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.pending({
+        userId,
         title: 'Large File',
         filename: 'large.pdf',
         fileSize: maxBuffer.length,
-        mimeType: 'application/pdf',
         blobUrl,
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockStorageService.upload).mockResolvedValue(blobUrl);
@@ -434,20 +402,12 @@ describe('UploadDocumentUseCase', () => {
       const filename = 'test file (with special chars).pdf';
       const blobUrl = 'file://uploads/test-file-12345.pdf';
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(randomUUID()),
-        userId: UserId.create(userId),
+      const mockDocument = DocumentMother.pending({
+        userId,
         title: 'Special Chars',
         filename,
         fileSize: fileBuffer.length,
-        mimeType: 'application/pdf',
         blobUrl,
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockStorageService.upload).mockResolvedValue(blobUrl);

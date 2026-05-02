@@ -10,7 +10,7 @@ import { User, UserRole, AuthProvider } from '@domain/entities/User.js';
 import { Email } from '@domain/value-objects/Email.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
-export interface DomainUserMotherOptions {
+export interface UserMotherOptions {
   id?: string;
   email?: string;
   firstName?: string;
@@ -22,22 +22,22 @@ export interface DomainUserMotherOptions {
   refreshTokenVersion?: number;
 }
 
-export class DomainUserMother {
-  static teacher(overrides: DomainUserMotherOptions = {}): User {
+export class UserMother {
+  static teacher(overrides: UserMotherOptions = {}): User {
     return this.create({
       role: UserRole.TEACHER,
       ...overrides,
     });
   }
 
-  static student(overrides: DomainUserMotherOptions = {}): User {
+  static student(overrides: UserMotherOptions = {}): User {
     return this.create({
       role: UserRole.STUDENT,
       ...overrides,
     });
   }
 
-  static oauth(overrides: DomainUserMotherOptions = {}): User {
+  static oauth(overrides: UserMotherOptions = {}): User {
     return this.create({
       provider: AuthProvider.GOOGLE,
       passwordHash: null,
@@ -45,9 +45,9 @@ export class DomainUserMother {
     });
   }
 
-  static create(overrides: DomainUserMotherOptions = {}): User {
+  static create(overrides: UserMotherOptions = {}): User {
     const now = new Date();
-    const id = overrides.id ?? '00000000-0000-0000-0000-000000000001';
+    const id = overrides.id ?? '00000000-0000-4000-a000-000000000001';
     const email = overrides.email ?? 'test@example.com';
 
     const props = {

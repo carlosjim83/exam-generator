@@ -5,11 +5,12 @@ import type {
   IDocumentRepository,
   QueryDocumentResult,
 } from '@domain/repositories/IDocumentRepository.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
+import { DocumentStatus } from '@domain/entities/Document.js';
 import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
+import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
 
 // Mock the AzureOpenAIEmbeddingService
 vi.mock('@infrastructure/ai/AzureOpenAIEmbeddingService.js', () => {
@@ -31,36 +32,14 @@ describe('QueryDocumentUseCase', () => {
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
 
-  const mockCompletedDocument = Document.create({
-    id: mockDocumentId,
-    userId: mockUserId,
-    title: 'Test Document for Query',
-    filename: 'query-doc.pdf',
-    fileSize: 1024,
-    mimeType: 'application/pdf',
-    blobUrl: 'https://storage.example.com/query-doc.pdf',
-    status: DocumentStatus.COMPLETED,
-    pageCount: 1,
-    wordCount: 100,
-    errorMessage: null,
-    uploadedAt: new Date(),
-    processedAt: new Date(),
+  const mockCompletedDocument = DocumentMother.completed({
+    id: mockDocumentId.value,
+    userId: mockUserId.value,
   });
 
-  const mockPendingDocument = Document.create({
-    id: mockDocumentId,
-    userId: mockUserId,
-    title: 'Test Document for Query',
-    filename: 'query-doc.pdf',
-    fileSize: 1024,
-    mimeType: 'application/pdf',
-    blobUrl: 'https://storage.example.com/query-doc.pdf',
-    status: DocumentStatus.PENDING,
-    pageCount: null,
-    wordCount: null,
-    errorMessage: null,
-    uploadedAt: new Date(),
-    processedAt: null,
+  const mockPendingDocument = DocumentMother.pending({
+    id: mockDocumentId.value,
+    userId: mockUserId.value,
   });
 
   beforeEach(() => {

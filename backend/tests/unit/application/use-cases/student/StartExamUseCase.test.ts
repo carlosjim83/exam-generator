@@ -2,9 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { StartExamUseCase } from '@application/use-cases/student/StartExamUseCase.js';
 import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import { IExamRepository } from '@domain/repositories/IExamRepository.js';
-import { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
-import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import { ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
+import { ExamAssignmentMother } from '@tests/helpers/factories/ExamAssignmentMother.js';
 
 describe('StartExamUseCase', () => {
   let useCase: StartExamUseCase;
@@ -58,19 +57,11 @@ describe('StartExamUseCase', () => {
 
     it('should throw error if assignment does not belong to student', async () => {
       // Arrange
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.pending({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(differentStudentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.PENDING,
-        dueDate: null,
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        studentId: differentStudentId,
+        teacherId,
       });
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
@@ -86,19 +77,11 @@ describe('StartExamUseCase', () => {
 
     it('should resume exam if already IN_PROGRESS', async () => {
       // Arrange
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.inProgress({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.IN_PROGRESS,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        studentId,
+        teacherId,
       });
 
       const mockExam = {
@@ -124,19 +107,11 @@ describe('StartExamUseCase', () => {
 
     it('should throw error if assignment is already submitted', async () => {
       // Arrange
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.submitted({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.SUBMITTED,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: new Date(),
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        studentId,
+        teacherId,
       });
 
       const mockExam = {
@@ -162,34 +137,23 @@ describe('StartExamUseCase', () => {
   describe('🟢 GREEN: Success cases', () => {
     it('should start exam successfully and transition to IN_PROGRESS', async () => {
       // Arrange
-      const pendingAssignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const pendingAssignment = ExamAssignmentMother.pending({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.PENDING,
+        studentId,
+        teacherId,
         dueDate: new Date('2026-03-01T23:59:59Z'),
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
         createdAt: new Date('2026-02-01T10:00:00Z'),
         updatedAt: new Date('2026-02-01T10:00:00Z'),
       });
 
-      const startedAssignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const startedAssignment = ExamAssignmentMother.inProgress({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.IN_PROGRESS,
+        studentId,
+        teacherId,
         dueDate: new Date('2026-03-01T23:59:59Z'),
-        startedAt: new Date(),
-        submittedAt: null,
-        score: null,
-        feedback: null,
         createdAt: new Date('2026-02-01T10:00:00Z'),
-        updatedAt: new Date(),
       });
 
       const mockExam = {
@@ -225,34 +189,23 @@ describe('StartExamUseCase', () => {
       const dueDate = new Date('2026-03-01T23:59:59Z');
       const createdAt = new Date('2026-02-01T10:00:00Z');
 
-      const pendingAssignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const pendingAssignment = ExamAssignmentMother.pending({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.PENDING,
+        studentId,
+        teacherId,
         dueDate,
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
         createdAt,
         updatedAt: createdAt,
       });
 
-      const startedAssignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const startedAssignment = ExamAssignmentMother.inProgress({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.IN_PROGRESS,
+        studentId,
+        teacherId,
         dueDate,
-        startedAt: new Date(),
-        submittedAt: null,
-        score: null,
-        feedback: null,
         createdAt,
-        updatedAt: new Date(),
       });
 
       const mockExam = {

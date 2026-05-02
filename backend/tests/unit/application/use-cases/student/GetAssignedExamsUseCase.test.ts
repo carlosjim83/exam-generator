@@ -1,9 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { GetAssignedExamsUseCase } from '@application/use-cases/student/GetAssignedExamsUseCase.js';
 import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
-import { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
-import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import { ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
+import { ExamAssignmentMother } from '@tests/helpers/factories/ExamAssignmentMother.js';
 
 describe('GetAssignedExamsUseCase', () => {
   let useCase: GetAssignedExamsUseCase;
@@ -59,32 +58,23 @@ describe('GetAssignedExamsUseCase', () => {
 
     it('should return all assignments for student', async () => {
       // Arrange
-      const assignment1 = ExamAssignment.create({
-        id: AssignmentId.create('assignment-1'),
+      const assignment1 = ExamAssignmentMother.pending({
+        id: 'assignment-1',
         examId: examId1,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.PENDING,
+        studentId,
+        teacherId,
         dueDate: new Date('2026-03-01T23:59:59Z'),
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
         createdAt: new Date('2026-02-01T10:00:00Z'),
         updatedAt: new Date('2026-02-01T10:00:00Z'),
       });
 
-      const assignment2 = ExamAssignment.create({
-        id: AssignmentId.create('assignment-2'),
+      const assignment2 = ExamAssignmentMother.inProgress({
+        id: 'assignment-2',
         examId: examId2,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.IN_PROGRESS,
+        studentId,
+        teacherId,
         dueDate: new Date('2026-03-15T23:59:59Z'),
         startedAt: new Date('2026-02-10T14:30:00Z'),
-        submittedAt: null,
-        score: null,
-        feedback: null,
         createdAt: new Date('2026-02-05T10:00:00Z'),
         updatedAt: new Date('2026-02-10T14:30:00Z'),
       });
@@ -118,19 +108,11 @@ describe('GetAssignedExamsUseCase', () => {
 
     it('should filter assignments by status', async () => {
       // Arrange
-      const pendingAssignment = ExamAssignment.create({
-        id: AssignmentId.create('assignment-1'),
+      const pendingAssignment = ExamAssignmentMother.pending({
+        id: 'assignment-1',
         examId: examId1,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.PENDING,
-        dueDate: null,
-        startedAt: null,
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        studentId,
+        teacherId,
       });
 
       vi.mocked(mockAssignmentRepo.findAllWithExam).mockResolvedValue([
@@ -165,12 +147,11 @@ describe('GetAssignedExamsUseCase', () => {
 
     it('should return assignments with all status details', async () => {
       // Arrange
-      const submittedAssignment = ExamAssignment.create({
-        id: AssignmentId.create('assignment-1'),
+      const submittedAssignment = ExamAssignmentMother.submitted({
+        id: 'assignment-1',
         examId: examId1,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.SUBMITTED,
+        studentId,
+        teacherId,
         dueDate: new Date('2026-03-01T23:59:59Z'),
         startedAt: new Date('2026-02-20T10:00:00Z'),
         submittedAt: new Date('2026-02-20T11:30:00Z'),
@@ -207,12 +188,11 @@ describe('GetAssignedExamsUseCase', () => {
 
     it('should return graded assignment with score', async () => {
       // Arrange
-      const gradedAssignment = ExamAssignment.create({
-        id: AssignmentId.create('assignment-1'),
+      const gradedAssignment = ExamAssignmentMother.graded({
+        id: 'assignment-1',
         examId: examId1,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.GRADED,
+        studentId,
+        teacherId,
         dueDate: new Date('2026-03-01T23:59:59Z'),
         startedAt: new Date('2026-02-20T10:00:00Z'),
         submittedAt: new Date('2026-02-20T11:30:00Z'),

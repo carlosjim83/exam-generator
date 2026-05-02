@@ -9,12 +9,10 @@ import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
 import { Class } from '@domain/entities/Class.js';
-import { ClassDocument } from '@domain/entities/ClassDocument.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
+import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
 import { v4 as uuidv4 } from 'uuid';
 
 // Mock repositories
@@ -74,7 +72,7 @@ describe('ShareDocumentWithClassUseCase', () => {
 
   it('should share a document with a class', async () => {
     // Arrange
-    const document = createMockDocument(documentId, teacherId);
+    const document = DocumentMother.completed({ id: documentId, userId: teacherId });
     const classEntity = createMockClass(classId, teacherId);
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
@@ -108,7 +106,7 @@ describe('ShareDocumentWithClassUseCase', () => {
 
   it('should throw error if document does not belong to user', async () => {
     const otherUserId = uuidv4();
-    const document = createMockDocument(documentId, otherUserId);
+    const document = DocumentMother.completed({ id: documentId, userId: otherUserId });
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
 
@@ -118,7 +116,7 @@ describe('ShareDocumentWithClassUseCase', () => {
   });
 
   it('should throw error if document is not completed', async () => {
-    const document = createMockDocument(documentId, teacherId, DocumentStatus.PENDING);
+    const document = DocumentMother.pending({ id: documentId, userId: teacherId });
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
 
@@ -128,7 +126,7 @@ describe('ShareDocumentWithClassUseCase', () => {
   });
 
   it('should throw error if class not found', async () => {
-    const document = createMockDocument(documentId, teacherId);
+    const document = DocumentMother.completed({ id: documentId, userId: teacherId });
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
     vi.mocked(mockClassRepository.findById).mockResolvedValue(null);
@@ -140,7 +138,7 @@ describe('ShareDocumentWithClassUseCase', () => {
 
   it('should throw error if class does not belong to user', async () => {
     const otherTeacherId = uuidv4();
-    const document = createMockDocument(documentId, teacherId);
+    const document = DocumentMother.completed({ id: documentId, userId: teacherId });
     const classEntity = createMockClass(classId, otherTeacherId);
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
@@ -152,7 +150,7 @@ describe('ShareDocumentWithClassUseCase', () => {
   });
 
   it('should throw error if document already shared with class', async () => {
-    const document = createMockDocument(documentId, teacherId);
+    const document = DocumentMother.completed({ id: documentId, userId: teacherId });
     const classEntity = createMockClass(classId, teacherId);
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
@@ -165,7 +163,7 @@ describe('ShareDocumentWithClassUseCase', () => {
   });
 
   it('should share as hidden (draft) by default', async () => {
-    const document = createMockDocument(documentId, teacherId);
+    const document = DocumentMother.completed({ id: documentId, userId: teacherId });
     const classEntity = createMockClass(classId, teacherId);
 
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(document);
@@ -184,23 +182,6 @@ describe('ShareDocumentWithClassUseCase', () => {
 });
 
 // Helper functions
-function createMockDocument(
-  id: string,
-  userId: string,
-  status: DocumentStatus = DocumentStatus.COMPLETED
-): Document {
-  return Document.create({
-    id: DocumentId.create(id),
-    userId: UserId.create(userId),
-    title: 'Test Document',
-    filename: 'test.pdf',
-    fileSize: 1024,
-    mimeType: 'application/pdf',
-    blobUrl: 'https://example.com/test.pdf',
-    status,
-  });
-}
-
 function createMockClass(id: string, teacherId: string): Class {
   return new Class(
     ClassId.create(id),

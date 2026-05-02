@@ -21,8 +21,8 @@ export class StudentJoinClassUseCase {
   constructor(
     private readonly enrollmentRepository: IStudentEnrollmentRepository,
     private readonly classRepository: IClassRepository,
-    private readonly subscriptionRepository: ISubscriptionRepository | null = null,
-    private readonly usageMetricsRepository: IUsageMetricsRepository | null = null
+    private readonly subscriptionRepository: ISubscriptionRepository,
+    private readonly usageMetricsRepository: IUsageMetricsRepository
   ) {}
 
   async execute(command: StudentJoinClassCommand): Promise<StudentEnrollment> {
@@ -59,10 +59,8 @@ export class StudentJoinClassUseCase {
       return reactivatedEnrollment;
     }
 
-    // Check subscription limits if repositories are available
-    if (this.subscriptionRepository && this.usageMetricsRepository) {
-      await this.enforceStudentLimit(classEntity.teacherId);
-    }
+    // Check subscription limits
+    await this.enforceStudentLimit(classEntity.teacherId);
 
     // Create new enrollment
     const enrollment = new StudentEnrollment(
@@ -77,9 +75,7 @@ export class StudentJoinClassUseCase {
     await this.enrollmentRepository.save(enrollment);
 
     // Update usage metrics
-    if (this.usageMetricsRepository) {
-      await this.updateUsageMetrics(classEntity.teacherId);
-    }
+    await this.updateUsageMetrics(classEntity.teacherId);
 
     return enrollment;
   }
@@ -89,7 +85,7 @@ export class StudentJoinClassUseCase {
    */
   private async enforceStudentLimit(teacherId: UserId): Promise<void> {
     // Get subscription
-    const subscription = await this.subscriptionRepository!.findByTeacherId(teacherId);
+    const subscription = await this.subscriptionRepository.findByTeacherId(teacherId);
     if (!subscription) {
       // Free tier by default, check usage
       await this.checkFreeTierLimit(teacherId);
@@ -105,7 +101,7 @@ export class StudentJoinClassUseCase {
     }
 
     // Get current usage
-    const usageMetrics = await this.usageMetricsRepository!.findCurrentByTeacherId(teacherId);
+    const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherId);
     if (!usageMetrics) {
       // No metrics yet, allow creation (will be created on first action)
       return;
@@ -138,19 +134,19 @@ export class StudentJoinClassUseCase {
    */
   private async updateUsageMetrics(teacherId: UserId): Promise<void> {
     try {
-      const subscription = await this.subscriptionRepository!.findByTeacherId(teacherId);
+      const subscription = await this.subscriptionRepository.findByTeacherId(teacherId);
 
       if (!subscription) {
         // No subscription yet, skip metric update
         return;
       }
 
-      const usageMetrics = await this.usageMetricsRepository!.getOrCreateCurrent(
+      const usageMetrics = await this.usageMetricsRepository.getOrCreateCurrent(
         teacherId,
         subscription.id
       );
 
-      await this.usageMetricsRepository!.incrementStudentCount(usageMetrics.id);
+      await this.usageMetricsRepository.incrementStudentCount(usageMetrics.id);
     } catch (error) {
       // Log error but don't fail enrollment
       console.error('Failed to update student usage metrics:', error);

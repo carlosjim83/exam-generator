@@ -2,10 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { randomUUID } from 'crypto';
 import { ReprocessDocumentUseCase } from '@application/use-cases/documents/ReprocessDocumentUseCase.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
+import { DocumentStatus } from '@domain/entities/Document.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { mockMessageBroker } from '@tests/mocks/mockMessageBroker.js'; // Import the mock
+import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
 
 describe('ReprocessDocumentUseCase', () => {
   let reprocessDocumentUseCase: ReprocessDocumentUseCase;
@@ -14,22 +15,13 @@ describe('ReprocessDocumentUseCase', () => {
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
 
-  const createMockDocument = (status: DocumentStatus) =>
-    Document.create({
-      id: mockDocumentId,
-      userId: mockUserId,
-      title: 'Test Document for Reprocessing',
-      filename: 'reprocess-doc.pdf',
-      fileSize: 1024,
-      mimeType: 'application/pdf',
-      blobUrl: 'https://storage.example.com/reprocess-doc.pdf',
-      status: status,
-      pageCount: status === DocumentStatus.COMPLETED ? 10 : null,
-      wordCount: status === DocumentStatus.COMPLETED ? 100 : null,
-      errorMessage: status === DocumentStatus.FAILED ? 'Processing failed' : null,
-      uploadedAt: new Date(),
-      processedAt: status === DocumentStatus.COMPLETED ? new Date() : null,
-    });
+  const createMockDocument = (status: DocumentStatus) => {
+    const overrides = { id: mockDocumentId.value, userId: mockUserId.value };
+    if (status === DocumentStatus.COMPLETED) return DocumentMother.completed(overrides);
+    if (status === DocumentStatus.PENDING) return DocumentMother.pending(overrides);
+    if (status === DocumentStatus.FAILED) return DocumentMother.failed(overrides);
+    return DocumentMother.create({ ...overrides, status });
+  };
 
   beforeEach(() => {
     vi.clearAllMocks(); // Clear mocks before each test
@@ -177,21 +169,12 @@ describe('ReprocessDocumentUseCase', () => {
 
   it('should allow re-processing for a PROCESSING document that is stuck (>10 minutes)', async () => {
     // Arrange - create a document that has been processing for more than 10 minutes
-    const stuckDocument = Document.create({
-      id: mockDocumentId,
-      userId: mockUserId,
-      title: 'Stuck Document',
-      filename: 'stuck-doc.pdf',
-      fileSize: 1024,
-      mimeType: 'application/pdf',
-      blobUrl: 'https://storage.example.com/stuck-doc.pdf',
+    const stuckDocument = DocumentMother.create({
+      id: mockDocumentId.value,
+      userId: mockUserId.value,
       status: DocumentStatus.PROCESSING,
-      pageCount: null,
-      wordCount: null,
-      errorMessage: null,
       uploadedAt: new Date(Date.now() - 20 * 60 * 1000), // Uploaded 20 minutes ago
       processedAt: null,
-      updatedAt: new Date(Date.now() - 15 * 60 * 1000), // Updated 15 minutes ago (stuck)
     });
     vi.mocked(mockDocumentRepository.findById).mockResolvedValue(stuckDocument);
     vi.mocked(mockDocumentRepository.updateStatus).mockResolvedValue(

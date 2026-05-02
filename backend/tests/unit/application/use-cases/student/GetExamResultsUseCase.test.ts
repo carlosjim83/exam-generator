@@ -3,14 +3,10 @@ import { GetExamResultsUseCase } from '@application/use-cases/student/GetExamRes
 import { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
-import { ExamAssignment, ExamAssignmentStatus } from '@domain/entities/ExamAssignment.js';
-import { Exam } from '@domain/entities/Exam.js';
-import { Question, QuestionType } from '@domain/entities/Question.js';
-import { StudentAnswer } from '@domain/entities/StudentAnswer.js';
-import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
-import { ExamId } from '@domain/value-objects/ExamId.js';
-import { QuestionId } from '@domain/value-objects/QuestionId.js';
+import { ExamMother } from '@tests/helpers/factories/ExamMother.js';
+import { ExamAssignmentMother } from '@tests/helpers/factories/ExamAssignmentMother.js';
+import { QuestionMother } from '@tests/helpers/factories/QuestionMother.js';
+import { StudentAnswerMother } from '@tests/helpers/factories/StudentAnswerMother.js';
 
 describe('GetExamResultsUseCase', () => {
   let useCase: GetExamResultsUseCase;
@@ -75,19 +71,13 @@ describe('GetExamResultsUseCase', () => {
 
     it('should throw error if assignment does not belong to student', async () => {
       // Arrange
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.graded({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(differentStudentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.GRADED,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: new Date(),
+        studentId: differentStudentId,
+        teacherId,
         score: 80,
         feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
@@ -103,19 +93,11 @@ describe('GetExamResultsUseCase', () => {
 
     it('should throw error if assignment is not submitted or graded yet', async () => {
       // Arrange
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.inProgress({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.IN_PROGRESS,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: null,
-        score: null,
-        feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        studentId,
+        teacherId,
       });
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
@@ -131,19 +113,13 @@ describe('GetExamResultsUseCase', () => {
 
     it('should throw error if exam does not exist', async () => {
       // Arrange
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.graded({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.GRADED,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: new Date(),
+        studentId,
+        teacherId,
         score: 80,
         feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
@@ -162,53 +138,38 @@ describe('GetExamResultsUseCase', () => {
   describe('🟢 GREEN: Success cases', () => {
     it('should return exam results for SUBMITTED assignments', async () => {
       // Arrange
-      const question1 = Question.create({
-        id: QuestionId.create(question1Id),
+      const question1 = QuestionMother.multipleChoice({
+        id: question1Id,
         examId,
-        text: 'What is 2+2?',
-        type: QuestionType.MULTIPLE_CHOICE,
+        questionText: 'What is 2+2?',
         options: ['1', '2', '3', '4'],
         correctAnswer: '4',
         points: 10,
         explanation: 'Basic arithmetic',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.submitted({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.SUBMITTED,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: new Date(),
+        studentId,
+        teacherId,
         score: null,
         feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const exam = Exam.create({
-        id: ExamId.create(examId),
+      const exam = ExamMother.create({
+        id: examId,
+        userId: teacherId,
         title: 'Test Exam',
         description: 'Test Description',
-        userId: UserId.create(teacherId),
-        generatedFrom: [],
         questions: [question1],
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const answer1 = StudentAnswer.create({
+      const answer1 = StudentAnswerMother.ungraded({
         id: 'answer-1',
-        assignmentId: AssignmentId.create(assignmentId),
+        assignmentId,
         questionId: question1Id,
         answerText: '4',
-        isCorrect: null, // Not graded yet
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
@@ -231,76 +192,55 @@ describe('GetExamResultsUseCase', () => {
 
     it('should return exam results with all question details', async () => {
       // Arrange
-      const question1 = Question.create({
-        id: QuestionId.create(question1Id),
+      const question1 = QuestionMother.multipleChoice({
+        id: question1Id,
         examId,
-        text: 'What is 2+2?',
-        type: QuestionType.MULTIPLE_CHOICE,
+        questionText: 'What is 2+2?',
         options: ['1', '2', '3', '4'],
         correctAnswer: '4',
         points: 10,
         explanation: 'Basic arithmetic',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const question2 = Question.create({
-        id: QuestionId.create(question2Id),
+      const question2 = QuestionMother.multipleChoice({
+        id: question2Id,
         examId,
-        text: 'What is the capital of France?',
-        type: QuestionType.MULTIPLE_CHOICE,
+        questionText: 'What is the capital of France?',
         options: ['London', 'Paris', 'Berlin', 'Madrid'],
         correctAnswer: 'Paris',
         points: 10,
         explanation: 'Paris is the capital of France',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.graded({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.GRADED,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: new Date(),
+        studentId,
+        teacherId,
         score: 10,
         feedback: 'Good effort',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const exam = Exam.create({
-        id: ExamId.create(examId),
+      const exam = ExamMother.create({
+        id: examId,
+        userId: teacherId,
         title: 'Test Exam',
         description: 'Test Description',
-        userId: UserId.create(teacherId),
-        generatedFrom: [],
         questions: [question1, question2],
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const answer1 = StudentAnswer.create({
+      const answer1 = StudentAnswerMother.correct({
         id: 'answer-1',
-        assignmentId: AssignmentId.create(assignmentId),
+        assignmentId,
         questionId: question1Id,
         answerText: '4',
-        isCorrect: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const answer2 = StudentAnswer.create({
+      const answer2 = StudentAnswerMother.incorrect({
         id: 'answer-2',
-        assignmentId: AssignmentId.create(assignmentId),
+        assignmentId,
         questionId: question2Id,
         answerText: 'London',
-        isCorrect: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
@@ -335,42 +275,30 @@ describe('GetExamResultsUseCase', () => {
 
     it('should handle questions with no student answers', async () => {
       // Arrange
-      const question1 = Question.create({
-        id: QuestionId.create(question1Id),
+      const question1 = QuestionMother.multipleChoice({
+        id: question1Id,
         examId,
-        text: 'What is 2+2?',
-        type: QuestionType.MULTIPLE_CHOICE,
+        questionText: 'What is 2+2?',
         options: ['1', '2', '3', '4'],
         correctAnswer: '4',
         points: 10,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.graded({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.GRADED,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: new Date(),
+        studentId,
+        teacherId,
         score: 0,
         feedback: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const exam = Exam.create({
-        id: ExamId.create(examId),
+      const exam = ExamMother.create({
+        id: examId,
+        userId: teacherId,
         title: 'Test Exam',
         description: 'Test Description',
-        userId: UserId.create(teacherId),
-        generatedFrom: [],
         questions: [question1],
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);
@@ -391,42 +319,30 @@ describe('GetExamResultsUseCase', () => {
 
     it('should return results with score and feedback', async () => {
       // Arrange
-      const question1 = Question.create({
-        id: QuestionId.create(question1Id),
+      const question1 = QuestionMother.multipleChoice({
+        id: question1Id,
         examId,
-        text: 'What is 2+2?',
-        type: QuestionType.MULTIPLE_CHOICE,
+        questionText: 'What is 2+2?',
         options: ['1', '2', '3', '4'],
         correctAnswer: '4',
         points: 10,
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const assignment = ExamAssignment.create({
-        id: AssignmentId.create(assignmentId),
+      const assignment = ExamAssignmentMother.graded({
+        id: assignmentId,
         examId,
-        studentId: UserId.create(studentId),
-        teacherId: UserId.create(teacherId),
-        status: ExamAssignmentStatus.GRADED,
-        dueDate: null,
-        startedAt: new Date(),
-        submittedAt: new Date(),
+        studentId,
+        teacherId,
         score: 10,
         feedback: 'Excellent work!',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
-      const exam = Exam.create({
-        id: ExamId.create(examId),
+      const exam = ExamMother.create({
+        id: examId,
+        userId: teacherId,
         title: 'Test Exam',
         description: 'Test Description',
-        userId: UserId.create(teacherId),
-        generatedFrom: [],
         questions: [question1],
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
 
       vi.mocked(mockAssignmentRepo.findById).mockResolvedValue(assignment);

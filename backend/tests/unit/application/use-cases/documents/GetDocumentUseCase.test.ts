@@ -2,9 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { randomUUID } from 'crypto';
 import { GetDocumentUseCase } from '@application/use-cases/documents/GetDocumentUseCase.js';
 import { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import { Document, DocumentStatus } from '@domain/entities/Document.js';
-import { DocumentId } from '@domain/value-objects/DocumentId.js';
-import { UserId } from '@domain/value-objects/UserId.js';
+import { DocumentStatus } from '@domain/entities/Document.js';
+import { DocumentMother } from '../../../../helpers/factories/DocumentMother.js';
 
 describe('GetDocumentUseCase', () => {
   let getDocumentUseCase: GetDocumentUseCase;
@@ -38,18 +37,15 @@ describe('GetDocumentUseCase', () => {
         userId: mockUserId,
       };
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(mockDocumentId),
-        userId: UserId.create(mockUserId),
+      const mockDocument = DocumentMother.completed({
+        id: mockDocumentId,
+        userId: mockUserId,
         title: 'Test Document',
         filename: 'test.pdf',
         fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'https://storage.example.com/test.pdf',
-        status: DocumentStatus.COMPLETED,
         pageCount: 10,
         wordCount: 500,
-        errorMessage: null,
         uploadedAt: new Date('2026-01-01'),
         processedAt: new Date('2026-01-02'),
       });
@@ -90,20 +86,14 @@ describe('GetDocumentUseCase', () => {
         userId: mockUserId,
       };
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(mockDocumentId),
-        userId: UserId.create(mockUserId),
+      const mockDocument = DocumentMother.pending({
+        id: mockDocumentId,
+        userId: mockUserId,
         title: 'Pending Doc',
         filename: 'pending.docx',
         fileSize: 2048,
         mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         blobUrl: 'https://storage.example.com/pending.docx',
-        status: DocumentStatus.PENDING,
-        pageCount: null,
-        wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
@@ -127,20 +117,15 @@ describe('GetDocumentUseCase', () => {
         userId: mockUserId,
       };
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(mockDocumentId),
-        userId: UserId.create(mockUserId),
+      const mockDocument = DocumentMother.docx({
+        id: mockDocumentId,
+        userId: mockUserId,
         title: 'Word Document',
         filename: 'document.docx',
         fileSize: 5120,
-        mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         blobUrl: 'https://storage.example.com/document.docx',
-        status: DocumentStatus.COMPLETED,
         pageCount: 5,
         wordCount: 1200,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: new Date(),
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
@@ -181,20 +166,15 @@ describe('GetDocumentUseCase', () => {
         userId: differentUserId, // Different user trying to access
       };
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(mockDocumentId),
-        userId: UserId.create(ownerUserId), // Owned by different user
+      const mockDocument = DocumentMother.completed({
+        id: mockDocumentId,
+        userId: ownerUserId,
         title: 'Private Document',
         filename: 'private.pdf',
         fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'https://storage.example.com/private.pdf',
-        status: DocumentStatus.COMPLETED,
         pageCount: 10,
         wordCount: 500,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: new Date(),
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
@@ -243,20 +223,14 @@ describe('GetDocumentUseCase', () => {
         userId: mockUserId,
       };
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(mockDocumentId),
-        userId: UserId.create(mockUserId),
+      const mockDocument = DocumentMother.failed({
+        id: mockDocumentId,
+        userId: mockUserId,
         title: 'Failed Document',
         filename: 'failed.pdf',
         fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'https://storage.example.com/failed.pdf',
-        status: DocumentStatus.FAILED,
-        pageCount: null,
-        wordCount: null,
         errorMessage: 'Processing error',
-        uploadedAt: new Date(),
-        processedAt: null,
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);
@@ -277,19 +251,16 @@ describe('GetDocumentUseCase', () => {
         userId: mockUserId,
       };
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(mockDocumentId),
-        userId: UserId.create(mockUserId),
+      const mockDocument = DocumentMother.create({
+        id: mockDocumentId,
+        userId: mockUserId,
         title: 'Processing Document',
         filename: 'processing.pdf',
         fileSize: 1024,
-        mimeType: 'application/pdf',
         blobUrl: 'https://storage.example.com/processing.pdf',
         status: DocumentStatus.PROCESSING,
         pageCount: null,
         wordCount: null,
-        errorMessage: null,
-        uploadedAt: new Date(),
         processedAt: null,
       });
 
@@ -311,20 +282,15 @@ describe('GetDocumentUseCase', () => {
         userId: mockUserId,
       };
 
-      const mockDocument = Document.create({
-        id: DocumentId.create(mockDocumentId),
-        userId: UserId.create(mockUserId),
+      const mockDocument = DocumentMother.completed({
+        id: mockDocumentId,
+        userId: mockUserId,
         title: 'Large Document',
         filename: 'large.pdf',
-        fileSize: 10485760, // 10MB
-        mimeType: 'application/pdf',
+        fileSize: 10485760,
         blobUrl: 'https://storage.example.com/large.pdf',
-        status: DocumentStatus.COMPLETED,
         pageCount: 500,
         wordCount: 50000,
-        errorMessage: null,
-        uploadedAt: new Date(),
-        processedAt: new Date(),
       });
 
       vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockDocument);

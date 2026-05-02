@@ -8,7 +8,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { DocumentMother } from './DocumentMother.js';
+import { DbDocumentMother } from './DbDocumentMother.js';
 
 const prisma = new PrismaClient();
 
@@ -27,7 +27,7 @@ export interface ExamMotherOptions {
 /**
  * Exam Mother - Creates test exams with questions
  */
-export class ExamMother {
+export class DbExamMother {
   /**
    * Creates a complete exam with 3 multiple-choice questions (default)
    */
@@ -85,7 +85,7 @@ export class ExamMother {
     // Create a mock document if generatedFrom not provided
     let documentIds = options.generatedFrom;
     if (!documentIds || documentIds.length === 0) {
-      const document = await DocumentMother.completed({ userId });
+      const document = await DbDocumentMother.completed({ userId });
       documentIds = [document.id];
     }
 
