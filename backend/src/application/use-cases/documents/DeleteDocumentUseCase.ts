@@ -1,4 +1,5 @@
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { DocumentDeletedEvent } from '@domain/events/DocumentEvents.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
@@ -30,9 +31,7 @@ export class DeleteDocumentUseCase {
     }
 
     // Check ownership
-    if (document.userId.value !== userId.value) {
-      throw new ForbiddenError('Unauthorized: Document does not belong to user');
-    }
+    assertOwnership(document.userId, userId, 'Unauthorized: Document does not belong to user');
 
     // Store metadata before deletion for the event
     const documentMetadata = {

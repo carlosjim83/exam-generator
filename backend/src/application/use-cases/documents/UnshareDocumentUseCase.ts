@@ -1,4 +1,5 @@
-import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -37,9 +38,7 @@ export class UnshareDocumentUseCase {
     }
 
     // 2. Validate document ownership
-    if (!document.userId.equals(userId)) {
-      throw new ForbiddenError('You do not have permission to unshare this document');
-    }
+    assertOwnership(document.userId, userId, 'You do not have permission to unshare this document');
 
     // 3. Find the class
     const classEntity = await this.classRepository.findById(classId);
@@ -48,9 +47,11 @@ export class UnshareDocumentUseCase {
     }
 
     // 4. Validate class ownership
-    if (!classEntity.teacherId.equals(userId)) {
-      throw new ForbiddenError('You do not have permission to modify this class');
-    }
+    assertOwnership(
+      classEntity.teacherId,
+      userId,
+      'You do not have permission to modify this class'
+    );
 
     // 5. Find the ClassDocument relationship
     const classDocument = await this.classDocumentRepository.findByClassAndDocument(

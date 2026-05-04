@@ -1,16 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  StudentJoinClassUseCase,
   StudentJoinClassCommand,
+  StudentJoinClassUseCase,
 } from '@application/use-cases/classes/StudentJoinClassUseCase.js';
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { SubscriptionTier } from '@domain/entities/Subscription.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
 import { LIMIT_ERRORS } from '@config/subscription-limits.js';
 import { SubscriptionMother } from '@tests/helpers/factories/SubscriptionMother.js';
 import { UsageMetricsMother } from '@tests/helpers/factories/UsageMetricsMother.js';
@@ -23,7 +23,6 @@ const mockClassRepository = {
 const mockEnrollmentRepository = {
   findByClassAndStudent: vi.fn(),
   save: vi.fn(),
-  countTotalByTeacherId: vi.fn(),
 } satisfies Partial<IStudentEnrollmentRepository> as IStudentEnrollmentRepository;
 
 const mockSubscriptionRepository = {
@@ -36,6 +35,8 @@ const mockUsageMetricsRepository = {
   incrementStudentCount: vi.fn(),
 } satisfies Partial<IUsageMetricsRepository> as IUsageMetricsRepository;
 
+const subscriptionEnforcementService = new SubscriptionEnforcementService();
+
 describe('StudentJoinClassUseCase', () => {
   let useCase: StudentJoinClassUseCase;
   const classId = '123e4567-e89b-42d3-a456-426614174000';
@@ -47,7 +48,8 @@ describe('StudentJoinClassUseCase', () => {
       mockEnrollmentRepository,
       mockClassRepository,
       mockSubscriptionRepository,
-      mockUsageMetricsRepository
+      mockUsageMetricsRepository,
+      subscriptionEnforcementService
     );
     vi.clearAllMocks();
 
@@ -140,7 +142,9 @@ describe('StudentJoinClassUseCase', () => {
     describe('subscription limits', () => {
       it('should enforce FREE tier student limit (30 students)', async () => {
         vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
-        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(30); // Already at limit
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentStudents: 30,
+        } as any); // Already at limit
 
         const command = new StudentJoinClassCommand(classId, studentId);
 
@@ -149,7 +153,9 @@ describe('StudentJoinClassUseCase', () => {
 
       it('should allow student enrollment when under FREE tier limit', async () => {
         vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
-        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(29); // Under limit
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentStudents: 29,
+        } as any); // Under limit
         vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
           UsageMetricsMother.createInitial({ teacherId })
         );
@@ -166,7 +172,9 @@ describe('StudentJoinClassUseCase', () => {
         const mockSubscription = SubscriptionMother.createPro({ teacherId });
         vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(mockSubscription);
         vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
-        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(100); // Already has many students
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentStudents: 100,
+        } as any); // Already has many students
 
         const command = new StudentJoinClassCommand(classId, studentId);
 
@@ -181,7 +189,9 @@ describe('StudentJoinClassUseCase', () => {
         const mockSubscription = SubscriptionMother.createPro({ teacherId });
         vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(mockSubscription);
         vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
-        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(10);
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentStudents: 10,
+        } as any);
         vi.mocked(mockUsageMetricsRepository.getOrCreateCurrent).mockResolvedValue(
           UsageMetricsMother.createInitial({ teacherId })
         );
@@ -197,7 +207,9 @@ describe('StudentJoinClassUseCase', () => {
         // FREE tier without subscription record in DB (default state)
         // Metrics update is skipped because there's no subscription to get the ID from
         vi.mocked(mockEnrollmentRepository.findByClassAndStudent).mockResolvedValue(null);
-        vi.mocked(mockEnrollmentRepository.countTotalByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentStudents: 0,
+        } as any);
         // Default: no subscription found
         vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(null);
 

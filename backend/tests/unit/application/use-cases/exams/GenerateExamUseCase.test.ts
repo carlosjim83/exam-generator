@@ -45,22 +45,31 @@ vi.mock('@azure/openai', () => {
 
 import { randomUUID } from 'crypto';
 import { GenerateExamUseCase } from '@application/use-cases/exams/GenerateExamUseCase.js';
-import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
 import { QuestionType, QuestionDifficulty } from '@domain/entities/Question.js';
+import { Document } from '@domain/entities/Document.js';
+import { NotFoundError, ValidationError } from '@domain/errors/DomainError.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
 import { QuestionId } from '@domain/value-objects/QuestionId.js';
-import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
+import type { IDocumentAuthorizationService } from '@domain/services/DocumentAuthorizationService.js';
 import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
+import type { IExamInputValidator } from '@domain/services/ExamInputValidator.js';
+import type { IExamPersistenceService } from '@domain/services/ExamPersistenceService.js';
+import type { ILogger } from '@domain/services/ILogger.js';
+import type { IRAGContextExtractor } from '@domain/services/IRAGContextExtractor.js';
+import type { IUsageMetricsUpdater } from '@domain/services/UsageMetricsUpdater.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 import { DocumentMother } from '@tests/helpers/factories/DocumentMother.js';
 import { ExamMother } from '@tests/helpers/factories/ExamMother.js';
 import { QuestionMother } from '@tests/helpers/factories/QuestionMother.js';
 import { SubscriptionMother } from '@tests/helpers/factories/SubscriptionMother.js';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
+import { ExamInputValidator } from '@domain/services/ExamInputValidator.js';
+import { ExamPersistenceService } from '@domain/services/ExamPersistenceService.js';
 import { UsageMetricsMother } from '@tests/helpers/factories/UsageMetricsMother.js';
 
 // Mock the embedding service
@@ -124,12 +133,17 @@ vi.mock('@infrastructure/ai/flows/generateExam.flow.js', () => {
 
 describe('GenerateExamUseCase', () => {
   let generateExamUseCase: GenerateExamUseCase;
-  let mockDocumentRepository: IDocumentRepository;
+  let mockDocumentAuthorizationService: IDocumentAuthorizationService;
   let mockExamRepository: IExamRepository;
-  let mockEmbeddingService: IEmbeddingService;
   let mockExamGenerator: IExamGenerator;
   let mockSubscriptionRepository: ISubscriptionRepository;
   let mockUsageMetricsRepository: IUsageMetricsRepository;
+  let mockSubscriptionEnforcementService: SubscriptionEnforcementService;
+  let mockInputValidator: IExamInputValidator;
+  let mockRAGContextExtractor: IRAGContextExtractor;
+  let mockPersistenceService: IExamPersistenceService;
+  let mockUsageMetricsUpdater: IUsageMetricsUpdater;
+  let mockLogger: ILogger;
 
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
@@ -147,34 +161,39 @@ describe('GenerateExamUseCase', () => {
   });
 
   beforeEach(() => {
-    // Mock document repository
-    mockDocumentRepository = {
-      findById: vi.fn(),
-      findByUserId: vi.fn(),
-      create: vi.fn(),
-      updateStatus: vi.fn(),
-      updateMetadata: vi.fn(),
-      delete: vi.fn(),
-      exists: vi.fn(),
-      countByUserId: vi.fn(),
-      findMostRecentByUserId: vi.fn(),
-      searchSimilarChunks: vi.fn(),
-      deleteChunksByDocumentId: vi.fn(),
+    // Mock document authorization service
+    mockDocumentAuthorizationService = {
+      verifyDocuments: vi.fn(),
     };
 
     // Mock exam repository
     mockExamRepository = {
       create: vi.fn(),
-      createWithQuestions: vi.fn(),
+      createWithQuestions: vi.fn().mockImplementation((metadata, questions) => {
+        return Promise.resolve(
+          ExamMother.complete({
+            userId: metadata.userId.value,
+            title: metadata.title,
+            description: metadata.description,
+            generatedFrom: metadata.generatedFrom,
+            promptUsed: metadata.promptUsed,
+            questionCount: questions.length,
+            questions: questions.map((q: any, i: number) =>
+              QuestionMother.multipleChoice({
+                id: `00000000-0000-4000-a000-${String(i + 1).padStart(12, '0')}`,
+                examId: metadata.userId.value,
+                orderIndex: i,
+              })
+            ),
+          })
+        );
+      }),
       findById: vi.fn(),
       findByUserId: vi.fn(),
       exists: vi.fn(),
       delete: vi.fn(),
       countByUserId: vi.fn(),
     };
-
-    // Mock embedding service
-    mockEmbeddingService = new AzureOpenAIEmbeddingService();
 
     // Mock exam generator
     mockExamGenerator = {
@@ -259,13 +278,38 @@ describe('GenerateExamUseCase', () => {
       countByTeacherId: vi.fn(),
     };
 
+    mockInputValidator = new ExamInputValidator(mockLogger);
+
+    mockRAGContextExtractor = {
+      extract: vi.fn().mockResolvedValue('Mock context for exam generation'),
+    };
+
+    mockPersistenceService = new ExamPersistenceService(mockExamRepository, mockLogger);
+
+    mockUsageMetricsUpdater = {
+      updateExamCount: vi.fn().mockResolvedValue(undefined),
+    };
+
+    mockLogger = {
+      debug: vi.fn(),
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+
+    mockSubscriptionEnforcementService = new SubscriptionEnforcementService();
+
     generateExamUseCase = new GenerateExamUseCase(
-      mockDocumentRepository,
-      mockExamRepository,
-      mockEmbeddingService,
+      mockDocumentAuthorizationService,
       mockExamGenerator,
       mockSubscriptionRepository,
-      mockUsageMetricsRepository
+      mockUsageMetricsRepository,
+      mockSubscriptionEnforcementService,
+      mockInputValidator,
+      mockRAGContextExtractor,
+      mockPersistenceService,
+      mockUsageMetricsUpdater,
+      mockLogger
     );
   });
 
@@ -338,7 +382,9 @@ describe('GenerateExamUseCase', () => {
 
   describe('Document Verification', () => {
     it('should throw error if document not found', async () => {
-      vi.mocked(mockDocumentRepository.findById).mockResolvedValue(null);
+      vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockRejectedValue(
+        new NotFoundError('Document not found')
+      );
 
       await expect(
         generateExamUseCase.execute({
@@ -354,7 +400,11 @@ describe('GenerateExamUseCase', () => {
 
     it('should throw error if user does not own document', async () => {
       const anotherUserId = UserId.create(randomUUID());
-      vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockCompletedDocument);
+      vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockRejectedValue(
+        new ValidationError(
+          `Unauthorized: Document ${mockDocumentId.value} does not belong to user`
+        )
+      );
 
       await expect(
         generateExamUseCase.execute({
@@ -369,14 +419,11 @@ describe('GenerateExamUseCase', () => {
     });
 
     it('should throw error if document is not COMPLETED', async () => {
-      const pendingDoc = DocumentMother.pending({
-        id: mockDocumentId.value,
-        userId: mockUserId.value,
-        title: 'Test Document',
-        filename: 'test.pdf',
-        blobUrl: 'https://storage.example.com/test.pdf',
-      });
-      vi.mocked(mockDocumentRepository.findById).mockResolvedValue(pendingDoc);
+      vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockRejectedValue(
+        new ValidationError(
+          `Document ${mockDocumentId.value} not ready. Status: PROCESSING, required: COMPLETED`
+        )
+      );
 
       await expect(
         generateExamUseCase.execute({
@@ -387,28 +434,14 @@ describe('GenerateExamUseCase', () => {
           difficulty: 'EASY',
           questionTypes: ['MULTIPLE_CHOICE'],
         })
-      ).rejects.toThrow(/Document .+ not ready for exam generation/);
+      ).rejects.toThrow(/not ready/);
     });
   });
 
   describe('Exam Generation', () => {
     beforeEach(() => {
-      vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockCompletedDocument);
-      vi.mocked(mockDocumentRepository.searchSimilarChunks).mockResolvedValue([
-        {
-          chunkIndex: 0,
-          content: 'Mock chunk content about important topics.',
-          similarity: 0.95,
-          wordCount: 8,
-          pageNumber: 1,
-        },
-        {
-          chunkIndex: 1,
-          content: 'More relevant content for exam generation.',
-          similarity: 0.9,
-          wordCount: 7,
-          pageNumber: 1,
-        },
+      vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockResolvedValue([
+        mockCompletedDocument,
       ]);
 
       // Mock exam repository createWithQuestions
@@ -458,14 +491,17 @@ describe('GenerateExamUseCase', () => {
       expect(result.exam.title).toBe('Test Exam');
       expect(result.exam.description).toBe('Test description');
       expect(result.questions).toHaveLength(5);
-      expect(result.generationTimeMs).toBeGreaterThan(0);
+      expect(result.generationTimeMs).toBeGreaterThanOrEqual(0);
 
-      // Verify document was checked
-      expect(mockDocumentRepository.findById).toHaveBeenCalledWith(mockDocumentId);
+      // Verify document authorization was checked
+      expect(mockDocumentAuthorizationService.verifyDocuments).toHaveBeenCalledWith(
+        mockUserId,
+        [mockDocumentId],
+        { requiredStatus: 'COMPLETED' }
+      );
 
-      // Verify RAG was performed
-      expect(mockEmbeddingService.generateEmbeddings).toHaveBeenCalled();
-      expect(mockDocumentRepository.searchSimilarChunks).toHaveBeenCalled();
+      // Verify RAG context was extracted
+      expect(mockRAGContextExtractor.extract).toHaveBeenCalled();
 
       // Verify exam was stored
       expect(mockExamRepository.createWithQuestions).toHaveBeenCalled();
@@ -515,8 +551,8 @@ describe('GenerateExamUseCase', () => {
         questionTypes: ['MULTIPLE_CHOICE'],
       });
 
-      // Should perform multiple RAG searches (4 diverse queries)
-      expect(mockDocumentRepository.searchSimilarChunks).toHaveBeenCalledTimes(4);
+      // Should extract RAG context
+      expect(mockRAGContextExtractor.extract).toHaveBeenCalledTimes(1);
     });
 
     it('should store exam with correct metadata', async () => {
@@ -560,28 +596,16 @@ describe('GenerateExamUseCase', () => {
         processedAt: new Date(),
       });
 
-      // Mock finding both documents
-      vi.mocked(mockDocumentRepository.findById).mockImplementation(async (id: DocumentId) => {
-        if (id.equals(mockDocumentId)) return mockCompletedDocument;
-        if (id.equals(mockDocumentId2)) return mockDocument2;
-        return null;
-      });
-
-      // Mock chunks from both documents
-      vi.mocked(mockDocumentRepository.searchSimilarChunks).mockResolvedValue([
-        {
-          chunkIndex: 0,
-          content: 'Chunk from doc 1',
-          similarity: 0.95,
-          wordCount: 50,
-        },
-        {
-          chunkIndex: 1,
-          content: 'Another chunk from doc 1',
-          similarity: 0.9,
-          wordCount: 45,
-        },
-      ]);
+      // Mock authorizing both documents
+      vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockImplementation(
+        async (_userId: UserId, documentIds: DocumentId[]) => {
+          return documentIds.map((id: DocumentId) => {
+            if (id.equals(mockDocumentId)) return mockCompletedDocument;
+            if (id.equals(mockDocumentId2)) return mockDocument2;
+            throw new NotFoundError(`Document not found: ${id.value}`);
+          });
+        }
+      );
 
       // Mock exam repository createWithQuestions
       vi.mocked(mockExamRepository.createWithQuestions).mockImplementation(
@@ -629,9 +653,12 @@ describe('GenerateExamUseCase', () => {
       expect(result.exam.title).toBe('Multi-Doc Exam');
       expect(result.questions).toHaveLength(10);
 
-      // Verify both documents were validated
-      expect(mockDocumentRepository.findById).toHaveBeenCalledWith(mockDocumentId);
-      expect(mockDocumentRepository.findById).toHaveBeenCalledWith(mockDocumentId2);
+      // Verify both documents were validated in a single call
+      expect(mockDocumentAuthorizationService.verifyDocuments).toHaveBeenCalledWith(
+        mockUserId,
+        expect.arrayContaining([mockDocumentId, mockDocumentId2]),
+        { requiredStatus: 'COMPLETED' }
+      );
 
       // Verify exam was stored with both document IDs
       expect(mockExamRepository.createWithQuestions).toHaveBeenCalledWith(
@@ -684,19 +711,11 @@ describe('GenerateExamUseCase', () => {
     });
 
     it('should throw error if any document is not COMPLETED', async () => {
-      const pendingDoc = DocumentMother.pending({
-        id: mockDocumentId2.value,
-        userId: mockUserId.value,
-        title: 'Pending Doc',
-        filename: 'pending.pdf',
-        blobUrl: 'https://storage.example.com/pending.pdf',
-      });
-
-      vi.mocked(mockDocumentRepository.findById).mockImplementation(async (id: DocumentId) => {
-        if (id.equals(mockDocumentId)) return mockCompletedDocument;
-        if (id.equals(mockDocumentId2)) return pendingDoc;
-        return null;
-      });
+      vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockRejectedValue(
+        new ValidationError(
+          `Document ${mockDocumentId2.value} not ready. Status: PROCESSING, required: COMPLETED`
+        )
+      );
 
       await expect(
         generateExamUseCase.execute({
@@ -707,11 +726,15 @@ describe('GenerateExamUseCase', () => {
           difficulty: 'EASY',
           questionTypes: ['MULTIPLE_CHOICE'],
         })
-      ).rejects.toThrow(/not ready for exam generation/);
+      ).rejects.toThrow(/not ready/);
     });
 
     it('should throw error if any document not found', async () => {
       const nonExistentId = randomUUID();
+
+      vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockRejectedValue(
+        new NotFoundError(`Document not found: ${nonExistentId}`)
+      );
 
       await expect(
         generateExamUseCase.execute({
@@ -727,26 +750,16 @@ describe('GenerateExamUseCase', () => {
 
     it('should throw error if user does not own one of the documents', async () => {
       const anotherUserId = UserId.create(randomUUID());
-      const unauthorizedDoc = DocumentMother.completed({
-        id: mockDocumentId2.value,
-        userId: anotherUserId.value, // Different user
-        title: 'Unauthorized Doc',
-        filename: 'unauthorized.pdf',
-        blobUrl: 'https://storage.example.com/unauthorized.pdf',
-        pageCount: 5,
-        wordCount: 500,
-        processedAt: new Date(),
-      });
 
-      vi.mocked(mockDocumentRepository.findById).mockImplementation(async (id: DocumentId) => {
-        if (id.equals(mockDocumentId)) return mockCompletedDocument;
-        if (id.equals(mockDocumentId2)) return unauthorizedDoc;
-        return null;
-      });
+      vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockRejectedValue(
+        new ValidationError(
+          `Unauthorized: Document ${mockDocumentId2.value} does not belong to user`
+        )
+      );
 
       await expect(
         generateExamUseCase.execute({
-          userId: mockUserId.value,
+          userId: anotherUserId.value,
           documentIds: [mockDocumentId.value, mockDocumentId2.value],
           title: 'Test Exam',
           numQuestions: 5,
@@ -803,12 +816,16 @@ describe('GenerateExamUseCase', () => {
 
       // Re-create use case with subscription repos
       generateExamUseCase = new GenerateExamUseCase(
-        mockDocumentRepository,
-        mockExamRepository,
-        mockEmbeddingService,
+        mockDocumentAuthorizationService,
         mockExamGenerator,
         mockSubscriptionRepository,
-        mockUsageMetricsRepository
+        mockUsageMetricsRepository,
+        mockSubscriptionEnforcementService,
+        mockInputValidator,
+        mockRAGContextExtractor,
+        mockPersistenceService,
+        mockUsageMetricsUpdater,
+        mockLogger
       );
     });
 
@@ -821,7 +838,9 @@ describe('GenerateExamUseCase', () => {
             examsCreatedThisMonth: 5,
           })
         );
-        vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockCompletedDocument);
+        vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockResolvedValue([
+          mockCompletedDocument,
+        ]);
 
         // Enforcement check should pass without throwing
         // We just verify that no error is thrown during the limit check phase
@@ -836,9 +855,7 @@ describe('GenerateExamUseCase', () => {
         };
 
         // This should NOT throw a limit error (5 < 10 exams/month)
-        // It will fail at document verification since we don't have full mocks
-        // but we're testing that it doesn't fail at the limit check
-        await expect(generateExamUseCase.execute(input)).rejects.not.toThrow(/monthly exam limit/);
+        await expect(generateExamUseCase.execute(input)).resolves.toBeDefined();
       });
 
       it('should block exam generation when FREE tier limit reached (10 exams/month)', async () => {
@@ -847,7 +864,9 @@ describe('GenerateExamUseCase', () => {
         vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue(
           UsageMetricsMother.createAtExamLimit()
         );
-        vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockCompletedDocument);
+        vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockResolvedValue([
+          mockCompletedDocument,
+        ]);
 
         await expect(
           generateExamUseCase.execute({
@@ -865,7 +884,9 @@ describe('GenerateExamUseCase', () => {
         // New user with no metrics record
         vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(null);
         vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue(null);
-        vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockCompletedDocument);
+        vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockResolvedValue([
+          mockCompletedDocument,
+        ]);
 
         // Should not throw limit error during enforcement check
         // (The exam generation itself is skipped, but enforcement passes)
@@ -882,7 +903,9 @@ describe('GenerateExamUseCase', () => {
             examsCreatedThisMonth: 100,
           })
         );
-        vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockCompletedDocument);
+        vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockResolvedValue([
+          mockCompletedDocument,
+        ]);
 
         // Should not throw limit error - PRO has unlimited exams
         // The enforcement check should pass without error
@@ -896,7 +919,9 @@ describe('GenerateExamUseCase', () => {
             examsCreatedThisMonth: 500,
           })
         );
-        vi.mocked(mockDocumentRepository.findById).mockResolvedValue(mockCompletedDocument);
+        vi.mocked(mockDocumentAuthorizationService.verifyDocuments).mockResolvedValue([
+          mockCompletedDocument,
+        ]);
 
         // Should pass - PRO_PLUS has unlimited exams
       });

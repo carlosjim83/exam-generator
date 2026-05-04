@@ -1,18 +1,16 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  CreateClassUseCase,
   CreateClassCommand,
+  CreateClassUseCase,
 } from '@application/use-cases/classes/CreateClassUseCase.js';
 import { Class } from '@domain/entities/Class.js';
-import { ClassId } from '@domain/value-objects/ClassId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { Subscription } from '@domain/entities/Subscription.js';
 import { SubscriptionTier } from '@domain/entities/Subscription.js';
-import { UsageMetrics } from '@domain/entities/UsageMetrics.js';
 import { SubscriptionId } from '@domain/value-objects/SubscriptionId.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
 import { LIMIT_ERRORS } from '@config/subscription-limits.js';
 
 // Mock repositories
@@ -32,6 +30,8 @@ const mockUsageMetricsRepository = {
   incrementClassCount: vi.fn(),
 } satisfies Partial<IUsageMetricsRepository> as IUsageMetricsRepository;
 
+const subscriptionEnforcementService = new SubscriptionEnforcementService();
+
 describe('CreateClassUseCase', () => {
   let useCase: CreateClassUseCase;
   let teacherId: string;
@@ -40,7 +40,8 @@ describe('CreateClassUseCase', () => {
     useCase = new CreateClassUseCase(
       mockClassRepository,
       mockSubscriptionRepository,
-      mockUsageMetricsRepository
+      mockUsageMetricsRepository,
+      subscriptionEnforcementService
     );
     teacherId = '123e4567-e89b-42d3-a456-426614174000';
     vi.clearAllMocks();
@@ -115,7 +116,9 @@ describe('CreateClassUseCase', () => {
     describe('subscription limits', () => {
       it('should enforce FREE tier class limit (1 class)', async () => {
         vi.mocked(mockClassRepository.existsByCode).mockResolvedValue(false);
-        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(1);
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentClasses: 1,
+        } as any);
 
         const command = new CreateClassCommand(teacherId, 'New Class');
 
@@ -124,7 +127,7 @@ describe('CreateClassUseCase', () => {
 
       it('should allow creating first class for FREE tier user', async () => {
         vi.mocked(mockClassRepository.existsByCode).mockResolvedValue(false);
-        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue(null);
 
         const command = new CreateClassCommand(teacherId, 'First Class');
 
@@ -161,7 +164,9 @@ describe('CreateClassUseCase', () => {
         } as any;
         vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(mockSubscription);
         vi.mocked(mockClassRepository.existsByCode).mockResolvedValue(false);
-        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(5); // Already has 5 classes
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentClasses: 5,
+        } as any); // Already has 5 classes
 
         const command = new CreateClassCommand(teacherId, 'Sixth Class');
 
@@ -203,7 +208,8 @@ describe('CreateClassUseCase', () => {
       const useCase = new CreateClassUseCase(
         mockClassRepository,
         mockSubscriptionRepository,
-        mockUsageMetricsRepository
+        mockUsageMetricsRepository,
+        subscriptionEnforcementService
       );
       const code = (useCase as any).generateClassCode();
 
@@ -215,7 +221,8 @@ describe('CreateClassUseCase', () => {
       const useCase = new CreateClassUseCase(
         mockClassRepository,
         mockSubscriptionRepository,
-        mockUsageMetricsRepository
+        mockUsageMetricsRepository,
+        subscriptionEnforcementService
       );
       const code = (useCase as any).generateClassCode();
 
@@ -227,7 +234,8 @@ describe('CreateClassUseCase', () => {
       const useCase = new CreateClassUseCase(
         mockClassRepository,
         mockSubscriptionRepository,
-        mockUsageMetricsRepository
+        mockUsageMetricsRepository,
+        subscriptionEnforcementService
       );
       const codes = new Set([
         (useCase as any).generateClassCode(),

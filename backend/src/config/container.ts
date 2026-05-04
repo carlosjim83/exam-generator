@@ -22,38 +22,38 @@ import { ShareDocumentWithClassUseCase } from '@application/use-cases/documents/
 import { UnshareDocumentUseCase } from '@application/use-cases/documents/UnshareDocumentUseCase.js';
 import { UpdateDocumentVisibilityUseCase } from '@application/use-cases/documents/UpdateDocumentVisibilityUseCase.js';
 import {
-  RegisterUserUseCase,
-  LoginUserUseCase,
-  RefreshTokenUseCase,
-  UploadDocumentUseCase,
-  GetDocumentUseCase,
-  ListDocumentsUseCase,
-  ProcessDocumentUseCase,
-  ReprocessDocumentUseCase, // Added
-  QueryDocumentUseCase, // Added
-  DeleteDocumentUseCase, // Added
-  DownloadDocumentUseCase, // Added
-  GetDashboardStatsUseCase,
-  GenerateExamUseCase,
-  GetExamUseCase,
-  ListExamsUseCase,
-  DeleteExamUseCase, // Added
-  CreateClassUseCase,
-  CreateEmailInvitationsUseCase,
-  StudentJoinClassUseCase,
-  GetClassesUseCase,
-  GetClassByCodeUseCase,
-  GetClassDetailsUseCase,
-  StudentJoinClassWithInvitationUseCase,
-  GetClassStudentsUseCase,
   AcceptInvitationUseCase,
   AssignExamToClassUseCase,
+  CreateClassUseCase,
+  CreateEmailInvitationsUseCase,
   DeleteClassUseCase,
-  ImportStudentsCSVUseCase,
+  DeleteDocumentUseCase,
+  DeleteExamUseCase,
+  DownloadDocumentUseCase,
+  GenerateExamUseCase,
+  GetClassByCodeUseCase,
+  GetClassDetailsUseCase,
+  GetClassesUseCase,
   GetClassInvitationsUseCase,
-  ResendInvitationUseCase, // Added
-  RemoveStudentFromClassUseCase, // Added
-  GetStudentClassesUseCase, // Added
+  GetClassStudentsUseCase,
+  GetDashboardStatsUseCase,
+  GetDocumentUseCase,
+  GetExamUseCase,
+  GetStudentClassesUseCase,
+  ImportStudentsCSVUseCase,
+  ListDocumentsUseCase,
+  ListExamsUseCase,
+  LoginUserUseCase,
+  ProcessDocumentUseCase,
+  QueryDocumentUseCase,
+  RefreshTokenUseCase,
+  RegisterUserUseCase,
+  RemoveStudentFromClassUseCase,
+  ReprocessDocumentUseCase,
+  ResendInvitationUseCase,
+  StudentJoinClassUseCase,
+  StudentJoinClassWithInvitationUseCase,
+  UploadDocumentUseCase,
 } from '@application/use-cases/index.js';
 import { SaveAnswerUseCase } from '@application/use-cases/student/SaveAnswerUseCase.js';
 import { GetTeacherClassesWithStatsUseCase } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
@@ -87,29 +87,40 @@ import type { IAnswerGradingService } from '@domain/services/IAnswerGradingServi
 import type { IDocumentProcessor } from '@domain/services/IDocumentProcessor.js';
 import type { IEmbeddingService } from '@domain/services/IEmbeddingService.js';
 import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
+import type { IExamInputValidator } from '@domain/services/ExamInputValidator.js';
+import type { IExamPersistenceService } from '@domain/services/ExamPersistenceService.js';
+import type { ILogger } from '@domain/services/ILogger.js';
+import type { IRAGContextExtractor } from '@domain/services/IRAGContextExtractor.js';
 import type { IPasswordHasher } from '@domain/services/IPasswordHasher.js';
 import type { IStorageService } from '@domain/services/IStorageService.js';
 import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
 import type { ITokenService } from '@domain/services/ITokenService.js';
+import type { IUsageMetricsUpdater } from '@domain/services/UsageMetricsUpdater.js';
+import { DocumentAuthorizationService } from '@domain/services/DocumentAuthorizationService.js';
+import { ExamInputValidator } from '@domain/services/ExamInputValidator.js';
+import { ExamPersistenceService } from '@domain/services/ExamPersistenceService.js';
+import { UsageMetricsUpdater } from '@domain/services/UsageMetricsUpdater.js';
 import { AzureOpenAIEmbeddingService } from '@infrastructure/ai/AzureOpenAIEmbeddingService.js';
 import { GenkitDocumentProcessor } from '@infrastructure/ai/GenkitDocumentProcessor.js';
 import { GenkitExamGenerator } from '@infrastructure/ai/GenkitExamGenerator.js';
+import { RAGContextExtractor } from '@infrastructure/ai/RAGContextExtractor.js';
+import { ConsoleLogger } from '@infrastructure/logging/ConsoleLogger.js';
 import {
-  PrismaUserRepository,
-  PrismaDocumentRepository,
-  BcryptPasswordHasher,
-  JWTTokenService,
   AzureBlobStorageService,
+  BcryptPasswordHasher,
+  BullMQMessageBroker,
+  JWTTokenService,
   LocalFileStorageService,
-  TextExtractorService,
-  BullMQMessageBroker, // Added
-  PrismaClassRepository,
-  PrismaStudentEnrollmentRepository,
-  PrismaInvitationRepository,
   PrismaClassDocumentRepository,
   PrismaClassExamRepository,
+  PrismaClassRepository,
+  PrismaDocumentRepository,
+  PrismaInvitationRepository,
+  PrismaStudentEnrollmentRepository,
   PrismaSubscriptionRepository,
   PrismaUsageMetricsRepository,
+  PrismaUserRepository,
+  TextExtractorService,
 } from '@infrastructure/index.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
 import { PrismaExamAssignmentRepository } from '@infrastructure/repositories/PrismaExamAssignmentRepository.js';
@@ -119,6 +130,7 @@ import { GetStudentClassExamsUseCase } from '@application/use-cases/classes/GetS
 import { GetStudentSubmissionDetailUseCase } from '@application/use-cases/classes/GetStudentSubmissionDetailUseCase.js';
 import { ISubscriptionRepository } from '@/domain/repositories/ISubscriptionRepository';
 import { IUsageMetricsRepository } from '@/domain/repositories/IUsageMetricsRepository';
+import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
 import { AzureOpenAIGradingService } from '@infrastructure/ai/AzureOpenAIGradingService.js';
 
 /**
@@ -154,6 +166,15 @@ export class Container {
   // Subscription Repositories
   private readonly _subscriptionRepository: ISubscriptionRepository;
   private readonly _usageMetricsRepository: IUsageMetricsRepository;
+
+  // Domain Services
+  private readonly _subscriptionEnforcementService: SubscriptionEnforcementService;
+  private readonly _documentAuthorizationService: DocumentAuthorizationService;
+  private readonly _examInputValidator: IExamInputValidator;
+  private readonly _ragContextExtractor: IRAGContextExtractor;
+  private readonly _examPersistenceService: IExamPersistenceService;
+  private readonly _usageMetricsUpdater: IUsageMetricsUpdater;
+  private readonly _logger: ILogger;
 
   // AI Services
   private readonly _gradingService: IAnswerGradingService;
@@ -286,6 +307,23 @@ export class Container {
     this._subscriptionRepository = PrismaSubscriptionRepository.create(this._prisma);
     this._usageMetricsRepository = PrismaUsageMetricsRepository.create(this._prisma);
 
+    // Domain Services
+    this._subscriptionEnforcementService = new SubscriptionEnforcementService();
+    this._documentAuthorizationService = new DocumentAuthorizationService(this._documentRepository);
+    this._examInputValidator = new ExamInputValidator();
+    this._logger = new ConsoleLogger('GenerateExam');
+    this._ragContextExtractor = new RAGContextExtractor(
+      this._documentRepository,
+      this._embeddingService,
+      this._logger
+    );
+    this._examPersistenceService = new ExamPersistenceService(this._examRepository, this._logger);
+    this._usageMetricsUpdater = new UsageMetricsUpdater(
+      this._subscriptionRepository,
+      this._usageMetricsRepository,
+      this._logger
+    );
+
     // ========================================
     // APPLICATION LAYER - USE CASES
     // ========================================
@@ -350,12 +388,16 @@ export class Container {
 
     // Exam Use Cases
     this._generateExamUseCase = new GenerateExamUseCase(
-      this._documentRepository,
-      this._examRepository,
-      this._embeddingService,
+      this._documentAuthorizationService,
       this._examGenerator,
       this._subscriptionRepository,
-      this._usageMetricsRepository
+      this._usageMetricsRepository,
+      this._subscriptionEnforcementService,
+      this._examInputValidator,
+      this._ragContextExtractor,
+      this._examPersistenceService,
+      this._usageMetricsUpdater,
+      this._logger
     );
 
     this._getExamUseCase = new GetExamUseCase(this._examRepository);
@@ -368,7 +410,8 @@ export class Container {
     this._createClassUseCase = new CreateClassUseCase(
       this._classRepository,
       this._subscriptionRepository,
-      this._usageMetricsRepository
+      this._usageMetricsRepository,
+      this._subscriptionEnforcementService
     );
     this._createEmailInvitationsUseCase = new CreateEmailInvitationsUseCase(
       this._invitationRepository
@@ -377,7 +420,8 @@ export class Container {
       this._studentEnrollmentRepository,
       this._classRepository,
       this._subscriptionRepository,
-      this._usageMetricsRepository
+      this._usageMetricsRepository,
+      this._subscriptionEnforcementService
     );
     this._getClassesUseCase = new GetClassesUseCase(this._classRepository);
     this._getClassByCodeUseCase = new GetClassByCodeUseCase(

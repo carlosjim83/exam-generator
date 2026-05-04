@@ -1,5 +1,6 @@
 import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
-import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { AssignmentId } from '@domain/value-objects/AssignmentId.js';
@@ -48,9 +49,11 @@ export class StartExamUseCase {
     }
 
     // Verify ownership
-    if (assignment.studentId.value !== input.studentId) {
-      throw new ForbiddenError('You can only access your own assignments');
-    }
+    assertOwnership(
+      assignment.studentId,
+      input.studentId,
+      'You can only access your own assignments'
+    );
 
     let finalAssignment: ExamAssignment;
 

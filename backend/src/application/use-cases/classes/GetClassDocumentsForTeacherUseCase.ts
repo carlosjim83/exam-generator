@@ -1,4 +1,5 @@
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -57,9 +58,11 @@ export class GetClassDocumentsForTeacherUseCase {
       throw new NotFoundError('Class not found');
     }
 
-    if (classEntity.teacherId.value !== teacherId.value) {
-      throw new ForbiddenError('You do not have permission to view this class');
-    }
+    assertOwnership(
+      classEntity.teacherId,
+      teacherId,
+      'You do not have permission to view this class'
+    );
 
     // 2. Get ALL class documents (including drafts)
     const classDocuments = await this.classDocumentRepository.findByClassId(classId);

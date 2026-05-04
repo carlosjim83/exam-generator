@@ -1,4 +1,5 @@
-import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -47,9 +48,7 @@ export class UpdateDocumentVisibilityUseCase {
       throw new NotFoundError('Document not found');
     }
 
-    if (!document.isOwnedBy(userId)) {
-      throw new ForbiddenError('You do not have permission to update this document');
-    }
+    assertOwnership(document.userId, userId, 'You do not have permission to update this document');
 
     // 2. Verify class exists and belongs to user
     const classEntity = await this.classRepository.findById(classId);
@@ -57,9 +56,11 @@ export class UpdateDocumentVisibilityUseCase {
       throw new NotFoundError('Class not found');
     }
 
-    if (!classEntity.teacherId.equals(userId)) {
-      throw new ForbiddenError('You do not have permission to update visibility for this class');
-    }
+    assertOwnership(
+      classEntity.teacherId,
+      userId,
+      'You do not have permission to update visibility for this class'
+    );
 
     // 3. Find the ClassDocument relationship
     const classDocument = await this.classDocumentRepository.findByClassAndDocument(

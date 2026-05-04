@@ -1,4 +1,5 @@
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -45,9 +46,11 @@ export class GetDocumentSharesUseCase {
       throw new NotFoundError('Document not found');
     }
 
-    if (!document.isOwnedBy(userId)) {
-      throw new ForbiddenError("You do not have permission to view this document's shares");
-    }
+    assertOwnership(
+      document.userId,
+      userId,
+      "You do not have permission to view this document's shares"
+    );
 
     // 2. Get all class-document relationships for this document
     const classDocuments = await this.classDocumentRepository.findByDocumentId(documentId);

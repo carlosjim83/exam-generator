@@ -1,8 +1,9 @@
-import { NotFoundError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { InvitationId } from '@domain/value-objects/InvitationId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 
 export class ResendInvitationCommand {
   constructor(
@@ -33,9 +34,7 @@ export class ResendInvitationUseCase {
       throw new NotFoundError('Class not found');
     }
 
-    if (classEntity.teacherId.toString() !== userId.toString()) {
-      throw new ForbiddenError('You do not have permission for this class');
-    }
+    assertOwnership(classEntity.teacherId, userId, 'You do not have permission for this class');
 
     // Note: In a real implementation, you would:
     // 1. Send email notification

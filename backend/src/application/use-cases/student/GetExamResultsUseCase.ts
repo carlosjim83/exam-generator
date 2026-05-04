@@ -2,7 +2,8 @@ import type { Exam } from '@domain/entities/Exam.js';
 import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
 import type { Question } from '@domain/entities/Question.js';
 import type { StudentAnswer } from '@domain/entities/StudentAnswer.js';
-import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IStudentAnswerRepository } from '@domain/repositories/IStudentAnswerRepository.js';
@@ -43,9 +44,7 @@ export class GetExamResultsUseCase {
     }
 
     // Verify ownership
-    if (assignment.studentId.value !== input.studentId) {
-      throw new ForbiddenError('You can only view your own results');
-    }
+    assertOwnership(assignment.studentId, input.studentId, 'You can only view your own results');
 
     // Verify submitted or graded
     if (!assignment.isCompleted()) {

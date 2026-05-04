@@ -1,13 +1,9 @@
 import type { ExamAssignment } from '@domain/entities/ExamAssignment.js';
-import {
-  NotFoundError,
-  ForbiddenError,
-  ValidationError,
-  ConflictError,
-} from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError, ValidationError } from '@domain/errors/DomainError.js';
 import type { IExamAssignmentRepository } from '@domain/repositories/IExamAssignmentRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import type { IUserRepository } from '@domain/repositories/IUserRepository.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface AssignExamToStudentInput {
@@ -31,9 +27,7 @@ export class AssignExamToStudentUseCase {
       throw new NotFoundError('Exam not found');
     }
 
-    if (exam.userId !== input.teacherId) {
-      throw new ForbiddenError('You can only assign your own exams');
-    }
+    assertOwnership(exam.userId, input.teacherId, 'You can only assign your own exams');
 
     // Validate student exists and has STUDENT role
     const student = await this.userRepo.findById(UserId.create(input.studentId));

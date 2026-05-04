@@ -1,4 +1,5 @@
-import { NotFoundError, ValidationError, ForbiddenError } from '@domain/errors/DomainError.js';
+import { NotFoundError, ValidationError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
 import { ExamId } from '@domain/value-objects/ExamId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
@@ -45,9 +46,7 @@ export class DeleteExamUseCase {
     }
 
     // Verify ownership
-    if (exam.userId !== userId.value) {
-      throw new ForbiddenError('Unauthorized: You do not have access to this exam');
-    }
+    assertOwnership(exam.userId, userId, 'Unauthorized: You do not have access to this exam');
 
     // Delete exam (cascade deletes questions)
     await this.examRepository.delete(examId.value);

@@ -1,6 +1,7 @@
 import { ClassDocument } from '@domain/entities/ClassDocument.js';
 import { DocumentStatus } from '@domain/entities/Document.js';
-import { NotFoundError, ForbiddenError, ConflictError } from '@domain/errors/DomainError.js';
+import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import type { IClassDocumentRepository } from '@domain/repositories/IClassDocumentRepository.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
@@ -50,9 +51,7 @@ export class ShareDocumentWithClassUseCase {
     }
 
     // 2. Validate document ownership
-    if (!document.userId.equals(userId)) {
-      throw new ForbiddenError('You do not have permission to share this document');
-    }
+    assertOwnership(document.userId, userId, 'You do not have permission to share this document');
 
     // 3. Validate document is completed
     if (document.status !== DocumentStatus.COMPLETED) {
@@ -66,9 +65,11 @@ export class ShareDocumentWithClassUseCase {
     }
 
     // 5. Validate class ownership
-    if (!classEntity.teacherId.equals(userId)) {
-      throw new ForbiddenError('You do not have permission to share to this class');
-    }
+    assertOwnership(
+      classEntity.teacherId,
+      userId,
+      'You do not have permission to share to this class'
+    );
 
     // 6. Check if already shared
     const alreadyShared = await this.classDocumentRepository.isSharedWithClass(classId, documentId);
