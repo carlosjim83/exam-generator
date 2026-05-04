@@ -1,10 +1,10 @@
-import { Container } from '../src/config/container.js';
+import { Container } from '@config/container.js';
 
 async function main() {
   const minutesStuck = parseInt(process.argv[2] || '5', 10);
 
   if (isNaN(minutesStuck) || minutesStuck < 1) {
-    console.error('Usage: pnpm --filter backend fix-stuck-documents [minutesStuck]');
+    console.error('Usage: node dist/scripts/fix-stuck-documents.js [minutesStuck]');
     console.error('  minutesStuck: Minimum minutes in PROCESSING to consider stuck (default: 5)');
     process.exit(1);
   }
