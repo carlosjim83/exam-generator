@@ -30,6 +30,7 @@ import {
   DeleteDocumentUseCase,
   DeleteExamUseCase,
   DownloadDocumentUseCase,
+  FixStuckDocumentsUseCase,
   GenerateExamUseCase,
   GetClassByCodeUseCase,
   GetClassDetailsUseCase,
@@ -193,6 +194,7 @@ export class Container {
   private readonly _queryDocumentUseCase: QueryDocumentUseCase; // Added
   private readonly _deleteDocumentUseCase: DeleteDocumentUseCase; // Added
   private readonly _downloadDocumentUseCase: DownloadDocumentUseCase; // Added
+  private readonly _fixStuckDocumentsUseCase: FixStuckDocumentsUseCase; // Added
 
   // Application Layer - Dashboard Use Cases
   private readonly _getDashboardStatsUseCase: GetDashboardStatsUseCase;
@@ -378,6 +380,11 @@ export class Container {
       this._classDocumentRepository,
       this._studentEnrollmentRepository,
       this._storageService
+    );
+
+    this._fixStuckDocumentsUseCase = new FixStuckDocumentsUseCase(
+      this._documentRepository,
+      this._messageBroker
     );
 
     // Dashboard Use Cases
@@ -715,6 +722,10 @@ export class Container {
 
   public get downloadDocumentUseCase(): DownloadDocumentUseCase {
     return this._downloadDocumentUseCase;
+  }
+
+  public get fixStuckDocumentsUseCase(): FixStuckDocumentsUseCase {
+    return this._fixStuckDocumentsUseCase;
   }
 
   // Dashboard Use Cases

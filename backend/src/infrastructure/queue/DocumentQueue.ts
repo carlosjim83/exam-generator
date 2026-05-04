@@ -7,7 +7,7 @@
 
 import { Queue } from 'bullmq';
 
-import { redisConnection } from './redis.connection.js';
+import { redisQueue } from './redis.connection.js';
 
 export interface DocumentJobData {
   documentId: string;
@@ -23,7 +23,8 @@ export interface DocumentJobData {
  * - Keep last 500 failed jobs for debugging
  */
 export const documentQueue = new Queue<DocumentJobData>('document-processing', {
-  connection: redisConnection,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  connection: redisQueue as any,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -48,7 +49,7 @@ export const documentQueue = new Queue<DocumentJobData>('document-processing', {
  * @returns Job ID
  */
 export async function queueDocumentProcessing(data: DocumentJobData): Promise<string> {
-  const job = await documentQueue.add('process-document', data, {
+  const job = await documentQueue.add('process-document' as any, data, {
     jobId: `doc-${data.documentId}`, // Unique job ID prevents duplicates
   });
 

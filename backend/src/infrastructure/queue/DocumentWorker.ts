@@ -23,7 +23,7 @@ import { LocalFileStorageService } from '@infrastructure/storage/LocalFileStorag
 
 import type { DocumentJobData } from './DocumentQueue.js';
 import { documentQueue } from './DocumentQueue.js';
-import { redisConnection } from './redis.connection.js';
+import { redisQueue, redisWorker } from './redis.connection.js';
 import { WorkerHealthService } from './WorkerHealthService.js';
 import { workerLogger } from './WorkerLogger.js';
 
@@ -54,7 +54,7 @@ const processDocumentUseCase = new ProcessDocumentUseCase(
 export const workerHealthService = new WorkerHealthService({
   workerQueueName: 'document-processing',
   queue: documentQueue,
-  redisConnection,
+  redisConnection: redisQueue,
 });
 
 /**
@@ -157,7 +157,8 @@ export const documentWorker = new Worker<DocumentJobData>(
     }
   },
   {
-    connection: redisConnection,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    connection: redisWorker as any,
     concurrency: 1, // Process ONE document at a time
 
     // Rate limiter: Maximum 1 job per 60 seconds

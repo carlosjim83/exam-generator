@@ -103,6 +103,12 @@ export interface IDocumentRepository {
   findMostRecentByUserId(userId: UserId): Promise<Document | null>;
 
   /**
+   * Find documents stuck in PROCESSING status for longer than a threshold.
+   * Used to recover documents whose worker crashed before completion.
+   */
+  findStuckProcessingDocuments(minutesStuck: number): Promise<Document[]>;
+
+  /**
    * Search for similar chunks within a document using a query embedding.
    */
   searchSimilarChunks(

@@ -1,23 +1,18 @@
-import { Queue } from 'bullmq';
-
 import type { IMessageBroker } from '@application/ports/IMessageBroker.js';
-import { env } from '@config/env.js';
 import type { DomainEvent } from '@domain/events/DomainEvent.js';
 import type { DocumentUploadedEvent } from '@domain/events/DocumentEvents.js';
+import { documentQueue } from '@infrastructure/queue/DocumentQueue.js';
 
 /**
  * BullMQMessageBroker
  * Implements IMessageBroker using BullMQ for Redis-backed message queuing.
+ * Reuses the centralized documentQueue to avoid duplicate Redis connections.
  */
 export class BullMQMessageBroker implements IMessageBroker {
-  private readonly documentQueue: Queue;
-
   constructor() {
-    this.documentQueue = new Queue('document-processing', {
-      connection: {
-        host: env.REDIS_HOST,
-        port: env.REDIS_PORT,
-      },
+    // Log errors from the shared queue so they don't become uncaught exceptions
+    documentQueue.on('error', (err: Error) => {
+      console.error('[BullMQMessageBroker] Queue error:', err.message);
     });
   }
 
@@ -27,7 +22,13 @@ export class BullMQMessageBroker implements IMessageBroker {
     // We could make this more dynamic if needed.
     switch (topic) {
       case 'document.uploaded':
-        await this.documentQueue.add('process-document', (event as DocumentUploadedEvent).payload);
+        await documentQueue.add(
+          'process-document' as any,
+          (event as DocumentUploadedEvent).payload,
+          {
+            jobId: `doc-${(event as DocumentUploadedEvent).payload.documentId}`,
+          }
+        );
         break;
       default:
         console.warn(`Attempted to publish to unknown topic: ${topic}. Event:`, event);

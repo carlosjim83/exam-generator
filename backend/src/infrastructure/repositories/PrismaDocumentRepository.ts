@@ -188,4 +188,18 @@ export class PrismaDocumentRepository implements IDocumentRepository {
 
     return this.toDomain(prismaDocument);
   }
+
+  async findStuckProcessingDocuments(minutesStuck: number): Promise<Document[]> {
+    const threshold = new Date(Date.now() - minutesStuck * 60 * 1000);
+
+    const documents = await this.prisma.document.findMany({
+      where: {
+        status: 'PROCESSING',
+        updatedAt: { lt: threshold },
+      },
+      orderBy: { updatedAt: 'asc' },
+    });
+
+    return documents.map((doc: any) => this.toDomain(doc));
+  }
 }
