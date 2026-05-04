@@ -77,9 +77,16 @@ export class ReprocessDocumentUseCase {
     // Re-publish the event for the worker to pick up and re-process
     // We use 'document.uploaded' event as it triggers the processing flow
     await this.messageBroker.publish('document.uploaded', {
-      aggregateId: documentId.value,
       occurredAt: new Date(),
-    });
+      aggregateId: documentId.value,
+      payload: {
+        documentId: documentId.value,
+        userId: userId.value,
+        filename: document.filename,
+        mimeType: document.mimeType,
+        blobUrl: document.blobUrl,
+      },
+    } as any);
 
     return {
       id: document.id.value,
