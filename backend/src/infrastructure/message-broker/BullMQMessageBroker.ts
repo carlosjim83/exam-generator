@@ -3,6 +3,7 @@ import { Queue } from 'bullmq';
 import type { IMessageBroker } from '@application/ports/IMessageBroker.js';
 import { env } from '@config/env.js';
 import type { DomainEvent } from '@domain/events/DomainEvent.js';
+import type { DocumentUploadedEvent } from '@domain/events/DocumentEvents.js';
 
 /**
  * BullMQMessageBroker
@@ -26,7 +27,7 @@ export class BullMQMessageBroker implements IMessageBroker {
     // We could make this more dynamic if needed.
     switch (topic) {
       case 'document.uploaded':
-        await this.documentQueue.add('process-document', event);
+        await this.documentQueue.add('process-document', (event as DocumentUploadedEvent).payload);
         break;
       default:
         console.warn(`Attempted to publish to unknown topic: ${topic}. Event:`, event);
