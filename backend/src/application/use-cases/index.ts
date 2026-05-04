@@ -17,6 +17,7 @@ export { ReprocessDocumentUseCase } from './documents/ReprocessDocumentUseCase.j
 export { QueryDocumentUseCase } from './documents/QueryDocumentUseCase.js';
 export { DeleteDocumentUseCase } from './documents/DeleteDocumentUseCase.js';
 export { DownloadDocumentUseCase } from './documents/DownloadDocumentUseCase.js';
+export { FixStuckDocumentsUseCase } from './documents/FixStuckDocumentsUseCase.js';
 
 // Export input/output types for document use cases
 export type {
