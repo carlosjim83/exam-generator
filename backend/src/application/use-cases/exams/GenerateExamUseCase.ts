@@ -1,8 +1,4 @@
-import { SubscriptionTier } from '@domain/entities/Subscription.js';
-import { NotFoundError } from '@domain/errors/DomainError.js';
-import type { IDocumentRepository } from '@domain/repositories/IDocumentRepository.js';
-import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
-import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import type { IDocumentAuthorizationService } from '@domain/services/DocumentAuthorizationService.js';
 import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
 import type { IExamInputValidator } from '@domain/services/ExamInputValidator.js';
 import type { IExamPersistenceService } from '@domain/services/ExamPersistenceService.js';
@@ -10,7 +6,8 @@ import type { ILogger } from '@domain/services/ILogger.js';
 import type { IRAGContextExtractor } from '@domain/services/IRAGContextExtractor.js';
 import { SubscriptionEnforcementService } from '@domain/services/SubscriptionEnforcementService.js';
 import type { IUsageMetricsUpdater } from '@domain/services/UsageMetricsUpdater.js';
-import { assertOwnership } from '@domain/utils/assertOwnership.js';
+import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
 import { DocumentId } from '@domain/value-objects/DocumentId.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
@@ -61,7 +58,7 @@ export interface GenerateExamOutput {
 
 export class GenerateExamUseCase {
   constructor(
-    private readonly documentRepository: IDocumentRepository,
+    private readonly documentAuthorizationService: IDocumentAuthorizationService,
     private readonly examGenerator: IExamGenerator,
     private readonly subscriptionRepository: ISubscriptionRepository,
     private readonly usageMetricsRepository: IUsageMetricsRepository,
@@ -77,7 +74,11 @@ export class GenerateExamUseCase {
     const startTime = Date.now();
 
     // 1. Check subscription limit
-    await this.enforceExamLimit(input.userId);
+    await this.subscriptionEnforcementService.checkExamLimit(
+      input.userId,
+      this.subscriptionRepository,
+      this.usageMetricsRepository
+    );
 
     // 2. Validate input parameters
     this.inputValidator.validate(input);
@@ -86,9 +87,11 @@ export class GenerateExamUseCase {
     const userId = UserId.create(input.userId);
     const documentIds = input.documentIds.map((id) => DocumentId.create(id));
 
-    // 4. Verify all documents exist and user has access
+    // 4. Verify all documents exist, belong to user, and are ready
     this.logger.info(`Validating ${documentIds.length} document(s)...`);
-    const documents = await this.validateDocuments(userId, documentIds);
+    const documents = await this.documentAuthorizationService.verifyDocuments(userId, documentIds, {
+      requiredStatus: 'COMPLETED',
+    });
 
     // 5. Extract relevant context using RAG (across all documents)
     this.logger.info(`Extracting context from ${documents.length} document(s)...`);
@@ -125,61 +128,5 @@ export class GenerateExamUseCase {
     });
 
     return this.persistenceService.buildOutput(exam, input, generationTime);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Document Verification
-  // ---------------------------------------------------------------------------
-
-  private async validateDocuments(userId: UserId, documentIds: DocumentId[]) {
-    const documents = await Promise.all(
-      documentIds.map(async (docId) => {
-        const document = await this.documentRepository.findById(docId);
-
-        if (!document) {
-          throw new NotFoundError(`Document not found: ${docId.value}`);
-        }
-
-        assertOwnership(
-          document.userId,
-          userId,
-          `Unauthorized: Document ${docId.value} does not belong to user`
-        );
-
-        if (document.status !== 'COMPLETED') {
-          throw new NotFoundError(
-            `Document ${docId.value} not ready for exam generation. Status: ${document.status}`
-          );
-        }
-
-        return document;
-      })
-    );
-
-    return documents;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Subscription Limits
-  // ---------------------------------------------------------------------------
-
-  private async enforceExamLimit(teacherId: string): Promise<void> {
-    const teacherUserId = UserId.create(teacherId);
-    const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId);
-
-    if (!subscription) {
-      const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
-      this.subscriptionEnforcementService.enforceExamLimit(
-        usageMetrics?.examsCreatedThisMonth ?? 0,
-        SubscriptionTier.FREE
-      );
-      return;
-    }
-
-    const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
-    this.subscriptionEnforcementService.enforceExamLimit(
-      usageMetrics?.examsCreatedThisMonth ?? 0,
-      subscription.tier
-    );
   }
 }

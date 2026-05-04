@@ -2,6 +2,9 @@ import { LIMIT_ERRORS } from '@config/subscription-limits.js';
 import { SubscriptionTier } from '@domain/entities/Subscription.js';
 import { SubscriptionLimits } from '@domain/entities/SubscriptionLimits.js';
 import { ConflictError } from '@domain/errors/DomainError.js';
+import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
+import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
 /**
  * SubscriptionEnforcementService
@@ -85,5 +88,51 @@ export class SubscriptionEnforcementService {
           : LIMIT_ERRORS.QUESTION_LIMIT.PRO;
       throw new ConflictError(errorMessage);
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Async convenience methods — look up subscription + metrics, then enforce
+  // ---------------------------------------------------------------------------
+
+  async checkClassLimit(
+    teacherId: string,
+    subscriptionRepository: ISubscriptionRepository,
+    usageMetricsRepository: IUsageMetricsRepository
+  ): Promise<void> {
+    const userId = UserId.create(teacherId);
+    const subscription = await subscriptionRepository.findByTeacherId(userId);
+    const metrics = await usageMetricsRepository.findCurrentByTeacherId(userId);
+    this.enforceClassLimit(
+      metrics?.currentClasses ?? 0,
+      subscription?.tier ?? SubscriptionTier.FREE
+    );
+  }
+
+  async checkStudentLimit(
+    teacherId: string,
+    subscriptionRepository: ISubscriptionRepository,
+    usageMetricsRepository: IUsageMetricsRepository
+  ): Promise<void> {
+    const userId = UserId.create(teacherId);
+    const subscription = await subscriptionRepository.findByTeacherId(userId);
+    const metrics = await usageMetricsRepository.findCurrentByTeacherId(userId);
+    this.enforceStudentLimit(
+      metrics?.currentStudents ?? 0,
+      subscription?.tier ?? SubscriptionTier.FREE
+    );
+  }
+
+  async checkExamLimit(
+    teacherId: string,
+    subscriptionRepository: ISubscriptionRepository,
+    usageMetricsRepository: IUsageMetricsRepository
+  ): Promise<void> {
+    const userId = UserId.create(teacherId);
+    const subscription = await subscriptionRepository.findByTeacherId(userId);
+    const metrics = await usageMetricsRepository.findCurrentByTeacherId(userId);
+    this.enforceExamLimit(
+      metrics?.examsCreatedThisMonth ?? 0,
+      subscription?.tier ?? SubscriptionTier.FREE
+    );
   }
 }

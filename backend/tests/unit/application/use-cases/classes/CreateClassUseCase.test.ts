@@ -116,7 +116,9 @@ describe('CreateClassUseCase', () => {
     describe('subscription limits', () => {
       it('should enforce FREE tier class limit (1 class)', async () => {
         vi.mocked(mockClassRepository.existsByCode).mockResolvedValue(false);
-        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(1);
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentClasses: 1,
+        } as any);
 
         const command = new CreateClassCommand(teacherId, 'New Class');
 
@@ -125,7 +127,7 @@ describe('CreateClassUseCase', () => {
 
       it('should allow creating first class for FREE tier user', async () => {
         vi.mocked(mockClassRepository.existsByCode).mockResolvedValue(false);
-        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(0);
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue(null);
 
         const command = new CreateClassCommand(teacherId, 'First Class');
 
@@ -162,7 +164,9 @@ describe('CreateClassUseCase', () => {
         } as any;
         vi.mocked(mockSubscriptionRepository.findByTeacherId).mockResolvedValue(mockSubscription);
         vi.mocked(mockClassRepository.existsByCode).mockResolvedValue(false);
-        vi.mocked(mockClassRepository.countByTeacherId).mockResolvedValue(5); // Already has 5 classes
+        vi.mocked(mockUsageMetricsRepository.findCurrentByTeacherId).mockResolvedValue({
+          currentClasses: 5,
+        } as any); // Already has 5 classes
 
         const command = new CreateClassCommand(teacherId, 'Sixth Class');
 

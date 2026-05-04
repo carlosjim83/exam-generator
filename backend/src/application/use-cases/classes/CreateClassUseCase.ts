@@ -1,5 +1,4 @@
 import { Class } from '@domain/entities/Class.js';
-import { SubscriptionTier } from '@domain/entities/Subscription.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { ISubscriptionRepository } from '@domain/repositories/ISubscriptionRepository.js';
 import type { IUsageMetricsRepository } from '@domain/repositories/IUsageMetricsRepository.js';
@@ -26,7 +25,11 @@ export class CreateClassUseCase {
 
   async execute(command: CreateClassCommand): Promise<Class> {
     // Check subscription limits
-    await this.enforceClassLimit(command.teacherId);
+    await this.subscriptionEnforcementService.checkClassLimit(
+      command.teacherId,
+      this.subscriptionRepository,
+      this.usageMetricsRepository
+    );
 
     // Generate unique class code
     let code: string;
@@ -57,28 +60,6 @@ export class CreateClassUseCase {
     await this.updateUsageMetrics(command.teacherId);
 
     return classEntity;
-  }
-
-  /**
-   * Enforce class limit based on subscription tier
-   */
-  private async enforceClassLimit(teacherId: string): Promise<void> {
-    const teacherUserId = UserId.create(teacherId);
-
-    // Get subscription
-    const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId);
-    const tier = subscription?.tier ?? SubscriptionTier.FREE;
-
-    // Get current usage
-    let currentClasses: number;
-    if (subscription) {
-      const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
-      currentClasses = usageMetrics?.currentClasses ?? 0;
-    } else {
-      currentClasses = (await this.classRepository.countByTeacherId(teacherUserId)) ?? 0;
-    }
-
-    this.subscriptionEnforcementService.enforceClassLimit(currentClasses, tier);
   }
 
   /**

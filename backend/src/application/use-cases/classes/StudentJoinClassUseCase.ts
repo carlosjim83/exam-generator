@@ -1,5 +1,4 @@
 import { StudentEnrollment } from '@domain/entities/StudentEnrollment.js';
-import { SubscriptionTier } from '@domain/entities/Subscription.js';
 import { ConflictError, NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IStudentEnrollmentRepository } from '@domain/repositories/IStudentEnrollmentRepository.js';
@@ -61,7 +60,11 @@ export class StudentJoinClassUseCase {
     }
 
     // Check subscription limits
-    await this.enforceStudentLimit(classEntity.teacherId);
+    await this.subscriptionEnforcementService.checkStudentLimit(
+      classEntity.teacherId.value,
+      this.subscriptionRepository,
+      this.usageMetricsRepository
+    );
 
     // Create new enrollment
     const enrollment = new StudentEnrollment(
@@ -79,26 +82,6 @@ export class StudentJoinClassUseCase {
     await this.updateUsageMetrics(classEntity.teacherId);
 
     return enrollment;
-  }
-
-  /**
-   * Enforce student limit based on subscription tier
-   */
-  private async enforceStudentLimit(teacherId: UserId): Promise<void> {
-    // Get subscription
-    const subscription = await this.subscriptionRepository.findByTeacherId(teacherId);
-    const tier = subscription?.tier ?? SubscriptionTier.FREE;
-
-    // Get current usage
-    let currentStudents: number;
-    if (subscription) {
-      const usageMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(teacherId);
-      currentStudents = usageMetrics?.currentStudents ?? 0;
-    } else {
-      currentStudents = (await this.enrollmentRepository.countTotalByTeacherId(teacherId)) ?? 0;
-    }
-
-    this.subscriptionEnforcementService.enforceStudentLimit(currentStudents, tier);
   }
 
   /**

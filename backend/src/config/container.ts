@@ -96,6 +96,7 @@ import type { IStorageService } from '@domain/services/IStorageService.js';
 import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
 import type { ITokenService } from '@domain/services/ITokenService.js';
 import type { IUsageMetricsUpdater } from '@domain/services/UsageMetricsUpdater.js';
+import { DocumentAuthorizationService } from '@domain/services/DocumentAuthorizationService.js';
 import { ExamInputValidator } from '@domain/services/ExamInputValidator.js';
 import { ExamPersistenceService } from '@domain/services/ExamPersistenceService.js';
 import { UsageMetricsUpdater } from '@domain/services/UsageMetricsUpdater.js';
@@ -168,6 +169,7 @@ export class Container {
 
   // Domain Services
   private readonly _subscriptionEnforcementService: SubscriptionEnforcementService;
+  private readonly _documentAuthorizationService: DocumentAuthorizationService;
   private readonly _examInputValidator: IExamInputValidator;
   private readonly _ragContextExtractor: IRAGContextExtractor;
   private readonly _examPersistenceService: IExamPersistenceService;
@@ -307,6 +309,7 @@ export class Container {
 
     // Domain Services
     this._subscriptionEnforcementService = new SubscriptionEnforcementService();
+    this._documentAuthorizationService = new DocumentAuthorizationService(this._documentRepository);
     this._examInputValidator = new ExamInputValidator();
     this._logger = new ConsoleLogger('GenerateExam');
     this._ragContextExtractor = new RAGContextExtractor(
@@ -385,7 +388,7 @@ export class Container {
 
     // Exam Use Cases
     this._generateExamUseCase = new GenerateExamUseCase(
-      this._documentRepository,
+      this._documentAuthorizationService,
       this._examGenerator,
       this._subscriptionRepository,
       this._usageMetricsRepository,

@@ -10,6 +10,10 @@ export { IPasswordHasher } from './IPasswordHasher';
 export { IStorageService } from './IStorageService';
 export { ITextExtractor } from './ITextExtractor';
 export { ITokenService } from './ITokenService';
+export {
+  IDocumentAuthorizationService,
+  DocumentAuthorizationService,
+} from './DocumentAuthorizationService';
 export { IExamInputValidator, ExamInputValidator } from './ExamInputValidator';
 export { IExamPersistenceService, ExamPersistenceService } from './ExamPersistenceService';
 export { ILogger } from './ILogger';
