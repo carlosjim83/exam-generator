@@ -16,7 +16,7 @@
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit",
     "create-admin": "tsx scripts/create-admin.ts",
-    "fix-stuck-documents": "tsx scripts/fix-stuck-documents.ts",
+    "fix-stuck-documents": "node dist/scripts/fix-stuck-documents.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
