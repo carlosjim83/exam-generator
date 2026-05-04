@@ -2,7 +2,6 @@ import type { FastifyInstance } from 'fastify';
 import '@fastify/multipart'; // Import for type augmentation
 
 import { container } from '@config/container.js';
-import { queueDocumentProcessing, retryFailedJob } from '@infrastructure/queue/DocumentQueue.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 import {
   BadRequestResponseSchema,
@@ -411,24 +410,6 @@ export async function documentRoutes(fastify: FastifyInstance) {
           documentId: id,
           userId: request.user!.userId,
         });
-
-        // Also try to retry the queue job if it exists and failed
-        try {
-          const jobId = await retryFailedJob(id);
-          if (jobId) {
-            fastify.log.info(`Retried failed queue job: ${jobId}`);
-          } else {
-            // If no failed job exists, queue a new one
-            await queueDocumentProcessing({
-              documentId: id,
-              userId: request.user!.userId,
-            });
-            fastify.log.info(`Queued new job for document: ${id}`);
-          }
-        } catch (queueError) {
-          // Don't fail the request if queue retry fails
-          fastify.log.error({ error: queueError }, 'Failed to retry/queue document');
-        }
 
         return reply.status(200).send(result);
       } catch (error: any) {
