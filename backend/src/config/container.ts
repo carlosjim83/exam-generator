@@ -405,7 +405,8 @@ export class Container {
       this._ragContextExtractor,
       this._examPersistenceService,
       this._usageMetricsUpdater,
-      this._logger
+      this._logger,
+      this._prisma
     );
 
     this._getExamUseCase = new GetExamUseCase(this._examRepository);

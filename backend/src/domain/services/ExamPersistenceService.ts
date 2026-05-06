@@ -11,7 +11,8 @@ export interface IExamPersistenceService {
   persist(
     userId: UserId,
     input: GenerateExamInput,
-    questionDTOs: CreateQuestionDTO[]
+    questionDTOs: CreateQuestionDTO[],
+    tx?: any
   ): Promise<Exam>;
   buildOutput(exam: Exam, input: GenerateExamInput, generationTimeMs: number): GenerateExamOutput;
 }
@@ -29,7 +30,8 @@ export class ExamPersistenceService implements IExamPersistenceService {
   async persist(
     userId: UserId,
     input: GenerateExamInput,
-    questionDTOs: CreateQuestionDTO[]
+    questionDTOs: CreateQuestionDTO[],
+    tx?: any
   ): Promise<Exam> {
     this.logger.info('Storing exam and questions in database');
     return this.examRepository.createWithQuestions(
@@ -40,7 +42,8 @@ export class ExamPersistenceService implements IExamPersistenceService {
         generatedFrom: input.documentIds,
         promptUsed: `Generated ${input.numQuestions} ${input.difficulty} questions from ${input.documentIds.length} document(s)`,
       },
-      questionDTOs
+      questionDTOs,
+      tx
     );
   }
 

@@ -144,6 +144,7 @@ describe('GenerateExamUseCase', () => {
   let mockPersistenceService: IExamPersistenceService;
   let mockUsageMetricsUpdater: IUsageMetricsUpdater;
   let mockLogger: ILogger;
+  let mockPrisma: any;
 
   const mockUserId = UserId.create(randomUUID());
   const mockDocumentId = DocumentId.create(randomUUID());
@@ -299,6 +300,10 @@ describe('GenerateExamUseCase', () => {
 
     mockSubscriptionEnforcementService = new SubscriptionEnforcementService();
 
+    mockPrisma = {
+      $transaction: vi.fn(async (fn: any) => await fn(mockPrisma)),
+    };
+
     generateExamUseCase = new GenerateExamUseCase(
       mockDocumentAuthorizationService,
       mockExamGenerator,
@@ -309,7 +314,8 @@ describe('GenerateExamUseCase', () => {
       mockRAGContextExtractor,
       mockPersistenceService,
       mockUsageMetricsUpdater,
-      mockLogger
+      mockLogger,
+      mockPrisma
     );
   });
 
@@ -825,7 +831,8 @@ describe('GenerateExamUseCase', () => {
         mockRAGContextExtractor,
         mockPersistenceService,
         mockUsageMetricsUpdater,
-        mockLogger
+        mockLogger,
+        mockPrisma
       );
     });
 

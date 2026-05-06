@@ -16,10 +16,11 @@ export class PrismaUsageMetricsRepository implements IUsageMetricsRepository {
     return new PrismaUsageMetricsRepository(prismaClient);
   }
 
-  async create(metrics: UsageMetrics): Promise<UsageMetrics> {
+  async create(metrics: UsageMetrics, tx?: any): Promise<UsageMetrics> {
     const data = metrics.toObject();
+    const prisma = tx || this.prisma;
 
-    const created = await this.prisma.usageMetrics.create({
+    const created = await prisma.usageMetrics.create({
       data: {
         id: data.id,
         teacherId: data.teacherId,
@@ -51,8 +52,9 @@ export class PrismaUsageMetricsRepository implements IUsageMetricsRepository {
     return this.mapToEntity(metrics);
   }
 
-  async findCurrentByTeacherId(teacherId: UserId): Promise<UsageMetrics | null> {
-    const metrics = await this.prisma.usageMetrics.findFirst({
+  async findCurrentByTeacherId(teacherId: UserId, tx?: any): Promise<UsageMetrics | null> {
+    const prisma = tx || this.prisma;
+    const metrics = await prisma.usageMetrics.findFirst({
       where: {
         teacherId: teacherId.value,
       },
@@ -86,16 +88,17 @@ export class PrismaUsageMetricsRepository implements IUsageMetricsRepository {
 
   async getOrCreateCurrent(
     teacherId: UserId,
-    subscriptionId: SubscriptionId
+    subscriptionId: SubscriptionId,
+    tx?: any
   ): Promise<UsageMetrics> {
-    const existing = await this.findCurrentByTeacherId(teacherId);
+    const existing = await this.findCurrentByTeacherId(teacherId, tx);
 
     if (existing) {
       return existing;
     }
 
     const newMetrics = UsageMetrics.createInitial(teacherId, subscriptionId);
-    return await this.create(newMetrics);
+    return await this.create(newMetrics, tx);
   }
 
   async incrementClassCount(id: string): Promise<void> {
@@ -145,8 +148,9 @@ export class PrismaUsageMetricsRepository implements IUsageMetricsRepository {
     });
   }
 
-  async incrementExamCount(id: string): Promise<void> {
-    await this.prisma.usageMetrics.update({
+  async incrementExamCount(id: string, tx?: any): Promise<void> {
+    const prisma = tx || this.prisma;
+    await prisma.usageMetrics.update({
       where: { id },
       data: {
         examsCreatedThisMonth: { increment: 1 },

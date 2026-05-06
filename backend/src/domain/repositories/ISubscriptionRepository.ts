@@ -20,7 +20,7 @@ export interface ISubscriptionRepository {
   /**
    * Find subscription by teacher ID
    */
-  findByTeacherId(teacherId: UserId): Promise<Subscription | null>;
+  findByTeacherId(teacherId: UserId, tx?: any): Promise<Subscription | null>;
 
   /**
    * Update subscription

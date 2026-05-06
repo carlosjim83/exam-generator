@@ -68,5 +68,9 @@ export interface IExamRepository {
   /**
    * Create an exam with questions in a transaction
    */
-  createWithQuestions(examData: CreateExamDTO, questionsData: CreateQuestionDTO[]): Promise<Exam>;
+  createWithQuestions(
+    examData: CreateExamDTO,
+    questionsData: CreateQuestionDTO[],
+    tx?: any
+  ): Promise<Exam>;
 }

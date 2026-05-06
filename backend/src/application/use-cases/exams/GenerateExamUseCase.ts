@@ -1,3 +1,5 @@
+import type { PrismaClient } from '@prisma/client';
+
 import type { IDocumentAuthorizationService } from '@domain/services/DocumentAuthorizationService.js';
 import type { IExamGenerator } from '@domain/services/IExamGenerator.js';
 import type { IExamInputValidator } from '@domain/services/ExamInputValidator.js';
@@ -67,7 +69,8 @@ export class GenerateExamUseCase {
     private readonly ragContextExtractor: IRAGContextExtractor,
     private readonly persistenceService: IExamPersistenceService,
     private readonly usageMetricsUpdater: IUsageMetricsUpdater,
-    private readonly logger: ILogger
+    private readonly logger: ILogger,
+    private readonly prisma: PrismaClient
   ) {}
 
   async execute(input: GenerateExamInput): Promise<GenerateExamOutput> {
@@ -111,13 +114,14 @@ export class GenerateExamUseCase {
 
     this.inputValidator.validateGeneratedQuestions(result.questions, input.numQuestions);
 
-    // 7. Build question DTOs and persist exam
+    // 7. Build question DTOs and persist exam + metrics in a single transaction
     this.logger.info('Storing exam and questions in database...');
     const questionDTOs = this.inputValidator.buildQuestionDTOs(result.questions);
-    const exam = await this.persistenceService.persist(userId, input, questionDTOs);
-
-    // 8. Update usage metrics
-    await this.usageMetricsUpdater.updateExamCount(input.userId);
+    const exam = await this.prisma.$transaction(async (tx) => {
+      const persistedExam = await this.persistenceService.persist(userId, input, questionDTOs, tx);
+      await this.usageMetricsUpdater.updateExamCount(input.userId, tx);
+      return persistedExam;
+    });
 
     // 9. Build and return output
     const generationTime = Date.now() - startTime;
