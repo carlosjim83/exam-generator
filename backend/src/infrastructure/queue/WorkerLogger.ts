@@ -28,6 +28,19 @@ export interface LogContext {
   [key: string]: any;
 }
 
+export function sanitizeErrorForProduction(error: Error): {
+  message: string;
+  name: string;
+  stack?: string;
+} {
+  const isDev = (process.env.NODE_ENV || 'development') === 'development';
+  return {
+    message: error.message,
+    name: error.name,
+    ...(isDev ? { stack: error.stack } : {}),
+  };
+}
+
 export class WorkerLogger {
   private serviceName: string;
   private environment: string;
@@ -133,8 +146,7 @@ export class WorkerLogger {
       documentId,
       attemptsMade,
       maxAttempts,
-      errorMessage: error.message,
-      errorStack: error.stack,
+      ...sanitizeErrorForProduction(error),
     });
   }
 
@@ -172,8 +184,7 @@ export class WorkerLogger {
   workerError(error: Error) {
     this.error('Worker error', {
       event: 'worker.error',
-      errorMessage: error.message,
-      errorStack: error.stack,
+      ...sanitizeErrorForProduction(error),
     });
   }
 }

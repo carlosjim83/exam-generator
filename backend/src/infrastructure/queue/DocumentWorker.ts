@@ -25,7 +25,7 @@ import type { DocumentJobData } from './DocumentQueue.js';
 import { documentQueue } from './DocumentQueue.js';
 import { redisQueue, redisWorker } from './redis.connection.js';
 import { WorkerHealthService } from './WorkerHealthService.js';
-import { workerLogger } from './WorkerLogger.js';
+import { sanitizeErrorForProduction, workerLogger } from './WorkerLogger.js';
 
 // Initialize dependencies
 const documentRepository = PrismaDocumentRepository.create(prisma);
@@ -67,7 +67,10 @@ async function processWithTimeout(
   timeoutMs: number = 10 * 60 * 1000 // 10 minutes default
 ): Promise<unknown> {
   return new Promise((resolve, reject) => {
+    const controller = new AbortController();
+
     const timeoutId = setTimeout(() => {
+      controller.abort();
       reject(
         new Error(`Processing timeout: Document ${documentId} exceeded ${timeoutMs / 1000}s limit`)
       );
@@ -77,6 +80,7 @@ async function processWithTimeout(
       .execute({
         documentId,
         userId,
+        abortSignal: controller.signal,
       })
       .then((result) => {
         clearTimeout(timeoutId);
@@ -207,8 +211,7 @@ documentWorker.on(
     if (!job) {
       workerLogger.error('Job failed with no job data', {
         event: 'job.event.failed_no_data',
-        errorMessage: error.message,
-        errorStack: error.stack,
+        ...sanitizeErrorForProduction(error),
       });
       return;
     }
@@ -250,8 +253,7 @@ const gracefulShutdown = async (signal: string) => {
     const err = error instanceof Error ? error : new Error('Unknown error');
     workerLogger.error('Error during shutdown', {
       event: 'worker.shutdown_error',
-      errorMessage: err.message,
-      errorStack: err.stack,
+      ...sanitizeErrorForProduction(err),
     });
     process.exit(1);
   }

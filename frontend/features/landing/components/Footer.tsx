@@ -51,12 +51,12 @@ export function Footer() {
             <div className="flex items-center gap-3">
               <Image
                 src="/logo.png"
-                alt="Formydable"
+                alt={t('common:appName')}
                 className="h-10 w-10 rounded-xl object-cover"
                 width={40}
                 height={40}
               />
-              <span className="text-2xl font-semibold text-white">Formydable</span>
+              <span className="text-2xl font-semibold text-white">{t('common:appName')}</span>
             </div>
             <p className="text-sm text-gray-400 max-w-sm leading-relaxed">
               {t('landing:footer.tagline')}

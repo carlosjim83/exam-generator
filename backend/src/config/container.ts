@@ -139,7 +139,8 @@ import { AzureOpenAIGradingService } from '@infrastructure/ai/AzureOpenAIGrading
  * Manages all application dependencies
  */
 export class Container {
-  private static instance: Container;
+  private static _instance: Container | null = null;
+  private static _initializing = false;
 
   // Infrastructure Layer
   private readonly _prisma: PrismaClient;
@@ -404,7 +405,8 @@ export class Container {
       this._ragContextExtractor,
       this._examPersistenceService,
       this._usageMetricsUpdater,
-      this._logger
+      this._logger,
+      this._prisma
     );
 
     this._getExamUseCase = new GetExamUseCase(this._examRepository);
@@ -621,21 +623,28 @@ export class Container {
    * Get singleton instance
    */
   public static getInstance(): Container {
-    if (!Container.instance) {
-      Container.instance = new Container();
+    if (!Container._instance) {
+      if (Container._initializing) {
+        throw new Error('Circular dependency detected during Container initialization');
+      }
+      Container._initializing = true;
+      try {
+        Container._instance = new Container();
+      } finally {
+        Container._initializing = false;
+      }
     }
-    return Container.instance;
+    return Container._instance;
   }
 
   /**
    * Reset singleton (useful for testing)
    */
   public static reset(): void {
-    if (Container.instance) {
-      Container.instance._prisma.$disconnect();
+    if (Container._instance) {
+      Container._instance._prisma.$disconnect();
     }
-    // @ts-expect-error - Force reset for testing
-    Container.instance = undefined;
+    Container._instance = null;
   }
 
   // ========================================

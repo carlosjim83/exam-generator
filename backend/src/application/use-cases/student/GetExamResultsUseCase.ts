@@ -26,6 +26,9 @@ export interface ExamResults {
   assignment: ExamAssignment;
   exam: Exam;
   results: QuestionResult[];
+  score: number;
+  maxScore: number;
+  percentage: number;
 }
 
 export class GetExamResultsUseCase {
@@ -78,10 +81,19 @@ export class GetExamResultsUseCase {
       };
     });
 
+    const maxScore = results.reduce((sum, r) => sum + (r.question.points || 0), 0);
+    const score = results
+      .filter((r) => r.isCorrect)
+      .reduce((sum, r) => sum + (r.question.points || 0), 0);
+    const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+
     return {
       assignment,
       exam,
       results,
+      score,
+      maxScore,
+      percentage,
     };
   }
 }

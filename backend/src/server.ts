@@ -1,6 +1,5 @@
 import AdminJSFastify from '@adminjs/fastify';
 import cors from '@fastify/cors';
-import '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -9,6 +8,7 @@ import Fastify from 'fastify';
 import { authenticate } from './admin/auth.js';
 import { admin } from './admin/index.js';
 import { env, validateEnv } from './config/env.js';
+import { prisma } from '@config/prisma.js';
 import { DomainError } from './domain/errors/DomainError.js';
 import { bootstrapEventHandlers } from './infrastructure/events/bootstrap.js';
 import { authRoutes } from './routes/auth.routes.js';
@@ -295,9 +295,6 @@ await AdminJSFastify.buildAuthenticatedRouter(
   admin,
   {
     authenticate: async (email, password) => {
-      const { PrismaClient } = await import('@prisma/client');
-
-      const prisma = new PrismaClient();
       return await authenticate(email, password, prisma);
     },
     cookiePassword: env.ADMINJS_COOKIE_SECRET,

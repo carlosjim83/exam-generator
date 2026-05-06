@@ -91,30 +91,32 @@ export class GetClassExamResultsUseCase {
     // Get all assignments for this class exam
     const assignments = await this.assignmentRepository.findByClassExamId(classExamId);
 
+    // Fetch all students in a single query to avoid N+1
+    const studentIds = assignments.map((a) => a.studentId);
+    const students = await this.userRepository.findManyByIds(studentIds);
+    const studentById = new Map(students.map((s) => [s.id.toString(), s]));
+
     // Build results with student info
-    const results: StudentResult[] = await Promise.all(
-      assignments.map(async (assignment) => {
-        const timeTaken =
-          assignment.startedAt && assignment.submittedAt
-            ? Math.floor((assignment.submittedAt.getTime() - assignment.startedAt.getTime()) / 1000)
-            : null;
+    const results: StudentResult[] = assignments.map((assignment) => {
+      const timeTaken =
+        assignment.startedAt && assignment.submittedAt
+          ? Math.floor((assignment.submittedAt.getTime() - assignment.startedAt.getTime()) / 1000)
+          : null;
 
-        // Fetch student info from userRepository
-        const student = await this.userRepository.findById(assignment.studentId);
+      const student = studentById.get(assignment.studentId.toString());
 
-        return {
-          studentId: assignment.studentId.toString(),
-          studentName: student ? student.fullName : 'Unknown Student',
-          studentEmail: student ? student.email.value : '',
-          status: assignment.status,
-          startedAt: assignment.startedAt,
-          submittedAt: assignment.submittedAt,
-          timeTaken,
-          score: assignment.score,
-          attemptNumber: 1, // TODO: Track multiple attempts
-        };
-      })
-    );
+      return {
+        studentId: assignment.studentId.toString(),
+        studentName: student ? student.fullName : 'Unknown Student',
+        studentEmail: student ? student.email.value : '',
+        status: assignment.status,
+        startedAt: assignment.startedAt,
+        submittedAt: assignment.submittedAt,
+        timeTaken,
+        score: assignment.score,
+        attemptNumber: 1, // TODO: Track multiple attempts
+      };
+    });
 
     // Calculate statistics
     const totalStudents = results.length;

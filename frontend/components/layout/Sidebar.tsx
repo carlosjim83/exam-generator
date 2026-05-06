@@ -144,13 +144,13 @@ export function Sidebar() {
         <Link href={getLogoLink()} className="flex items-center gap-2">
           <Image
             src="/logo.png"
-            alt="Formydable"
+            alt={t('common:appName')}
             className="h-9 w-9 rounded-lg object-cover"
             width={36}
             height={36}
           />
           <div>
-            <h1 className="text-lg font-bold text-card-foreground">Formydable</h1>
+            <h1 className="text-lg font-bold text-card-foreground">{t('common:appName')}</h1>
           </div>
         </Link>
       </div>

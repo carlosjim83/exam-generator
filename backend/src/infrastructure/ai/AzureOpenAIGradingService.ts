@@ -1,4 +1,6 @@
 import { AzureOpenAI } from 'openai';
+import { Type } from '@sinclair/typebox';
+import { Value } from '@sinclair/typebox/value';
 import type {
   GradeAnswerInput,
   GradeAnswerOutput,
@@ -6,12 +8,12 @@ import type {
 } from '@domain/services/IAnswerGradingService.js';
 import { env } from '@config/env.js';
 
-interface GradingResponse {
-  isCorrect: boolean;
-  score: number;
-  feedback: string;
-  explanation: string;
-}
+const GradingResponseSchema = Type.Object({
+  isCorrect: Type.Boolean(),
+  score: Type.Number({ minimum: 0 }),
+  feedback: Type.String(),
+  explanation: Type.String(),
+});
 
 export class AzureOpenAIGradingService implements IAnswerGradingService {
   private client: AzureOpenAI;
@@ -50,16 +52,28 @@ export class AzureOpenAIGradingService implements IAnswerGradingService {
         throw new Error('Empty response from Azure OpenAI');
       }
 
-      const result = JSON.parse(content) as GradingResponse;
+      const parsed = JSON.parse(content);
+
+      if (!Value.Check(GradingResponseSchema, parsed)) {
+        console.error('Invalid grading response from Azure OpenAI: schema validation failed');
+        // Fallback: return 0 points on validation failure
+        return {
+          isCorrect: false,
+          score: 0,
+          feedback: 'Error during automatic grading. Please contact your teacher.',
+        };
+      }
+
+      const validated = Value.Cast(GradingResponseSchema, parsed);
 
       // Validate score is within bounds
-      const score = Math.max(0, Math.min(points, result.score));
+      const score = Math.max(0, Math.min(points, validated.score));
 
       return {
-        isCorrect: result.isCorrect,
+        isCorrect: validated.isCorrect,
         score,
-        feedback: result.feedback,
-        explanation: result.explanation,
+        feedback: validated.feedback,
+        explanation: validated.explanation,
       };
     } catch (error) {
       console.error('Error grading answer with Azure OpenAI:', error);

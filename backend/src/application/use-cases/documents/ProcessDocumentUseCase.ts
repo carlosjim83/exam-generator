@@ -32,6 +32,7 @@ import { UserId } from '@domain/value-objects/UserId.js';
 export interface ProcessDocumentInput {
   documentId: string;
   userId: string; // For authorization check
+  abortSignal?: AbortSignal;
 }
 
 export interface ProcessDocumentOutput {
@@ -61,23 +62,34 @@ export class ProcessDocumentUseCase {
     let tempFilePath: string | null = null;
     let documentId: DocumentId | null = null;
 
+    const checkAbort = () => {
+      if (input.abortSignal?.aborted) {
+        throw new Error('Document processing was aborted');
+      }
+    };
+
     try {
       // 1. Validate input
       documentId = DocumentId.create(input.documentId);
       const userId = UserId.create(input.userId);
+      checkAbort();
 
       // 2. Find document and verify ownership
       const document = await this.documentRepository.findById(documentId);
+      checkAbort();
       if (!document) {
         throw new NotFoundError('Document not found');
       }
 
       assertOwnership(document.userId, userId, 'Unauthorized: Document does not belong to user');
+      checkAbort();
 
       // 3. Check if already processed (idempotent)
       if (document.isCompleted()) {
+        checkAbort();
         // Count existing chunks
         const chunksCreated = await this.documentProcessor.getChunkCount(documentId.value);
+        checkAbort();
 
         return {
           document: {
@@ -97,15 +109,18 @@ export class ProcessDocumentUseCase {
       await this.documentRepository.updateStatus(documentId, {
         status: DocumentStatus.PROCESSING,
       });
+      checkAbort();
 
       // 5. Download file from storage
       const fileBuffer = await this.storageService.download(document.blobUrl);
+      checkAbort();
 
       // 6. Save to temporary file (Genkit flow needs file path)
       await mkdir(this.tempDir, { recursive: true });
       const tempFileName = `${randomUUID()}-${document.filename}`;
       tempFilePath = path.join(this.tempDir, tempFileName);
       await writeFile(tempFilePath, fileBuffer);
+      checkAbort();
 
       // 7. Call document processor for processing
       const result = await this.documentProcessor.process({
@@ -117,6 +132,7 @@ export class ProcessDocumentUseCase {
       if (!result.success) {
         throw new Error(result.error || 'Processing failed');
       }
+      checkAbort();
 
       // 8. Update document with metadata and COMPLETED status
       const updatedDocument = await this.documentRepository.updateStatus(documentId, {
@@ -124,6 +140,8 @@ export class ProcessDocumentUseCase {
         pageCount: result.pageCount,
         wordCount: result.wordCount,
       });
+
+      checkAbort();
 
       // 9. Clean up temporary file
       if (tempFilePath) {

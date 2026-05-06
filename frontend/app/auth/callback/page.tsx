@@ -6,12 +6,14 @@ import Image from 'next/image';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
+import { useTranslation } from 'react-i18next';
 
 function AuthCallbackContent() {
   const router = useRouter();
   const { setUser } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Processing authentication...');
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     const timeouts: ReturnType<typeof setTimeout>[] = [];
@@ -97,12 +99,12 @@ function AuthCallbackContent() {
         <div className="flex items-center justify-center gap-2 mb-8">
           <Image
             src="/logo.png"
-            alt="Formydable"
+            alt={t('common:appName')}
             className="h-12 w-12 rounded-xl object-cover"
             width={48}
             height={48}
           />
-          <h1 className="text-3xl font-bold">Formydable</h1>
+          <h1 className="text-3xl font-bold">{t('common:appName')}</h1>
         </div>
 
         <Card className="shadow-xl">

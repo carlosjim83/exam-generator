@@ -43,46 +43,58 @@ export class PrismaExamRepository implements IExamRepository {
     return this.toDomain(exam, []);
   }
 
+  private async _createExamAndQuestions(
+    client: any,
+    examData: CreateExamDTO,
+    questionsData: CreateQuestionDTO[]
+  ): Promise<{ exam: any; questions: any[] }> {
+    const exam = await client.exam.create({
+      data: {
+        userId: examData.userId.value,
+        title: examData.title,
+        description: examData.description,
+        generatedFrom: examData.generatedFrom,
+        promptUsed: examData.promptUsed,
+      },
+    });
+
+    const questions = await Promise.all(
+      questionsData.map((q, index) =>
+        client.question.create({
+          data: {
+            examId: exam.id,
+            type: q.type,
+            difficulty: q.difficulty,
+            questionText: q.questionText,
+            options: q.options,
+            correctAnswer: q.correctAnswer,
+            explanation: q.explanation,
+            points: q.points,
+            orderIndex: index,
+            sourceChunkIds: q.sourceChunkIds,
+          },
+        })
+      )
+    );
+
+    return { exam, questions };
+  }
+
   /**
    * Create exam with questions in a transaction (legacy method for GenerateExamUseCase)
    */
   async createWithQuestions(
     examData: CreateExamDTO,
-    questionsData: CreateQuestionDTO[]
+    questionsData: CreateQuestionDTO[],
+    tx?: any
   ): Promise<Exam> {
-    const result = await this.prisma.$transaction(async (tx: any) => {
-      // Create exam
-      const exam = await tx.exam.create({
-        data: {
-          userId: examData.userId.value,
-          title: examData.title,
-          description: examData.description,
-          generatedFrom: examData.generatedFrom,
-          promptUsed: examData.promptUsed,
-        },
-      });
+    if (tx) {
+      const result = await this._createExamAndQuestions(tx, examData, questionsData);
+      return this.toDomain(result.exam, result.questions);
+    }
 
-      // Create questions
-      const questions = await Promise.all(
-        questionsData.map((q, index) =>
-          tx.question.create({
-            data: {
-              examId: exam.id,
-              type: q.type,
-              difficulty: q.difficulty,
-              questionText: q.questionText,
-              options: q.options,
-              correctAnswer: q.correctAnswer,
-              explanation: q.explanation,
-              points: q.points,
-              orderIndex: index,
-              sourceChunkIds: q.sourceChunkIds,
-            },
-          })
-        )
-      );
-
-      return { exam, questions };
+    const result = await this.prisma.$transaction(async (innerTx: any) => {
+      return this._createExamAndQuestions(innerTx, examData, questionsData);
     });
 
     return this.toDomain(result.exam, result.questions);

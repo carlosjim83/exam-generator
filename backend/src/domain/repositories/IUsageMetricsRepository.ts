@@ -9,7 +9,7 @@ export interface IUsageMetricsRepository {
   /**
    * Create new usage metrics
    */
-  create(metrics: UsageMetrics): Promise<UsageMetrics>;
+  create(metrics: UsageMetrics, tx?: any): Promise<UsageMetrics>;
 
   /**
    * Find usage metrics by ID
@@ -19,7 +19,7 @@ export interface IUsageMetricsRepository {
   /**
    * Find current month usage metrics for a teacher
    */
-  findCurrentByTeacherId(teacherId: UserId): Promise<UsageMetrics | null>;
+  findCurrentByTeacherId(teacherId: UserId, tx?: any): Promise<UsageMetrics | null>;
 
   /**
    * Update usage metrics
@@ -29,7 +29,11 @@ export interface IUsageMetricsRepository {
   /**
    * Get or create current month usage metrics for a teacher
    */
-  getOrCreateCurrent(teacherId: UserId, subscriptionId: SubscriptionId): Promise<UsageMetrics>;
+  getOrCreateCurrent(
+    teacherId: UserId,
+    subscriptionId: SubscriptionId,
+    tx?: any
+  ): Promise<UsageMetrics>;
 
   /**
    * Increment class count
@@ -54,7 +58,7 @@ export interface IUsageMetricsRepository {
   /**
    * Increment exam count
    */
-  incrementExamCount(id: string): Promise<void>;
+  incrementExamCount(id: string, tx?: any): Promise<void>;
 
   /**
    * Update class count to specific value

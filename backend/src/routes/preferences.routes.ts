@@ -1,14 +1,12 @@
-import { PrismaClient } from '@prisma/client';
 import type { FastifyInstance } from 'fastify';
 
+import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 import { BadRequestResponseSchema, ErrorResponseSchema } from '@schemas/common.js';
 import {
   PreferencesResponseSchema,
   PreferencesUpdateResponseSchema,
 } from '@schemas/preferences.js';
-
-const prisma = new PrismaClient();
 
 export async function preferencesRoutes(fastify: FastifyInstance) {
   // GET /api/preferences - Get user preferences
@@ -32,13 +30,13 @@ export async function preferencesRoutes(fastify: FastifyInstance) {
         const userId = request.user!.userId;
 
         // Get or create preferences
-        let preferences = await prisma.userPreferences.findUnique({
+        let preferences = await container.prisma.userPreferences.findUnique({
           where: { userId },
         });
 
         if (!preferences) {
           // Create default preferences if they don't exist
-          preferences = await prisma.userPreferences.create({
+          preferences = await container.prisma.userPreferences.create({
             data: {
               userId,
               language: 'en',
@@ -112,7 +110,7 @@ export async function preferencesRoutes(fastify: FastifyInstance) {
         if (theme) updateData.theme = theme;
 
         // Upsert preferences
-        const preferences = await prisma.userPreferences.upsert({
+        const preferences = await container.prisma.userPreferences.upsert({
           where: { userId },
           update: updateData,
           create: {

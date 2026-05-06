@@ -4,7 +4,7 @@ import type { ILogger } from '@domain/services/ILogger.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
 export interface IUsageMetricsUpdater {
-  updateExamCount(teacherId: string): Promise<void>;
+  updateExamCount(teacherId: string, tx?: any): Promise<void>;
 }
 
 /**
@@ -19,28 +19,31 @@ export class UsageMetricsUpdater implements IUsageMetricsUpdater {
     private readonly logger: ILogger
   ) {}
 
-  async updateExamCount(teacherId: string): Promise<void> {
+  async updateExamCount(teacherId: string, tx?: any): Promise<void> {
     try {
       const teacherUserId = UserId.create(teacherId);
-      const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId);
+      const subscription = await this.subscriptionRepository.findByTeacherId(teacherUserId, tx);
 
       if (subscription) {
         const metrics = await this.usageMetricsRepository.getOrCreateCurrent(
           teacherUserId,
-          subscription.id
+          subscription.id,
+          tx
         );
-        await this.usageMetricsRepository.incrementExamCount(metrics.id);
+        await this.usageMetricsRepository.incrementExamCount(metrics.id, tx);
         return;
       }
 
-      const existingMetrics =
-        await this.usageMetricsRepository.findCurrentByTeacherId(teacherUserId);
+      const existingMetrics = await this.usageMetricsRepository.findCurrentByTeacherId(
+        teacherUserId,
+        tx
+      );
       if (!existingMetrics) {
         this.logger.warn('No usage metrics found for teacher', { teacherId });
         return;
       }
 
-      await this.usageMetricsRepository.incrementExamCount(existingMetrics.id);
+      await this.usageMetricsRepository.incrementExamCount(existingMetrics.id, tx);
     } catch (error) {
       this.logger.error('Failed to update exam usage metrics', {
         teacherId,

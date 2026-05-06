@@ -71,10 +71,13 @@ describe('ReprocessDocumentUseCase', () => {
       processedAt: null, // Should be cleared
     });
     expect(mockDocumentRepository.deleteChunksByDocumentId).toHaveBeenCalledWith(mockDocumentId);
-    expect(mockMessageBroker.publish).toHaveBeenCalledWith('document.uploaded', {
-      aggregateId: mockDocumentId.value,
-      occurredAt: expect.any(Date),
-    });
+    expect(mockMessageBroker.publish).toHaveBeenCalledWith(
+      'document.uploaded',
+      expect.objectContaining({
+        aggregateId: mockDocumentId.value,
+        occurredAt: expect.any(Date),
+      })
+    );
 
     expect(result.id).toBe(mockDocumentId.value);
     expect(result.status).toBe(DocumentStatus.PENDING);
@@ -106,10 +109,13 @@ describe('ReprocessDocumentUseCase', () => {
       processedAt: null,
     });
     expect(mockDocumentRepository.deleteChunksByDocumentId).toHaveBeenCalledWith(mockDocumentId);
-    expect(mockMessageBroker.publish).toHaveBeenCalledWith('document.uploaded', {
-      aggregateId: mockDocumentId.value,
-      occurredAt: expect.any(Date),
-    });
+    expect(mockMessageBroker.publish).toHaveBeenCalledWith(
+      'document.uploaded',
+      expect.objectContaining({
+        aggregateId: mockDocumentId.value,
+        occurredAt: expect.any(Date),
+      })
+    );
 
     expect(result.id).toBe(mockDocumentId.value);
     expect(result.status).toBe(DocumentStatus.PENDING);

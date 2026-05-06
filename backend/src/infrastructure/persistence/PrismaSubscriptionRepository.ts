@@ -56,8 +56,9 @@ export class PrismaSubscriptionRepository implements ISubscriptionRepository {
     return this.mapToEntity(subscription);
   }
 
-  async findByTeacherId(teacherId: UserId): Promise<Subscription | null> {
-    const subscription = await this.prisma.subscription.findUnique({
+  async findByTeacherId(teacherId: UserId, tx?: any): Promise<Subscription | null> {
+    const prisma = tx || this.prisma;
+    const subscription = await prisma.subscription.findUnique({
       where: { teacherId: teacherId.value },
     });
 
