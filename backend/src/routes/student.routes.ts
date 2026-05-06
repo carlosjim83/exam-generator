@@ -539,12 +539,8 @@ export async function studentRoutes(fastify: FastifyInstance) {
             options: q.options,
           })) || [];
 
-        // Calculate score and percentage
-        const maxScore = result.results.reduce((sum, r) => sum + (r.question.points || 0), 0);
-        const score = result.results
-          .filter((r) => r.isCorrect)
-          .reduce((sum, r) => sum + (r.question.points || 0), 0);
-        const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+        // Score and percentage are calculated by the use case
+        const { score, maxScore, percentage } = result;
 
         return reply.status(200).send({
           assignment: serializeAssignment(result.assignment),

@@ -2,7 +2,8 @@ import type { FastifyInstance } from 'fastify';
 
 import { container } from '@config/container.js';
 import { UserId } from '@domain/value-objects/UserId.js';
-import { authenticateUser, requireRoles } from '@middleware/auth.middleware.js';
+import { authenticateUser } from '@middleware/auth.middleware.js';
+import { requireRoles } from '@middleware/role.middleware.js';
 import { ErrorResponseSchema } from '@schemas/common.js';
 import { ProfileResponseSchema, TeacherDashboardResponseSchema } from '@schemas/protected.js';
 

@@ -24,6 +24,11 @@ export interface IUserRepository {
   findById(id: UserId): Promise<User | null>;
 
   /**
+   * Find many users by their IDs
+   */
+  findManyByIds(ids: UserId[]): Promise<User[]>;
+
+  /**
    * Find a user by email
    */
   findByEmail(email: Email): Promise<User | null>;

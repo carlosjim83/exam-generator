@@ -28,3 +28,6 @@ export function authorizeRoles(allowedRoles: string[]) {
     }
   };
 }
+
+// Backward-compatible alias used by some route files
+export { authorizeRoles as requireRoles };

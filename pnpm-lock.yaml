@@ -179,7 +179,7 @@ importers:
         version: 1.11.0
       openai:
         specifier: ^6.16.0
-        version: 6.22.0(zod@3.25.76)
+        version: 6.22.0(zod@4.3.6)
       pdf-parse:
         specifier: ^1.1.4
         version: 1.1.4
@@ -195,6 +195,9 @@ importers:
       uuid:
         specifier: ^13.0.0
         version: 13.0.0
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
     devDependencies:
       '@babel/plugin-syntax-import-assertions':
         specifier: ^7.28.6
@@ -16594,7 +16597,7 @@ packages:
       mimic-function: 5.0.1
     dev: true
 
-  /openai@6.22.0(zod@3.25.76):
+  /openai@6.22.0(zod@4.3.6):
     resolution:
       {
         integrity: sha512-7Yvy17F33Bi9RutWbsaYt5hJEEJ/krRPOrwan+f9aCPuMat1WVsb2VNSII5W1EksKT6fF69TG/xj4XzodK3JZw==,
@@ -16609,7 +16612,7 @@ packages:
       zod:
         optional: true
     dependencies:
-      zod: 3.25.76
+      zod: 4.3.6
     dev: false
 
   /openapi-types@12.1.3:
