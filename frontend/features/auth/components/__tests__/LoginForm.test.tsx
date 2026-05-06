@@ -51,10 +51,10 @@ describe('LoginForm', () => {
       expect(screen.getByText('Sign in to your account to continue')).toBeInTheDocument();
     });
 
-    it('should render Formydable logo and title', () => {
+    it('should render app logo and title', () => {
       render(<LoginForm />);
 
-      expect(screen.getByText('Formydable')).toBeInTheDocument();
+      expect(screen.getByAltText('common:appName')).toBeInTheDocument();
     });
 
     it('should render email input', () => {

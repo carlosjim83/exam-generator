@@ -579,7 +579,8 @@ describe('GenerateExamUseCase', () => {
           description: 'Test description',
           generatedFrom: [mockDocumentId.value],
         }),
-        expect.any(Array)
+        expect.any(Array),
+        expect.anything()
       );
     });
   });
@@ -671,7 +672,8 @@ describe('GenerateExamUseCase', () => {
         expect.objectContaining({
           generatedFrom: [mockDocumentId.value, mockDocumentId2.value],
         }),
-        expect.any(Array)
+        expect.any(Array),
+        expect.anything()
       );
     });
 

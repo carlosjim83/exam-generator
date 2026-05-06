@@ -38,6 +38,7 @@ const mockAssignmentRepository = {
 
 const mockUserRepository = {
   findById: vi.fn(),
+  findManyByIds: vi.fn(),
 } satisfies Partial<IUserRepository> as IUserRepository;
 
 describe('GetClassExamResultsUseCase', () => {
@@ -244,9 +245,7 @@ describe('GetClassExamResultsUseCase', () => {
         assignment1,
         assignment2,
       ]);
-      vi.mocked(mockUserRepository.findById)
-        .mockResolvedValueOnce(student1)
-        .mockResolvedValueOnce(student2);
+      vi.mocked(mockUserRepository.findManyByIds).mockResolvedValue([student1, student2]);
 
       const input: GetClassExamResultsInput = {
         classExamId: classExamId.value,
@@ -265,10 +264,11 @@ describe('GetClassExamResultsUseCase', () => {
       expect(result.results[1].studentName).toBe('Jane Smith');
       expect(result.results[1].studentEmail).toBe('jane.smith@example.com');
 
-      // Verify IUserRepository was called for each student
-      expect(mockUserRepository.findById).toHaveBeenCalledTimes(2);
-      expect(mockUserRepository.findById).toHaveBeenNthCalledWith(1, student1Id);
-      expect(mockUserRepository.findById).toHaveBeenNthCalledWith(2, student2Id);
+      // Verify IUserRepository.findManyByIds was called once with all student IDs
+      expect(mockUserRepository.findManyByIds).toHaveBeenCalledTimes(1);
+      expect(mockUserRepository.findManyByIds).toHaveBeenCalledWith(
+        expect.arrayContaining([student1Id, student2Id])
+      );
     });
 
     it('should handle missing student gracefully', async () => {
@@ -310,7 +310,7 @@ describe('GetClassExamResultsUseCase', () => {
       vi.mocked(mockClassExamRepository.findById).mockResolvedValue(classExam);
       vi.mocked(mockExamRepository.findById).mockResolvedValue(exam);
       vi.mocked(mockAssignmentRepository.findByClassExamId).mockResolvedValue([assignment]);
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(null);
+      vi.mocked(mockUserRepository.findManyByIds).mockResolvedValue([]);
 
       const input: GetClassExamResultsInput = {
         classExamId: classExamId.value,
@@ -413,8 +413,8 @@ describe('GetClassExamResultsUseCase', () => {
       vi.mocked(mockClassExamRepository.findById).mockResolvedValue(classExam);
       vi.mocked(mockExamRepository.findById).mockResolvedValue(exam);
       vi.mocked(mockAssignmentRepository.findByClassExamId).mockResolvedValue(assignments);
-      vi.mocked(mockUserRepository.findById).mockImplementation((id) =>
-        Promise.resolve(mockStudent(id))
+      vi.mocked(mockUserRepository.findManyByIds).mockImplementation((_ids: any) =>
+        Promise.resolve(_ids.map((id: any) => mockStudent(id)))
       );
 
       const input: GetClassExamResultsInput = {
@@ -483,7 +483,7 @@ describe('GetClassExamResultsUseCase', () => {
       vi.mocked(mockClassExamRepository.findById).mockResolvedValue(classExam);
       vi.mocked(mockExamRepository.findById).mockResolvedValue(exam);
       vi.mocked(mockAssignmentRepository.findByClassExamId).mockResolvedValue([assignment]);
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(student);
+      vi.mocked(mockUserRepository.findManyByIds).mockResolvedValue([student]);
 
       const input: GetClassExamResultsInput = {
         classExamId: classExamId.value,
@@ -553,7 +553,7 @@ describe('GetClassExamResultsUseCase', () => {
       vi.mocked(mockClassExamRepository.findById).mockResolvedValue(classExam);
       vi.mocked(mockExamRepository.findById).mockResolvedValue(exam);
       vi.mocked(mockAssignmentRepository.findByClassExamId).mockResolvedValue([assignment]);
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(student);
+      vi.mocked(mockUserRepository.findManyByIds).mockResolvedValue([student]);
 
       const input: GetClassExamResultsInput = {
         classExamId: classExamId.value,
@@ -616,7 +616,7 @@ describe('GetClassExamResultsUseCase', () => {
       vi.mocked(mockClassExamRepository.findById).mockResolvedValue(classExam);
       vi.mocked(mockExamRepository.findById).mockResolvedValue(exam);
       vi.mocked(mockAssignmentRepository.findByClassExamId).mockResolvedValue([assignment]);
-      vi.mocked(mockUserRepository.findById).mockResolvedValue(student);
+      vi.mocked(mockUserRepository.findManyByIds).mockResolvedValue([student]);
 
       const input: GetClassExamResultsInput = {
         classExamId: classExamId.value,

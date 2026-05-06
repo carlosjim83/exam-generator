@@ -62,10 +62,10 @@ describe('RegisterForm', () => {
       expect(screen.getByText('Get started with AI-powered exam generation')).toBeInTheDocument();
     });
 
-    it('should render Formydable logo', () => {
+    it('should render app logo', () => {
       render(<RegisterForm />);
 
-      expect(screen.getByText('Formydable')).toBeInTheDocument();
+      expect(screen.getByAltText('common:appName')).toBeInTheDocument();
     });
 
     it('should render all form inputs', () => {
