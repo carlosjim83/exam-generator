@@ -110,12 +110,12 @@ export function RegisterForm() {
         <div className="flex items-center justify-center gap-2 mb-8">
           <Image
             src="/logo.png"
-            alt="Formydable"
+            alt={t('common:appName')}
             className="h-12 w-12 rounded-xl object-cover"
             width={48}
             height={48}
           />
-          <h1 className="text-3xl font-bold">Formydable</h1>
+          <h1 className="text-3xl font-bold">{t('common:appName')}</h1>
         </div>
 
         <Card className="shadow-xl">

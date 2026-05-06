@@ -31,7 +31,7 @@ export function TopNavigation() {
         <div className="flex items-center gap-2 mr-8">
           <Image
             src="/logo.png"
-            alt="Formydable"
+            alt={t('common:appName')}
             className="h-8 w-8 rounded-lg object-cover"
             width={32}
             height={32}
@@ -40,7 +40,7 @@ export function TopNavigation() {
             href={user?.role === 'STUDENT' ? '/student/exams' : '/dashboard'}
             className="font-semibold text-lg"
           >
-            Formydable
+            {t('common:appName')}
           </Link>
         </div>
 

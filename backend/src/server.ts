@@ -1,6 +1,5 @@
 import AdminJSFastify from '@adminjs/fastify';
 import cors from '@fastify/cors';
-import multipart from '@fastify/multipart';
 import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
@@ -290,9 +289,6 @@ await fastify.register(swaggerUi, {
 });
 
 console.log('⚠️  Using in-memory session store (not persistent across restarts)');
-
-// Register multipart plugin with file size limit
-await fastify.register(multipart, { limits: { fileSize: MAX_FILE_SIZE } });
 
 // Register AdminJS router BEFORE other routes
 await AdminJSFastify.buildAuthenticatedRouter(

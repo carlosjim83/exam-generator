@@ -1,5 +1,4 @@
 import type { FastifyInstance } from 'fastify';
-import '@fastify/multipart'; // Import for type augmentation
 
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';

@@ -95,12 +95,12 @@ export function LandingNavigation() {
             <Link href="/" className="flex items-center gap-3">
               <Image
                 src="/logo.png"
-                alt="Formydable"
+                alt={t('common:appName')}
                 className="h-9 w-9 rounded-xl object-cover"
                 width={36}
                 height={36}
               />
-              <span className="text-xl font-semibold text-white">Formydable</span>
+              <span className="text-xl font-semibold text-white">{t('common:appName')}</span>
             </Link>
           </motion.div>
 
