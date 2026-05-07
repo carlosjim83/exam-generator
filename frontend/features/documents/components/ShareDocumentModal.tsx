@@ -58,7 +58,7 @@ export function ShareDocumentModal({
   documentTitle,
   onSuccess,
 }: ShareDocumentModalProps) {
-  const { t } = useTranslation('documents');
+  const { t, i18n } = useTranslation('documents');
 
   // State
   const [allClasses, setAllClasses] = useState<Class[]>([]);
@@ -233,7 +233,11 @@ export function ShareDocumentModal({
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
-    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString(i18n.language, {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
   };
 
   return (

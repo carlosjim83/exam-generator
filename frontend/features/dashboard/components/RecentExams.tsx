@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { ClassExam } from '@/lib/types/dashboard.types';
 
 function ClassExamCard({ exam }: { exam: ClassExam }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isPublished = exam.isPublished;
 
   return (
@@ -44,7 +44,7 @@ function ClassExamCard({ exam }: { exam: ClassExam }) {
           {exam.submittedCount > 0 &&
             ` • ${exam.submittedCount} ${t('dashboard:recentClassExams.submitted')}`}
           {exam.dueDate &&
-            ` • ${t('dashboard:recentClassExams.due')}: ${new Date(exam.dueDate).toLocaleDateString()}`}
+            ` • ${t('dashboard:recentClassExams.due')}: ${new Date(exam.dueDate).toLocaleDateString(i18n.language)}`}
         </p>
       </CardContent>
 

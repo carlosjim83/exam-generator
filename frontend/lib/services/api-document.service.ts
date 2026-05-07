@@ -12,7 +12,7 @@
 
 import type { Document } from '../types/dashboard.types';
 import { configManager } from '@/lib/config/config-manager';
-import { TokenManager, ApiError } from '@/lib/api-client';
+import { TokenManager } from '@/lib/api-client';
 
 export interface UploadDocumentInput {
   file: File;
@@ -159,8 +159,7 @@ export class ApiDocumentService {
       const data = await response.json();
       // Backend returns { documents: [...] }, extract the array
       return Array.isArray(data) ? data : data.documents || [];
-    } catch (error) {
-      console.error('Error fetching documents:', error);
+    } catch {
       return [];
     }
   }
@@ -189,8 +188,7 @@ export class ApiDocumentService {
       }
 
       return await response.json();
-    } catch (error) {
-      console.error('Error fetching document:', error);
+    } catch {
       return null;
     }
   }
@@ -289,3 +287,9 @@ export class ApiDocumentService {
     URL.revokeObjectURL(url);
   }
 }
+
+/**
+ * Singleton instance of the document service.
+ * Use this for all document API operations.
+ */
+export const documentService = new ApiDocumentService();

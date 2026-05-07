@@ -8,5 +8,3 @@ export default function Home() {
     </SafeTranslation>
   );
 }
-
-export const dynamic = 'force-dynamic';

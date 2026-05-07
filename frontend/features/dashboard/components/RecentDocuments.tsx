@@ -5,68 +5,14 @@ import Link from 'next/link';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { FileText, RefreshCw, Loader2, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { FileText, RefreshCw, Loader2 } from 'lucide-react';
 import { useDashboardContext } from '../context/DashboardContext';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ApiDocumentService } from '@/lib/services/api-document.service';
+import { documentService } from '@/lib/services/api-document.service';
+import { DocumentIcon } from '@/components/ui-custom/DocumentIcon';
+import { DocumentStatusBadge } from '@/components/ui-custom/DocumentStatusBadge';
 import type { Document } from '@/lib/types/dashboard.types';
-
-function DocumentIcon({ mimeType }: { mimeType: string }) {
-  if (mimeType === 'application/pdf') {
-    return (
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
-        <svg className="h-5 w-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-          <path d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
-        </svg>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-      <FileText className="h-5 w-5 text-blue-600" />
-    </div>
-  );
-}
-
-function DocumentStatusBadge({ status }: { status: string }) {
-  const { t } = useTranslation();
-
-  switch (status) {
-    case 'COMPLETED':
-      return (
-        <Badge variant="default" className="bg-green-100 text-green-700 hover:bg-green-100">
-          <CheckCircle2 className="h-3 w-3 mr-1" />
-          {t('dashboard:recentDocuments.ready')}
-        </Badge>
-      );
-    case 'PROCESSING':
-      return (
-        <Badge variant="default" className="bg-blue-100 text-blue-700 hover:bg-blue-100">
-          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-          {t('dashboard:recentDocuments.processing')}
-        </Badge>
-      );
-    case 'PENDING':
-      return (
-        <Badge variant="default" className="bg-yellow-100 text-yellow-700 hover:bg-yellow-100">
-          <Clock className="h-3 w-3 mr-1" />
-          {t('dashboard.status.pending')}
-        </Badge>
-      );
-    case 'FAILED':
-      return (
-        <Badge variant="destructive">
-          <XCircle className="h-3 w-3 mr-1" />
-          {t('dashboard:recentDocuments.error')}
-        </Badge>
-      );
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-}
 
 function DocumentItem({
   document,
@@ -75,14 +21,14 @@ function DocumentItem({
   document: Document;
   onRetry: (id: string) => Promise<void>;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [isRetrying, setIsRetrying] = useState(false);
 
   // Format file size
   const fileSizeFormatted = (document.fileSize / (1024 * 1024)).toFixed(1) + ' MB';
 
   // Format date
-  const dateFormatted = new Intl.DateTimeFormat('en-US', {
+  const dateFormatted = new Intl.DateTimeFormat(i18n.language, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -117,7 +63,15 @@ function DocumentItem({
               <p className="break-words">{document.title}</p>
             </TooltipContent>
           </Tooltip>
-          <DocumentStatusBadge status={document.status} />
+          <DocumentStatusBadge
+            status={document.status}
+            labels={{
+              completed: t('dashboard:recentDocuments.ready'),
+              processing: t('dashboard:recentDocuments.processing'),
+              pending: t('dashboard.status.pending'),
+              failed: t('dashboard:recentDocuments.error'),
+            }}
+          />
         </div>
         <p className="truncate text-xs text-muted-foreground">
           {t('dashboard.modifiedAt', { date: dateFormatted })} • {fileSizeFormatted}
@@ -175,7 +129,7 @@ export function RecentDocuments() {
     documentsError: error,
     refreshDocuments,
   } = useDashboardContext();
-  const [documentService] = useState(() => new ApiDocumentService());
+  // Uses singleton documentService
 
   // Auto-refresh every 5 seconds if there are processing documents
   useEffect(() => {
@@ -194,16 +148,11 @@ export function RecentDocuments() {
 
   const handleRetry = useCallback(
     async (documentId: string) => {
-      try {
-        await documentService.reprocessDocument(documentId);
-        // Refresh documents list after retry
-        await refreshDocuments();
-      } catch (error) {
-        console.error('Failed to retry document:', error);
-        throw error;
-      }
+      await documentService.reprocessDocument(documentId);
+      // Refresh documents list after retry
+      await refreshDocuments();
     },
-    [documentService, refreshDocuments]
+    [refreshDocuments]
   );
 
   return (

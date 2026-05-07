@@ -93,8 +93,7 @@ export async function getDocumentShares(
 ): Promise<DocumentSharesResponse | null> {
   try {
     return await apiClient.get<DocumentSharesResponse>(`/api/documents/${documentId}/shares`);
-  } catch (error) {
-    console.error('Failed to get document shares:', error);
+  } catch {
     return null;
   }
 }

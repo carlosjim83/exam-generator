@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, AuthState } from '../types/auth.types';
-import { apiClient, TokenManager } from '../services/api.service';
+import { apiClient } from '../services/api.service';
 
 interface AuthContextValue extends AuthState {
   login: (email: string, password: string) => Promise<void>;
@@ -47,18 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check if user is already authenticated on mount
   useEffect(() => {
     const initAuth = async () => {
-      const accessToken = TokenManager.getAccessToken();
-
-      if (!accessToken) {
-        setAuthState({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-        });
-        return;
-      }
-
-      // Try to get user profile from backend
+      // Try to get user profile from backend using httpOnly cookies
       try {
         const user = await apiClient.get<User>('/api/profile');
         setAuthState({
@@ -67,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isLoading: false,
         });
       } catch (error) {
-        // Token might be expired, try refresh
+        // Cookie might be expired, try refresh
         try {
           await apiClient.refreshAccessToken();
           const user = await apiClient.get<User>('/api/profile');

@@ -11,19 +11,17 @@ interface SafeTranslationProps {
   children: React.ReactNode;
   as?: keyof React.JSX.IntrinsicElements;
   className?: string;
-  [key: string]: any;
 }
 
-export function SafeTranslation({
-  children,
-  as = 'span',
-  className,
-  ...props
-}: SafeTranslationProps) {
-  const Component = as;
+export function SafeTranslation({ children, as, className }: SafeTranslationProps) {
+  if (!as && !className) {
+    return <>{children}</>;
+  }
+
+  const Component = as || 'span';
 
   return (
-    <Component className={className} suppressHydrationWarning {...props}>
+    <Component className={className} suppressHydrationWarning>
       {children}
     </Component>
   );

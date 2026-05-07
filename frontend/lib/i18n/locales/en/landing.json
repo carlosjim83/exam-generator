@@ -116,6 +116,11 @@
   "footer": {
     "tagline": "Transform education with AI-powered assessments",
     "madeWith": "Made with ❤️ for educators worldwide",
+    "social": {
+      "twitter": "Twitter",
+      "github": "GitHub",
+      "linkedin": "LinkedIn"
+    },
     "links": {
       "about": "About",
       "features": "Features",

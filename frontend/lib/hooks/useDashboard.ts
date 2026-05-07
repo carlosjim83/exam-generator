@@ -8,11 +8,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { ApiDashboardService } from '../providers/api-dashboard.service';
+import { dashboardService } from '../providers/api-dashboard.service';
 import type { Document, ClassExam, DashboardStats } from '../types/dashboard.types';
-
-// Singleton instance
-const dashboardService = new ApiDashboardService();
 
 interface UseDashboardStatsResult {
   stats: DashboardStats | null;

@@ -31,7 +31,7 @@ interface ClassExamListProps {
 }
 
 export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
-  const { t } = useTranslation('classes');
+  const { t, i18n } = useTranslation('classes');
   const [exams, setExams] = useState<ClassExam[]>([]);
   const [loading, setLoading] = useState(true);
   const [publishingId, setPublishingId] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export function ClassExamList({ classId, onViewResults }: ClassExamListProps) {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(i18n.language, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

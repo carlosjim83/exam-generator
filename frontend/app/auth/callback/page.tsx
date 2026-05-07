@@ -7,6 +7,7 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
+import { TokenManager } from '@/lib/api-client';
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -46,9 +47,9 @@ function AuthCallbackContent() {
           throw new Error('Missing required authentication parameters');
         }
 
-        // Store tokens in localStorage
-        localStorage.setItem('access_token', accessToken);
-        localStorage.setItem('refresh_token', refreshToken);
+        // Store tokens in memory only (never localStorage) to prevent XSS.
+        // The backend also sets httpOnly cookies for subsequent requests.
+        TokenManager.setTokens(accessToken, refreshToken);
 
         // Update auth context
         setUser({
@@ -71,10 +72,12 @@ function AuthCallbackContent() {
             router.push('/dashboard');
           }, 1500)
         );
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('[OAuth Callback] Error:', error);
         setStatus('error');
-        setMessage(error.message || 'Authentication failed. Please try again.');
+        setMessage(
+          error instanceof Error ? error.message : 'Authentication failed. Please try again.'
+        );
 
         // Redirect to login after 3 seconds
         timeouts.push(

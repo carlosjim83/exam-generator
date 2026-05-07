@@ -67,5 +67,6 @@
   "next": "Next",
   "generating": "Generating...",
   "generateExam": "Generate Exam",
-  "pts": "pts"
+  "pts": "pts",
+  "generateError": "Failed to generate exam"
 }

@@ -6,12 +6,14 @@ import { LoginForm } from '@/features/auth/components/LoginForm';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 function LoginPageContent() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [sessionExpired, setSessionExpired] = useState(false);
+  const { t } = useTranslation('common');
 
   useEffect(() => {
     // Redirect to dashboard if already authenticated
@@ -36,9 +38,7 @@ function LoginPageContent() {
       {sessionExpired && (
         <Alert variant="destructive" className="max-w-sm mx-auto">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Tu sesión ha expirado. Por favor, inicia sesión de nuevo.
-          </AlertDescription>
+          <AlertDescription>{t('sessionExpired')}</AlertDescription>
         </Alert>
       )}
       <LoginForm />
@@ -47,8 +47,9 @@ function LoginPageContent() {
 }
 
 export default function LoginPage() {
+  const { t } = useTranslation('common');
   return (
-    <Suspense fallback={<div className="max-w-sm mx-auto">Cargando...</div>}>
+    <Suspense fallback={<div className="max-w-sm mx-auto">{t('loading')}</div>}>
       <LoginPageContent />
     </Suspense>
   );

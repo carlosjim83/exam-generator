@@ -40,7 +40,7 @@ export function StudentSubmissionDetail({
   studentId,
   onBack,
 }: StudentSubmissionDetailProps) {
-  const { t } = useTranslation('classes');
+  const { t, i18n } = useTranslation('classes');
   const [data, setData] = useState<StudentSubmissionDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -63,7 +63,7 @@ export function StudentSubmissionDetail({
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleString();
+    return new Date(dateStr).toLocaleString(i18n.language);
   };
 
   const getQuestionTypeIcon = (type: QuestionResult['questionType'], isCorrect: boolean | null) => {

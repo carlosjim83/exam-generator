@@ -18,7 +18,7 @@ interface StudentExamListProps {
 }
 
 export function StudentExamList({ classId }: StudentExamListProps) {
-  const { t } = useTranslation('student');
+  const { t, i18n } = useTranslation('student');
   const router = useRouter();
   const [exams, setExams] = useState<StudentClassExam[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +53,7 @@ export function StudentExamList({ classId }: StudentExamListProps) {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(i18n.language, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

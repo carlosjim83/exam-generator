@@ -4,36 +4,22 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Download, Loader2, FileIcon } from 'lucide-react';
+import { FileText, Download, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { getClassDocuments, type SharedDocument } from '@/lib/services/api-class-documents.service';
-import { ApiDocumentService } from '@/lib/services/api-document.service';
+import { documentService } from '@/lib/services/api-document.service';
+import { DocumentIcon } from '@/components/ui-custom/DocumentIcon';
 
 interface ClassDocumentsProps {
   classId: string;
 }
 
-function DocumentTypeIcon({ mimeType }: { mimeType: string }) {
-  if (mimeType === 'application/pdf') {
-    return (
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
-        <FileText className="h-5 w-5 text-red-600" />
-      </div>
-    );
-  }
-  return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-      <FileIcon className="h-5 w-5 text-blue-600" />
-    </div>
-  );
-}
-
 export function ClassDocuments({ classId }: ClassDocumentsProps) {
-  const { t } = useTranslation('student');
+  const { t, i18n } = useTranslation('student');
   const [documents, setDocuments] = useState<SharedDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
-  const [documentService] = useState(() => new ApiDocumentService());
+  // Uses singleton documentService
 
   useEffect(() => {
     loadDocuments();
@@ -79,7 +65,7 @@ export function ClassDocuments({ classId }: ClassDocumentsProps) {
 
   const formatDate = (date: string | null) => {
     if (!date) return null;
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(i18n.language, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -124,7 +110,7 @@ export function ClassDocuments({ classId }: ClassDocumentsProps) {
           <Card key={doc.id} className="transition-shadow hover:shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <DocumentTypeIcon mimeType={doc.mimeType} />
+                <DocumentIcon mimeType={doc.mimeType} icon="fileIcon" />
 
                 <div className="min-w-0 flex-1">
                   <h4 className="truncate font-medium text-sm">{doc.title}</h4>

@@ -22,6 +22,9 @@
   "lastName": "Apellido",
   "confirmPassword": "Confirmar contraseña",
   "unexpectedError": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+  "sessionExpired": "Tu sesión ha expirado. Por favor, inicia sesión de nuevo.",
+  "notFoundTitle": "Página No Encontrada",
+  "goHome": "Ir al Inicio",
   "or": "o",
   "close": "Cerrar",
   "actions": {

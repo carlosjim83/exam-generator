@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, FileText, X, CheckCircle2, AlertCircle } from 'lucide-react';
-import { ApiDocumentService, type UploadProgress } from '@/lib/services/api-document.service';
+import { documentService, type UploadProgress } from '@/lib/services/api-document.service';
 import { cn } from '@/lib/utils';
 
 interface UploadDocumentFormProps {
@@ -31,7 +31,7 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const documentService = useRef(new ApiDocumentService()).current;
+  // Uses singleton documentService
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -256,14 +256,14 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
 
           {/* Error State */}
           {error && uploadStatus === 'error' && (
-            <div className="border border-red-200 bg-red-50 rounded-lg p-6">
+            <div className="border border-destructive/20 bg-destructive/10 rounded-lg p-6">
               <div className="flex items-start gap-3">
-                <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="h-6 w-6 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-semibold text-base text-red-900 mb-1">
+                  <p className="font-semibold text-base text-foreground mb-1">
                     {t('upload.uploadFailed')}
                   </p>
-                  <p className="text-sm text-red-700">{error}</p>
+                  <p className="text-sm text-destructive">{error}</p>
                 </div>
               </div>
             </div>
@@ -271,10 +271,10 @@ export function UploadDocumentForm({ onUploadSuccess }: UploadDocumentFormProps)
 
           {/* Validation Error */}
           {error && uploadStatus === 'idle' && (
-            <div className="border border-red-200 bg-red-50 rounded-lg p-4 mt-4">
+            <div className="border border-destructive/20 bg-destructive/10 rounded-lg p-4 mt-4">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
+                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-destructive">{error}</p>
               </div>
             </div>
           )}

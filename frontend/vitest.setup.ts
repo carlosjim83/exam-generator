@@ -13,7 +13,7 @@ import enSettings from './lib/i18n/locales/en/settings.json';
 import enDocuments from './lib/i18n/locales/en/documents.json';
 import enGenerate from './lib/i18n/locales/en/generate.json';
 
-const allTranslations: Record<string, any> = {
+const allTranslations: Record<string, unknown> = {
   common: enCommon,
   exams: enExams,
   student: enStudent,
@@ -25,13 +25,17 @@ const allTranslations: Record<string, any> = {
   generate: enGenerate,
 };
 
-function getNestedValue(obj: any, path: string): any {
+function getNestedValue(obj: unknown, path: string): unknown {
   if (!obj || !path) return undefined;
   const keys = path.split(/[:.]/).filter(Boolean);
-  let result = obj;
+  let result: unknown = obj;
   for (const key of keys) {
     if (result === undefined || result === null) return undefined;
-    result = result[key];
+    if (typeof result === 'object' && result !== null) {
+      result = (result as Record<string, unknown>)[key];
+    } else {
+      return undefined;
+    }
   }
   return result;
 }
@@ -48,23 +52,22 @@ function translate(key: string): string {
     const translations = allTranslations[namespace];
     if (translations) {
       const value = getNestedValue(translations, actualKey);
-      if (value !== undefined) return value;
+      if (typeof value === 'string') return value;
     }
   }
 
   if (hasDot) {
     const commonNested = getNestedValue(enCommon, key);
-    if (commonNested !== undefined) return commonNested;
+    if (typeof commonNested === 'string') return commonNested;
 
-    for (const [ns, translations] of Object.entries(allTranslations)) {
-      if (ns === 'common') continue;
+    for (const [, translations] of Object.entries(allTranslations)) {
       const value = getNestedValue(translations, key);
-      if (value !== undefined) return value;
+      if (typeof value === 'string') return value;
     }
   }
 
   const commonValue = getNestedValue(enCommon, key);
-  if (commonValue !== undefined) return commonValue;
+  if (typeof commonValue === 'string') return commonValue;
 
   return key;
 }
@@ -77,16 +80,16 @@ afterEach(() => {
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, options?: any) => {
+    t: (key: string, options?: Record<string, unknown>) => {
       let value = translate(key);
 
       if (options) {
-        if (options.count !== undefined && typeof options.count === 'number') {
-          value = value.replace(/\{\{count\}\}/g, String(options.count));
+        if (typeof options.count === 'number') {
+          value = value.replaceAll('{{count}}', String(options.count));
         }
         Object.entries(options).forEach(([k, v]) => {
           if (k !== 'count' && v !== undefined) {
-            value = value.replace(new RegExp(`\\{\\{${k}\\}\\}`, 'g'), String(v));
+            value = value.replaceAll(`{{${k}}}`, String(v));
           }
         });
       }
@@ -119,7 +122,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('next/link', () => ({
-  default: ({ children, href }: any) => {
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => {
     return React.createElement('a', { href }, children);
   },
 }));

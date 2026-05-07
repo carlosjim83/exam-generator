@@ -34,7 +34,7 @@ interface StudentListProps {
 }
 
 export function StudentList({ students, loading = false, onRemoveStudent }: StudentListProps) {
-  const { t } = useTranslation('classes');
+  const { t, i18n } = useTranslation('classes');
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
@@ -140,11 +140,11 @@ export function StudentList({ students, loading = false, onRemoveStudent }: Stud
                 </div>
                 <div className="col-span-4 text-sm text-muted-foreground">{student.email}</div>
                 <div className="col-span-3 text-sm text-muted-foreground">
-                  {new Date(student.joinedAt).toLocaleDateString()}
+                  {new Date(student.joinedAt).toLocaleDateString(i18n.language)}
                 </div>
                 <div className="col-span-1 flex justify-end">
                   <Button size="sm" variant="ghost" onClick={() => handleRemove(student)}>
-                    <Trash2 className="h-4 w-4 text-red-600" />
+                    <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
               </div>

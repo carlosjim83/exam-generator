@@ -33,7 +33,7 @@ interface ClassExamResultsProps {
 }
 
 export function ClassExamResults({ classId, classExamId }: ClassExamResultsProps) {
-  const { t } = useTranslation('classes');
+  const { t, i18n } = useTranslation('classes');
   const [results, setResults] = useState<ClassExamResultsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -81,7 +81,7 @@ export function ClassExamResults({ classId, classExamId }: ClassExamResultsProps
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleString();
+    return new Date(dateStr).toLocaleString(i18n.language);
   };
 
   const getStatusBadge = (status: StudentExamResult['status']) => {

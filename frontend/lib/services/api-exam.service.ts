@@ -138,8 +138,7 @@ export class ApiExamService {
       }
 
       return await response.json();
-    } catch (error) {
-      console.error('Error fetching exams:', error);
+    } catch {
       return { exams: [], total: 0 };
     }
   }
@@ -168,8 +167,7 @@ export class ApiExamService {
       }
 
       return await response.json();
-    } catch (error) {
-      console.error('Error fetching exam:', error);
+    } catch {
       return null;
     }
   }
@@ -195,3 +193,9 @@ export class ApiExamService {
     }
   }
 }
+
+/**
+ * Singleton instance of the exam service.
+ * Use this for all exam API operations.
+ */
+export const examService = new ApiExamService();

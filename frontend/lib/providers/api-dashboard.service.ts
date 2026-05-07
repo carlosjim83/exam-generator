@@ -9,13 +9,35 @@ import type { Document, ClassExam, DashboardStats } from '../types/dashboard.typ
 import { configManager } from '@/lib/config/config-manager';
 import { TokenManager } from '@/lib/api-client';
 
+interface RawDocument {
+  id: string;
+  title: string;
+  filename: string;
+  fileSize: number;
+  mimeType?: string;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+  uploadedAt: string;
+  processedAt?: string | null;
+  pageCount?: number | null;
+  wordCount?: number | null;
+}
+
+interface RawClassExam {
+  id: string;
+  examId: string;
+  examTitle: string;
+  classId: string;
+  className: string;
+  dueDate?: string | null;
+  isPublished: boolean;
+  questionCount: number;
+  submittedCount: number;
+  createdAt: string;
+}
+
 export class ApiDashboardService {
   private get baseUrl(): string {
     return configManager.getApiUrl();
-  }
-
-  constructor() {
-    // Empty constructor - baseUrl is now a getter
   }
 
   /**
@@ -28,7 +50,6 @@ export class ApiDashboardService {
 
     if (!accessToken) {
       // Don't throw error - let callers handle gracefully
-      console.warn('[ApiDashboardService] No access token found, skipping API call to', endpoint);
       return null;
     }
 
@@ -60,7 +81,6 @@ export class ApiDashboardService {
   async getStats(): Promise<DashboardStats> {
     // If not authenticated, return empty stats
     if (!this.isAuthenticated()) {
-      console.warn('[ApiDashboardService] User not authenticated, returning empty stats');
       return {
         totalDocuments: 0,
         totalExams: 0,
@@ -101,12 +121,7 @@ export class ApiDashboardService {
           description: response.lastActivity.description,
         },
       };
-    } catch (error) {
-      // Endpoint doesn't exist yet - fall back to teacher dashboard
-      console.warn(
-        '[ApiDashboardService] /api/dashboard/stats not implemented, falling back to /api/teacher/dashboard'
-      );
-
+    } catch {
       try {
         const fallback = await this.fetchWithAuth<{
           data: { totalDocuments: number; totalExams: number };
@@ -127,9 +142,7 @@ export class ApiDashboardService {
             description: 'Activity tracking not available',
           },
         };
-      } catch (fallbackError) {
-        console.error('[ApiDashboardService] Both endpoints failed:', error, fallbackError);
-
+      } catch {
         // Return empty stats as last resort
         return {
           totalDocuments: 0,
@@ -148,13 +161,12 @@ export class ApiDashboardService {
   async getRecentDocuments(limit: number = 5): Promise<Document[]> {
     // If not authenticated, return empty array
     if (!this.isAuthenticated()) {
-      console.warn('[ApiDashboardService] User not authenticated, returning empty documents');
       return [];
     }
 
     try {
       // Call the existing /api/documents endpoint
-      const response = await this.fetchWithAuth<{ documents: any[] }>('/api/documents');
+      const response = await this.fetchWithAuth<{ documents: RawDocument[] }>('/api/documents');
 
       // If no response, return empty array
       if (!response) {
@@ -162,26 +174,22 @@ export class ApiDashboardService {
       }
 
       // Transform backend response to frontend Document type
-      const documents = response.documents.map((doc: any) => ({
+      const documents = response.documents.map((doc) => ({
         id: doc.id,
         title: doc.title,
         filename: doc.filename,
         fileSize: doc.fileSize,
         mimeType: doc.mimeType || 'application/pdf', // Fallback for older data
-        status: doc.status as 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED',
+        status: doc.status,
         uploadedAt: new Date(doc.uploadedAt),
         processedAt: doc.processedAt ? new Date(doc.processedAt) : null,
-        pageCount: doc.pageCount || null,
-        wordCount: doc.wordCount || null,
+        pageCount: doc.pageCount ?? null,
+        wordCount: doc.wordCount ?? null,
       }));
 
-      // Backend doesn't support limit query param yet, so slice client-side
-      // TODO: Backend should support ?limit=5 query parameter (see ENDPOINTS_TODO.md)
-      return documents
-        .sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime()) // Sort by most recent
-        .slice(0, limit);
-    } catch (error) {
-      console.error('[ApiDashboardService] Failed to fetch documents:', error);
+      documents.sort((a, b) => b.uploadedAt.getTime() - a.uploadedAt.getTime()); // Sort by most recent
+      return documents.slice(0, limit);
+    } catch {
       return [];
     }
   }
@@ -189,13 +197,12 @@ export class ApiDashboardService {
   async getRecentClassExams(limit: number = 5): Promise<ClassExam[]> {
     // If not authenticated, return empty array
     if (!this.isAuthenticated()) {
-      console.warn('[ApiDashboardService] User not authenticated, returning empty class exams');
       return [];
     }
 
     try {
       // Call /api/dashboard/class-exams endpoint
-      const response = await this.fetchWithAuth<{ classExams: any[] }>(
+      const response = await this.fetchWithAuth<{ classExams: RawClassExam[] }>(
         '/api/dashboard/class-exams',
         {
           method: 'GET',
@@ -207,7 +214,7 @@ export class ApiDashboardService {
         return [];
       }
 
-      const classExams = response.classExams.map((exam: any) => ({
+      const classExams = response.classExams.map((exam) => ({
         id: exam.id,
         examId: exam.examId,
         examTitle: exam.examTitle,
@@ -221,9 +228,14 @@ export class ApiDashboardService {
       }));
 
       return classExams.slice(0, limit);
-    } catch (error) {
-      console.error('[ApiDashboardService] Failed to fetch class exams:', error);
+    } catch {
       return [];
     }
   }
 }
+
+/**
+ * Singleton instance of the dashboard service.
+ * Use this for all dashboard API operations.
+ */
+export const dashboardService = new ApiDashboardService();

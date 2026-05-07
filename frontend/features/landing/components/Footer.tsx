@@ -65,17 +65,17 @@ export function Footer() {
             {/* Social Links */}
             <div className="flex items-center gap-3 pt-4">
               {[
-                { icon: Twitter, href: '#', label: 'Twitter' },
-                { icon: Github, href: '#', label: 'GitHub' },
-                { icon: Linkedin, href: '#', label: 'LinkedIn' },
+                { icon: Twitter, href: '#', labelKey: 'landing:footer.social.twitter' },
+                { icon: Github, href: '#', labelKey: 'landing:footer.social.github' },
+                { icon: Linkedin, href: '#', labelKey: 'landing:footer.social.linkedin' },
               ].map((social) => (
                 <motion.a
-                  key={social.label}
+                  key={social.labelKey}
                   href={social.href}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.95 }}
                   className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
-                  aria-label={social.label}
+                  aria-label={t(social.labelKey)}
                 >
                   <social.icon className="h-5 w-5" />
                 </motion.a>
