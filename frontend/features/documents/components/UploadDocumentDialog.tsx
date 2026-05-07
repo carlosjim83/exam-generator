@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Upload, FileText, X, CheckCircle2, AlertCircle } from 'lucide-react';
-import { ApiDocumentService, type UploadProgress } from '@/lib/services/api-document.service';
+import { documentService, type UploadProgress } from '@/lib/services/api-document.service';
 import { cn } from '@/lib/utils';
 
 interface UploadDocumentDialogProps {
@@ -45,7 +45,7 @@ export function UploadDocumentDialog({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const documentService = useRef(new ApiDocumentService()).current;
+  // Uses singleton documentService
 
   // Cleanup timeout on unmount to prevent memory leaks
   useEffect(() => {
@@ -282,12 +282,12 @@ export function UploadDocumentDialog({
 
           {/* Error State */}
           {error && uploadStatus === 'error' && (
-            <div className="border border-red-200 bg-red-50 rounded-lg p-4">
+            <div className="border border-destructive/20 bg-destructive/10 rounded-lg p-4">
               <div className="flex items-start gap-3">
-                <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                 <div className="flex-1">
-                  <p className="font-medium text-sm text-red-900">{t('upload.uploadFailed')}</p>
-                  <p className="text-xs text-red-700 mt-1">{error}</p>
+                  <p className="font-medium text-sm text-foreground">{t('upload.uploadFailed')}</p>
+                  <p className="text-xs text-destructive mt-1">{error}</p>
                 </div>
               </div>
             </div>
@@ -309,10 +309,10 @@ export function UploadDocumentDialog({
 
           {/* Validation Error */}
           {error && uploadStatus === 'idle' && (
-            <div className="border border-red-200 bg-red-50 rounded-lg p-3">
+            <div className="border border-destructive/20 bg-destructive/10 rounded-lg p-3">
               <div className="flex items-start gap-2">
-                <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-red-700">{error}</p>
+                <AlertCircle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-destructive">{error}</p>
               </div>
             </div>
           )}

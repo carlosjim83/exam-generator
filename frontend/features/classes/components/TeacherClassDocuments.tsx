@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { FileText, Download, Loader2, Eye, EyeOff, Trash2, FileIcon } from 'lucide-react';
+import { FileText, Download, Loader2, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   getClassDocumentsForTeacher,
@@ -25,7 +25,8 @@ import {
   unshareDocument,
   type TeacherClassDocument,
 } from '@/lib/services/api-class-documents.service';
-import { ApiDocumentService } from '@/lib/services/api-document.service';
+import { documentService } from '@/lib/services/api-document.service';
+import { DocumentIcon } from '@/components/ui-custom/DocumentIcon';
 
 interface TeacherClassDocumentsProps {
   classId: string;
@@ -85,29 +86,14 @@ function RemoveDialog({
   );
 }
 
-function DocumentTypeIcon({ mimeType }: { mimeType: string }) {
-  if (mimeType === 'application/pdf') {
-    return (
-      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100">
-        <FileText className="h-5 w-5 text-red-600" />
-      </div>
-    );
-  }
-  return (
-    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100">
-      <FileIcon className="h-5 w-5 text-blue-600" />
-    </div>
-  );
-}
-
 export function TeacherClassDocuments({ classId }: TeacherClassDocumentsProps) {
-  const { t } = useTranslation('classes');
+  const { t, i18n } = useTranslation('classes');
   const [documents, setDocuments] = useState<TeacherClassDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [downloadingIds, setDownloadingIds] = useState<Set<string>>(new Set());
   const [updatingVisibility, setUpdatingVisibility] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
-  const [documentService] = useState(() => new ApiDocumentService());
+  // Uses singleton documentService
 
   useEffect(() => {
     loadDocuments();
@@ -184,7 +170,7 @@ export function TeacherClassDocuments({ classId }: TeacherClassDocumentsProps) {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return null;
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(i18n.language, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -234,7 +220,7 @@ export function TeacherClassDocuments({ classId }: TeacherClassDocumentsProps) {
           <Card key={doc.id} className="transition-shadow hover:shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
-                <DocumentTypeIcon mimeType={doc.mimeType} />
+                <DocumentIcon mimeType={doc.mimeType} icon="fileIcon" />
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">

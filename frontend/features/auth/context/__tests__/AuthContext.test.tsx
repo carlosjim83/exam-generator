@@ -42,6 +42,9 @@ describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (useRouter as any).mockReturnValue({ push: mockPush });
+    // Default: no authenticated user (apiClient.get rejects)
+    (apiClient.get as any).mockRejectedValue(new Error('Unauthorized'));
+    (apiClient.refreshAccessToken as any).mockRejectedValue(new Error('Refresh failed'));
   });
 
   describe('useAuth Hook', () => {

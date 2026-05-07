@@ -61,22 +61,22 @@ export function SubscriptionBanner({ limitType, showIfBlocked = true }: Subscrip
     }
 
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+      <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 mb-6">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+          <AlertTriangle className="h-5 w-5 text-destructive mt-0.5" />
           <div className="flex-1">
-            <p className="text-red-800 font-medium">{message}</p>
-            <p className="text-red-600 text-sm mt-1">{t('banner.upgradePrompt')}</p>
+            <p className="text-foreground font-medium">{message}</p>
+            <p className="text-destructive text-sm mt-1">{t('banner.upgradePrompt')}</p>
           </div>
           <Link href="/dashboard/pricing">
-            <Button size="sm" className="bg-red-600 hover:bg-red-700">
+            <Button size="sm" className="bg-destructive hover:bg-destructive/90">
               <Crown className="h-4 w-4 mr-1" />
               {action}
             </Button>
           </Link>
           <button
             onClick={() => setDismissed(true)}
-            className="text-red-600 hover:text-red-800 p-1"
+            className="text-destructive hover:text-destructive/80 p-1"
           >
             <X className="h-4 w-4" />
           </button>

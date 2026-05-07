@@ -33,17 +33,17 @@ interface ClassDetailPageProps {
 }
 
 // Helper to safely format dates
-function formatDate(dateString: string | undefined): string {
+function formatDate(dateString: string | undefined, locale: string): string {
   if (!dateString) return '';
   const date = new Date(dateString);
   if (isNaN(date.getTime())) return '';
-  return date.toLocaleDateString();
+  return date.toLocaleDateString(locale);
 }
 
 export default function ClassDetailPage({ params }: ClassDetailPageProps) {
   const { id: classId } = use(params);
   const router = useRouter();
-  const { t } = useTranslation('classes');
+  const { t, i18n } = useTranslation('classes');
   const [classData, setClassData] = useState<ClassDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<ClassDetails['students']>([]);
@@ -167,8 +167,8 @@ export default function ClassDetailPage({ params }: ClassDetailPageProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <span>
-                    {formatDate(classData?.createdAt)
-                      ? `${t('classDetails.created')} ${formatDate(classData.createdAt)}`
+                    {formatDate(classData?.createdAt, i18n.language)
+                      ? `${t('classDetails.created')} ${formatDate(classData.createdAt, i18n.language)}`
                       : t('classDetails.created')}
                   </span>
                 </div>

@@ -35,7 +35,7 @@ interface AssignExamModalProps {
 }
 
 export function AssignExamModal({ open, onOpenChange, classId, onAssigned }: AssignExamModalProps) {
-  const { t } = useTranslation('classes');
+  const { t, i18n } = useTranslation('classes');
   const [exams, setExams] = useState<AvailableExam[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
@@ -118,7 +118,7 @@ export function AssignExamModal({ open, onOpenChange, classId, onAssigned }: Ass
   };
 
   const formatDate = (dateStr: string) => {
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat(i18n.language, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',

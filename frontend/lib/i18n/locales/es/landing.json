@@ -116,6 +116,11 @@
   "footer": {
     "tagline": "Transforma la educación con evaluaciones potenciadas por IA",
     "madeWith": "Hecho con ❤️ para educadores de todo el mundo",
+    "social": {
+      "twitter": "Twitter",
+      "github": "GitHub",
+      "linkedin": "LinkedIn"
+    },
     "links": {
       "about": "Nosotros",
       "features": "Características",

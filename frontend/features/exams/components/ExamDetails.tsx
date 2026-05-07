@@ -11,10 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileText, Calendar, Layers, Download, Printer, CheckCircle2 } from 'lucide-react';
-import { ApiExamService, type ExamDetailsResponse } from '@/lib/services/api-exam.service';
+import { examService, type ExamDetailsResponse } from '@/lib/services/api-exam.service';
 import { useTranslation } from 'react-i18next';
-
-const examService = new ApiExamService();
 
 interface ExamDetailsProps {
   examId: string;
@@ -23,7 +21,7 @@ interface ExamDetailsProps {
 export function ExamDetails({ examId }: ExamDetailsProps) {
   const [exam, setExam] = useState<ExamDetailsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-  const { t } = useTranslation('exams');
+  const { t, i18n } = useTranslation('exams');
 
   useEffect(() => {
     loadExam();
@@ -103,7 +101,8 @@ export function ExamDetails({ examId }: ExamDetailsProps) {
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               <span>
-                {t('examDetails.created')} {new Date(exam.exam.createdAt).toLocaleDateString()}
+                {t('examDetails.created')}{' '}
+                {new Date(exam.exam.createdAt).toLocaleDateString(i18n.language)}
               </span>
             </div>
           </div>

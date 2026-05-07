@@ -87,7 +87,7 @@ export function CreateClassForm({ onSuccess, onCancel }: CreateClassFormProps) {
       </div>
 
       {error && (
-        <div className="text-sm text-red-500 bg-red-50 p-3 rounded-md">{error}</div>
+        <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>
       )}
 
       <div className="flex gap-2 justify-end pt-2">

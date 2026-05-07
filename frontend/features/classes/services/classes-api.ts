@@ -5,7 +5,7 @@
  * Uses the centralized apiClient from lib/api-client.ts
  */
 
-import { apiClient, ApiError } from '@/lib/api-client';
+import { apiClient, ApiError, TokenManager } from '@/lib/api-client';
 import { configManager } from '@/lib/config/config-manager';
 
 // Types
@@ -203,7 +203,7 @@ export async function importStudentsFromCsv(
   formData.append('file', file);
 
   const headers: Record<string, string> = {};
-  const accessToken = localStorage.getItem('access_token');
+  const accessToken = TokenManager.getAccessToken();
   if (accessToken) {
     headers['Authorization'] = `Bearer ${accessToken}`;
   }
@@ -211,6 +211,7 @@ export async function importStudentsFromCsv(
   const response = await fetch(`${baseUrl}/api/classes/${classId}/invitations/csv`, {
     method: 'POST',
     headers,
+    credentials: 'include',
     body: formData,
   });
 

@@ -22,6 +22,9 @@
   "lastName": "Last Name",
   "confirmPassword": "Confirm Password",
   "unexpectedError": "An unexpected error occurred. Please try again.",
+  "sessionExpired": "Your session has expired. Please sign in again.",
+  "notFoundTitle": "Page Not Found",
+  "goHome": "Go Home",
   "or": "or",
   "close": "Close",
   "actions": {

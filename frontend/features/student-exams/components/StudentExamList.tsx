@@ -34,7 +34,7 @@ const statusConfig: Record<
 };
 
 export function StudentExamList({ onExamSelect }: StudentExamListProps) {
-  const { t } = useTranslation('student');
+  const { t, i18n } = useTranslation('student');
   const { exams, loading, error, refetch } = useStudentExams();
 
   if (loading) {
@@ -56,9 +56,11 @@ export function StudentExamList({ onExamSelect }: StudentExamListProps) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <AlertCircle className="h-16 w-16 text-red-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('examList.errorLoading')}</h3>
-          <p className="text-gray-600 mb-6 text-center max-w-sm">{error.message}</p>
+          <AlertCircle className="h-16 w-16 text-destructive mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            {t('examList.errorLoading')}
+          </h3>
+          <p className="text-muted-foreground mb-6 text-center max-w-sm">{error.message}</p>
           <Button onClick={refetch} variant="outline">
             {t('errors.retry')}
           </Button>
@@ -71,9 +73,9 @@ export function StudentExamList({ onExamSelect }: StudentExamListProps) {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <FileText className="h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('examList.noExams')}</h3>
-          <p className="text-gray-600 text-center max-w-sm">{t('dashboard.noExams')}</p>
+          <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">{t('examList.noExams')}</h3>
+          <p className="text-muted-foreground text-center max-w-sm">{t('dashboard.noExams')}</p>
         </CardContent>
       </Card>
     );
@@ -142,7 +144,7 @@ export function StudentExamList({ onExamSelect }: StudentExamListProps) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   <span>
@@ -160,7 +162,8 @@ export function StudentExamList({ onExamSelect }: StudentExamListProps) {
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
                   <span>
-                    {t('examList.assigned')}: {new Date(exam.createdAt).toLocaleDateString()}
+                    {t('examList.assigned')}:{' '}
+                    {new Date(exam.createdAt).toLocaleDateString(i18n.language)}
                   </span>
                 </div>
               </div>

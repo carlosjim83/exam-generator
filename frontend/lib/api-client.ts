@@ -3,6 +3,9 @@
  *
  * This module provides a unified API client for all frontend HTTP requests.
  * It handles authentication, token management, and error handling consistently.
+ *
+ * SECURITY: Tokens are stored in memory only (never localStorage) to prevent XSS.
+ * Authentication cookies are sent automatically via `credentials: 'include'`.
  */
 
 import { configManager } from '@/lib/config/config-manager';
@@ -13,44 +16,46 @@ import { configManager } from '@/lib/config/config-manager';
 
 /**
  * Token Manager - Handles JWT token storage and retrieval
- * Uses localStorage with consistent key names: 'access_token' and 'refresh_token'
+ *
+ * IMPORTANT: Tokens are stored in memory only to prevent XSS attacks.
+ * Never use localStorage for auth tokens. The backend sets httpOnly cookies,
+ * and the frontend sends them via `credentials: 'include'`.
+ *
+ * Memory tokens act as a fallback for Authorization headers until cookies
+ * are fully relied upon.
  */
 export class TokenManager {
-  private static readonly ACCESS_TOKEN_KEY = 'access_token';
-  private static readonly REFRESH_TOKEN_KEY = 'refresh_token';
+  private static accessToken: string | null = null;
+  private static refreshToken: string | null = null;
 
   /**
-   * Get the current access token
+   * Get the current access token (from memory)
    */
   static getAccessToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+    return this.accessToken;
   }
 
   /**
-   * Get the current refresh token
+   * Get the current refresh token (from memory)
    */
   static getRefreshToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    return this.refreshToken;
   }
 
   /**
-   * Store both tokens
+   * Store both tokens in memory
    */
   static setTokens(accessToken: string, refreshToken: string): void {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
-    localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+    this.accessToken = accessToken;
+    this.refreshToken = refreshToken;
   }
 
   /**
    * Clear all tokens (logout)
    */
   static clearTokens(): void {
-    if (typeof window === 'undefined') return;
-    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    this.accessToken = null;
+    this.refreshToken = null;
   }
 
   /**
@@ -163,7 +168,7 @@ export class ApiClient {
       });
     }
 
-    // Add access token if available
+    // Add access token if available (fallback until cookies are fully relied upon)
     const accessToken = TokenManager.getAccessToken();
     if (accessToken) {
       headers['Authorization'] = `Bearer ${accessToken}`;
@@ -172,6 +177,7 @@ export class ApiClient {
     const config: RequestInit = {
       ...options,
       headers,
+      credentials: 'include',
     };
 
     try {
@@ -198,8 +204,8 @@ export class ApiClient {
           if (retryCount > 0) {
             // Already retried after refresh, fail permanently
             TokenManager.clearTokens();
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('api:session-expired'));
+            if (typeof globalThis.window !== 'undefined') {
+              globalThis.window.dispatchEvent(new CustomEvent('api:session-expired'));
             }
             throw new ApiError(response.status, data.message || 'Session expired');
           }
@@ -207,13 +213,13 @@ export class ApiClient {
           // Avoid infinite loops on the refresh endpoint itself
           if (endpoint === '/api/auth/refresh') {
             TokenManager.clearTokens();
-            if (typeof window !== 'undefined') {
-              window.dispatchEvent(new CustomEvent('api:session-expired'));
+            if (typeof globalThis.window !== 'undefined') {
+              globalThis.window.dispatchEvent(new CustomEvent('api:session-expired'));
             }
             throw new ApiError(response.status, data.message || 'Session expired');
           }
 
-          await this.performRefresh();
+          await this.performRefresh(options.signal ?? undefined);
           return this.requestWithAuth<T>(endpoint, options, retryCount + 1);
         }
         throw new ApiError(response.status, data.message || 'Request failed');
@@ -231,13 +237,13 @@ export class ApiClient {
   /**
    * Perform token refresh, deduplicating concurrent requests
    */
-  private async performRefresh(): Promise<void> {
+  private async performRefresh(signal?: AbortSignal): Promise<void> {
     if (this.isRefreshing && this.refreshPromise) {
       return this.refreshPromise;
     }
 
     this.isRefreshing = true;
-    this.refreshPromise = this.doRefresh();
+    this.refreshPromise = this.doRefresh(signal);
 
     try {
       await this.refreshPromise;
@@ -249,8 +255,12 @@ export class ApiClient {
 
   /**
    * Execute the actual refresh request
+   *
+   * Sends credentials: 'include' so the backend can read the httpOnly
+   * refresh-token cookie. The body is kept as a fallback for backwards
+   * compatibility while the cookie migration is in progress.
    */
-  private async doRefresh(): Promise<void> {
+  private async doRefresh(signal?: AbortSignal): Promise<void> {
     const refreshToken = TokenManager.getRefreshToken();
     if (!refreshToken) {
       throw new ApiError(401, 'No refresh token available');
@@ -261,6 +271,8 @@ export class ApiClient {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken }),
+        credentials: 'include',
+        signal,
       });
 
       if (!response.ok) {
@@ -271,8 +283,8 @@ export class ApiClient {
       TokenManager.setTokens(data.accessToken, data.refreshToken);
     } catch (error) {
       TokenManager.clearTokens();
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('api:session-expired'));
+      if (typeof globalThis.window !== 'undefined') {
+        globalThis.window.dispatchEvent(new CustomEvent('api:session-expired'));
       }
       throw error;
     }
@@ -347,45 +359,48 @@ export class ApiClient {
   /**
    * Make a GET request
    */
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
+    return this.request<T>(endpoint, { method: 'GET', signal });
   }
 
   /**
    * Make a POST request
    */
-  async post<T>(endpoint: string, body: unknown): Promise<T> {
+  async post<T>(endpoint: string, body: unknown, signal?: AbortSignal): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(body),
+      signal,
     });
   }
 
   /**
    * Make a PUT request
    */
-  async put<T>(endpoint: string, body: unknown): Promise<T> {
+  async put<T>(endpoint: string, body: unknown, signal?: AbortSignal): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(body),
+      signal,
     });
   }
 
   /**
    * Make a PATCH request
    */
-  async patch<T>(endpoint: string, body: unknown): Promise<T> {
+  async patch<T>(endpoint: string, body: unknown, signal?: AbortSignal): Promise<T> {
     return this.request<T>(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(body),
+      signal,
     });
   }
 
   /**
    * Make a DELETE request
    */
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'DELETE' });
+  async delete<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
+    return this.request<T>(endpoint, { method: 'DELETE', signal });
   }
 
   // ==========================================================================
@@ -421,6 +436,7 @@ export class ApiClient {
     const config: RequestInit = {
       ...options,
       headers,
+      credentials: 'include',
     };
 
     try {
@@ -534,6 +550,7 @@ export async function fetchWithAuth<T>(url: string, options: RequestInit = {}): 
   const response = await fetch(`${baseUrl}${url}`, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {

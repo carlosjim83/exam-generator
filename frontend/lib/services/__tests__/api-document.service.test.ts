@@ -5,23 +5,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { ApiDocumentService } from '@/lib/services/api-document.service';
+import { TokenManager } from '@/lib/api-client';
+
+// Mock TokenManager
+vi.mock('@/lib/api-client', () => ({
+  TokenManager: {
+    getAccessToken: vi.fn(() => 'mock-token'),
+    getRefreshToken: vi.fn(),
+    setTokens: vi.fn(),
+    clearTokens: vi.fn(),
+  },
+  ApiClient: vi.fn(),
+  ApiError: vi.fn(),
+}));
 
 describe('ApiDocumentService - Delete & Download', () => {
   let service: ApiDocumentService;
-  let mockFetch: any;
+  let mockFetch: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    // Mock localStorage
-    const localStorageMock = {
-      getItem: vi.fn(() => 'mock-token'),
-      setItem: vi.fn(),
-      removeItem: vi.fn(),
-      clear: vi.fn(),
-    };
-    Object.defineProperty(window, 'localStorage', {
-      value: localStorageMock,
-      writable: true,
-    });
+    vi.clearAllMocks();
 
     // Create service instance
     service = new ApiDocumentService();
@@ -61,17 +64,8 @@ describe('ApiDocumentService - Delete & Download', () => {
     });
 
     it('should throw error when not authenticated', async () => {
-      // Mock localStorage with no token
-      const localStorageMock = {
-        getItem: vi.fn(() => null),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-        clear: vi.fn(),
-      };
-      Object.defineProperty(window, 'localStorage', {
-        value: localStorageMock,
-        writable: true,
-      });
+      // Mock TokenManager with no token
+      (TokenManager.getAccessToken as any).mockReturnValue(null);
 
       const unauthService = new ApiDocumentService();
 
@@ -115,17 +109,8 @@ describe('ApiDocumentService - Delete & Download', () => {
     });
 
     it('should throw error when not authenticated', async () => {
-      // Mock localStorage with no token
-      const localStorageMock = {
-        getItem: vi.fn(() => null),
-        setItem: vi.fn(),
-        removeItem: vi.fn(),
-        clear: vi.fn(),
-      };
-      Object.defineProperty(window, 'localStorage', {
-        value: localStorageMock,
-        writable: true,
-      });
+      // Mock TokenManager with no token
+      (TokenManager.getAccessToken as any).mockReturnValue(null);
 
       const unauthService = new ApiDocumentService();
 

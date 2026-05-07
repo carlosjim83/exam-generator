@@ -11,6 +11,7 @@
   "approachingLimit": "Te estás acercando a tus límites de uso. Considera actualizar para más capacidad.",
   "currentPeriodEnds": "El período actual termina",
   "limitReached": "Límite Alcanzado",
+  "unlimited": "Ilimitado",
   "usage": {
     "classes": "Clases",
     "students": "Estudiantes",

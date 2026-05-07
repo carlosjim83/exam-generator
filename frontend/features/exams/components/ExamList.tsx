@@ -12,15 +12,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FileText, Calendar, Layers, Plus, Eye, Trash2, Download } from 'lucide-react';
-import { ApiExamService, type ExamListItem } from '@/lib/services/api-exam.service';
+import { examService, type ExamListItem } from '@/lib/services/api-exam.service';
 import { DeleteExamDialog } from './DeleteExamDialog';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
-const examService = new ApiExamService();
-
 export function ExamList() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [exams, setExams] = useState<ExamListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -89,9 +87,11 @@ export function ExamList() {
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <FileText className="h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('exams:noExams')}</h3>
-          <p className="text-gray-600 mb-6 text-center max-w-sm">{t('exams:noExamsDescription')}</p>
+          <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">{t('exams:noExams')}</h3>
+          <p className="text-muted-foreground mb-6 text-center max-w-sm">
+            {t('exams:noExamsDescription')}
+          </p>
           <Link href="/dashboard/exams/generate">
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -129,13 +129,13 @@ export function ExamList() {
                     variant="outline"
                     onClick={() => handleDelete(exam.id, exam.title)}
                   >
-                    <Trash2 className="h-4 w-4 text-red-600" />
+                    <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600">
+              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <FileText className="h-4 w-4" />
                   <span>
@@ -150,7 +150,7 @@ export function ExamList() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
-                  <span>{new Date(exam.createdAt).toLocaleDateString()}</span>
+                  <span>{new Date(exam.createdAt).toLocaleDateString(i18n.language)}</span>
                 </div>
               </div>
             </CardContent>

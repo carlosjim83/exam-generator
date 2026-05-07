@@ -111,7 +111,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
         <CardContent className="flex flex-col items-center justify-center py-12">
           <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
           <h2 className="text-2xl font-bold mb-2">{t('examTaking.success.title')}</h2>
-          <p className="text-gray-600 text-center">{t('examTaking.success.message')}</p>
+          <p className="text-muted-foreground text-center">{t('examTaking.success.message')}</p>
         </CardContent>
       </Card>
     );
@@ -124,18 +124,20 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
         <CardContent className="flex flex-col items-center justify-center py-12">
           {examError ? (
             <>
-              <AlertCircle className="h-16 w-16 text-red-400 mb-4" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              <AlertCircle className="h-16 w-16 text-destructive mb-4" />
+              <h2 className="text-xl font-semibold text-foreground mb-2">
                 {t('examTaking.error.title')}
               </h2>
-              <p className="text-gray-600 mb-6 text-center">{examError.message}</p>
+              <p className="text-muted-foreground mb-6 text-center">{examError.message}</p>
               <Button onClick={startExam}>{t('examTaking.error.tryAgain')}</Button>
             </>
           ) : (
             <>
               <Play className="h-16 w-16 text-primary mb-4" />
               <h2 className="text-2xl font-bold mb-2">{t('examTaking.ready')}</h2>
-              <p className="text-gray-600 text-center mb-6">{t('examTaking.readyDescription')}</p>
+              <p className="text-muted-foreground text-center mb-6">
+                {t('examTaking.readyDescription')}
+              </p>
               <Button onClick={startExam} disabled={isStarting} size="lg">
                 {isStarting ? (
                   <>
@@ -171,7 +173,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
               </CardDescription>
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-medium text-muted-foreground">
                 {answeredCount} {t('examTaking.of')} {totalQuestions} {t('examList.answered')}
               </p>
             </div>
@@ -196,7 +198,7 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
                 isCurrent && 'ring-2 ring-primary ring-offset-2',
                 isAnswered
                   ? 'bg-green-500 border-green-500 text-white answered'
-                  : 'bg-white border-gray-300 text-gray-600'
+                  : 'bg-white border-gray-300 text-muted-foreground'
               )}
             >
               {idx + 1}
@@ -250,8 +252,8 @@ export function ExamTaking({ assignmentId, onComplete }: ExamTakingProps) {
           </div>
 
           {submissionError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-600">{submissionError.message}</p>
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+              <p className="text-sm text-destructive">{submissionError.message}</p>
             </div>
           )}
 

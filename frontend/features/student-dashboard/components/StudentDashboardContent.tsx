@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Play, FileText, TrendingUp, ArrowRight } from 'lucide-react';
 
 export function StudentDashboardContent() {
-  const { t } = useTranslation('student');
+  const { t, i18n } = useTranslation('student');
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
@@ -245,7 +245,9 @@ export function StudentDashboardContent() {
                 <div>
                   <div className="font-medium">{exam.examTitle}</div>
                   <div className="text-sm text-muted-foreground">
-                    {exam.startedAt ? new Date(exam.startedAt).toLocaleDateString() : '-'}
+                    {exam.startedAt
+                      ? new Date(exam.startedAt).toLocaleDateString(i18n.language)
+                      : '-'}
                   </div>
                 </div>
                 {getStatusBadge(exam)}

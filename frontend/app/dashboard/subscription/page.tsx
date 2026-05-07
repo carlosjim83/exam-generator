@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 export default function SubscriptionPage() {
-  const { t } = useTranslation('subscription');
+  const { t, i18n } = useTranslation('subscription');
   const [subscription, setSubscription] = useState<SubscriptionResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -79,8 +79,8 @@ export default function SubscriptionPage() {
   };
 
   const formatNumber = (value: number | null | undefined) => {
-    if (value === null || value === undefined) return 'Unlimited';
-    return value.toLocaleString();
+    if (value === null || value === undefined) return t('unlimited');
+    return value.toLocaleString(i18n.language);
   };
 
   const getModelDisplayName = (model: string) => {
@@ -182,7 +182,7 @@ export default function SubscriptionPage() {
             {!isFree && (
               <div className="text-sm text-muted-foreground">
                 {t('currentPeriodEnds')}:{' '}
-                {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
+                {new Date(subscription.currentPeriodEnd).toLocaleDateString(i18n.language)}
               </div>
             )}
           </CardContent>

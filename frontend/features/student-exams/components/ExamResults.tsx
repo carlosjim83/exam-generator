@@ -24,7 +24,7 @@ interface ExamResultsProps {
 }
 
 export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
-  const { t } = useTranslation('student');
+  const { t, i18n } = useTranslation('student');
   const { results, loading, error, score, maxScore, percentage, status, refetch } =
     useExamResults(assignmentId);
 
@@ -71,9 +71,11 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
     return (
       <Card className="max-w-2xl mx-auto">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <AlertCircle className="h-16 w-16 text-red-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('results.errorLoading')}</h3>
-          <p className="text-gray-600 mb-6 text-center max-w-sm">{error.message}</p>
+          <AlertCircle className="h-16 w-16 text-destructive mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            {t('results.errorLoading')}
+          </h3>
+          <p className="text-muted-foreground mb-6 text-center max-w-sm">{error.message}</p>
           <Button onClick={refetch} variant="outline">
             {t('errors.retry')}
           </Button>
@@ -105,16 +107,16 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Clock className="h-16 w-16 text-amber-500 mb-4 animate-pulse" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+            <h3 className="text-xl font-semibold text-foreground mb-2">
               {t('results.gradingInProgressTitle')}
             </h3>
-            <p className="text-gray-600 text-center max-w-sm">
+            <p className="text-muted-foreground text-center max-w-sm">
               {t('results.gradingInProgressMessage')}
             </p>
             {results?.assignment?.submittedAt && (
-              <p className="text-sm text-gray-500 mt-4">
+              <p className="text-sm text-muted-foreground mt-4">
                 {t('results.submittedOn')}:{' '}
-                {new Date(results.assignment.submittedAt).toLocaleDateString()}
+                {new Date(results.assignment.submittedAt).toLocaleDateString(i18n.language)}
               </p>
             )}
           </CardContent>
@@ -127,9 +129,9 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
     return (
       <Card className="max-w-2xl mx-auto">
         <CardContent className="flex flex-col items-center justify-center py-12">
-          <AlertCircle className="h-16 w-16 text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('results.noResults')}</h3>
-          <p className="text-gray-600 text-center max-w-sm">{t('results.noResults')}</p>
+          <AlertCircle className="h-16 w-16 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold text-foreground mb-2">{t('results.noResults')}</h3>
+          <p className="text-muted-foreground text-center max-w-sm">{t('results.noResults')}</p>
         </CardContent>
       </Card>
     );
@@ -162,7 +164,7 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
               <div className="text-5xl font-bold text-primary">
                 {score}/{maxScore}
               </div>
-              <div className="text-gray-500 mt-1">{t('results.score')}</div>
+              <div className="text-muted-foreground mt-1">{t('results.score')}</div>
             </div>
             <div className="text-center">
               <div
@@ -173,7 +175,7 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
               >
                 {percentage}%
               </div>
-              <div className="text-gray-500 mt-1">{t('results.percentage')}</div>
+              <div className="text-muted-foreground mt-1">{t('results.percentage')}</div>
             </div>
           </div>
 
@@ -216,11 +218,11 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
 
       {/* Question-by-Question Breakdown */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900">{t('results.questionBreakdown')}</h3>
+        <h3 className="text-lg font-semibold text-foreground">{t('results.questionBreakdown')}</h3>
 
         {!results.exam.questions || results.exam.questions.length === 0 ? (
           <Card>
-            <CardContent className="py-8 text-center text-gray-500">
+            <CardContent className="py-8 text-center text-muted-foreground">
               {t('results.noQuestionsAvailable')}
             </CardContent>
           </Card>
@@ -240,7 +242,7 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
                       <CardTitle className="text-base font-medium">
                         {t('results.question')} {index + 1}
                       </CardTitle>
-                      <CardDescription className="mt-1 text-gray-900">
+                      <CardDescription className="mt-1 text-foreground">
                         {question.text}
                       </CardDescription>
                     </div>
@@ -259,7 +261,7 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <span className="text-sm font-medium text-gray-500">
+                    <span className="text-sm font-medium text-muted-foreground">
                       {t('results.yourAnswer')}:
                     </span>
                     <p
@@ -273,10 +275,10 @@ export function ExamResults({ assignmentId, onBack }: ExamResultsProps) {
                   </div>
                   {answer?.feedback && (
                     <div>
-                      <span className="text-sm font-medium text-gray-500">
+                      <span className="text-sm font-medium text-muted-foreground">
                         {t('results.feedback')}:
                       </span>
-                      <p className="mt-1 p-3 bg-gray-50 rounded-md text-gray-700">
+                      <p className="mt-1 p-3 bg-muted rounded-md text-muted-foreground">
                         {answer.feedback}
                       </p>
                     </div>
