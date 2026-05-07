@@ -87,7 +87,7 @@ describe('Auth Middleware', () => {
       expect(response.statusCode).toBe(401);
       const body = JSON.parse(response.body);
       expect(body.error).toBe('Unauthorized');
-      expect(body.message).toBe('Missing authorization header');
+      expect(body.message).toBe('Missing authorization token');
     });
 
     it('should return 401 when token format is invalid (no Bearer prefix)', async () => {

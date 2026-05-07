@@ -1,13 +1,10 @@
 import JSZip from 'jszip';
 import mammoth from 'mammoth';
-import * as pdfParseModule from 'pdf-parse';
+import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 
 import type { ITextExtractor } from '@domain/services/ITextExtractor.js';
 
 import { OCRService } from './OCRService.js';
-
-// pdf-parse uses CommonJS exports, handle both CJS and ESM
-const pdfParse = (pdfParseModule as any).default || pdfParseModule;
 
 /**
  * TextExtractorService
@@ -48,17 +45,26 @@ export class TextExtractorService implements ITextExtractor {
 
       console.log(`Extracting text from PDF (size: ${buffer.length} bytes)...`);
 
-      const data = await pdfParse(buffer, {
-        // pdf-parse options
-        max: 0, // Parse all pages (0 = no limit)
-      });
+      const pdfDocument = await pdfjs.getDocument({
+        data: new Uint8Array(buffer),
+        useSystemFonts: true,
+      }).promise;
 
-      // Validate extracted text
-      if (!data || typeof data.text !== 'string') {
-        throw new Error('PDF parsing returned invalid data structure');
+      let fullText = '';
+      const pageCount = pdfDocument.numPages;
+      const maxPages = Math.min(pageCount, 1000); // Limit to prevent DoS
+
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        const page = await pdfDocument.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map((item) => ('str' in item ? item.str : '')).join(' ');
+        fullText += pageText + '\n';
+        // Release page resources
+        page.cleanup();
       }
 
-      if (data.text.trim().length === 0) {
+      // Validate extracted text
+      if (fullText.trim().length === 0) {
         console.warn(
           'PDF parsed successfully but contains no extractable text. This might be a scanned PDF.'
         );
@@ -69,8 +75,8 @@ export class TextExtractorService implements ITextExtractor {
         );
       }
 
-      console.log(`Successfully extracted ${data.text.length} characters from PDF`);
-      return data.text;
+      console.log(`Successfully extracted ${fullText.length} characters from PDF`);
+      return fullText;
     } catch (error: any) {
       // Provide more detailed error information
       const errorDetails = {

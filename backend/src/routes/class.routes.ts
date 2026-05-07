@@ -20,6 +20,7 @@ import { StudentJoinClassWithInvitationCommand } from '@application/use-cases/cl
 import type { GetTeacherClassesWithStatsInput } from '@application/use-cases/classes/GetTeacherClassesWithStatsUseCase.js';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
+import { authorizeRoles } from '@middleware/role.middleware.js';
 import { checkSubscriptionLimit } from '@middleware/subscription.middleware.js';
 import { ForbiddenResponseSchema, NotFoundResponseSchema } from '@schemas/common.js';
 import {
@@ -427,7 +428,7 @@ export async function classRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/classes/:classId/invitations',
     {
-      preHandler: authenticateUser,
+      preHandler: [authenticateUser, authorizeRoles(['TEACHER'])],
       schema: {
         tags: ['classes'],
         summary: 'Invite students by email',
@@ -479,7 +480,7 @@ export async function classRoutes(fastify: FastifyInstance) {
   fastify.post(
     '/api/classes/:classId/invitations/csv',
     {
-      preHandler: authenticateUser,
+      preHandler: [authenticateUser, authorizeRoles(['TEACHER'])],
       schema: {
         tags: ['classes'],
         summary: 'Import students from CSV file',

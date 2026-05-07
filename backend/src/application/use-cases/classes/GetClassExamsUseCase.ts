@@ -1,5 +1,8 @@
+import { NotFoundError } from '@domain/errors/DomainError.js';
 import type { IClassExamRepository } from '@domain/repositories/IClassExamRepository.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IExamRepository } from '@domain/repositories/IExamRepository.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 
 export interface ClassExamWithStats {
@@ -38,11 +41,23 @@ export interface GetClassExamsOutput {
 export class GetClassExamsUseCase {
   constructor(
     private readonly classExamRepository: IClassExamRepository,
-    private readonly examRepository: IExamRepository
+    private readonly examRepository: IExamRepository,
+    private readonly classRepository: IClassRepository
   ) {}
 
   async execute(input: GetClassExamsInput): Promise<GetClassExamsOutput> {
     const classId = ClassId.create(input.classId);
+
+    // Verify class ownership
+    const classEntity = await this.classRepository.findById(classId);
+    if (!classEntity) {
+      throw new NotFoundError('Class not found');
+    }
+    assertOwnership(
+      classEntity.teacherId,
+      input.teacherId,
+      'You do not have permission to view exams for this class'
+    );
 
     // Get class exams
     const classExams = await this.classExamRepository.findByClassIdWithStats(classId);

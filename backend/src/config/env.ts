@@ -58,8 +58,7 @@ export const env = {
   ENABLE_OAUTH_MOCK: process.env.ENABLE_OAUTH_MOCK || 'false',
 
   // AdminJS
-  ADMINJS_COOKIE_SECRET:
-    process.env.ADMINJS_COOKIE_SECRET || 'default-secret-change-in-production-min-32-chars',
+  ADMINJS_COOKIE_SECRET: process.env.ADMINJS_COOKIE_SECRET || '',
 } as const;
 
 // Validation function for required environment variables
@@ -79,6 +78,13 @@ export function validateEnv() {
   if (env.ADMINJS_COOKIE_SECRET.length < 32) {
     throw new Error(
       `ADMINJS_COOKIE_SECRET must be at least 32 characters long. Current length: ${env.ADMINJS_COOKIE_SECRET.length}`
+    );
+  }
+
+  // Abort startup if mock OAuth is enabled in production
+  if (env.NODE_ENV === 'production' && env.ENABLE_OAUTH_MOCK === 'true') {
+    throw new Error(
+      'ENABLE_OAUTH_MOCK cannot be set to true in production environment. Aborting startup.'
     );
   }
 }

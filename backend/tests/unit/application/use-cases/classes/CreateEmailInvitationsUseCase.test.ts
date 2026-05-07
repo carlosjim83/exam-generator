@@ -5,11 +5,17 @@ import {
 } from '@application/use-cases/classes/CreateEmailInvitationsUseCase.js';
 import { Invitation } from '@domain/entities/Invitation.js';
 import { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
+import { IClassRepository } from '@domain/repositories/IClassRepository.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 
-// Mock the repository
+// Mock the repositories
 const mockInvitationRepository = {
   saveMany: vi.fn(),
 } satisfies Partial<IInvitationRepository> as IInvitationRepository;
+
+const mockClassRepository = {
+  findById: vi.fn(),
+} satisfies Partial<IClassRepository> as IClassRepository;
 
 describe('CreateEmailInvitationsUseCase', () => {
   let useCase: CreateEmailInvitationsUseCase;
@@ -17,8 +23,12 @@ describe('CreateEmailInvitationsUseCase', () => {
   const teacherId = '987e6543-e89b-42d3-a456-426614174888';
 
   beforeEach(() => {
-    useCase = new CreateEmailInvitationsUseCase(mockInvitationRepository);
+    useCase = new CreateEmailInvitationsUseCase(mockInvitationRepository, mockClassRepository);
     vi.clearAllMocks();
+    mockClassRepository.findById.mockResolvedValue({
+      id: classId,
+      teacherId: UserId.create(teacherId),
+    });
   });
 
   describe('execute', () => {

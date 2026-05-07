@@ -7,7 +7,6 @@ import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '@/features/auth/context/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from 'react-i18next';
-import { TokenManager } from '@/lib/api-client';
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -19,52 +18,38 @@ function AuthCallbackContent() {
   useEffect(() => {
     const timeouts: ReturnType<typeof setTimeout>[] = [];
 
-    const handleCallback = () => {
+    const handleCallback = async () => {
       try {
-        // Extract tokens and user data from URL hash fragment
-        const hash = window.location.hash.slice(1); // Remove leading '#'
-        const params = new URLSearchParams(hash);
+        // Backend sets httpOnly cookies during OAuth redirect.
+        // Call /api/auth/me to get user data using the secure cookie.
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/auth/me`,
+          {
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
 
-        const accessToken = params.get('accessToken');
-        const refreshToken = params.get('refreshToken');
-        const userId = params.get('userId');
-        const email = params.get('email');
-        const firstName = params.get('firstName');
-        const lastName = params.get('lastName');
-        const role = params.get('role') as 'TEACHER' | 'STUDENT';
-        const provider = params.get('provider');
-
-        // Validate required params
-        if (
-          !accessToken ||
-          !refreshToken ||
-          !userId ||
-          !email ||
-          !firstName ||
-          !lastName ||
-          !role
-        ) {
-          throw new Error('Missing required authentication parameters');
+        if (!response.ok) {
+          throw new Error('Authentication failed');
         }
 
-        // Store tokens in memory only (never localStorage) to prevent XSS.
-        // The backend also sets httpOnly cookies for subsequent requests.
-        TokenManager.setTokens(accessToken, refreshToken);
+        const data = await response.json();
 
         // Update auth context
         setUser({
-          id: userId,
-          email,
-          firstName,
-          lastName,
-          role,
-          provider: provider || 'GOOGLE',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          id: data.id,
+          email: data.email,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          role: data.role,
+          provider: data.provider || 'GOOGLE',
+          createdAt: data.createdAt,
+          updatedAt: data.updatedAt,
         });
 
         setStatus('success');
-        setMessage(`Welcome, ${firstName}!`);
+        setMessage(`Welcome, ${data.firstName}!`);
 
         // Redirect to dashboard after 1.5 seconds
         timeouts.push(
