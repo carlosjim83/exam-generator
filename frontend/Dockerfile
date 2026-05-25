@@ -7,8 +7,8 @@
 # ================================
 FROM node:20-alpine AS builder
 
-# Install pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Install pnpm (corepack unreliable in some node:20-alpine variants)
+RUN npm install -g pnpm@latest
 
 # Install libc6-compat for compatibility
 RUN apk add --no-cache libc6-compat
@@ -37,7 +37,7 @@ WORKDIR /app/frontend
 # NEXT_PUBLIC_* variables must be set at build time
 # Default to production backend URL if not specified
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://exam-generator-backend.delightfulforest-a488ef6b.swedencentral.azurecontainerapps.io}
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-https://backend.formydable.es}
 
 # Control OAuth mock behavior (default: false for production)
 ARG NEXT_PUBLIC_ENABLE_OAUTH_MOCK
