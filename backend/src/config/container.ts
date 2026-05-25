@@ -42,6 +42,7 @@ import {
   GetExamUseCase,
   GetStudentClassesUseCase,
   ImportStudentsCSVUseCase,
+  LinkOAuthAccountUseCase,
   ListDocumentsUseCase,
   ListExamsUseCase,
   LoginUserUseCase,
@@ -185,6 +186,7 @@ export class Container {
   private readonly _registerUserUseCase: RegisterUserUseCase;
   private readonly _loginUserUseCase: LoginUserUseCase;
   private readonly _refreshTokenUseCase: RefreshTokenUseCase;
+  private readonly _linkOAuthAccountUseCase: LinkOAuthAccountUseCase;
 
   // Application Layer - Document Use Cases
   private readonly _uploadDocumentUseCase: UploadDocumentUseCase;
@@ -347,6 +349,7 @@ export class Container {
     );
 
     this._refreshTokenUseCase = new RefreshTokenUseCase(this._userRepository, this._tokenService);
+    this._linkOAuthAccountUseCase = new LinkOAuthAccountUseCase();
 
     // Document Use Cases
     this._uploadDocumentUseCase = new UploadDocumentUseCase(
@@ -699,6 +702,10 @@ export class Container {
 
   public get refreshTokenUseCase(): RefreshTokenUseCase {
     return this._refreshTokenUseCase;
+  }
+
+  public get linkOAuthAccountUseCase(): LinkOAuthAccountUseCase {
+    return this._linkOAuthAccountUseCase;
   }
 
   // Document Use Cases

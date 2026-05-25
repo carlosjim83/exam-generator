@@ -2,11 +2,16 @@
 export { RegisterUserUseCase } from './auth/RegisterUserUseCase.js';
 export { LoginUserUseCase } from './auth/LoginUserUseCase.js';
 export { RefreshTokenUseCase } from './auth/RefreshTokenUseCase.js';
+export { LinkOAuthAccountUseCase } from './auth/LinkOAuthAccountUseCase.js';
 
 // Export input/output types for auth use cases
 export type { RegisterUserInput, RegisterUserOutput } from './auth/RegisterUserUseCase.js';
 export type { LoginUserInput, LoginUserOutput } from './auth/LoginUserUseCase.js';
 export type { RefreshTokenInput, RefreshTokenOutput } from './auth/RefreshTokenUseCase.js';
+export type {
+  LinkOAuthAccountInput,
+  LinkOAuthAccountOutput,
+} from './auth/LinkOAuthAccountUseCase.js';
 
 // Application Layer - Document Use Cases
 export { UploadDocumentUseCase } from './documents/UploadDocumentUseCase.js';

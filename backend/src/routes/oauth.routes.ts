@@ -121,43 +121,12 @@ export async function oauthRoutes(fastify: FastifyInstance) {
           });
         }
 
-        // Find or create user in database
-        let user = await prisma.user.findUnique({
-          where: { email: googleUser.email },
+        // Find, link, or create user from Google OAuth data
+        const { user, isNew } = await container.linkOAuthAccountUseCase.execute({
+          googleUser,
+          role,
         });
-
-        if (user) {
-          // User exists - check if it's a Google user or needs linking
-          if (user.provider !== AuthProvider.GOOGLE) {
-            // User exists with different provider (LOCAL, GITHUB, etc.)
-            return reply.status(409).send({
-              statusCode: 409,
-              error: 'Conflict',
-              message: `Email ${googleUser.email} is already registered with ${user.provider} provider. Please login with ${user.provider}.`,
-            });
-          }
-
-          // User exists with Google provider - update providerId if needed
-          if (user.providerId !== googleUser.id) {
-            user = await prisma.user.update({
-              where: { id: user.id },
-              data: { providerId: googleUser.id },
-            });
-          }
-        } else {
-          // Create new user with role from OAuth state
-          user = await prisma.user.create({
-            data: {
-              email: googleUser.email,
-              firstName: googleUser.given_name || 'Google',
-              lastName: googleUser.family_name || 'User',
-              provider: AuthProvider.GOOGLE,
-              providerId: googleUser.id,
-              password: null, // OAuth users don't have passwords
-              role: role, // Use role from OAuth state
-            },
-          });
-
+        if (isNew) {
           fastify.log.info(`Created new Google user: ${user.email} with role: ${role}`);
         }
 

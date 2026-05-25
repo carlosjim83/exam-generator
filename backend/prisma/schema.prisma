@@ -47,8 +47,21 @@ model User {
   taughtExams        ClassExam[]         @relation("TaughtExams")
   subscription       Subscription?
   usageMetrics       UsageMetrics[]
+  oauthAccounts      OAuthAccount[]
 
   @@map("users")
+}
+
+model OAuthAccount {
+  id                String @id @default(uuid())
+  userId            String @map("user_id")
+  provider          String // 'google', 'github', 'microsoft'
+  providerAccountId String @map("provider_account_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("oauth_accounts")
 }
 
 enum UserRole {
