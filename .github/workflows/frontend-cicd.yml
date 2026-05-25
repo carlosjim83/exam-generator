@@ -96,7 +96,7 @@ jobs:
             echo "⚠️ Build warnings detected"
           fi
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://exam-generator-backend.kindforest-d0a6102e.swedencentral.azurecontainerapps.io' }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://backend.formydable.es' }}
 
       - name: PR validation summary
         if: github.event_name == 'pull_request'
@@ -155,7 +155,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            NEXT_PUBLIC_API_URL=
+            NEXT_PUBLIC_API_URL=${{ secrets.NEXT_PUBLIC_API_URL || 'https://backend.formydable.es' }}
           no-cache: true
           platforms: linux/amd64
 
