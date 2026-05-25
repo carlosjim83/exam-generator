@@ -9,6 +9,14 @@ import { AuthProvider } from '@domain/entities/User.js';
 import { Email } from '@domain/value-objects/Email.js';
 import { UserId } from '@domain/value-objects/UserId.js';
 
+function buildCookieOptions(): string {
+  const base = 'HttpOnly; Secure; SameSite=Lax; Path=/';
+  if (env.COOKIE_DOMAIN) {
+    return `${base}; Domain=${env.COOKIE_DOMAIN}`;
+  }
+  return base;
+}
+
 export async function oauthRoutes(fastify: FastifyInstance) {
   // Register Google OAuth2 plugin
   await fastify.register(oauthPlugin, {
@@ -164,7 +172,7 @@ export async function oauthRoutes(fastify: FastifyInstance) {
         );
 
         // Set httpOnly cookies for secure token transfer
-        const cookieOptions = 'HttpOnly; Secure; SameSite=Lax; Path=/';
+        const cookieOptions = buildCookieOptions();
         void reply.header('Set-Cookie', [
           `access_token=${tokens.accessToken}; ${cookieOptions}; Max-Age=900`,
           `refresh_token=${tokens.refreshToken}; ${cookieOptions}; Max-Age=604800`,
@@ -251,7 +259,7 @@ export async function oauthRoutes(fastify: FastifyInstance) {
           );
 
           // Set httpOnly cookies for secure token transfer
-          const cookieOptions = 'HttpOnly; Secure; SameSite=Lax; Path=/';
+          const cookieOptions = buildCookieOptions();
           void reply.header('Set-Cookie', [
             `access_token=${tokens.accessToken}; ${cookieOptions}; Max-Age=900`,
             `refresh_token=${tokens.refreshToken}; ${cookieOptions}; Max-Age=604800`,
