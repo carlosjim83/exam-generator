@@ -175,7 +175,7 @@ describe('Auth Integration Tests', () => {
       expect(response.statusCode).toBe(401);
       const body = JSON.parse(response.body);
       expect(body.error).toBe('Unauthorized');
-      expect(body.message).toBe('Missing authorization header');
+      expect(body.message).toBe('Missing authorization token');
     });
 
     it('should reject access with invalid token', async () => {

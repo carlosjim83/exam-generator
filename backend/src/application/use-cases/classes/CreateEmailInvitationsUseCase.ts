@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { Invitation } from '@domain/entities/Invitation.js';
 import { ValidationError } from '@domain/errors/DomainError.js';
+import { assertOwnership } from '@domain/utils/assertOwnership.js';
+import type { IClassRepository } from '@domain/repositories/IClassRepository.js';
 import type { IInvitationRepository } from '@domain/repositories/IInvitationRepository.js';
 import { ClassId } from '@domain/value-objects/ClassId.js';
 import { InvitationId } from '@domain/value-objects/InvitationId.js';
@@ -16,7 +18,10 @@ export class CreateEmailInvitationsCommand {
 }
 
 export class CreateEmailInvitationsUseCase {
-  constructor(private readonly invitationRepository: IInvitationRepository) {}
+  constructor(
+    private readonly invitationRepository: IInvitationRepository,
+    private readonly classRepository: IClassRepository
+  ) {}
 
   async execute(command: CreateEmailInvitationsCommand): Promise<Invitation[]> {
     const maxEmails = 50;
@@ -24,6 +29,17 @@ export class CreateEmailInvitationsUseCase {
     if (command.emails.length > maxEmails) {
       throw new ValidationError(`Cannot invite more than ${maxEmails} students at once`);
     }
+
+    // Verify class ownership
+    const classEntity = await this.classRepository.findById(ClassId.create(command.classId));
+    if (!classEntity) {
+      throw new ValidationError('Class not found');
+    }
+    assertOwnership(
+      classEntity.teacherId,
+      command.teacherId,
+      'You do not have permission to invite students to this class'
+    );
 
     // Deduplicate and validate emails
     const uniqueEmails = [...new Set(command.emails)].filter((email) => {

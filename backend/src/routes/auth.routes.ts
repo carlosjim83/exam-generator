@@ -1,6 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 
 import { container } from '@config/container.js';
+import { authenticateUser } from '@middleware/auth.middleware.js';
+import { UserId } from '@domain/value-objects/UserId.js';
 import {
   AuthResponseSchema,
   LoginRequestSchema,
@@ -157,6 +159,65 @@ export async function authRoutes(fastify: FastifyInstance) {
           statusCode: 500,
           error: 'Internal Server Error',
           message: 'Login failed',
+        });
+      }
+    }
+  );
+
+  // GET /api/auth/me - Get current authenticated user
+  fastify.get(
+    '/api/auth/me',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['auth'],
+        summary: 'Get current user',
+        description: 'Returns the currently authenticated user based on the JWT token',
+        security: [{ bearerAuth: [] }],
+        response: {
+          200: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              email: { type: 'string' },
+              firstName: { type: 'string' },
+              lastName: { type: 'string' },
+              role: { type: 'string' },
+              provider: { type: 'string' },
+            },
+          },
+          401: ErrorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const user = request.user!;
+        // Fetch full user details from repository
+        const fullUser = await container.userRepository.findById(UserId.create(user.userId));
+        if (!fullUser) {
+          return reply.status(401).send({
+            statusCode: 401,
+            error: 'Unauthorized',
+            message: 'User not found',
+          });
+        }
+        return reply.status(200).send({
+          id: fullUser.id.toString(),
+          email: fullUser.email,
+          firstName: fullUser.firstName,
+          lastName: fullUser.lastName,
+          role: fullUser.role,
+          provider: fullUser.provider,
+          createdAt: fullUser.createdAt.toISOString(),
+          updatedAt: fullUser.updatedAt.toISOString(),
+        });
+      } catch (error: any) {
+        fastify.log.error(error);
+        return reply.status(401).send({
+          statusCode: 401,
+          error: 'Unauthorized',
+          message: error.message || 'Authentication failed',
         });
       }
     }

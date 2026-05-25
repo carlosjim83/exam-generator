@@ -423,7 +423,8 @@ export class Container {
       this._subscriptionEnforcementService
     );
     this._createEmailInvitationsUseCase = new CreateEmailInvitationsUseCase(
-      this._invitationRepository
+      this._invitationRepository,
+      this._classRepository
     );
     this._studentJoinClassUseCase = new StudentJoinClassUseCase(
       this._studentEnrollmentRepository,
@@ -497,7 +498,8 @@ export class Container {
     // Class Exam Use Cases
     this._getClassExamsUseCase = new GetClassExamsUseCase(
       this._classExamRepository,
-      this._examRepository
+      this._examRepository,
+      this._classRepository
     );
     this._getStudentExamsUseCase = new GetStudentExamsUseCase(
       this._classExamRepository,

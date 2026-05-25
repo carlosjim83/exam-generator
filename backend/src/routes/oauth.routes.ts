@@ -163,20 +163,16 @@ export async function oauthRoutes(fastify: FastifyInstance) {
           user.refreshTokenVersion ?? 0
         );
 
-        // Redirect to frontend with tokens in URL hash fragment
-        // Hash fragments are NOT sent to the server, avoiding logs/history exposure
+        // Set httpOnly cookies for secure token transfer
+        const cookieOptions = 'HttpOnly; Secure; SameSite=Lax; Path=/';
+        void reply.header('Set-Cookie', [
+          `access_token=${tokens.accessToken}; ${cookieOptions}; Max-Age=900`,
+          `refresh_token=${tokens.refreshToken}; ${cookieOptions}; Max-Age=604800`,
+        ]);
+
+        // Redirect to frontend without tokens in URL
         const frontendUrl = env.FRONTEND_URL || 'http://localhost:3000';
-        const hashParams = new URLSearchParams({
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-          userId: user.id,
-          email: user.email,
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          role: user.role,
-          provider: user.provider,
-        }).toString();
-        const redirectUrl = `${frontendUrl}/auth/callback#${hashParams}`;
+        const redirectUrl = `${frontendUrl}/auth/callback`;
 
         return reply.redirect(redirectUrl);
       } catch (error: any) {
@@ -254,19 +250,16 @@ export async function oauthRoutes(fastify: FastifyInstance) {
             user.refreshTokenVersion ?? 0
           );
 
-          // Redirect to frontend with tokens in URL hash fragment
+          // Set httpOnly cookies for secure token transfer
+          const cookieOptions = 'HttpOnly; Secure; SameSite=Lax; Path=/';
+          void reply.header('Set-Cookie', [
+            `access_token=${tokens.accessToken}; ${cookieOptions}; Max-Age=900`,
+            `refresh_token=${tokens.refreshToken}; ${cookieOptions}; Max-Age=604800`,
+          ]);
+
+          // Redirect to frontend without tokens in URL
           const frontendUrl = env.FRONTEND_URL || 'http://localhost:3000';
-          const hashParams = new URLSearchParams({
-            accessToken: tokens.accessToken,
-            refreshToken: tokens.refreshToken,
-            userId: user.id,
-            email: user.email,
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            role: user.role,
-            provider: user.provider,
-          }).toString();
-          const redirectUrl = `${frontendUrl}/auth/callback#${hashParams}`;
+          const redirectUrl = `${frontendUrl}/auth/callback`;
 
           return reply.redirect(redirectUrl);
         } catch (error: any) {
