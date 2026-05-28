@@ -63,13 +63,28 @@ describe('ApiDocumentService - Delete & Download', () => {
       await expect(service.deleteDocument('doc-123')).rejects.toThrow('Document not found');
     });
 
-    it('should throw error when not authenticated', async () => {
-      // Mock TokenManager with no token
+    it('should send request without token but with credentials when not authenticated in memory', async () => {
+      // Mock TokenManager with no token (OAuth cookie auth)
       (TokenManager.getAccessToken as any).mockReturnValue(null);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        json: () => Promise.resolve({ message: 'Unauthorized' }),
+      });
 
       const unauthService = new ApiDocumentService();
 
-      await expect(unauthService.deleteDocument('doc-123')).rejects.toThrow('Not authenticated');
+      await expect(unauthService.deleteDocument('doc-123')).rejects.toThrow('Unauthorized');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:3001/api/documents/doc-123',
+        expect.objectContaining({
+          method: 'DELETE',
+          credentials: 'include',
+        })
+      );
     });
   });
 
@@ -108,13 +123,28 @@ describe('ApiDocumentService - Delete & Download', () => {
       await expect(service.downloadDocument('doc-123')).rejects.toThrow('Document not found');
     });
 
-    it('should throw error when not authenticated', async () => {
-      // Mock TokenManager with no token
+    it('should send request without token but with credentials when not authenticated in memory', async () => {
+      // Mock TokenManager with no token (OAuth cookie auth)
       (TokenManager.getAccessToken as any).mockReturnValue(null);
+
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        statusText: 'Unauthorized',
+        json: () => Promise.resolve({ message: 'Unauthorized' }),
+      });
 
       const unauthService = new ApiDocumentService();
 
-      await expect(unauthService.downloadDocument('doc-123')).rejects.toThrow('Not authenticated');
+      await expect(unauthService.downloadDocument('doc-123')).rejects.toThrow('Unauthorized');
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        'http://localhost:3001/api/documents/doc-123/download',
+        expect.objectContaining({
+          method: 'GET',
+          credentials: 'include',
+        })
+      );
     });
   });
 

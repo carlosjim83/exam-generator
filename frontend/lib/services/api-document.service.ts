@@ -55,11 +55,6 @@ export class ApiDocumentService {
     input: UploadDocumentInput,
     onProgress?: (progress: UploadProgress) => void
   ): Promise<UploadDocumentResponse> {
-    const token = this.getAuthToken();
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-
     // Validate file type
     const allowedTypes = [
       'application/pdf',
@@ -82,8 +77,11 @@ export class ApiDocumentService {
       formData.append('title', input.title);
     }
 
+    const token = this.getAuthToken();
+
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
+      xhr.withCredentials = true; // Send httpOnly cookies for OAuth auth
 
       // Track upload progress
       if (onProgress) {
@@ -128,7 +126,9 @@ export class ApiDocumentService {
 
       // Send request
       xhr.open('POST', `${this.API_BASE_URL}/api/documents/upload`);
-      xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
       xhr.send(formData);
     });
   }
@@ -138,15 +138,11 @@ export class ApiDocumentService {
    */
   async listDocuments(): Promise<Document[]> {
     const token = this.getAuthToken();
-    if (!token) {
-      return [];
-    }
 
     try {
       const response = await fetch(`${this.API_BASE_URL}/api/documents`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (!response.ok) {
@@ -169,15 +165,11 @@ export class ApiDocumentService {
    */
   async getDocument(id: string): Promise<Document | null> {
     const token = this.getAuthToken();
-    if (!token) {
-      return null;
-    }
 
     try {
       const response = await fetch(`${this.API_BASE_URL}/api/documents/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (!response.ok) {
@@ -198,15 +190,11 @@ export class ApiDocumentService {
    */
   async reprocessDocument(id: string): Promise<{ id: string; status: string; message: string }> {
     const token = this.getAuthToken();
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
 
     const response = await fetch(`${this.API_BASE_URL}/api/documents/${id}/reprocess`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
 
     if (!response.ok) {
@@ -222,15 +210,11 @@ export class ApiDocumentService {
    */
   async deleteDocument(id: string): Promise<void> {
     const token = this.getAuthToken();
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
 
     const response = await fetch(`${this.API_BASE_URL}/api/documents/${id}`, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
 
     if (!response.ok) {
@@ -245,15 +229,11 @@ export class ApiDocumentService {
    */
   async downloadDocument(id: string): Promise<Blob> {
     const token = this.getAuthToken();
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
 
     const response = await fetch(`${this.API_BASE_URL}/api/documents/${id}/download`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
 
     if (!response.ok) {

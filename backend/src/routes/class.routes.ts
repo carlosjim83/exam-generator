@@ -25,6 +25,7 @@ import { checkSubscriptionLimit } from '@middleware/subscription.middleware.js';
 import { ForbiddenResponseSchema, NotFoundResponseSchema } from '@schemas/common.js';
 import {
   ClassCreateResponseSchema,
+  ClassDetailSchema,
   ClassDetailResponseSchema,
   ClassDocumentsResponseSchema,
   ClassDocumentsTeacherResponseSchema,
@@ -120,7 +121,7 @@ export async function classRoutes(fastify: FastifyInstance) {
           required: ['id'],
         },
         response: {
-          200: ClassDetailResponseSchema,
+          200: ClassDetailSchema,
         },
       },
     },

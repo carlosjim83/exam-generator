@@ -104,9 +104,8 @@ export async function exportExamResults(
   const response = await fetch(
     `${baseUrl}/api/classes/${classId}/exams/${classExamId}/export?${queryParams.toString()}`,
     {
-      headers: {
-        Authorization: token ? `Bearer ${token}` : '',
-      },
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     }
   );
 
