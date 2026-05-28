@@ -75,9 +75,8 @@ export async function getWorkerMetrics(): Promise<WorkerMetrics> {
 
   const response = await fetch(`${API_BASE_URL}/health/worker`, {
     method: 'GET',
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-    },
+    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
   if (!response.ok) {
@@ -98,9 +97,8 @@ export async function getJobMetrics(
 
   const response = await fetch(`${API_BASE_URL}/health/worker/job/${documentId}`, {
     method: 'GET',
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-    },
+    credentials: 'include',
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
 
   if (!response.ok) {

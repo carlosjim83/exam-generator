@@ -86,15 +86,13 @@ export class ApiExamService {
    */
   async generateExam(input: GenerateExamInput): Promise<ExamResponse> {
     const token = this.getAuthToken();
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
 
     const response = await fetch(`${this.API_BASE_URL}/api/exams/generate`, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         documentIds: input.documentIds,
@@ -119,15 +117,11 @@ export class ApiExamService {
    */
   async listExams(): Promise<{ exams: ExamListItem[]; total: number }> {
     const token = this.getAuthToken();
-    if (!token) {
-      return { exams: [], total: 0 };
-    }
 
     try {
       const response = await fetch(`${this.API_BASE_URL}/api/exams`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (!response.ok) {
@@ -148,15 +142,11 @@ export class ApiExamService {
    */
   async getExam(id: string): Promise<ExamDetailsResponse | null> {
     const token = this.getAuthToken();
-    if (!token) {
-      return null;
-    }
 
     try {
       const response = await fetch(`${this.API_BASE_URL}/api/exams/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include',
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
 
       if (!response.ok) {
@@ -177,15 +167,11 @@ export class ApiExamService {
    */
   async deleteExam(id: string): Promise<void> {
     const token = this.getAuthToken();
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
 
     const response = await fetch(`${this.API_BASE_URL}/api/exams/${id}`, {
       method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      credentials: 'include',
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
     });
 
     if (!response.ok) {
