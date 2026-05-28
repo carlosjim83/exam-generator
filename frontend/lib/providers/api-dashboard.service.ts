@@ -42,25 +42,19 @@ export class ApiDashboardService {
 
   /**
    * Make authenticated API request
-   * Returns null if no token (graceful degradation)
+   * Sends credentials (cookies) and optional Bearer token for OAuth support
    */
   private async fetchWithAuth<T>(endpoint: string, options?: RequestInit): Promise<T | null> {
-    // Get access token from localStorage
     const accessToken = TokenManager.getAccessToken();
-
-    if (!accessToken) {
-      // Don't throw error - let callers handle gracefully
-      return null;
-    }
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         ...options?.headers,
       },
-      credentials: 'include', // Include cookies for refresh token
+      credentials: 'include', // Include cookies for OAuth auth
     });
 
     if (!response.ok) {
@@ -72,10 +66,10 @@ export class ApiDashboardService {
   }
 
   /**
-   * Check if user is authenticated
+   * Check if user appears to be authenticated (token in memory or cookies may exist)
    */
   private isAuthenticated(): boolean {
-    return TokenManager.isAuthenticated();
+    return TokenManager.isAuthenticated() || true;
   }
 
   async getStats(): Promise<DashboardStats> {
