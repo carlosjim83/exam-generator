@@ -127,7 +127,12 @@ export function StudentExamList({ classId }: StudentExamListProps) {
         );
       case 'GRADED':
         return (
-          <Button variant="outline" size="sm" onClick={() => handleViewResults(exam.id)}>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!exam.assignmentId}
+            onClick={() => exam.assignmentId && handleViewResults(exam.assignmentId)}
+          >
             {t('classExams.actions.viewResults')}
           </Button>
         );

@@ -53,6 +53,7 @@ export const StudentClassExamItemSchema = Type.Object({
   score: Type.Union([Type.Number(), Type.Null()]),
   attemptNumber: Type.Number(),
   remainingAttempts: Type.Number(),
+  assignmentId: Type.Union([Type.String(), Type.Null()]),
 });
 
 export const StudentClassExamListResponseSchema = Type.Object(
@@ -153,7 +154,6 @@ export const StudentSubmissionQuestionSchema = Type.Object({
   isCorrect: Type.Union([Type.Boolean(), Type.Null()]),
   pointsEarned: Type.Number(),
   maxPoints: Type.Number(),
-  feedback: Type.Union([Type.String(), Type.Null()]),
 });
 
 export const StudentSubmissionDetailResponseSchema = Type.Object(

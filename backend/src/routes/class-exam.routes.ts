@@ -210,6 +210,7 @@ export async function classExamRoutes(fastify: FastifyInstance) {
           score: exam.score,
           attemptNumber: exam.attemptNumber,
           remainingAttempts: exam.remainingAttempts,
+          assignmentId: exam.assignmentId,
         })),
       });
     }
