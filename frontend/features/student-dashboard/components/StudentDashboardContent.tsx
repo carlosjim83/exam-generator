@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/features/auth/context/AuthContext';
-import { TokenManager } from '@/features/auth/services/api.service';
+import { apiClient, ApiError } from '@/lib/api-client';
 import type { StudentExamListItem } from '@/features/student-exams/types';
 import { Button } from '@/components/ui/button';
 import { Play, FileText, TrendingUp, ArrowRight } from 'lucide-react';
@@ -13,15 +13,9 @@ export function StudentDashboardContent() {
   const { t, i18n } = useTranslation('student');
   const { user, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
   const [exams, setExams] = useState<StudentExamListItem[]>([]);
   const [isLoadingExams, setIsLoadingExams] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const accessToken = TokenManager.getAccessToken();
-    setToken(accessToken);
-  }, []);
 
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
@@ -30,35 +24,36 @@ export function StudentDashboardContent() {
   }, [isLoading, isAuthenticated, router]);
 
   useEffect(() => {
-    async function fetchExams() {
-      if (!token) return;
+    if (!isAuthenticated) return;
+    let cancelled = false;
 
+    async function fetchExams() {
       try {
         setIsLoadingExams(true);
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/students/assignments`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        // Use the centralized apiClient so cookies (httpOnly) and token
+        // refresh are handled correctly, matching the rest of the app.
+        const data = await apiClient.get<{ assignments: StudentExamListItem[] }>(
+          '/api/students/assignments'
         );
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch exams');
+        if (!cancelled) {
+          setExams(data.assignments || []);
         }
-
-        const data = await response.json();
-        setExams(data.assignments || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load exams');
+        if (!cancelled) {
+          setError(err instanceof ApiError ? err.message : 'Failed to load exams');
+        }
       } finally {
-        setIsLoadingExams(false);
+        if (!cancelled) {
+          setIsLoadingExams(false);
+        }
       }
     }
 
     fetchExams();
-  }, [token]);
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   const pendingExams = exams.filter((e) => e.status === 'PENDING');
   const inProgressExams = exams.filter((e) => e.status === 'IN_PROGRESS');
@@ -103,7 +98,7 @@ export function StudentDashboardContent() {
     }
   };
 
-  if (isLoading || !token) {
+  if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
         <div className="h-8 w-64 bg-muted rounded" />

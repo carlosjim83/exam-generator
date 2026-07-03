@@ -20,6 +20,7 @@ export interface StudentClassExamItem {
   score: number | null;
   attemptNumber: number;
   remainingAttempts: number;
+  assignmentId: string | null;
 }
 
 export interface GetStudentClassExamsInput {
@@ -98,6 +99,7 @@ export class GetStudentClassExamsUseCase {
           score: assignment?.score ?? null,
           attemptNumber,
           remainingAttempts: Math.max(0, remainingAttempts),
+          assignmentId: assignment?.id.value ?? null,
         };
       })
     );
