@@ -11,6 +11,7 @@ import type { GetStudentClassExamsInput } from '@application/use-cases/classes/G
 import type { PublishClassExamInput } from '@application/use-cases/classes/PublishClassExamUseCase.js';
 import type { UpdateClassExamSettingsInput } from '@application/use-cases/classes/UpdateClassExamSettingsUseCase.js';
 import type { GetStudentSubmissionDetailInput } from '@application/use-cases/classes/GetStudentSubmissionDetailUseCase.js';
+import { ExportClassExamResultsUseCase } from '@application/use-cases/classes/ExportClassExamResultsUseCase.js';
 import { container } from '@config/container.js';
 import { authenticateUser } from '@middleware/auth.middleware.js';
 import {
@@ -537,6 +538,79 @@ export async function classExamRoutes(fastify: FastifyInstance) {
       });
 
       reply.status(204).send();
+    }
+  );
+
+  // GET /api/classes/:classId/exams/:classExamId/export - Export exam results
+  fastify.get(
+    '/api/classes/:classId/exams/:classExamId/export',
+    {
+      preHandler: authenticateUser,
+      schema: {
+        tags: ['class-exams'],
+        summary: 'Export exam results',
+        description: 'Export exam results as CSV or JSON for download',
+        security: [{ bearerAuth: [] }],
+        params: {
+          type: 'object',
+          properties: {
+            classId: { type: 'string', format: 'uuid' },
+            classExamId: { type: 'string', format: 'uuid' },
+          },
+          required: ['classId', 'classExamId'],
+        },
+        querystring: {
+          type: 'object',
+          properties: {
+            format: {
+              type: 'string',
+              enum: ['CSV', 'JSON'],
+              default: 'CSV',
+            },
+          },
+        },
+        response: {
+          200: {
+            type: 'string',
+            description: 'CSV or JSON content',
+          },
+          404: {
+            type: 'object',
+            properties: {
+              error: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      try {
+        const userId = (request as any).user.userId;
+        const { classId, classExamId } = request.params as { classId: string; classExamId: string };
+        const { format = 'CSV' } = request.query as { format?: 'CSV' | 'JSON' };
+
+        const exportUseCase = new ExportClassExamResultsUseCase(
+          container.classExamRepository,
+          container.classRepository,
+          container.examAssignmentRepository,
+          container.userRepository
+        );
+
+        const result = await exportUseCase.execute({
+          classExamId,
+          classId,
+          teacherId: userId,
+          format,
+        });
+
+        reply
+          .header('Content-Type', result.contentType)
+          .header('Content-Disposition', `attachment; filename="${result.filename}"`)
+          .send(result.content);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to export results';
+        return reply.status(404).send({ error: message });
+      }
     }
   );
 }
